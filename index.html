@@ -497,6 +497,34 @@ body.rf-dark .rf-online i{
 }
 </style>
 
+
+<style>
+/* Rush-V08 — approved home state */
+.header-brand,.header-brand img{border:0!important;background:transparent!important;box-shadow:none!important;outline:0!important}
+.header-brand:before,.header-brand:after{display:none!important}
+.home-state{direction:rtl;min-height:calc(100vh - 95px);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:42px 24px 30px;text-align:center}
+.home-visual{width:410px;height:245px;position:relative;margin:0 auto 8px}
+.play-box{position:absolute;width:170px;height:125px;border-radius:28px;left:120px;top:72px;background:linear-gradient(145deg,#fff,#edf5ff);box-shadow:0 18px 45px rgba(43,108,185,.16);z-index:3}
+.play-box span{position:absolute;left:67px;top:40px;width:0;height:0;border-top:24px solid transparent;border-bottom:24px solid transparent;border-left:38px solid #1684ff;filter:drop-shadow(0 6px 8px rgba(22,132,255,.28))}
+.film-card{position:absolute;width:105px;height:74px;border:7px solid #fff;border-radius:12px;background-size:cover;background-position:center;box-shadow:0 8px 24px rgba(44,83,125,.18)}
+.film-a{left:52px;top:42px;transform:rotate(-12deg);background-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=300&q=80')}
+.film-b{right:55px;top:20px;transform:rotate(14deg);background-image:url('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=300&q=80')}
+.film-strip{position:absolute;left:56px;bottom:26px;width:280px;height:42px;border:8px dashed #33485e;border-radius:18px;transform:rotate(4deg);opacity:.9}
+.magnifier{position:absolute;right:45px;top:70px;width:75px;height:75px;border:10px solid #344a60;border-radius:50%;z-index:5;box-shadow:inset 0 0 0 5px rgba(255,255,255,.55)}
+.magnifier:after{content:"";position:absolute;width:68px;height:12px;background:#344a60;border-radius:8px;right:-53px;bottom:-28px;transform:rotate(48deg)}
+.home-state h1{font-size:31px;line-height:1.7;margin:0;color:#10243b;font-weight:400!important}.home-state h1 em{font-style:normal;color:#1684ff}
+.home-state>p{font-size:11px;color:#6f8197;margin:2px 0 24px}
+.home-cats{width:100%;display:grid;grid-template-columns:repeat(8,1fr);gap:9px;direction:ltr}
+.home-cats button{height:118px;border:0;border-radius:11px;overflow:hidden;position:relative;background-image:linear-gradient(to top,rgba(5,18,34,.88),rgba(5,18,34,.05)),var(--bg);background-size:cover;background-position:center;color:#fff;font-family:YEKAN,Tahoma,Arial,sans-serif;font-weight:400;font-size:10px;display:flex;align-items:flex-end;justify-content:center;padding:12px 6px;cursor:pointer;transition:.18s}
+.home-cats button:hover{transform:translateY(-2px);box-shadow:0 9px 22px rgba(31,74,121,.15)}
+.popular-title{width:100%;display:flex;align-items:center;gap:14px;margin:25px 0 15px;color:#243a52;font-size:11px}.popular-title:before,.popular-title:after{content:"";height:1px;background:#dbe5ef;flex:1}
+.popular-searches{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.popular-searches button{border:1px solid #d8e6f6;background:#f2f7fd;border-radius:22px;padding:8px 17px;color:#2d4662;font-family:YEKAN,Tahoma,Arial,sans-serif;font-size:9px;cursor:pointer}
+#searchContent[hidden]{display:none!important}
+body.rf-dark .home-state h1,body.rf-dark .popular-title{color:#fff}.home-state p{font-weight:400!important}
+body.rf-dark .home-state>p{color:#9eb0c5}body.rf-dark .popular-title:before,body.rf-dark .popular-title:after{background:#2a3c50}
+body.rf-dark .popular-searches button{background:#15283c;border-color:#2a415a;color:#fff}
+@media(max-width:1200px){.home-cats{grid-template-columns:repeat(4,1fr)}.home-state{padding-top:25px}.home-visual{transform:scale(.85);margin-bottom:-10px}}
+</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -528,10 +556,38 @@ body.rf-dark .rf-online i{
 <button class="rf-mode" data-theme="system" title="نمایش"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg></button>
 <button class="rf-mode" data-theme="dark" title="حالت شب"><svg viewBox="0 0 24 24"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 8.5 8.5 0 1 0 20.5 14.5z"/></svg></button>
 <button class="rf-mode active" data-theme="light" title="حالت روز"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.5 1.5M17.6 17.6l1.5 1.5M2 12h2M20 12h2M4.9 19.1l1.5-1.5M17.6 6.4l1.5-1.5"/></svg></button>
-</div></div><div class="header-brand"><img src="assets/logos/rushfinder-color.png" alt="RushFinder"></div><button class="theme" id="theme" onclick="toggleTheme()">☾</button><div class="search"><input id="query" value="نفت" placeholder="راش موردنظرت را جستجو کن..."><button onclick="search()">جستجو</button></div>
+</div></div><div class="header-brand"><img src="assets/logos/rushfinder-color.png" alt="RushFinder"></div><button class="theme" id="theme" onclick="toggleTheme()">☾</button><div class="search"><input id="query" value="" placeholder="راش موردنظرت را جستجو کن..."><button onclick="search()">جستجو</button></div>
 
 </header>
 <main>
+<section class="home-state" id="homeState">
+  <div class="home-visual" aria-hidden="true">
+    <div class="film-card film-a"></div><div class="film-card film-b"></div>
+    <div class="film-strip"></div>
+    <div class="play-box"><span></span></div>
+    <div class="magnifier"></div>
+  </div>
+  <h1><em>راش</em> موردنظرت را پیدا کنید</h1>
+  <p>موضوع مورد نظر را در کادر جستجو وارد کنید یا از دسته‌های پیشنهادی استفاده کنید.</p>
+  <div class="home-cats">
+    <button data-q="طبیعت و حوادث" style="--bg:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=500&q=80')">طبیعت و حوادث</button>
+    <button data-q="اجتماعی" style="--bg:url('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=500&q=80')">اجتماعی</button>
+    <button data-q="فناوری" style="--bg:url('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=500&q=80')">فناوری</button>
+    <button data-q="جنگ و نظامی" style="--bg:url('https://images.unsplash.com/photo-1579912437766-7896df6d3cd3?auto=format&fit=crop&w=500&q=80')">جنگ و نظامی</button>
+    <button data-q="نفت و انرژی" style="--bg:url('https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=500&q=80')">نفت و انرژی</button>
+    <button data-q="سیاسی" style="--bg:url('https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=500&q=80')">سیاسی</button>
+    <button data-q="اقتصادی" style="--bg:url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=500&q=80')">اقتصادی</button>
+    <button data-q="طلا و سکه" style="--bg:url('https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&w=500&q=80')">طلا و سکه</button>
+  </div>
+  <div class="popular-title"><span>جستجوهای پرکاربرد</span></div>
+  <div class="popular-searches">
+    <button data-q="نفت">⌕ نفت</button><button data-q="طلا و سکه">⌕ طلا و سکه</button>
+    <button data-q="اقتصاد">⌕ اقتصاد</button><button data-q="سیاسی">⌕ سیاسی</button>
+    <button data-q="جنگ">⌕ جنگ</button><button data-q="فناوری">⌕ فناوری</button>
+    <button data-q="طبیعت">⌕ طبیعت</button><button data-q="ورزش">⌕ ورزش</button>
+  </div>
+</section>
+<div id="searchContent" hidden>
 <section class="summary"><div class="metric"><span class="mi">◉</span><strong>۵</strong><b>منبع جستجو</b><small>منابع آماده جستجو</small></div>
 <div class="metric"><span class="mi">◷</span><strong>۷</strong><b>جستجوهای اخیر</b><small>موضوعات جستجو شده</small></div>
 <div class="metric"><span class="mi">♡</span><strong>۱۲</strong><b>ذخیره‌شده‌ها</b><small>ویدیوهای نشان‌شده</small></div>
@@ -539,16 +595,15 @@ body.rf-dark .rf-online i{
 <div class="metric"><span class="mi">◎</span><strong>۳</strong><b>منابع جستجو</b><small>YouTube، Google، Vecteezy</small></div>
 <div class="metric"><span class="mi">⌕</span><strong id="count">۲۴۰</strong><b>نتایج پیدا شده</b><small>برای جستجوی فعلی</small></div>
 </section>
-<section class="categories">
-<div class="cat active"><span>▦ همه دسته‌ها</span></div>
-<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=70')"><span>طبیعت</span></div>
-<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=70')"><span>شهر و معماری</span></div>
-<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=70')"><span>انسان و زندگی</span></div>
-<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=70')"><span>تکنولوژی</span></div>
-<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=400&q=70')"><span>کسب و کار</span></div>
-<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=70')"><span>غذا</span></div>
-<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1546182990-dffeafbe841d?auto=format&fit=crop&w=400&q=70')"><span>حیوانات</span></div>
-<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=70')"><span>گردشگری</span></div>
+<section class="categories" id="resultCategories">
+<div class="cat" data-q="طلا و سکه" style="background-image:url('https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&w=500&q=80')"><span>طلا و سکه</span></div>
+<div class="cat" data-q="اقتصادی" style="background-image:url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=500&q=80')"><span>اقتصادی</span></div>
+<div class="cat" data-q="سیاسی" style="background-image:url('https://images.unsplash.com/photo-1521295121783-8a321d551ad2?auto=format&fit=crop&w=500&q=80')"><span>سیاسی</span></div>
+<div class="cat" data-q="نفت و انرژی" style="background-image:url('https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=500&q=80')"><span>نفت و انرژی</span></div>
+<div class="cat" data-q="جنگ و نظامی" style="background-image:url('https://images.unsplash.com/photo-1579912437766-7896df6d3cd3?auto=format&fit=crop&w=500&q=80')"><span>جنگ و نظامی</span></div>
+<div class="cat" data-q="فناوری" style="background-image:url('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=500&q=80')"><span>فناوری</span></div>
+<div class="cat" data-q="اجتماعی" style="background-image:url('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=500&q=80')"><span>اجتماعی</span></div>
+<div class="cat" data-q="طبیعت و حوادث" style="background-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=500&q=80')"><span>طبیعت و حوادث</span></div>
 </section>
 <div class="workspace">
 <aside class="filters"><h3>⚲ فیلتر نتایج</h3>
@@ -561,7 +616,7 @@ body.rf-dark .rf-online i{
 <section class="results">
 <div class="result-head"><div><h1 id="title">نتایج جستجو برای «نفت»</h1><small>نمایش ۱۶ نتیجه در هر صفحه</small></div><select class="sort"><option>مرتبط‌ترین</option><option>جدیدترین</option></select></div>
 <div class="grid" id="grid"></div><div class="pagination" id="pagination"></div>
-</section></div></main></div>
+</section></div></div></main></div>
 
 <div class="modal" id="modal" onclick="backdrop(event)">
 <div class="viewer"><div class="viewer-top"><strong>پیش‌نمایش راش</strong><button class="close" onclick="closeViewer()">✕</button></div>
@@ -604,10 +659,22 @@ function go(p){if(p<1||p>Math.ceil(results.length/perPage))return;current=p;rend
 function openViewer(i){const x=results[i];document.getElementById("viewerImg").src=x[2];document.getElementById("viewerTitle").textContent=x[0];document.getElementById("viewerMeta").textContent=`منبع: ${x[1]} • کیفیت: ${x[4]} • مدت: ${x[3]}`;document.getElementById("sourceLink").href=x[2];document.getElementById("downloadBtn").onclick=()=>downloadItem(i);document.getElementById("modal").classList.add("show")}
 function closeViewer(){document.getElementById("modal").classList.remove("show")} function backdrop(e){if(e.target.id==="modal")closeViewer()}
 function downloadItem(i){const x=results[i];alert("در نسخه UI لینک فایل ویدیویی واقعی هنوز متصل نیست. پس از اتصال API، دانلود مستقیم فقط برای منابع مجاز فعال می‌شود.")}
-function search(){const q=document.getElementById("query").value.trim()||"همه";document.getElementById("title").textContent=`نتایج جستجو برای «${q}»`;current=1;render()}
+function search(qOverride){
+ const input=document.getElementById("query");
+ const q=(qOverride||input.value).trim();
+ if(!q)return;
+ input.value=q;
+ document.getElementById("homeState").style.display="none";
+ document.getElementById("searchContent").hidden=false;
+ document.getElementById("title").textContent=`نتایج جستجو برای «${q}»`;
+ current=1;render();
+}»`;current=1;render()}
 function toggleTheme(){document.body.classList.toggle("dark");localStorage.setItem("rf-theme",document.body.classList.contains("dark")?"dark":"light");document.getElementById("theme").textContent=document.body.classList.contains("dark")?"☀":"☾"}
 if(localStorage.getItem("rf-theme")==="dark"){document.body.classList.add("dark");document.getElementById("theme").textContent="☀"}
-document.getElementById("query").addEventListener("keydown",e=>{if(e.key==="Enter")search()});render();
+document.getElementById("query").addEventListener("keydown",e=>{if(e.key==="Enter")search()});
+document.querySelectorAll("[data-q]").forEach(el=>el.addEventListener("click",()=>search(el.dataset.q)));
+document.getElementById("homeState").style.display="flex";
+document.getElementById("searchContent").hidden=true;
 </script>
 
 <script>
