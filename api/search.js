@@ -1,46 +1,186 @@
-module.exports = async function handler(req,res){
- const q=String(req.query.q||"").trim(),key=process.env.PIXABAY_API_KEY;
- if(!q)return res.status(400).json({error:"عبارت جستجو وارد نشده است."});
- if(!key)return res.status(500).json({error:"PIXABAY_API_KEY در Vercel تنظیم نشده است."});
- const page=Math.max(1,parseInt(req.query.page||"1",10)),perPage=16;
- const quality=String(req.query.quality||"all"),orientation=String(req.query.orientation||"all");
- try{
-   // Ask Pixabay for the maximum practical batch and filter using actual returned dimensions.
-   const u=new URL("https://pixabay.com/api/videos/");
-   u.searchParams.set("key",key);u.searchParams.set("q",q);
-   u.searchParams.set("per_page","200");u.searchParams.set("safesearch","true");u.searchParams.set("order","popular");
+const PIXABAY = "https://pixabay.com/api/videos/";
+const VECTEEZY = "https://api.vecteezy.com";
 
-   const collected=[]; let totalHits=0,total=0;
-   // Default Pixabay API exposes a limited number of hits; fetch available pages progressively.
-   for(let sp=1;sp<=3;sp++){
-     u.searchParams.set("page",String(sp));
-     const r=await fetch(u); const data=await r.json();
-     if(!r.ok) return res.status(r.status).json({error:data?.message||"Pixabay API error"});
-     totalHits=Number(data.totalHits||0); total=Number(data.total||0);
-     for(const hit of (data.hits||[])){
-       const v=hit.videos||{};
-       // choose best available rendition
-       const p=v.large?.url?v.large:(v.medium?.url?v.medium:(v.small?.url?v.small:v.tiny));
-       const f=v.medium||v.small||v.tiny||p;
-       if(!p?.url)continue;
-       const w=Number(p.width||0),h=Number(p.height||0),mx=Math.max(w,h),mn=Math.min(w,h);
-       let ok=true;
-       if(quality==="4k") ok=mx>=3840 && mn>=2160;
-       else if(quality==="fhd") ok=mx>=1920 && mn>=1080;
-       else if(quality==="hd") ok=mx>=1280 && mn>=720;
-       if(orientation==="horizontal")ok=ok&&w>=h;
-       if(orientation==="vertical")ok=ok&&h>w;
-       if(!ok)continue;
-       const video=p.url;
-       collected.push({id:hit.id,title:hit.tags||`Pixabay video ${hit.id}`,source:"Pixabay",pageURL:hit.pageURL,
-         thumbnail:p.thumbnail||f?.thumbnail||"",duration:hit.duration||0,width:w,height:h,video,
-         download:`${video}${video.includes("?")?"&":"?"}download=1`});
-     }
-     if(sp*200>=totalHits)break;
-   }
-   const start=(page-1)*perPage;
-   const results=collected.slice(start,start+perPage);
-   res.setHeader("Cache-Control","s-maxage=300, stale-while-revalidate=600");
-   return res.status(200).json({total,totalAccessible:collected.length,sourceTotalHits:totalHits,page,perPage,results});
- }catch(e){return res.status(500).json({error:"خطا در ارتباط با Pixabay."})}
+function num(v){ const n=Number(v); return Number.isFinite(n)?n:0; }
+function arr(v){ return Array.isArray(v)?v:[]; }
+function first(...v){ return v.find(x=>typeof x==="string" && /^https?:\/\//i.test(x)) || ""; }
+function deepUrls(obj, out=[], depth=0){
+  if(!obj || depth>5) return out;
+  if(typeof obj==="string" && /^https?:\/\//i.test(obj)){ out.push(obj); return out; }
+  if(Array.isArray(obj)){ for(const x of obj) deepUrls(x,out,depth+1); return out; }
+  if(typeof obj==="object") for(const v of Object.values(obj)) deepUrls(v,out,depth+1);
+  return out;
+}
+function pickUrl(obj, words){
+  if(!obj || typeof obj!=="object") return "";
+  const keys=Object.keys(obj);
+  for(const w of words){
+    for(const k of keys){
+      if(k.toLowerCase().includes(w)){
+        const v=obj[k];
+        if(typeof v==="string" && /^https?:\/\//i.test(v)) return v;
+        if(v && typeof v==="object"){
+          const u=deepUrls(v)[0]; if(u) return u;
+        }
+      }
+    }
+  }
+  return "";
+}
+function dims(o){
+  const w=num(o?.width ?? o?.dimensions?.width ?? o?.video?.width ?? o?.metadata?.width);
+  const h=num(o?.height ?? o?.dimensions?.height ?? o?.video?.height ?? o?.metadata?.height);
+  return [w,h];
+}
+function allowed(w,h,quality,orientation){
+  const mx=Math.max(w,h), mn=Math.min(w,h);
+  if(quality==="4k" && !(mx>=3840 && mn>=2160)) return false;
+  if(quality==="fhd" && !(mx>=1920 && mn>=1080)) return false;
+  if(quality==="hd" && !(mx>=1280 && mn>=720)) return false;
+  if(orientation==="horizontal" && !(w>=h)) return false;
+  if(orientation==="vertical" && !(h>w)) return false;
+  return true;
+}
+async function pixabaySearch({q,page,quality,orientation,limit=16}){
+  const key=process.env.PIXABAY_API_KEY;
+  if(!key) throw new Error("PIXABAY_API_KEY در Vercel تنظیم نشده است.");
+  const u=new URL(PIXABAY);
+  u.searchParams.set("key",key); u.searchParams.set("q",q);
+  u.searchParams.set("per_page","200"); u.searchParams.set("safesearch","true"); u.searchParams.set("order","popular");
+  const collected=[]; let totalHits=0,total=0;
+  for(let sp=1;sp<=3;sp++){
+    u.searchParams.set("page",String(sp));
+    const r=await fetch(u); const data=await r.json();
+    if(!r.ok) throw new Error(data?.message||"Pixabay API error");
+    totalHits=num(data.totalHits); total=num(data.total);
+    for(const hit of arr(data.hits)){
+      const v=hit.videos||{};
+      const p=v.large?.url?v.large:(v.medium?.url?v.medium:(v.small?.url?v.small:v.tiny));
+      const f=v.medium||v.small||v.tiny||p;
+      if(!p?.url) continue;
+      const w=num(p.width),h=num(p.height);
+      if(!allowed(w,h,quality,orientation)) continue;
+      const video=p.url;
+      collected.push({
+        id:String(hit.id), title:hit.tags||`Pixabay video ${hit.id}`, source:"Pixabay",
+        pageURL:hit.pageURL||"", thumbnail:p.thumbnail||f?.thumbnail||"",
+        duration:num(hit.duration), width:w,height:h,video,
+        download:`${video}${video.includes("?")?"&":"?"}download=1`
+      });
+    }
+    if(sp*200>=totalHits) break;
+  }
+  const start=(page-1)*limit;
+  return {results:collected.slice(start,start+limit), totalAccessible:collected.length, sourceTotalHits:totalHits, total};
+}
+function vectItems(data){
+  return arr(data?.resources).length?data.resources:
+         arr(data?.data).length?data.data:
+         arr(data?.results).length?data.results:
+         arr(data?.items).length?data.items:[];
+}
+function vectTotal(data, fallback){
+  return num(data?.total ?? data?.total_count ?? data?.meta?.total ?? data?.pagination?.total ?? data?.count) || fallback;
+}
+function normalizeVecteezy(x){
+  const [w,h]=dims(x);
+  const urls=deepUrls(x);
+  const thumbnail=first(
+    pickUrl(x,["thumbnail","thumb","poster","preview_image","image_preview"]),
+    urls.find(u=>/\.(jpg|jpeg|png|webp)(\?|$)/i.test(u))
+  );
+  const video=first(
+    pickUrl(x,["preview_video","video_preview","preview_url","preview","video"]),
+    urls.find(u=>/\.(mp4|webm|mov)(\?|$)/i.test(u))
+  );
+  const pageURL=first(
+    x?.url,x?.page_url,x?.resource_url,x?.web_url,
+    urls.find(u=>/vecteezy\.com/i.test(u) && !/\.(jpg|jpeg|png|webp|mp4|webm|mov)(\?|$)/i.test(u))
+  );
+  const id=String(x?.id ?? x?.resource_id ?? x?.resourceId ?? "");
+  return {
+    id,
+    title:String(x?.title ?? x?.name ?? x?.description ?? `Vecteezy video ${id}`),
+    source:"Vecteezy", pageURL, thumbnail, duration:num(x?.duration ?? x?.video?.duration ?? x?.metadata?.duration),
+    width:w,height:h,video, download:id?`/api/search?action=download&source=vecteezy&id=${encodeURIComponent(id)}`:""
+  };
+}
+async function vecteezySearch({q,page,quality,orientation,limit=16}){
+  const key=process.env.VECTEEZY_API_KEY, account=process.env.VECTEEZY_ACCOUNT_ID;
+  if(!key) throw new Error("VECTEEZY_API_KEY در Vercel تنظیم نشده است.");
+  if(!account) throw new Error("VECTEEZY_ACCOUNT_ID در Vercel تنظیم نشده است.");
+  // Fetch up to 100 so video orientation/quality can be filtered locally (Vecteezy orientation filter is not for video).
+  const u=new URL(`${VECTEEZY}/v2/${encodeURIComponent(account)}/resources`);
+  u.searchParams.set("term",q); u.searchParams.set("content_type","video");
+  u.searchParams.set("page",String(page)); u.searchParams.set("per_page","100");
+  u.searchParams.set("sort_by","relevance"); u.searchParams.set("family_friendly","true");
+  const r=await fetch(u,{headers:{Authorization:`Bearer ${key}`,Accept:"application/json"}});
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(data?.message||data?.error||`Vecteezy API error (${r.status})`);
+  const raw=vectItems(data), normalized=raw.map(normalizeVecteezy).filter(x=>x.id && (x.thumbnail||x.video||x.pageURL));
+  const filtered=normalized.filter(x=>allowed(x.width,x.height,quality,orientation));
+  return {results:filtered.slice(0,limit), totalAccessible:vectTotal(data,filtered.length), sourceTotalHits:vectTotal(data,raw.length), total:vectTotal(data,raw.length)};
+}
+async function vecteezyDownload(id,res){
+  const key=process.env.VECTEEZY_API_KEY, account=process.env.VECTEEZY_ACCOUNT_ID;
+  if(!key||!account) return res.status(500).json({error:"تنظیمات Vecteezy کامل نیست."});
+  const u=`${VECTEEZY}/v2/${encodeURIComponent(account)}/resources/${encodeURIComponent(id)}/download`;
+  const r=await fetch(u,{headers:{Authorization:`Bearer ${key}`,Accept:"application/json"},redirect:"manual"});
+  if(r.status>=300 && r.status<400){
+    const loc=r.headers.get("location"); if(loc) return res.redirect(302,loc);
+  }
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok) return res.status(r.status).json({error:data?.message||data?.error||"Vecteezy download error"});
+  const url=first(data?.url,data?.download_url,data?.downloadUrl,data?.data?.url,data?.data?.download_url,deepUrls(data)[0]);
+  if(!url) return res.status(502).json({error:"لینک دانلود در پاسخ Vecteezy پیدا نشد."});
+  return res.redirect(302,url);
+}
+
+module.exports = async function handler(req,res){
+  const q=String(req.query.q||"").trim();
+  const action=String(req.query.action||"");
+  const source=String(req.query.source||"all").toLowerCase();
+  if(action==="download" && source==="vecteezy"){
+    const id=String(req.query.id||"").trim();
+    if(!id) return res.status(400).json({error:"شناسه ویدیو ارسال نشده است."});
+    try{return await vecteezyDownload(id,res)}catch(e){return res.status(500).json({error:"خطا در دانلود از Vecteezy."})}
+  }
+  if(!q) return res.status(400).json({error:"عبارت جستجو وارد نشده است."});
+  const page=Math.max(1,parseInt(req.query.page||"1",10)), perPage=16;
+  const quality=String(req.query.quality||"all"), orientation=String(req.query.orientation||"all");
+  try{
+    let payload;
+    if(source==="vecteezy"){
+      payload=await vecteezySearch({q,page,quality,orientation,limit:perPage});
+      payload.sourceLabel="Vecteezy";
+    }else if(source==="pixabay"){
+      payload=await pixabaySearch({q,page,quality,orientation,limit:perPage});
+      payload.sourceLabel="Pixabay";
+    }else{
+      // "All sources": currently the two connected providers.
+      const [p,v]=await Promise.allSettled([
+        pixabaySearch({q,page,quality,orientation,limit:8}),
+        vecteezySearch({q,page,quality,orientation,limit:8})
+      ]);
+      const pr=p.status==="fulfilled"?p.value:{results:[],totalAccessible:0,sourceTotalHits:0,total:0};
+      const vr=v.status==="fulfilled"?v.value:{results:[],totalAccessible:0,sourceTotalHits:0,total:0};
+      const mixed=[]; const max=Math.max(pr.results.length,vr.results.length);
+      for(let i=0;i<max;i++){ if(pr.results[i])mixed.push(pr.results[i]); if(vr.results[i])mixed.push(vr.results[i]); }
+      payload={
+        results:mixed.slice(0,perPage),
+        totalAccessible:num(pr.totalAccessible)+num(vr.totalAccessible),
+        sourceTotalHits:num(pr.sourceTotalHits)+num(vr.sourceTotalHits),
+        total:num(pr.total)+num(vr.total),
+        sourceLabel:"Pixabay + Vecteezy",
+        providerErrors:[
+          p.status==="rejected"?"Pixabay":null,
+          v.status==="rejected"?"Vecteezy":null
+        ].filter(Boolean)
+      };
+    }
+    res.setHeader("Cache-Control","s-maxage=300, stale-while-revalidate=600");
+    return res.status(200).json({...payload,page,perPage});
+  }catch(e){
+    return res.status(500).json({error:e?.message||"خطا در ارتباط با سرویس جستجو."});
+  }
 };
