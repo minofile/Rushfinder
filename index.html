@@ -89,11 +89,156 @@ body.dark .header-brand-text strong span{color:#fff}
   .page{font-size:10px}
 }
 
+
+/* Regular YEKAN + Persian digits */
+body,button,input,select,.nav button,.metric,.filters,.results,.cat,.btn,.sort,.page,
+.viewer,.viewer button,.viewer a{
+  font-family:YEKAN,Tahoma,sans-serif !important;
+  font-weight:400 !important;
+}
+.metric strong,.metric b,.filters h3,.fg b,.result-head h1,.title,.viewer-info h2{
+  font-weight:400 !important;
+}
+.header-brand-text strong,.sidebrand strong{
+  font-family:Arial,sans-serif !important;
+  font-weight:700 !important;
+}
+
+
+/* FINAL TYPOGRAPHY — dashboard reference */
+html,body{
+  font-family:YEKAN,Tahoma,Arial,sans-serif !important;
+  font-weight:400 !important;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+body,button,input,select,option,
+.metric,.metric strong,.metric b,.metric small,
+.filters,.filters h3,.fg b,.fg label,
+.result-head,.result-head h1,.result-head small,
+.title,.meta,.btn,.sort,.page,.nav button,.cat{
+  font-family:YEKAN,Tahoma,Arial,sans-serif !important;
+  font-weight:400 !important;
+}
+.metric strong{font-size:15px !important}
+.metric b{font-size:9px !important}
+.metric small{font-size:7.5px !important}
+.filters h3{font-size:12px !important}
+.fg b{font-size:9px !important}
+.fg label{font-size:8.5px !important}
+.result-head h1{font-size:16px !important}
+.result-head small{font-size:8px !important}
+.title{font-size:9.5px !important}
+.meta{font-size:8px !important}
+.btn{font-size:8px !important}
+.nav button{font-size:9.5px !important}
+.cat{font-size:9px !important}
+.search input,.search button{font-family:YEKAN,Tahoma,Arial,sans-serif !important;font-weight:400 !important}
+.header-brand-text strong,.sidebrand strong{
+  font-family:Arial,sans-serif !important;
+  font-weight:700 !important;
+}
+
 </style>
+
+<style>
+.header-brand{width:225px !important}
+.header-brand > *{display:none !important}
+.header-brand::after{
+  content:"";
+  display:block;
+  width:190px;
+  height:56px;
+  background:url("assets/rushfinder-logo.png") left center/contain no-repeat;
+}
+</style>
+
+
+<style>
+.sidebrand{padding:10px 10px 22px !important;min-height:58px}
+.sidebrand > *{display:none !important}
+.sidebrand::after{
+  content:"";
+  display:block;
+  width:170px;
+  height:55px;
+  background:url("assets/rushfinder-logo.png") center/contain no-repeat;
+}
+.nav{gap:10px}
+.nav button{font-weight:400 !important}
+</style>
+
+
+<style>
+/* Sidebar branding + About section */
+.sidebar,.side,.aside{
+  position:fixed;
+}
+.sidebar-about{
+  position:absolute;
+  right:14px;
+  left:14px;
+  bottom:18px;
+  border-top:1px solid rgba(255,255,255,.10);
+  padding-top:14px;
+  direction:rtl;
+  color:#fff;
+}
+.about-label{
+  font-family:YEKAN,Tahoma,sans-serif;
+  font-weight:400;
+  font-size:10px;
+  color:#8fa3bd;
+  margin-bottom:9px;
+}
+.about-person{
+  display:flex;
+  align-items:center;
+  gap:9px;
+}
+.about-avatar{
+  width:31px;height:31px;border-radius:50%;
+  display:grid;place-items:center;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.13);
+  font-family:YEKAN,Tahoma,sans-serif;
+  font-size:11px;
+}
+.about-name{
+  font-family:YEKAN,Tahoma,sans-serif;
+  font-weight:400;
+  font-size:11px;
+  color:#fff;
+}
+.about-role{
+  font-family:YEKAN,Tahoma,sans-serif;
+  font-weight:400;
+  font-size:8px;
+  color:#37d9a0;
+  margin-top:2px;
+}
+.sidebrand{
+  align-items:center !important;
+}
+</style>
+
 </head>
 <body>
 <aside class="sidebar">
-<div class="sidebrand"><div class="side-mark"><i></i></div><strong>RushFinder</strong></div><nav class="nav"><button class="active"><i>▦</i><span>داشبورد</span></button><button><i>⌕</i><span>جستجو</span></button><button><i>▦</i><span>دسته‌بندی‌ها</span></button><button><i>▣</i><span>منابع</span></button><button><i>♡</i><span>ذخیره‌شده‌ها</span></button><button><i>◷</i><span>تاریخچه</span></button><button><i>⚙</i><span>تنظیمات</span></button></nav>
+<div class="sidebrand"><div class="side-mark"><i></i></div><strong>RushFinder</strong></div><nav class="nav"><button class="active"><i>▦</i><span>داشبورد</span></button>
+<button><i>⚙</i><span>تنظیمات</span></button></nav>
+
+<div class="sidebar-about">
+  <div class="about-label">درباره ما</div>
+  <div class="about-person">
+    <span class="about-avatar">م</span>
+    <div>
+      <div class="about-name">مصطفی رجبی</div>
+      <div class="about-role">مدیریت RushFinder</div>
+    </div>
+  </div>
+</div>
+
 </aside>
 <div class="app">
 <header class="top">
@@ -180,4 +325,28 @@ function toggleTheme(){document.body.classList.toggle("dark");localStorage.setIt
 if(localStorage.getItem("rf-theme")==="dark"){document.body.classList.add("dark");document.getElementById("theme").textContent="☀"}
 document.getElementById("query").addEventListener("keydown",e=>{if(e.key==="Enter")search()});render();
 </script>
+
+<script>
+function faDigits(v){
+  return String(v).replace(/[0-9]/g,d=>"۰۱۲۳۴۵۶۷۸۹"[d]);
+}
+function persianizeNode(root=document.body){
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  let n;
+  while(n=walker.nextNode()){
+    if(n.parentElement && !["SCRIPT","STYLE"].includes(n.parentElement.tagName))
+      n.nodeValue=faDigits(n.nodeValue);
+  }
+  document.querySelectorAll("input[placeholder]").forEach(el=>el.placeholder=faDigits(el.placeholder));
+}
+window.addEventListener("DOMContentLoaded",()=>persianizeNode());
+const rfObserver=new MutationObserver(muts=>{
+  muts.forEach(m=>m.addedNodes.forEach(n=>{
+    if(n.nodeType===Node.TEXT_NODE)n.nodeValue=faDigits(n.nodeValue);
+    else if(n.nodeType===Node.ELEMENT_NODE)persianizeNode(n);
+  }));
+});
+window.addEventListener("DOMContentLoaded",()=>rfObserver.observe(document.body,{childList:true,subtree:true}));
+</script>
+
 </body></html>
