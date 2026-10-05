@@ -620,55 +620,48 @@ body.rf-dark .popular-searches button{background:#15283c;border-color:#2a415a;co
 
 <div class="modal" id="modal" onclick="backdrop(event)">
 <div class="viewer"><div class="viewer-top"><strong>پیش‌نمایش راش</strong><button class="close" onclick="closeViewer()">✕</button></div>
-<div class="video-stage"><img id="viewerImg"><button class="play" title="پخش نمونه">▶</button></div>
+<div class="video-stage"><video id="viewerVideo" controls playsinline preload="metadata" style="width:100%;height:100%;object-fit:contain;background:#02070c"></video></div>
 <div class="viewer-info"><h2 id="viewerTitle"></h2><p id="viewerMeta"></p><div class="viewer-actions"><button class="download" id="downloadBtn">دانلود مستقیم</button><a class="sourcebtn" id="sourceLink" target="_blank" rel="noopener">رفتن به منبع</a></div><div class="notice">دانلود مستقیم فقط برای منابعی فعال می‌شود که فایل قابل دانلود و مجوز مناسب ارائه کنند.</div></div></div>
 </div>
 
 <script>
-const base=[
-["چاه نفت در غروب","Pexels","https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=700&q=80","00:28","4K"],
-["پالایشگاه نفت - ویدیوی زمینه","Pixabay","https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=700&q=80","00:15","FHD"],
-["سکوی نفتی در دریا","Videvo","https://images.unsplash.com/photo-1548337138-e87d889cc369?auto=format&fit=crop&w=700&q=80","00:32","4K"],
-["کشتی نفتکش - نمای هوایی","Mixkit","https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=700&q=80","00:20","FHD"],
-["خطوط لوله انتقال نفت","Coverr","https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=700&q=80","00:26","FHD"],
-["بازار نفت و نمودار قیمت","Pexels","https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=700&q=80","00:40","4K"],
-["سوزاندن گازهای همراه نفت","Pixabay","https://images.unsplash.com/photo-1516939884455-1445c8652f83?auto=format&fit=crop&w=700&q=80","00:25","HD"],
-["پالایشگاه مدرن","Unsplash","https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&w=700&q=80","00:30","FHD"],
-["بازرس در میدان نفتی","Storyblocks","https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=700&q=80","00:22","4K"],
-["پمپ نفت در غروب","Videvo","https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=700&q=80","00:33","FHD"],
-["خط لوله نفت - نمای نزدیک","Pexels","https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=700&q=80","00:18","HD"],
-["پالایشگاه و مخازن نفت","Pixabay","https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?auto=format&fit=crop&w=700&q=80","00:27","4K"],
-["صنعت انرژی و نفت","Pexels","https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?auto=format&fit=crop&w=700&q=80","00:31","FHD"],
-["تأسیسات صنعتی","Pixabay","https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=700&q=80","00:19","4K"],
-["میدان نفتی","Videvo","https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=700&q=80","00:36","HD"],
-["انبار انرژی","Mixkit","https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=700&q=80","00:24","FHD"]
-];
-const results=Array.from({length:100},(_,i)=>{let x=[...base[i%base.length]];x[0]+=" "+(i+1);return x});
+let results=[];
 let current=1; const perPage=16;
+function formatDuration(sec){sec=Number(sec||0);const m=Math.floor(sec/60),ss=sec%60;return faDigits(String(m).padStart(2,"0")+":"+String(ss).padStart(2,"0"))}
+function qualityLabel(x){const w=Number(x.width||0);return w>=3840?"4K":w>=1920?"FHD":w>=1280?"HD":"SD"}
+function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
 function render(){
- const start=(current-1)*perPage, list=results.slice(start,start+perPage);
- document.getElementById("grid").innerHTML=list.map((x,j)=>`<article class="card"><div class="thumb" style="background-image:url('${x[2]}')"><button class="fav">♡</button><span class="tag dur">▶ ${x[3]}</span><span class="tag qlt">${x[4]}</span></div><div class="body"><div class="title">${x[0]}</div><div class="meta"><span>${x[1]}</span><div class="actions"><button class="btn primary" onclick="openViewer(${start+j})">نمایش</button><button class="btn" onclick="downloadItem(${start+j})">دانلود</button></div></div></div></article>`).join("");
+ const start=(current-1)*perPage,list=results.slice(start,start+perPage),grid=document.getElementById("grid");
+ if(!list.length){grid.innerHTML='<div style="grid-column:1/-1;padding:50px;text-align:center;color:var(--muted)">نتیجه‌ای پیدا نشد.</div>';document.getElementById("pagination").innerHTML="";return}
+ grid.innerHTML=list.map((x,j)=>`<article class="card"><div class="thumb" style="background-image:url('${escapeHtml(x.thumbnail)}')"><button class="fav">♡</button><span class="tag dur">▶ ${formatDuration(x.duration)}</span><span class="tag qlt">${qualityLabel(x)}</span></div><div class="body"><div class="title">${escapeHtml(x.title||"ویدیوی Pixabay")}</div><div class="meta"><span>Pixabay</span><div class="actions"><button class="btn primary" onclick="openViewer(${start+j})">نمایش</button><button class="btn" onclick="downloadItem(${start+j})">دانلود</button></div></div></div></article>`).join("");
  renderPages();
 }
 function renderPages(){
- const pages=Math.ceil(results.length/perPage), p=document.getElementById("pagination"); let s=`<button class="page" ${current===1?"disabled":""} onclick="go(${current-1})">قبلی</button>`;
- for(let i=1;i<=pages;i++)s+=`<button class="page ${i===current?"active":""}" onclick="go(${i})">${i}</button>`;
- s+=`<button class="page" ${current===pages?"disabled":""} onclick="go(${current+1})">بعدی</button>`;p.innerHTML=s;
+ const pages=Math.ceil(results.length/perPage),p=document.getElementById("pagination");if(pages<=1){p.innerHTML="";return}
+ let out=`<button class="page" ${current===1?"disabled":""} onclick="go(${current-1})">قبلی</button>`;
+ for(let i=1;i<=pages;i++)out+=`<button class="page ${i===current?"active":""}" onclick="go(${i})">${faDigits(i)}</button>`;
+ out+=`<button class="page" ${current===pages?"disabled":""} onclick="go(${current+1})">بعدی</button>`;p.innerHTML=out;
 }
 function go(p){if(p<1||p>Math.ceil(results.length/perPage))return;current=p;render();document.querySelector(".results").scrollIntoView({behavior:"smooth",block:"start"})}
-function openViewer(i){const x=results[i];document.getElementById("viewerImg").src=x[2];document.getElementById("viewerTitle").textContent=x[0];document.getElementById("viewerMeta").textContent=`منبع: ${x[1]} • کیفیت: ${x[4]} • مدت: ${x[3]}`;document.getElementById("sourceLink").href=x[2];document.getElementById("downloadBtn").onclick=()=>downloadItem(i);document.getElementById("modal").classList.add("show")}
-function closeViewer(){document.getElementById("modal").classList.remove("show")} function backdrop(e){if(e.target.id==="modal")closeViewer()}
-function downloadItem(i){const x=results[i];alert("در نسخه UI لینک فایل ویدیویی واقعی هنوز متصل نیست. پس از اتصال API، دانلود مستقیم فقط برای منابع مجاز فعال می‌شود.")}
-function search(qOverride){
- const input=document.getElementById("query");
- const q=(qOverride||input.value).trim();
- if(!q)return;
- input.value=q;
- document.getElementById("homeState").style.display="none";
- document.getElementById("searchContent").hidden=false;
- document.getElementById("title").textContent=`نتایج جستجو برای «${q}»`;
- current=1;render();
-}»`;current=1;render()}
+function openViewer(i){const x=results[i],v=document.getElementById("viewerVideo");v.pause();v.src=x.video;v.poster=x.thumbnail||"";document.getElementById("viewerTitle").textContent=x.title||"ویدیوی Pixabay";document.getElementById("viewerMeta").textContent=`منبع: Pixabay • کیفیت: ${qualityLabel(x)} • مدت: ${formatDuration(x.duration)}`;document.getElementById("sourceLink").href=x.pageURL;document.getElementById("downloadBtn").onclick=()=>downloadItem(i);document.getElementById("modal").classList.add("show")}
+function closeViewer(){document.getElementById("viewerVideo").pause();document.getElementById("modal").classList.remove("show")}
+function backdrop(e){if(e.target.id==="modal")closeViewer()}
+function downloadItem(i){const x=results[i],a=document.createElement("a");a.href=x.download||x.video;a.target="_blank";a.rel="noopener";a.download="";document.body.appendChild(a);a.click();a.remove()}
+async function search(qOverride){
+ const input=document.getElementById("query"),q=(qOverride||input.value).trim();if(!q)return;input.value=q;
+ document.getElementById("homeState").style.display="none";document.getElementById("searchContent").hidden=false;
+ document.getElementById("title").textContent=`در حال جستجو برای «${q}»...`;
+ document.getElementById("grid").innerHTML='<div style="grid-column:1/-1;padding:55px;text-align:center;color:var(--muted)">در حال دریافت راش‌های واقعی از Pixabay...</div>';
+ document.getElementById("pagination").innerHTML="";
+ try{
+  const r=await fetch(`/api/search?q=${encodeURIComponent(q)}`),data=await r.json();
+  if(!r.ok)throw new Error(data.error||"خطا در جستجو");
+  results=Array.isArray(data.results)?data.results:[];current=1;
+  document.getElementById("title").textContent=`نتایج جستجو برای «${q}»`;
+  const sub=document.querySelector(".result-head small");if(sub)sub.textContent=`${faDigits(results.length)} راش واقعی از Pixabay`;
+  render();
+ }catch(err){results=[];document.getElementById("title").textContent="خطا در جستجو";document.getElementById("grid").innerHTML=`<div style="grid-column:1/-1;padding:50px;text-align:center;color:#d33">ارتباط با Pixabay برقرار نشد.<br><small>${escapeHtml(err.message)}</small></div>`}
+}
 function toggleTheme(){document.body.classList.toggle("dark");localStorage.setItem("rf-theme",document.body.classList.contains("dark")?"dark":"light");document.getElementById("theme").textContent=document.body.classList.contains("dark")?"☀":"☾"}
 if(localStorage.getItem("rf-theme")==="dark"){document.body.classList.add("dark");document.getElementById("theme").textContent="☀"}
 document.getElementById("query").addEventListener("keydown",e=>{if(e.key==="Enter")search()});
