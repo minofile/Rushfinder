@@ -430,7 +430,39 @@ body,button,input,select,.nav button,.metric,.filters,.results,.cat,.btn,.sort,.
 .rf-filter-title{display:flex!important;align-items:center;gap:6px}.rf-fi{display:inline-flex;color:#1677ff}.rf-fi svg{width:15px;height:15px}
 body.rf-dark{background:#0d1724!important;color:#e9eff7!important}body.rf-dark main,body.rf-dark .content,body.rf-dark .main{background:#0d1724!important}body.rf-dark .top,body.rf-dark header{background:#111e2d!important;border-color:#27384b!important}body.rf-dark .card,body.rf-dark .metric,body.rf-dark .filters,body.rf-dark .cat{background:#152335!important;color:#e9eff7!important;border-color:#293b50!important}body.rf-dark .rf-tool,body.rf-dark .rf-date,body.rf-dark .rf-modes{background:#172638;border-color:#2b3e53;color:#c9d5e3}body.rf-dark .rf-mode.active{background:#22354a;color:#76aaff}body.rf-dark input,body.rf-dark select{background:#152335!important;color:#eef4fa!important;border-color:#2b3e53!important}
 @media(max-width:1050px){.rf-date{display:none}}
-</style></head>
+</style>
+<style>
+/* Rush-V06 */
+.sidebrand.sidebrand-text{
+  min-height:62px!important;
+  padding-top:17px!important;
+  padding-bottom:10px!important;
+  border-bottom:1px solid rgba(255,255,255,.28)!important;
+  margin-bottom:10px!important;
+}
+/* In dark mode, header/tool icons and UI symbols become white */
+body.rf-dark .rf-toolbar svg,
+body.rf-dark .rf-tool svg,
+body.rf-dark .rf-date svg,
+body.rf-dark .rf-mode svg,
+body.rf-dark .filter-title-icon svg,
+body.rf-dark .rf-fi svg{
+  stroke:#fff!important;
+  color:#fff!important;
+}
+body.rf-dark .rf-tool,
+body.rf-dark .rf-date,
+body.rf-dark .rf-modes,
+body.rf-dark .rf-mode{
+  color:#fff!important;
+}
+body.rf-dark .rf-online i{
+  background:#fff!important;
+  box-shadow:0 0 0 5px rgba(255,255,255,.12)!important;
+}
+</style>
+
+</head>
 <body>
 <aside class="sidebar">
 <div class="sidebrand sidebrand-text">سامانه موتور جستجوی راش ویدیو</div><nav class="nav"><button class="active"><i>▦</i><span>داشبورد</span></button>
