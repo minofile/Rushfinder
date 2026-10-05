@@ -930,7 +930,21 @@ function closeViewer(){document.getElementById("viewerVideo").pause();document.g
 function backdrop(e){if(e.target.id==="modal")closeViewer()}
 function downloadItem(i){
  const x=results[i];
- if(x.source==="YouTube"){alert("دانلود مستقیم از YouTube در RushFinder ارائه نمی‌شود.");return;}
+ if(x.source==="YouTube"){
+   const watchUrl=x.pageURL||("https://www.youtube.com/watch?v="+x.id);
+   (async()=>{
+     try{await navigator.clipboard.writeText(watchUrl);}
+     catch(e){
+       const ta=document.createElement("textarea");
+       ta.value=watchUrl;ta.style.position="fixed";ta.style.opacity="0";
+       document.body.appendChild(ta);ta.focus();ta.select();
+       try{document.execCommand("copy");}catch(_){}
+       ta.remove();
+     }
+     window.open("https://www.ytultra.com/en/youtube-video-downloader/","_blank","noopener");
+   })();
+   return;
+ }
  if(x.source==="Vecteezy" && x.id){
    window.open(`/api/search?action=download&source=vecteezy&id=${encodeURIComponent(x.id)}`,"_blank","noopener");
    return;
