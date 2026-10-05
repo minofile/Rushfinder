@@ -17,7 +17,7 @@ module.exports = async function handler(req, res) {
       const v=hit.videos||{}, p=v.large||v.medium||v.small||v.tiny||{}, f=v.medium||v.small||v.tiny||p;
       const video=p.url||f.url||"";
       return {id:hit.id,title:hit.tags||`Pixabay video ${hit.id}`,source:"Pixabay",pageURL:hit.pageURL,
-        thumbnail:hit.picture_id?`https://i.vimeocdn.com/video/${hit.picture_id}_640x360.jpg`:"",
+        thumbnail:p.thumbnail||f.thumbnail||"",
         duration:hit.duration||0,width:p.width||f.width||0,height:p.height||f.height||0,video,
         download:video?`${video}${video.includes("?")?"&":"?"}download=1`:""};
     }).filter(x=>x.video);

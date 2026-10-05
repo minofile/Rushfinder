@@ -525,6 +525,62 @@ body.rf-dark .home-state>p{color:#9eb0c5}body.rf-dark .popular-title:before,body
 body.rf-dark .popular-searches button{background:#15283c;border-color:#2a415a;color:#fff}
 @media(max-width:1200px){.home-cats{grid-template-columns:repeat(4,1fr)}.home-state{padding-top:25px}.home-visual{transform:scale(.85);margin-bottom:-10px}}
 </style>
+
+<style>
+/* Rush-V010 refinements */
+.header-brand,.header-brand img,.header-brand a{border:none!important;border-bottom:none!important;background:transparent!important;box-shadow:none!important;outline:none!important;text-decoration:none!important}
+.header-brand:before,.header-brand:after{content:none!important;display:none!important}
+
+/* category cards now visually match the metric-card family */
+.categories{gap:10px!important;align-items:stretch!important}
+.categories .cat{
+  height:92px!important;
+  border-radius:14px!important;
+  border:1px solid var(--line)!important;
+  box-shadow:0 3px 14px rgba(24,64,105,.06)!important;
+  background-color:#fff!important;
+  overflow:hidden!important;
+}
+.categories .cat span{
+  background:linear-gradient(180deg,transparent,rgba(5,22,40,.86))!important;
+  min-height:42px!important;
+  display:flex!important;align-items:flex-end!important;justify-content:center!important;
+  padding:10px 6px!important;
+}
+
+/* result title becomes a dashboard card */
+.result-head{
+  background:var(--card)!important;
+  border:1px solid var(--line)!important;
+  border-radius:15px!important;
+  padding:15px 18px!important;
+  box-shadow:0 3px 14px rgba(24,64,105,.06)!important;
+  margin-bottom:14px!important;
+  min-height:66px!important;
+  position:relative!important;
+  padding-right:58px!important;
+}
+.result-head:before{
+  content:"⌕";
+  position:absolute;right:16px;top:50%;transform:translateY(-50%);
+  width:31px;height:31px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  background:#eaf3ff;color:#1478f2;font-size:21px;
+}
+.result-head h2,.result-head #title{margin:0!important;font-weight:400!important}
+.result-head small{display:block;margin-top:5px!important}
+
+/* unavailable source notice */
+.source-notice{
+ position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);
+ background:#10283f;color:#fff;border-radius:12px;padding:11px 18px;
+ font-size:10px;z-index:9999;opacity:0;pointer-events:none;transition:.2s;
+ box-shadow:0 8px 25px rgba(0,0,0,.18)
+}
+.source-notice.show{opacity:1;transform:translateX(-50%) translateY(0)}
+body.rf-dark .result-head:before{background:#183b5d;color:#79b7ff}
+</style>
+
 </head>
 <body>
 <aside class="sidebar">
@@ -618,6 +674,7 @@ body.rf-dark .popular-searches button{background:#15283c;border-color:#2a415a;co
 <div class="grid" id="grid"></div><div class="pagination" id="pagination"></div>
 </section></div></div></main></div>
 
+<div id="sourceNotice" class="source-notice"></div>
 <div class="modal" id="modal" onclick="backdrop(event)">
 <div class="viewer"><div class="viewer-top"><strong>پیش‌نمایش راش</strong><button class="close" onclick="closeViewer()">✕</button></div>
 <div class="video-stage"><video id="viewerVideo" controls playsinline preload="metadata" style="width:100%;height:100%;object-fit:contain;background:#02070c"></video></div>
@@ -662,10 +719,42 @@ async function search(qOverride){
   render();
  }catch(err){results=[];document.getElementById("title").textContent="خطا در جستجو";document.getElementById("grid").innerHTML=`<div style="grid-column:1/-1;padding:50px;text-align:center;color:#d33">ارتباط با Pixabay برقرار نشد.<br><small>${escapeHtml(err.message)}</small></div>`}
 }
+
+function showSourceNotice(text){
+ const n=document.getElementById("sourceNotice"); if(!n)return;
+ n.textContent=text;n.classList.add("show");clearTimeout(window.__srcTimer);
+ window.__srcTimer=setTimeout(()=>n.classList.remove("show"),2600);
+}
+function setupSourceFilters(){
+ const all=document.getElementById("allSources");
+ const boxes=[...document.querySelectorAll(".source-filter")];
+ if(!all||!boxes.length)return;
+ boxes.forEach(b=>b.addEventListener("change",()=>{
+   if(b.checked){
+     all.checked=false;
+     boxes.forEach(x=>{if(x!==b)x.checked=false});
+     if(b.value==="pixabay"){
+       const q=document.getElementById("query").value.trim();
+       if(q) search(q);
+     }else{
+       showSourceNotice(
+         b.value==="youtube"?"اتصال YouTube API هنوز فعال نشده است.":
+         b.value==="google"?"اتصال Google Video هنوز فعال نشده است.":
+         "اتصال Vecteezy هنوز فعال نشده است."
+       );
+     }
+   }else if(!boxes.some(x=>x.checked)) all.checked=true;
+ }));
+ all.addEventListener("change",()=>{
+   if(all.checked){boxes.forEach(x=>x.checked=false);const q=document.getElementById("query").value.trim();if(q)search(q)}
+ });
+}
+
 function toggleTheme(){document.body.classList.toggle("dark");localStorage.setItem("rf-theme",document.body.classList.contains("dark")?"dark":"light");document.getElementById("theme").textContent=document.body.classList.contains("dark")?"☀":"☾"}
 if(localStorage.getItem("rf-theme")==="dark"){document.body.classList.add("dark");document.getElementById("theme").textContent="☀"}
 document.getElementById("query").addEventListener("keydown",e=>{if(e.key==="Enter")search()});
 document.querySelectorAll("[data-q]").forEach(el=>el.addEventListener("click",()=>search(el.dataset.q)));
+setupSourceFilters();
 document.getElementById("homeState").style.display="flex";
 document.getElementById("searchContent").hidden=true;
 </script>

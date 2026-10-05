@@ -1,4 +1,12 @@
-# Rush-V09
-جستجوی واقعی ویدیوی Pixabay با Backend امن Vercel.
-Environment Variable موردنیاز: PIXABAY_API_KEY
-Commit: Rush-V09
+# Rush-V010
+
+- رفع Thumbnail ویدیوهای واقعی Pixabay با فیلد رسمی `videos.*.thumbnail`
+- حذف کامل کادر/خط/سایه اطراف لوگوی هدر
+- اضافه شدن Pixabay به فیلتر منبع
+- منبع‌های YouTube / Google / Vecteezy تا زمان اتصال API نتیجه جعلی نشان نمی‌دهند
+- هماهنگ‌سازی ۸ کارت دسته‌بندی با کارت‌های آماری بالا
+- تبدیل تیتر نتایج جستجو به کارت سفید با المان جستجو
+- حفظ جستجوی واقعی Pixabay، پیش‌نمایش، دانلود و صفحه‌بندی ۱۶تایی
+
+Environment Variable: PIXABAY_API_KEY
+Commit: Rush-V010
