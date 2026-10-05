@@ -898,7 +898,7 @@ header,.topbar,.header,.site-header,.app-header{border-bottom:0!important;box-sh
 <script>
 let results=[];
 let current=1;
-const perPage=12;
+let perPage=12;
 let totalAccessible=0, activeQuery="", activeSource="all";
 
 function formatDuration(sec){
@@ -933,6 +933,32 @@ function selectedQuality(){
 function selectedOrientation(){
  const c=document.querySelector('#orientationFilters input:checked');
  return c ? c.value : "all";
+}
+function rfSettingMap(){
+ try{return JSON.parse(localStorage.getItem("rushfinder_settings_v2")||"{}")}catch(_){return {}}
+}
+function rfApplySearchSettings(){
+ const s=rfSettingMap();
+ perPage=Number(s.perPage||12);
+ activeSource=String(s.source||"all").toLowerCase();
+
+ const sourceBoxes=[...document.querySelectorAll(".source-filter")];
+ const all=document.getElementById("allSources");
+ sourceBoxes.forEach(x=>x.checked=(activeSource!=="all" && x.value===activeSource));
+ if(all) all.checked=activeSource==="all";
+
+ const qMap={"all":"all","HD":"hd","Full HD":"fhd","4K":"4k"};
+ const qv=qMap[s.quality]||"all";
+ document.querySelectorAll('#qualityFilters input[name="quality"]').forEach(x=>x.checked=x.value===qv);
+
+ const ov=s.orientation||"all";
+ document.querySelectorAll('#orientationFilters input[name="orientation"]').forEach(x=>x.checked=x.value===ov);
+
+ const sort=document.querySelector(".sort");
+ if(sort) sort.selectedIndex=(s.sort==="newest"?1:0);
+
+ const sub=document.querySelector(".result-head small");
+ if(sub && !activeQuery) sub.textContent=`نمایش ${faDigits(perPage)} نتیجه در هر صفحه`;
 }
 function render(){
  const grid=document.getElementById("grid");
@@ -1058,6 +1084,7 @@ if(localStorage.getItem("rf-theme")==="dark"){document.body.classList.add("dark"
 document.getElementById("query").addEventListener("keydown",e=>{if(e.key==="Enter")search()});
 document.querySelectorAll("[data-q]").forEach(el=>el.addEventListener("click",()=>search(el.dataset.q)));
 setupSourceFilters();
+rfApplySearchSettings();
 document.getElementById("homeState").style.display="flex";
 document.getElementById("searchContent").hidden=true;
 </script>
@@ -1218,7 +1245,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
   <div class="rf-setting-row"><div class="rf-setting-info"><div class="rf-setting-name">جهت ویدیو</div><div class="rf-setting-desc">جهت پیش‌فرض نمایش نتایج</div></div><div class="rf-setting-options" data-setting="orientation"><button class="rf-set-btn" data-value="all">همه</button><button class="rf-set-btn" data-value="horizontal">افقی</button><button class="rf-set-btn" data-value="vertical">عمودی</button></div></div>
   <div class="rf-setting-row"><div class="rf-setting-info"><div class="rf-setting-name">مرتب‌سازی پیش‌فرض</div><div class="rf-setting-desc">ترتیب نمایش نتایج جستجو</div></div><div class="rf-setting-options" data-setting="sort"><button class="rf-set-btn" data-value="relevant">مرتبط‌ترین</button><button class="rf-set-btn" data-value="newest">جدیدترین</button></div></div>
   <div class="rf-setting-actions"><div class="rf-action-card danger"><div><div class="rf-setting-name">پاک کردن جستجوهای اخیر</div><div class="rf-setting-desc">سوابق جستجو از این مرورگر پاک می‌شود</div></div><button id="rfClearHistory" class="rf-set-btn">پاک کردن</button></div><div class="rf-action-card"><div><div class="rf-setting-name">بازنشانی تنظیمات</div><div class="rf-setting-desc">بازگشت همه تنظیمات به حالت پیش‌فرض</div></div><button id="rfResetSettings" class="rf-set-btn">بازنشانی</button></div></div>
-  <div class="rf-about-card"><div><div class="rf-setting-name">درباره RushFinder</div><div class="rf-setting-desc">سامانه موتور جستجوی راش ویدیو</div></div><div style="font-size:12px;line-height:2">نسخه برنامه: V038<br>طراحی و توسعه: مصطفی رجبی</div></div>
+  <div class="rf-about-card"><div><div class="rf-setting-name">درباره RushFinder</div><div class="rf-setting-desc">سامانه موتور جستجوی راش ویدیو</div></div><div style="font-size:12px;line-height:2">نسخه برنامه: V.01<br>طراحی و توسعه: مصطفی رجبی</div></div>
  </div>
 </section>
 
@@ -1230,27 +1257,60 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
  const load=()=>{try{return Object.assign({},D,JSON.parse(localStorage.getItem(KEY)||"{}"))}catch(_){return {...D}}};
  const save=s=>{try{localStorage.setItem(KEY,JSON.stringify(s));return true}catch(_){return false}};
  const page=document.getElementById("rfSettingsPage");
+
  function applyTheme(mode){
-   if(mode==="system"){
-     document.documentElement.removeAttribute("data-theme");
-     try{localStorage.removeItem("theme")}catch(_){}
-   }else{
-     document.documentElement.setAttribute("data-theme",mode);
-     try{localStorage.setItem("theme",mode)}catch(_){}
+   const dark=mode==="dark" || (mode==="system" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+   document.body.classList.toggle("rf-dark",dark);
+   document.documentElement.setAttribute("data-theme",dark?"dark":"light");
+ }
+
+ function applyToEngine(s){
+   if(typeof perPage!=="undefined") perPage=Number(s.perPage||12);
+   if(typeof activeSource!=="undefined") activeSource=String(s.source||"all").toLowerCase();
+
+   const all=document.getElementById("allSources");
+   const src=[...document.querySelectorAll(".source-filter")];
+   src.forEach(x=>x.checked=(activeSource!=="all" && x.value===activeSource));
+   if(all) all.checked=activeSource==="all";
+
+   const qMap={"all":"all","HD":"hd","Full HD":"fhd","4K":"4k"};
+   const qv=qMap[s.quality]||"all";
+   document.querySelectorAll('#qualityFilters input[name="quality"]').forEach(x=>x.checked=x.value===qv);
+
+   const ov=s.orientation||"all";
+   document.querySelectorAll('#orientationFilters input[name="orientation"]').forEach(x=>x.checked=x.value===ov);
+
+   const sort=document.querySelector(".sort");
+   if(sort) sort.selectedIndex=(s.sort==="newest"?1:0);
+
+   applyTheme(s.theme);
+
+   if(typeof activeQuery!=="undefined" && activeQuery){
+     current=1;
+     loadPage().catch(()=>{});
    }
  }
+
  function paint(){
    const s=load();
-   document.querySelectorAll(".rf-setting-options").forEach(g=>g.querySelectorAll(".rf-set-btn").forEach(b=>b.classList.toggle("active",b.dataset.value===String(s[g.dataset.setting]))));
+   document.querySelectorAll(".rf-setting-options").forEach(g=>{
+     g.querySelectorAll(".rf-set-btn").forEach(b=>b.classList.toggle("active",b.dataset.value===String(s[g.dataset.setting])));
+   });
  }
+
  function openSettings(){page?.classList.add("active");paint();window.scrollTo(0,0)}
  function closeSettings(){page?.classList.remove("active")}
+
  document.addEventListener("click",e=>{
    const opt=e.target.closest(".rf-setting-options .rf-set-btn");
    if(opt){
-     const group=opt.closest(".rf-setting-options"),s=load();s[group.dataset.setting]=opt.dataset.value;save(s);
-     if(group.dataset.setting==="theme")applyTheme(opt.dataset.value);
-     paint();return;
+     const group=opt.closest(".rf-setting-options");
+     const s=load();
+     s[group.dataset.setting]=opt.dataset.value;
+     save(s);
+     applyToEngine(s);
+     paint();
+     return;
    }
    const nav=e.target.closest("a,button,.nav-item,.menu-item");
    if(nav){
@@ -1259,14 +1319,19 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
      else if(t==="داشبورد" && page?.classList.contains("active")){e.preventDefault();closeSettings()}
    }
  });
+
  document.getElementById("rfClearHistory")?.addEventListener("click",()=>{
    Object.keys(localStorage).filter(k=>/recent|history|search/i.test(k)&&k!==KEY).forEach(k=>localStorage.removeItem(k));
    alert("جستجوهای اخیر پاک شد.");
  });
+
  document.getElementById("rfResetSettings")?.addEventListener("click",()=>{
-   save({...D});applyTheme("system");paint();alert("تنظیمات بازنشانی شد.");
+   const s={...D};save(s);applyToEngine(s);paint();alert("تنظیمات بازنشانی شد.");
  });
- const initial=load();applyTheme(initial.theme);paint();
+
+ const initial=load();
+ applyToEngine(initial);
+ paint();
 })();
 </script>
 
