@@ -589,6 +589,16 @@ body.rf-dark .result-head:before{background:#183b5d;color:#79b7ff}
 header:has(.header-brand){border-bottom:0!important;box-shadow:none!important}
 .source-filter-row{display:flex!important}
 </style>
+
+<style>
+/* Rush-V012 */
+header,.topbar,.header,.site-header,.app-header{border-bottom:0!important;box-shadow:none!important}
+.header-brand,.header-brand *{border:0!important;box-shadow:none!important;outline:0!important;background:transparent!important}
+.header-brand:after,.header-brand:before{display:none!important;content:none!important}
+.filter-apply-wrap{border-top:1px solid var(--line);margin-top:15px;padding-top:14px}
+.apply-filters{width:100%;height:38px;border:0;border-radius:9px;background:#1478f2;color:#fff;font-family:inherit;font-size:11px;cursor:pointer}
+.apply-filters:hover{filter:brightness(.96)}
+</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -745,15 +755,40 @@ async function search(qOverride){
 }
 function showSourceNotice(text){const n=document.getElementById("sourceNotice");if(!n)return;n.textContent=text;n.classList.add("show");clearTimeout(window.__srcTimer);window.__srcTimer=setTimeout(()=>n.classList.remove("show"),2600)}
 function setupSourceFilters(){
- const all=document.getElementById("allSources"),boxes=[...document.querySelectorAll(".source-filter")];
- boxes.forEach(b=>b.addEventListener("change",()=>{if(b.checked){all&&(all.checked=false);boxes.forEach(x=>{if(x!==b)x.checked=false});if(b.value==="pixabay"){activeSource="pixabay";if(activeQuery)search(activeQuery)}else showSourceNotice("API این منبع هنوز متصل نشده است.")}else if(!boxes.some(x=>x.checked)&&all)all.checked=true}));
- if(all)all.addEventListener("change",()=>{if(all.checked){boxes.forEach(x=>x.checked=false);activeSource="pixabay";if(activeQuery)search(activeQuery)}});
+ const all=document.getElementById("allSources");
+ const boxes=[...document.querySelectorAll(".source-filter")];
 
- // Real quality/orientation filters: one selection per group, then reload from source.
+ // source selection: single source, but changes are only committed with Apply.
+ boxes.forEach(b=>b.addEventListener("change",()=>{
+   if(b.checked){
+     if(all)all.checked=false;
+     boxes.forEach(x=>{if(x!==b)x.checked=false});
+   }else if(!boxes.some(x=>x.checked)&&all) all.checked=true;
+ }));
+ if(all)all.addEventListener("change",()=>{if(all.checked)boxes.forEach(x=>x.checked=false)});
+
+ // quality and orientation: one checkbox per group; no instant reload.
  const labels=[...document.querySelectorAll(".filter label")];
  const qLabels=labels.filter(l=>/4K|Full HD|\bHD\b/.test(l.textContent));
  const oLabels=labels.filter(l=>/همه|افقی|عمودی/.test(l.textContent)).slice(-3);
- for(const group of [qLabels,oLabels]) group.forEach(l=>{const c=l.querySelector("input[type=checkbox]");if(c)c.addEventListener("change",()=>{if(c.checked)group.forEach(x=>{const z=x.querySelector("input[type=checkbox]");if(z&&z!==c)z.checked=false});if(activeQuery){current=1;loadPage().catch(()=>{})}})});
+ [qLabels,oLabels].forEach(group=>group.forEach(l=>{
+   const c=l.querySelector("input[type=checkbox]");
+   if(c)c.addEventListener("change",()=>{if(c.checked)group.forEach(x=>{const z=x.querySelector("input[type=checkbox]");if(z&&z!==c)z.checked=false})});
+ }));
+
+ const apply=document.getElementById("applyFilters");
+ if(apply)apply.addEventListener("click",async()=>{
+   const chosen=boxes.find(x=>x.checked);
+   if(chosen && chosen.value!=="pixabay"){
+     showSourceNotice("API این منبع هنوز متصل نشده است.");
+     return;
+   }
+   activeSource="pixabay";
+   const q=document.getElementById("query").value.trim();
+   if(!q){showSourceNotice("ابتدا عبارت جستجو را وارد کنید.");return}
+   activeQuery=q;current=1;
+   try{await loadPage()}catch(e){showSourceNotice("اعمال فیلترها با خطا روبه‌رو شد.")}
+ });
 }
 function toggleTheme(){document.body.classList.toggle("dark");localStorage.setItem("rf-theme",document.body.classList.contains("dark")?"dark":"light");document.getElementById("theme").textContent=document.body.classList.contains("dark")?"☀":"☾"}
 if(localStorage.getItem("rf-theme")==="dark"){document.body.classList.add("dark");document.getElementById("theme").textContent="☀"}
