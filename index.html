@@ -185,6 +185,37 @@ body,button,input,select,option,
  background:#eef6ff;color:#1677ff;
 }
 
+
+/* V044 - subtle colored settings cards */
+.rf-settings-head-card{
+  background:linear-gradient(135deg,rgba(22,119,255,.10),rgba(255,255,255,.96)) !important;
+  border-color:rgba(22,119,255,.20) !important;
+}
+.rf-setting-row{
+  position:relative;overflow:hidden;
+  background:linear-gradient(100deg,rgba(255,255,255,.98),rgba(239,246,255,.72)) !important;
+  border-color:rgba(83,139,214,.18) !important;
+  box-shadow:0 5px 18px rgba(39,82,135,.035);
+}
+.rf-setting-row::before{
+  content:"";position:absolute;right:0;top:12px;bottom:12px;width:3px;
+  border-radius:4px;background:#1677ff;opacity:.55;
+}
+.rf-setting-row:nth-of-type(3n+1)::before{background:#5c7cfa}
+.rf-setting-row:nth-of-type(3n+2)::before{background:#22a6b3}
+.rf-setting-row:nth-of-type(3n)::before{background:#8b5cf6}
+.rf-setting-row:hover{
+  border-color:rgba(22,119,255,.30) !important;
+  box-shadow:0 7px 22px rgba(39,82,135,.06);
+}
+.rf-about-card{
+  background:linear-gradient(100deg,rgba(255,255,255,.98),rgba(242,247,255,.88)) !important;
+  border-color:rgba(83,139,214,.18) !important;
+}
+.rf-action-card:not(.danger){
+  background:linear-gradient(100deg,#fff,rgba(238,246,255,.82)) !important;
+}
+
 </style>
 
 <style>
@@ -901,7 +932,7 @@ header,.topbar,.header,.site-header,.app-header{border-bottom:0!important;box-sh
 <div class="filter-apply-wrap"><button id="applyFilters" class="apply-filters" type="button">اعمال فیلترها</button></div>
 </aside>
 <section class="results">
-<div class="result-head"><div><h1 id="title">نتایج جستجو برای «نفت»</h1><small>نمایش ۱۲ نتیجه در هر صفحه</small></div><select class="sort"><option>مرتبط‌ترین</option><option>جدیدترین</option></select></div>
+<div class="result-head"><div><h1 id="title">نتایج جستجو برای «نفت»</h1><small>نمایش ${faDigits(perPage)} نتیجه در هر صفحه</small></div><select class="sort"><option>مرتبط‌ترین</option><option>جدیدترین</option></select></div>
 <div class="grid" id="grid"></div><div class="pagination" id="pagination"></div>
 </section></div></div></main></div>
 
@@ -1327,7 +1358,17 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
    if(nav){
      const t=(nav.textContent||"").trim();
      if(t.includes("تنظیمات")){e.preventDefault();openSettings()}
-     else if(t==="داشبورد" && page?.classList.contains("active")){e.preventDefault();closeSettings()}
+     else if(t.includes("داشبورد") && page?.classList.contains("active")){
+       e.preventDefault();
+       closeSettings();
+       if(typeof activeQuery!=="undefined") activeQuery="";
+       if(typeof current!=="undefined") current=1;
+       const home=document.getElementById("homeState");
+       const results=document.getElementById("resultsState") || document.getElementById("results");
+       if(home) home.style.display="flex";
+       if(results) results.style.display="none";
+       window.scrollTo({top:0,behavior:"smooth"});
+     }
    }
  });
 
