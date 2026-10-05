@@ -948,7 +948,11 @@ function downloadItem(i){
    return;
  }
  if(x.source==="Aparat"){
-   window.open(x.pageURL||"https://www.aparat.com/","_blank","noopener");
+   if(x.uid){
+     window.location.href=`/api/search?action=download&source=aparat&uid=${encodeURIComponent(x.uid)}`;
+   }else{
+     alert("لینک دانلود این ویدیو در دسترس نیست.");
+   }
    return;
  }
  if(x.source==="Vecteezy" && x.id){

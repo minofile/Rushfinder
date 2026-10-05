@@ -4,7 +4,78 @@ const VECTEEZY = "https://api.vecteezy.com";
 function num(v){ const n=Number(v); return Number.isFinite(n)?n:0; }
 function arr(v){ return Array.isArray(v)?v:[]; }
 function first(...v){ return v.find(x=>typeof x==="string" && /^https?:\/\//i.test(x)) || ""; }
-function deepUrls(obj, out=[], depth=0){
+
+function findFileUrl(obj){
+  const candidates=[];
+  const all=obj?.file_link_all;
+  if(Array.isArray(all)){
+    for(const x of all){
+      if(typeof x==="string") candidates.push(x);
+      else if(x && typeof x==="object"){
+        for(const k of ["file_link","url","link","src"]) if(typeof x[k]==="string") candidates.push(x[k]);
+      }
+    }
+  }else if(all && typeof all==="object"){
+    for(const k of Object.keys(all)){
+      const x=all[k];
+      if(typeof x==="string") candidates.push(x);
+      else if(x && typeof x==="object"){
+        for(const kk of ["file_link","url","link","src"]) if(typeof x[kk]==="string") candidates.push(x[kk]);
+      }
+    }
+  }
+  const deep=deepUrls(obj);
+  candidates.push(...deep);
+  const unique=[...new Set(candidates.filter(u=>/^https?:\/\//i.test(u)))];
+  const mp4=unique.find(u=>/\.mp4(\?|$)/i.test(u));
+  if(mp4) return mp4;
+  const file=unique.find(u=>/(download|file_link|filelink|video_file|media)/i.test(u) && !/\.m3u8(\?|$)/i.test(u));
+  return file||"";
+}
+
+async function aparatDirectFile(uid){
+  if(!uid) return {url:"",contentType:""};
+  const u=`https://www.aparat.com/api/fa/v1/video/video/show/videohash/${encodeURIComponent(uid)}`;
+  const r=await fetch(u,{headers:{"Accept":"application/json"}});
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(data?.message||`Aparat detail API error (${r.status})`);
+  const included=arr(data?.included);
+  const attrs=included.find(x=>x?.type==="Video")?.attributes || data?.data?.[0]?.attributes || data?.data?.attributes || data;
+  const url=findFileUrl(attrs);
+  return {url,contentType:"video/mp4"};
+}
+
+async function proxyAparatDownload(req,res){
+  const uid=String(req.query.uid||"").trim();
+  if(!uid) return res.status(400).json({error:"شناسه ویدیو ارسال نشده است."});
+  try{
+    const direct=await aparatDirectFile(uid);
+    if(!direct.url) return res.status(404).json({error:"لینک فایل مستقیم MP4 برای این ویدیو در API آپارات ارائه نشده است."});
+    const r=await fetch(direct.url);
+    if(!r.ok) return res.status(r.status).json({error:"دریافت فایل ویدیو از آپارات ناموفق بود."});
+    res.statusCode=200;
+    res.setHeader("Content-Type",r.headers.get("content-type")||"video/mp4");
+    res.setHeader("Content-Disposition",`attachment; filename="rushfinder-${uid}.mp4"`);
+    res.setHeader("Cache-Control","no-store");
+    if(r.body && typeof r.body.getReader==="function"){
+      const reader=r.body.getReader();
+      const pump=async()=>{
+        try{
+          while(true){
+            const {done,value}=await reader.read();
+            if(done){res.end();break;}
+            res.write(Buffer.from(value));
+          }
+        }catch(e){if(!res.headersSent)res.statusCode=500;res.end();}
+      };
+      return pump();
+    }
+    const buf=Buffer.from(await r.arrayBuffer());
+    res.end(buf);
+  }catch(e){
+    return res.status(500).json({error:e?.message||"خطا در دانلود مستقیم آپارات."});
+  }
+}function deepUrls(obj, out=[], depth=0){
   if(!obj || depth>5) return out;
   if(typeof obj==="string" && /^https?:\/\//i.test(obj)){ out.push(obj); return out; }
   if(Array.isArray(obj)){ for(const x of obj) deepUrls(x,out,depth+1); return out; }
@@ -71,7 +142,7 @@ async function aparatSearch({q,page,quality,orientation,limit=12}){
       pageURL, embedURL,
       thumbnail:v.big_poster||v.medium_poster||v.small_poster||"",
       duration, width:w,height:h, video:"",
-      download:v.hls_link||"", canDownload:false,
+      download:v.hls_link||"", canDownload:Boolean(v.hls_link),
       views:num(v.visit_cnt_int), channel:v.sender_name||v.username||""
     });
   }
@@ -262,6 +333,9 @@ module.exports = async function handler(req,res){
     const id=String(req.query.id||"").trim();
     if(!id) return res.status(400).json({error:"شناسه ویدیو ارسال نشده است."});
     try{return await vecteezyDownload(id,res)}catch(e){return res.status(500).json({error:"خطا در دانلود از Vecteezy."})}
+  }
+  if(action==="download" && source==="aparat"){
+    return proxyAparatDownload(req,res);
   }
   if(!q) return res.status(400).json({error:"عبارت جستجو وارد نشده است."});
   const page=Math.max(1,parseInt(req.query.page||"1",10)), perPage=12;
