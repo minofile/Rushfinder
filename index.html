@@ -1115,6 +1115,14 @@ function openAparatViewer(item){
  const modal=document.getElementById("ytModal"),wrap=document.getElementById("ytPlayerWrap"),title=document.getElementById("ytModalTitle");
  if(!modal||!wrap||!item)return;
  title.textContent=item.title||"Aparat";
+
+ // همان دکمه دانلود بالای پنجره برای آپارات هم فعال باشد.
+ const dl=document.getElementById("ytDownloadBtn");
+ if(dl){
+   dl.disabled=false;
+   dl.onclick=()=>downloadItem(results.indexOf(item));
+ }
+
  wrap.innerHTML="";
  const frame=document.createElement("iframe");
  frame.src=item.embedURL||item.pageURL||"";
