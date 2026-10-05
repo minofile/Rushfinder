@@ -872,7 +872,29 @@ let current=1;
 const perPage=16;
 let totalAccessible=0, activeQuery="", activeSource="all";
 
-function formatDuration(sec){sec=Number(sec||0);const m=Math.floor(sec/60),ss=sec%60;return faDigits(String(m).padStart(2,"0")+":"+String(ss).padStart(2,"0"))}
+function formatDuration(sec){
+ sec=Math.max(0,Math.round(Number(sec||0)));
+ const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),ss=sec%60;
+ const txt=h>0?`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(ss).padStart(2,"0")}`:`${String(m).padStart(2,"0")}:${String(ss).padStart(2,"0")}`;
+ return faDigits(txt);
+}
+function probeVideoDuration(item,index){
+ if(!item || Number(item.duration)>0 || !item.video)return;
+ const v=document.createElement("video");v.preload="metadata";v.muted=true;v.playsInline=true;
+ let finished=false;
+ const done=()=>{
+   if(finished)return;
+   const d=Math.round(Number(v.duration||0));
+   if(Number.isFinite(d)&&d>0){
+     finished=true;item.duration=d;
+     const el=document.querySelector(`[data-duration-index="${index}"]`);
+     if(el)el.textContent=`▶ ${formatDuration(d)}`;
+   }
+ };
+ v.addEventListener("loadedmetadata",done);
+ v.addEventListener("durationchange",done);
+ v.src=item.video;
+}
 function qualityLabel(x){const w=Number(x.width||0),h=Number(x.height||0),m=Math.max(w,h);return m>=3840?"4K":m>=1920?"FHD":m>=1280?"HD":"SD"}
 function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
 function selectedQuality(){
@@ -886,7 +908,8 @@ function selectedOrientation(){
 function render(){
  const grid=document.getElementById("grid");
  if(!results.length){grid.innerHTML='<div style="grid-column:1/-1;padding:50px;text-align:center;color:var(--muted)">نتیجه‌ای با این فیلتر پیدا نشد.</div>';renderPages();return}
- grid.innerHTML=results.map((x,i)=>`<article class="card"><div class="thumb" style="background-image:url('${escapeHtml(x.thumbnail)}')"><button class="fav">♡</button><span class="tag dur">▶ ${formatDuration(x.duration)}</span><span class="tag qlt">${qualityLabel(x)}</span></div><div class="body"><div class="title">${escapeHtml(x.title||"ویدیوی راش")}</div><div class="meta"><span>${escapeHtml(x.source||"منبع")}</span><div class="actions"><button class="btn primary" onclick="openViewer(${i})">نمایش</button><button class="btn" onclick="downloadItem(${i})">دانلود</button></div></div></div></article>`).join("");
+ grid.innerHTML=results.map((x,i)=>`<article class="card"><div class="thumb" style="background-image:url('${escapeHtml(x.thumbnail)}')"><button class="fav">♡</button><span class="tag dur" data-duration-index="${i}">▶ ${formatDuration(x.duration)}</span><span class="tag qlt">${qualityLabel(x)}</span></div><div class="body"><div class="title">${escapeHtml(x.title||"ویدیوی راش")}</div><div class="meta"><span>${escapeHtml(x.source||"منبع")}</span><div class="actions"><button class="btn primary" onclick="openViewer(${i})">نمایش</button><button class="btn" onclick="downloadItem(${i})">دانلود</button></div></div></div></article>`).join("");
+ setTimeout(()=>results.forEach((x,i)=>probeVideoDuration(x,i)),0);
  renderPages();
 }
 function renderPages(){
@@ -900,7 +923,7 @@ function renderPages(){
  out+=`<button class="page" ${current===pages?"disabled":""} onclick="go(${current+1})">بعدی</button>`;p.innerHTML=out;
 }
 async function go(p){if(p<1||p>Math.ceil(totalAccessible/perPage))return;current=p;await loadPage();document.querySelector(".results").scrollIntoView({behavior:"smooth",block:"start"})}
-function openViewer(i){const x=results[i],v=document.getElementById("viewerVideo");v.pause();v.src=x.video;v.poster=x.thumbnail||"";document.getElementById("viewerTitle").textContent=x.title||"ویدیوی راش";document.getElementById("viewerMeta").textContent=`منبع: Pixabay • کیفیت: ${qualityLabel(x)} • مدت: ${formatDuration(x.duration)}`;document.getElementById("sourceLink").href=x.pageURL;document.getElementById("downloadBtn").onclick=()=>downloadItem(i);document.getElementById("modal").classList.add("show")}
+function openViewer(i){const x=results[i],v=document.getElementById("viewerVideo");v.pause();v.src=x.video;v.poster=x.thumbnail||"";document.getElementById("viewerTitle").textContent=x.title||"ویدیوی راش";document.getElementById("viewerMeta").textContent=`منبع: ${x.source||"منبع"} • کیفیت: ${qualityLabel(x)} • مدت: ${formatDuration(x.duration)}`;document.getElementById("sourceLink").href=x.pageURL;document.getElementById("downloadBtn").onclick=()=>downloadItem(i);document.getElementById("modal").classList.add("show")}
 function closeViewer(){document.getElementById("viewerVideo").pause();document.getElementById("modal").classList.remove("show")}
 function backdrop(e){if(e.target.id==="modal")closeViewer()}
 function downloadItem(i){
