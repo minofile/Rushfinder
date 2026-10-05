@@ -1,7 +1,6 @@
-# RushFinder V022
-- رفع باگ نمایش YouTube در V021
-- مودال مستقل مخصوص YouTube
-- پخش با iframe رسمی YouTube داخل خود RushFinder
-- بستن پلیر با ×، کلیک روی پس‌زمینه یا Escape
-- Pixabay/Vecteezy viewer بدون تغییر
-Commit: Rush-V022
+# RushFinder V023
+- دکمه «دانلود» کنار پلیر داخلی YouTube اضافه شد.
+- با کلیک، لینک ویدیوی فعلی کپی می‌شود و صفحه دانلودر ytultra باز می‌شود.
+- RushFinder فایل YouTube را خودش استخراج یا دانلود نمی‌کند.
+- Pixabay و Vecteezy بدون تغییر.
+Commit: Rush-V023
