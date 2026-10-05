@@ -1,6 +1,7 @@
-# RushFinder V023
-- دکمه «دانلود» کنار پلیر داخلی YouTube اضافه شد.
-- با کلیک، لینک ویدیوی فعلی کپی می‌شود و صفحه دانلودر ytultra باز می‌شود.
-- RushFinder فایل YouTube را خودش استخراج یا دانلود نمی‌کند.
+# RushFinder V024
+- دکمه دانلود YouTube لینک همان ویدیو را خودکار Copy می‌کند.
+- سپس صفحه ytultra باز می‌شود.
+- کاربر فقط Ctrl+V و سپس Download Now را می‌زند.
+- fallback برای Copy در مرورگرهای قدیمی اضافه شد.
 - Pixabay و Vecteezy بدون تغییر.
-Commit: Rush-V023
+Commit: Rush-V024

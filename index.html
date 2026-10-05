@@ -1097,8 +1097,16 @@ function openYouTubeViewer(item){
  if(dl){
    dl.onclick=async()=>{
      const watchUrl=item.pageURL||("https://www.youtube.com/watch?v="+item.id);
-     try{await navigator.clipboard.writeText(watchUrl);}catch(e){}
-     window.open("https://www.ytultra.com/en/youtube-video-downloader/?url="+encodeURIComponent(watchUrl),"_blank","noopener");
+     try{
+       await navigator.clipboard.writeText(watchUrl);
+     }catch(e){
+       const ta=document.createElement("textarea");
+       ta.value=watchUrl;ta.style.position="fixed";ta.style.opacity="0";
+       document.body.appendChild(ta);ta.focus();ta.select();
+       try{document.execCommand("copy");}catch(_){}
+       ta.remove();
+     }
+     window.open("https://www.ytultra.com/en/youtube-video-downloader/","_blank","noopener");
    };
  }
  wrap.innerHTML="";
