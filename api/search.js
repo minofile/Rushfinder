@@ -236,16 +236,23 @@ module.exports = async function handler(req,res){
       payload.sourceLabel="Pixabay";
     }else{
       // "All sources": currently the two connected providers.
+      // In "all sources", ask each provider for a full 12-item batch.
+      // Then interleave them and fill the page up to exactly 12 whenever
+      // one provider returns fewer results or temporarily fails.
       const [p,v,y]=await Promise.allSettled([
-        pixabaySearch({q,page,quality,orientation,limit:4}),
-        vecteezySearch({q,page,quality,orientation,limit:4}),
-        youtubeSearch({q,page,quality,orientation,limit:4})
+        pixabaySearch({q,page,quality,orientation,limit:perPage}),
+        vecteezySearch({q,page,quality,orientation,limit:perPage}),
+        youtubeSearch({q,page,quality,orientation,limit:perPage})
       ]);
       const pr=p.status==="fulfilled"?p.value:{results:[],totalAccessible:0,sourceTotalHits:0,total:0};
       const vr=v.status==="fulfilled"?v.value:{results:[],totalAccessible:0,sourceTotalHits:0,total:0};
       const yr=y.status==="fulfilled"?y.value:{results:[],totalAccessible:0,sourceTotalHits:0,total:0};
       const mixed=[];const max=Math.max(pr.results.length,vr.results.length,yr.results.length);
-      for(let i=0;i<max;i++){if(pr.results[i])mixed.push(pr.results[i]);if(vr.results[i])mixed.push(vr.results[i]);if(yr.results[i])mixed.push(yr.results[i]);}
+      for(let i=0;i<max && mixed.length<perPage;i++){
+        if(pr.results[i] && mixed.length<perPage)mixed.push(pr.results[i]);
+        if(vr.results[i] && mixed.length<perPage)mixed.push(vr.results[i]);
+        if(yr.results[i] && mixed.length<perPage)mixed.push(yr.results[i]);
+      }
       payload={results:mixed.slice(0,perPage),totalAccessible:num(pr.totalAccessible)+num(vr.totalAccessible)+num(yr.totalAccessible),
         sourceTotalHits:num(pr.sourceTotalHits)+num(vr.sourceTotalHits)+num(yr.sourceTotalHits),total:num(pr.total)+num(vr.total)+num(yr.total),
         sourceLabel:"Pixabay + Vecteezy + YouTube",providerErrors:[p.status==="rejected"?"Pixabay":null,v.status==="rejected"?"Vecteezy":null,y.status==="rejected"?"YouTube":null].filter(Boolean)};
