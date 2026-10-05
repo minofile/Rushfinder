@@ -1,14 +1,7 @@
-# RushFinder Web v3
-نسخه آماده GitHub Pages
-
-- فونت YEKAN واقعی از فایل کاربر
-- تایپوگرافی ریزتر
-- ۱۶ کارت در هر صفحه
-- Pagination برای ۱۰۰ نتیجه نمونه
-- پنجره پیش‌نمایش با دکمه نمایش
-- جایگاه دانلود مستقیم و رفتن به منبع
-- حالت روز / شب
-- Responsive
-- بدون ورود/ثبت‌نام و بدون امکانات حضور و غیاب
-
-نکته: داده‌ها در این نسخه نمونه UI هستند. برای پخش و دانلود ویدیوی واقعی باید API/backend منابع متصل شود.
+# RushFinder Web v4
+- YEKAN font from the user-provided font package
+- Six compact top metric cards with smaller typography
+- Logo placement/sizing refined to match the approved reference
+- 16 results per page + pagination
+- Preview modal and download/source actions
+- Light/dark mode
