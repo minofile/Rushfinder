@@ -142,14 +142,28 @@ body,button,input,select,option,
 </style>
 
 <style>
-.header-brand{width:225px !important}
-.header-brand > *{display:none !important}
-.header-brand::after{
-  content:"";
-  display:block;
-  width:190px;
-  height:56px;
-  background:url("assets/rushfinder-logo.png") left center/contain no-repeat;
+.header-brand{
+  position:absolute !important;
+  left:20px !important;
+  right:auto !important;
+  top:50% !important;
+  transform:translateY(-50%) !important;
+  width:225px !important;
+  margin:0 !important;
+}
+
+.header-brand > *{
+  display:block !important;
+}
+
+.header-brand:after{
+  display:none !important;
+}
+
+.header-brand img{
+  width:220px !important;
+  height:auto !important;
+  object-fit:contain !important;
 }
 </style>
 
