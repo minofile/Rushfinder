@@ -321,6 +321,80 @@ body,button,input,select,.nav button,.metric,.filters,.results,.cat,.btn,.sort,.
 }
 </style>
 
+
+<style>
+/* Rush-V03 */
+.sidebrand.sidebrand-text{
+  min-height:58px!important;
+  padding:14px 14px 8px!important;
+  align-items:flex-start!important;
+  font-size:13px!important;
+  line-height:1.75!important;
+  color:#fff!important;
+  font-family:YEKAN,Tahoma,Arial,sans-serif!important;
+  font-weight:400!important;
+}
+.developer-badge{
+  top:auto!important;
+  bottom:22px!important;
+  transform:none!important;
+  right:17px!important;
+  left:17px!important;
+  color:#fff!important;
+  font-family:YEKAN,Tahoma,Arial,sans-serif!important;
+  font-weight:400!important;
+}
+.top-tools-v03{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  direction:rtl;
+  flex:0 0 auto;
+  font-family:YEKAN,Tahoma,Arial,sans-serif!important;
+  font-weight:400!important;
+}
+.tool-pill-v03{
+  height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:0 10px;
+  border:1px solid #dce5f0;
+  border-radius:10px;
+  background:#f7f9fc;
+  color:#60748e;
+  font-size:8.5px;
+  white-space:nowrap;
+  box-sizing:border-box;
+}
+.tool-icon-v03{
+  width:34px;
+  padding:0;
+  cursor:pointer;
+  font-size:16px;
+}
+.status-v03{
+  width:36px;
+  padding:0;
+}
+.status-v03 i{
+  width:8px;height:8px;border-radius:50%;
+  background:#49d6a4;display:block;
+  box-shadow:0 0 0 5px rgba(73,214,164,.12);
+}
+.modes-v03{gap:4px;padding:0 6px}
+.modes-v03 span{
+  width:25px;height:25px;border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;
+}
+.modes-v03 .active{background:#fff;color:#1677ff;box-shadow:0 1px 5px rgba(20,55,90,.08)}
+@media(max-width:1050px){
+  .today-v03{display:none}
+}
+</style>
+
 </head>
 <body>
 <aside class="sidebar">
@@ -344,7 +418,16 @@ body,button,input,select,.nav button,.metric,.filters,.results,.cat,.btn,.sort,.
 </aside>
 <div class="app">
 <header class="top">
-<div class="header-brand"><img src="assets/logos/rushfinder-color.png" alt="RushFinder"></div><button class="theme" id="theme" onclick="toggleTheme()">☾</button><div class="search"><input id="query" value="نفت" placeholder="راش موردنظرت را جستجو کن..."><button onclick="search()">جستجو</button></div></header>
+<div class="header-brand"><img src="assets/logos/rushfinder-color.png" alt="RushFinder"></div><button class="theme" id="theme" onclick="toggleTheme()">☾</button><div class="search"><input id="query" value="نفت" placeholder="راش موردنظرت را جستجو کن..."><button onclick="search()">جستجو</button></div>
+<div class="top-tools-v03">
+  <div class="tool-pill-v03 modes-v03" title="حالت نمایش">
+    <span class="active">▣</span><span>☾</span><span>☼</span>
+  </div>
+  <div class="tool-pill-v03 today-v03">▣ <span id="todayV03">امروز</span></div>
+  <div class="tool-pill-v03 status-v03" title="آنلاین"><i></i></div>
+  <button class="tool-pill-v03 tool-icon-v03" type="button" onclick="location.reload()" title="بارگذاری مجدد">↻</button>
+</div>
+</header>
 <main>
 <section class="summary"><div class="metric"><span class="mi">◉</span><strong>۵</strong><b>منبع جستجو</b><small>منابع آماده جستجو</small></div>
 <div class="metric"><span class="mi">◷</span><strong>۷</strong><b>جستجوهای اخیر</b><small>موضوعات جستجو شده</small></div>
@@ -445,6 +528,21 @@ const rfObserver=new MutationObserver(muts=>{
   }));
 });
 window.addEventListener("DOMContentLoaded",()=>rfObserver.observe(document.body,{childList:true,subtree:true}));
+</script>
+
+
+<script>
+(function(){
+  try{
+    const el=document.getElementById('todayV03');
+    if(el){
+      const s=new Intl.DateTimeFormat('fa-IR-u-ca-persian',{
+        weekday:'long',year:'numeric',month:'long',day:'numeric'
+      }).format(new Date());
+      el.textContent='امروز: '+s;
+    }
+  }catch(e){}
+})();
 </script>
 
 </body></html>
