@@ -41,6 +41,48 @@ function allowed(w,h,quality,orientation){
   if(orientation==="vertical" && !(h>w)) return false;
   return true;
 }
+
+async function aparatSearch({q,page,quality,orientation,limit=12}){
+  const base=`https://www.aparat.com/api/fa/v1/video/video/search/text/${encodeURIComponent(q)}`;
+  let url=base, data=null;
+  for(let p=1;p<=page;p++){
+    const r=await fetch(url,{headers:{"Accept":"application/json"}});
+    data=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(data?.message||`Aparat API error (${r.status})`);
+    const next=data?.data?.[0]?.attributes?.link?.next;
+    if(p<page && next) url=next;
+    else if(p<page && !next) break;
+  }
+  const row=data?.data?.[0]||{};
+  const included=arr(data?.included);
+  const byId=new Map(included.filter(x=>x?.type==="Video").map(x=>[String(x.id),x.attributes||{}]));
+  const ids=arr(row?.relationships?.video?.data).map(x=>String(x.id));
+  let results=[];
+  for(const id of ids){
+    const v=byId.get(id);
+    if(!v || v.isHidden || v.sensitive) continue;
+    const w=num(v?.width), h=num(v?.height), duration=num(v?.duration);
+    if(!allowed(w,h,quality,orientation)) continue;
+    const uid=String(v.uid||"");
+    const pageURL=uid?`https://www.aparat.com/v/${uid}`:`https://www.aparat.com/video/video/view/${id}`;
+    const embedURL=uid?`https://www.aparat.com/video/video/embed/videohash/${uid}/vt/frame`:"";
+    results.push({
+      id, uid, title:v.title||`Aparat video ${id}`, source:"Aparat",
+      pageURL, embedURL,
+      thumbnail:v.big_poster||v.medium_poster||v.small_poster||"",
+      duration, width:w,height:h, video:"",
+      download:v.hls_link||"", canDownload:false,
+      views:num(v.visit_cnt_int), channel:v.sender_name||v.username||""
+    });
+  }
+  return {
+    results:results.slice(0,limit),
+    totalAccessible:num(row?.attributes?.total)||results.length,
+    sourceTotalHits:num(row?.attributes?.total)||results.length,
+    total:num(row?.attributes?.total)||results.length
+  };
+}
+
 async function pixabaySearch({q,page,quality,orientation,limit=16}){
   const key=process.env.PIXABAY_API_KEY;
   if(!key) throw new Error("PIXABAY_API_KEY در Vercel تنظیم نشده است.");
@@ -234,28 +276,37 @@ module.exports = async function handler(req,res){
     }else if(source==="pixabay"){
       payload=await pixabaySearch({q,page,quality,orientation,limit:perPage});
       payload.sourceLabel="Pixabay";
+    }else if(source==="aparat"){
+      payload=await aparatSearch({q,page,quality,orientation,limit:perPage});
+      payload.sourceLabel="Aparat";
     }else{
-      // "All sources": currently the two connected providers.
+      // "All sources": all four connected providers.
       // In "all sources", ask each provider for a full 12-item batch.
       // Then interleave them and fill the page up to exactly 12 whenever
       // one provider returns fewer results or temporarily fails.
-      const [p,v,y]=await Promise.allSettled([
+      const [p,v,y,a]=await Promise.allSettled([
         pixabaySearch({q,page,quality,orientation,limit:perPage}),
         vecteezySearch({q,page,quality,orientation,limit:perPage}),
-        youtubeSearch({q,page,quality,orientation,limit:perPage})
+        youtubeSearch({q,page,quality,orientation,limit:perPage}),
+        aparatSearch({q,page,quality,orientation,limit:perPage})
       ]);
       const pr=p.status==="fulfilled"?p.value:{results:[],totalAccessible:0,sourceTotalHits:0,total:0};
       const vr=v.status==="fulfilled"?v.value:{results:[],totalAccessible:0,sourceTotalHits:0,total:0};
       const yr=y.status==="fulfilled"?y.value:{results:[],totalAccessible:0,sourceTotalHits:0,total:0};
-      const mixed=[];const max=Math.max(pr.results.length,vr.results.length,yr.results.length);
+      const ar=a.status==="fulfilled"?a.value:{results:[],totalAccessible:0,sourceTotalHits:0,total:0};
+      const lists=[pr.results,vr.results,yr.results,ar.results];
+      const mixed=[];const max=Math.max(...lists.map(x=>x.length));
       for(let i=0;i<max && mixed.length<perPage;i++){
-        if(pr.results[i] && mixed.length<perPage)mixed.push(pr.results[i]);
-        if(vr.results[i] && mixed.length<perPage)mixed.push(vr.results[i]);
-        if(yr.results[i] && mixed.length<perPage)mixed.push(yr.results[i]);
+        for(const list of lists){
+          if(list[i] && mixed.length<perPage)mixed.push(list[i]);
+        }
       }
-      payload={results:mixed.slice(0,perPage),totalAccessible:num(pr.totalAccessible)+num(vr.totalAccessible)+num(yr.totalAccessible),
-        sourceTotalHits:num(pr.sourceTotalHits)+num(vr.sourceTotalHits)+num(yr.sourceTotalHits),total:num(pr.total)+num(vr.total)+num(yr.total),
-        sourceLabel:"Pixabay + Vecteezy + YouTube",providerErrors:[p.status==="rejected"?"Pixabay":null,v.status==="rejected"?"Vecteezy":null,y.status==="rejected"?"YouTube":null].filter(Boolean)};
+      payload={results:mixed.slice(0,perPage),
+        totalAccessible:num(pr.totalAccessible)+num(vr.totalAccessible)+num(yr.totalAccessible)+num(ar.totalAccessible),
+        sourceTotalHits:num(pr.sourceTotalHits)+num(vr.sourceTotalHits)+num(yr.sourceTotalHits)+num(ar.sourceTotalHits),
+        total:num(pr.total)+num(vr.total)+num(yr.total)+num(ar.total),
+        sourceLabel:"Pixabay + Vecteezy + YouTube + Aparat",
+        providerErrors:[p.status==="rejected"?"Pixabay":null,v.status==="rejected"?"Vecteezy":null,y.status==="rejected"?"YouTube":null,a.status==="rejected"?"Aparat":null].filter(Boolean)};
     }
     res.setHeader("Cache-Control","s-maxage=300, stale-while-revalidate=600");
     return res.status(200).json({...payload,page,perPage});

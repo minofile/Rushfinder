@@ -816,7 +816,7 @@ header,.topbar,.header,.site-header,.app-header{border-bottom:0!important;box-sh
 <div class="metric"><span class="mi">◷</span><strong>۷</strong><b>جستجوهای اخیر</b><small>موضوعات جستجو شده</small></div>
 <div class="metric"><span class="mi">♡</span><strong>۱۲</strong><b>ذخیره‌شده‌ها</b><small>ویدیوهای نشان‌شده</small></div>
 <div class="metric"><span class="mi">▦</span><strong>۹</strong><b>دسته‌بندی‌ها</b><small>موضوعات آماده جستجو</small></div>
-<div class="metric"><span class="mi">◎</span><strong>۳</strong><b>منابع جستجو</b><small>YouTube، Google، Vecteezy</small></div>
+<div class="metric"><span class="mi">◎</span><strong>۳</strong><b>منابع جستجو</b><small>YouTube، Aparat، Vecteezy</small></div>
 <div class="metric"><span class="mi">⌕</span><strong id="count">۲۴۰</strong><b>نتایج پیدا شده</b><small>برای جستجوی فعلی</small></div>
 </section>
 <section class="categories" id="resultCategories">
@@ -835,7 +835,7 @@ header,.topbar,.header,.site-header,.app-header{border-bottom:0!important;box-sh
 <b class="rf-filter-title"><span class="rf-fi"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></svg></span>منبع ویدیو</b>
 <label><input id="allSources" type="checkbox" checked> همه منابع</label>
 <label><input class="source-filter" type="checkbox" value="youtube"> YouTube</label>
-<label><input class="source-filter" type="checkbox" value="google"> Google</label>
+<label><input class="source-filter" type="checkbox" value="aparat"> Aparat</label>
 <label><input class="source-filter" type="checkbox" value="vecteezy"> Vecteezy</label>
 <label><input class="source-filter" type="checkbox" value="pixabay"> Pixabay</label>
 </div>
@@ -855,7 +855,7 @@ header,.topbar,.header,.site-header,.app-header{border-bottom:0!important;box-sh
 <div class="filter-apply-wrap"><button id="applyFilters" class="apply-filters" type="button">اعمال فیلترها</button></div>
 </aside>
 <section class="results">
-<div class="result-head"><div><h1 id="title">نتایج جستجو برای «نفت»</h1><small>نمایش ۱۶ نتیجه در هر صفحه</small></div><select class="sort"><option>مرتبط‌ترین</option><option>جدیدترین</option></select></div>
+<div class="result-head"><div><h1 id="title">نتایج جستجو برای «نفت»</h1><small>نمایش ۱۲ نتیجه در هر صفحه</small></div><select class="sort"><option>مرتبط‌ترین</option><option>جدیدترین</option></select></div>
 <div class="grid" id="grid"></div><div class="pagination" id="pagination"></div>
 </section></div></div></main></div>
 
@@ -925,7 +925,9 @@ function renderPages(){
 async function go(p){if(p<1||p>Math.ceil(totalAccessible/perPage))return;current=p;await loadPage();document.querySelector(".results").scrollIntoView({behavior:"smooth",block:"start"})}
 function openViewer(i){
  const selected=results[i];
- if(selected?.source==="YouTube"){openYouTubeViewer(selected);return;}const x=results[i],v=document.getElementById("viewerVideo");v.pause();v.src=x.video;v.poster=x.thumbnail||"";document.getElementById("viewerTitle").textContent=x.title||"ویدیوی راش";document.getElementById("viewerMeta").textContent=`منبع: ${x.source||"منبع"} • کیفیت: ${qualityLabel(x)} • مدت: ${formatDuration(x.duration)}`;document.getElementById("sourceLink").href=x.pageURL;document.getElementById("downloadBtn").onclick=()=>downloadItem(i);document.getElementById("modal").classList.add("show")}
+ if(selected?.source==="YouTube"){openYouTubeViewer(selected);return;}
+ if(selected?.source==="Aparat"){openAparatViewer(selected);return;}
+ const x=results[i],v=document.getElementById("viewerVideo");v.pause();v.src=x.video;v.poster=x.thumbnail||"";document.getElementById("viewerTitle").textContent=x.title||"ویدیوی راش";document.getElementById("viewerMeta").textContent=`منبع: ${x.source||"منبع"} • کیفیت: ${qualityLabel(x)} • مدت: ${formatDuration(x.duration)}`;document.getElementById("sourceLink").href=x.pageURL;document.getElementById("downloadBtn").onclick=()=>downloadItem(i);document.getElementById("modal").classList.add("show")}
 function closeViewer(){document.getElementById("viewerVideo").pause();document.getElementById("modal").classList.remove("show")}
 function backdrop(e){if(e.target.id==="modal")closeViewer()}
 function downloadItem(i){
@@ -945,6 +947,10 @@ function downloadItem(i){
    })();
    return;
  }
+ if(x.source==="Aparat"){
+   window.open(x.pageURL||"https://www.aparat.com/","_blank","noopener");
+   return;
+ }
  if(x.source==="Vecteezy" && x.id){
    window.open(`/api/search?action=download&source=vecteezy&id=${encodeURIComponent(x.id)}`,"_blank","noopener");
    return;
@@ -954,7 +960,7 @@ function downloadItem(i){
 }
 async function loadPage(){
  const grid=document.getElementById("grid");
- const srcName=activeSource==="vecteezy"?"Vecteezy":activeSource==="pixabay"?"Pixabay":activeSource==="youtube"?"YouTube":"منابع متصل";
+ const srcName=activeSource==="vecteezy"?"Vecteezy":activeSource==="pixabay"?"Pixabay":activeSource==="youtube"?"YouTube":activeSource==="aparat"?"Aparat":"منابع متصل";
  grid.innerHTML=`<div style="grid-column:1/-1;padding:55px;text-align:center;color:var(--muted)">در حال دریافت نتایج از ${srcName}...</div>`;
  const params=new URLSearchParams({q:activeQuery,page:String(current),per_page:String(perPage),quality:selectedQuality(),orientation:selectedOrientation(),source:activeSource});
  const r=await fetch(`/api/search?${params}`),data=await r.json();if(!r.ok)throw new Error(data.error||"خطا در جستجو");
@@ -1101,6 +1107,20 @@ window.addEventListener("DOMContentLoaded",()=>rfObserver.observe(document.body,
 @media(max-width:700px){.rf-yt-modal{padding:10px}.rf-yt-dialog{width:98vw;border-radius:14px}.rf-yt-head{height:52px}}
 </style>
 <script>
+function openAparatViewer(item){
+ const modal=document.getElementById("ytModal"),wrap=document.getElementById("ytPlayerWrap"),title=document.getElementById("ytModalTitle");
+ if(!modal||!wrap||!item)return;
+ title.textContent=item.title||"Aparat";
+ wrap.innerHTML="";
+ const frame=document.createElement("iframe");
+ frame.src=item.embedURL||item.pageURL||"";
+ frame.title=item.title||"Aparat";
+ frame.allow="autoplay; fullscreen; picture-in-picture";
+ frame.allowFullscreen=true;
+ frame.referrerPolicy="strict-origin-when-cross-origin";
+ wrap.appendChild(frame);
+ modal.classList.add("show");modal.setAttribute("aria-hidden","false");document.body.style.overflow="hidden";
+}
 function openYouTubeViewer(item){
  const modal=document.getElementById("ytModal");
  const wrap=document.getElementById("ytPlayerWrap");
