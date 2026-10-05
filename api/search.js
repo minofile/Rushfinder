@@ -23,16 +23,119 @@ function findFileUrl(obj){
   return files[0].url;
 }
 
+function highestAparatFileFromMultiSRC(value){
+  const found=[];
+  const walk=(x)=>{
+    if(Array.isArray(x)){ x.forEach(walk); return; }
+    if(!x || typeof x!=="object") return;
+    let url="";
+    for(const k of ["src","url","file","link"]){
+      if(typeof x[k]==="string" && /^https?:\/\//i.test(x[k])) { url=x[k]; break; }
+    }
+    if(url && !/\.m3u8(\?|$)/i.test(url)){
+      const label=String(x.label||x.quality||x.profile||x.resolution||"");
+      const q=parseInt((label.match(/(\d{3,4})/)||url.match(/(?:^|[^\d])(\d{3,4})p?(?:[^\d]|$)/)||[])[1]||"0",10);
+      found.push({url,q});
+    }
+    Object.values(x).forEach(walk);
+  };
+  walk(value);
+  found.sort((a,b)=>b.q-a.q);
+  return found[0]?.url||"";
+}
+
+function extractMultiSRCFromHtml(html){
+  const keys=["multiSRC","multiSrc","multi_src"];
+  for(const key of keys){
+    const at=html.indexOf(key);
+    if(at<0) continue;
+    const tail=html.slice(at, at+250000);
+    const first=tail.search(/[\[\{]/);
+    if(first<0) continue;
+    const text=tail.slice(first);
+    const open=text[0], close=open==="["?"]":"}";
+    let depth=0, quote="", esc=false;
+    for(let i=0;i<text.length;i++){
+      const c=text[i];
+      if(quote){
+        if(esc){esc=false;continue;}
+        if(c==="\\"){esc=true;continue;}
+        if(c===quote) quote="";
+        continue;
+      }
+      if(c==="\""||c==="'"){quote=c;continue;}
+      if(c===open) depth++;
+      else if(c===close){
+        depth--;
+        if(depth===0){
+          let raw=text.slice(0,i+1);
+          try{return JSON.parse(raw);}catch(_){
+            try{
+              raw=raw.replace(/'/g,'"').replace(/,\s*([\]}])/g,"$1");
+              return JSON.parse(raw);
+            }catch(__){}
+          }
+          break;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+async function aparatPlayerFallback(uid){
+  const pages=[
+    `https://www.aparat.com/v/${encodeURIComponent(uid)}`,
+    `https://www.aparat.com/video/video/embed/videohash/${encodeURIComponent(uid)}/vt/frame`
+  ];
+  for(const page of pages){
+    try{
+      const r=await fetch(page,{headers:{
+        "user-agent":"Mozilla/5.0",
+        "accept":"text/html,application/xhtml+xml"
+      }});
+      if(!r.ok) continue;
+      const html=await r.text();
+      const multi=extractMultiSRCFromHtml(html);
+      const direct=highestAparatFileFromMultiSRC(multi);
+      if(direct) return direct;
+
+      // Last safe fallback: only full-looking MP4 URLs from player HTML.
+      const urls=[...html.matchAll(/https?:\\?\/\\?\/[^"'<>\\\s]+?\.mp4(?:\\?[^"'<>\\\s]*)?/gi)]
+        .map(m=>m[0].replace(/\\\//g,"/").replace(/&amp;/g,"&"));
+      const clean=[...new Set(urls)].filter(u=>!/(preview|trailer|sample|thumb|sprite)/i.test(u));
+      if(clean.length){
+        const scored=clean.map(url=>{
+          const m=url.match(/(?:^|[^\d])(\d{3,4})p?(?:[^\d]|$)/);
+          return {url,q:m?parseInt(m[1],10):0};
+        }).sort((a,b)=>b.q-a.q);
+        return scored[0].url;
+      }
+    }catch(_){}
+  }
+  return "";
+}
+
 async function aparatDirectFile(uid){
-  if(!uid) return {url:"",contentType:""};
-  const u=`https://www.aparat.com/api/fa/v1/video/video/show/videohash/${encodeURIComponent(uid)}`;
-  const r=await fetch(u,{headers:{"Accept":"application/json"}});
-  const data=await r.json().catch(()=>({}));
-  if(!r.ok) throw new Error(data?.message||`Aparat detail API error (${r.status})`);
-  const included=arr(data?.included);
-  const attrs=included.find(x=>x?.type==="Video")?.attributes || data?.data?.[0]?.attributes || data?.data?.attributes || data;
-  const url=findFileUrl(attrs);
-  return {url,contentType:"video/mp4"};
+  // 1) First choice: Aparat's explicit downloadable-file list.
+  try{
+    const r=await fetch(`https://www.aparat.com/api/fa/v1/video/video/show/videohash/${encodeURIComponent(uid)}`,{
+      headers:{"user-agent":"Mozilla/5.0","accept":"application/json"}
+    });
+    if(r.ok){
+      const data=await r.json();
+      const included=arr(data?.included);
+      const attrs=data?.data?.attributes || data?.data?.[0]?.attributes || included.find(x=>x?.type==="Video")?.attributes || data;
+      const url=findFileUrl(attrs);
+      if(url) return {url,method:"file_link_all"};
+    }
+  }catch(_){}
+
+  // 2) Fallback: read the same multi-source information used by Aparat's player.
+  const playerUrl=await aparatPlayerFallback(uid);
+  if(playerUrl) return {url:playerUrl,method:"player"};
+
+  return {url:""};
 }
 
 async function proxyAparatDownload(req,res){
@@ -40,7 +143,7 @@ async function proxyAparatDownload(req,res){
   if(!uid) return res.status(400).json({error:"شناسه ویدیو ارسال نشده است."});
   try{
     const direct=await aparatDirectFile(uid);
-    if(!direct.url) return res.status(404).json({error:"لینک فایل مستقیم MP4 برای این ویدیو در API آپارات ارائه نشده است."});
+    if(!direct.url) return res.status(404).json({error:"لینک فایل قابل دانلود برای این ویدیو از آپارات دریافت نشد."});
     const r=await fetch(direct.url);
     if(!r.ok) return res.status(r.status).json({error:"دریافت فایل ویدیو از آپارات ناموفق بود."});
     res.statusCode=200;
