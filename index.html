@@ -923,8 +923,19 @@ function renderPages(){
  out+=`<button class="page" ${current===pages?"disabled":""} onclick="go(${current+1})">بعدی</button>`;p.innerHTML=out;
 }
 async function go(p){if(p<1||p>Math.ceil(totalAccessible/perPage))return;current=p;await loadPage();document.querySelector(".results").scrollIntoView({behavior:"smooth",block:"start"})}
-function openViewer(i){const yt=results[i];if(yt?.source==="YouTube"){window.open(yt.pageURL,"_blank","noopener");return;}const x=results[i],v=document.getElementById("viewerVideo");v.pause();v.src=x.video;v.poster=x.thumbnail||"";document.getElementById("viewerTitle").textContent=x.title||"ویدیوی راش";document.getElementById("viewerMeta").textContent=`منبع: ${x.source||"منبع"} • کیفیت: ${qualityLabel(x)} • مدت: ${formatDuration(x.duration)}`;document.getElementById("sourceLink").href=x.pageURL;document.getElementById("downloadBtn").onclick=()=>downloadItem(i);document.getElementById("modal").classList.add("show")}
-function closeViewer(){document.getElementById("viewerVideo").pause();document.getElementById("modal").classList.remove("show")}
+function openViewer(i){
+ const yt=results[i];
+ if(yt?.source==="YouTube"){
+   document.getElementById("viewerTitle").textContent=yt.title||"YouTube";
+   const body=document.querySelector(".viewer-body");
+   if(body){
+     body.innerHTML=`<iframe id="youtubeFrame" src="https://www.youtube.com/embed/${encodeURIComponent(yt.id)}?autoplay=1&rel=0" title="${String(yt.title||"YouTube").replace(/"/g,"&quot;")}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="width:100%;height:100%;min-height:420px;border:0;background:#000;border-radius:14px"></iframe>`;
+   }
+   document.getElementById("viewer").classList.add("show");
+   return;
+ }
+const x=results[i],v=document.getElementById("viewerVideo");v.pause();v.src=x.video;v.poster=x.thumbnail||"";document.getElementById("viewerTitle").textContent=x.title||"ویدیوی راش";document.getElementById("viewerMeta").textContent=`منبع: ${x.source||"منبع"} • کیفیت: ${qualityLabel(x)} • مدت: ${formatDuration(x.duration)}`;document.getElementById("sourceLink").href=x.pageURL;document.getElementById("downloadBtn").onclick=()=>downloadItem(i);document.getElementById("modal").classList.add("show")}
+function closeViewer(){const yf=document.getElementById("youtubeFrame");if(yf)yf.remove();document.getElementById("viewerVideo").pause();document.getElementById("modal").classList.remove("show")}
 function backdrop(e){if(e.target.id==="modal")closeViewer()}
 function downloadItem(i){
  const x=results[i];

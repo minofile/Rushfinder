@@ -1,10 +1,9 @@
-# RushFinder V020
+# RushFinder V021
 
-- YouTube Data API v3 متصل شد
-- جستجو، تامبنیل و زمان واقعی YouTube
-- نمایش روی صفحه رسمی YouTube
+- نمایش ویدیوهای YouTube داخل خود RushFinder با پلیر رسمی YouTube
+- دکمه «نمایش» دیگر کاربر را از سایت خارج نمی‌کند
+- زمان، عنوان و thumbnail از YouTube Data API
 - دانلود مستقیم YouTube ارائه نمی‌شود
-- همه منابع: Pixabay + Vecteezy + YouTube
-- Google هنوز متصل نیست
+- Pixabay و Vecteezy بدون تغییر
 
-Commit: Rush-V020
+Commit: Rush-V021
