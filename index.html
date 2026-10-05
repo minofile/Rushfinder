@@ -8,111 +8,103 @@
 <style>
 @font-face{font-family:YEKAN;src:url("fonts/Yekan.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
 *{box-sizing:border-box}
-:root{--bg:#f6f9fd;--panel:#fff;--panel2:#f9fbfe;--text:#101b2c;--muted:#7b8ba3;--line:#e3eaf3;--blue:#0868f4;--blue2:#eaf3ff;--nav:#06182b;--shadow:0 5px 18px rgba(35,72,120,.07)}
-body.dark{--bg:#07131f;--panel:#0c1d2e;--panel2:#102338;--text:#eef5ff;--muted:#90a2b9;--line:#1c344d;--blue2:#102b4d;--shadow:0 7px 22px rgba(0,0,0,.25)}
-html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:YEKAN,Tahoma,Arial,sans-serif}
-button,input,select{font-family:inherit}
-body{transition:background .22s,color .22s}
-.sidebar{position:fixed;right:0;top:0;bottom:0;width:218px;background:linear-gradient(180deg,#071a30,#041321);color:#dce8f6;padding:18px 14px;z-index:20}
-.logo{display:flex;align-items:center;gap:10px;padding:2px 7px 23px;direction:ltr}
-.logo-mark{width:36px;height:36px;position:relative}
-.logo-mark i{position:absolute;left:4px;width:27px;height:9px;border-radius:3px 9px 9px 3px;background:#1680ff;transform:skewY(-28deg)}
-.logo-mark i:nth-child(1){top:3px}.logo-mark i:nth-child(2){top:13px;left:0;background:#0569ef}.logo-mark i:nth-child(3){top:23px}
-.logo-text{line-height:1}.logo-text strong{font:700 20px Arial;color:#fff}.logo-text small{font-size:9px;color:#9fb2c8;display:block;margin-top:4px;direction:rtl}
-.nav button{display:flex;align-items:center;justify-content:flex-start;gap:11px;width:100%;border:0;background:transparent;color:#c9d7e8;padding:12px 14px;border-radius:10px;margin:3px 0;text-align:right;cursor:pointer}
-.nav button:hover,.nav .active{background:#0d69ee;color:#fff}.ico{width:22px;text-align:center;font-size:17px}
-.sidebar-bottom{position:absolute;bottom:18px;left:14px;right:14px}.mini{border:1px solid #20354b;border-radius:12px;padding:12px;color:#a8bad0;font-size:11px;margin-top:9px}
-.app{padding-right:218px;min-height:100vh}
-.top{height:70px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 30px;gap:12px;position:sticky;top:0;z-index:10}
-.top-brand{display:none}.searchbox{width:min(720px,70vw);margin:auto;display:flex;height:45px;border:1px solid var(--line);background:var(--panel2);border-radius:11px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.025)}
-.searchbox input{flex:1;border:0;outline:0;background:transparent;padding:0 16px;color:var(--text);font-size:14px}.searchbtn{border:0;background:var(--blue);color:#fff;padding:0 28px;font-weight:bold;cursor:pointer}.iconbtn{width:43px;height:43px;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:11px;cursor:pointer;font-size:19px}
-.content{max-width:1440px;margin:auto;padding:18px 24px 32px}
-.summary{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.summary-card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:15px 16px;box-shadow:var(--shadow);min-height:90px;position:relative}.summary-card .num{font-size:22px;font-weight:bold}.summary-card b{display:block;font-size:12px;margin-top:4px}.summary-card small{color:var(--muted);font-size:10px}.bubble{position:absolute;left:13px;top:13px;width:32px;height:32px;border-radius:9px;background:var(--blue2);color:var(--blue);display:grid;place-items:center}
-.categories{display:grid;grid-template-columns:repeat(9,1fr);gap:7px;margin:20px 0}.category{height:74px;border-radius:11px;overflow:hidden;position:relative;border:1px solid var(--line);background:#17334d;color:#fff;display:flex;align-items:flex-end;justify-content:center;padding:9px 4px;font-size:11px;font-weight:bold;cursor:pointer;background-size:cover;background-position:center}.category:after{content:"";position:absolute;inset:0;background:linear-gradient(transparent,#07111dcc)}.category span{position:relative;z-index:1}.category.active{background:var(--blue2)!important;color:var(--blue);border-color:#2d82ff}.category.active:after{display:none}
-.workspace{display:grid;grid-template-columns:220px minmax(0,1fr);gap:16px;direction:ltr}.filters,.results{direction:rtl}.filters{background:var(--panel);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);padding:15px;height:max-content}.filters h3{font-size:16px;margin:0 0 8px}.fg{padding:12px 0;border-top:1px solid var(--line)}.fg:first-of-type{border:0}.fg b{font-size:11px}.fg label{display:block;font-size:10px;margin:7px 0;color:var(--text)}.fg input[type=checkbox]{accent-color:var(--blue);vertical-align:middle}.fg input[type=range]{width:100%;accent-color:var(--blue)}
-.result-head{display:flex;justify-content:space-between;align-items:center;margin:2px 0 12px}.result-head h1{font-size:20px;margin:0 0 4px}.result-head small{font-size:10px;color:var(--muted)}.sort{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:9px 12px;border-radius:9px}
-.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.video-card{background:var(--panel);border:1px solid var(--line);border-radius:11px;overflow:hidden;box-shadow:var(--shadow);min-width:0}.thumb{aspect-ratio:16/9;background:#142b3d center/cover no-repeat;position:relative}.pill{position:absolute;bottom:6px;background:#07101ddc;color:#fff;border-radius:5px;padding:3px 6px;font:10px Arial}.duration{left:6px}.quality{right:6px}.bookmark{position:absolute;right:7px;top:7px;background:#07101dbd;color:#fff;border-radius:6px;padding:4px 6px;font-size:11px}.card-body{padding:9px}.video-title{font-size:11px;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.card-meta{display:flex;align-items:center;justify-content:space-between;margin-top:8px;color:var(--muted);font-size:9px}.source{display:flex;gap:6px;align-items:center}.source-dot{width:19px;height:19px;border-radius:50%;background:#18b99a;color:#fff;display:grid;place-items:center;font:9px Arial}.action{border:1px solid #66a5ff;background:transparent;color:var(--blue);border-radius:7px;padding:4px 9px;font-size:9px;cursor:pointer}.loading{opacity:.35;transition:.2s}
-@media(max-width:1200px){.grid{grid-template-columns:repeat(3,1fr)}.categories{grid-template-columns:repeat(5,1fr)}}
-@media(max-width:900px){.sidebar{width:76px}.logo-text,.nav button span:not(.ico),.sidebar-bottom{display:none}.app{padding-right:76px}.summary{grid-template-columns:repeat(3,1fr)}.workspace{grid-template-columns:190px 1fr}.grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:650px){.sidebar{display:none}.app{padding-right:0}.top{padding:0 10px}.searchbox{width:100%}.content{padding:12px}.summary{grid-template-columns:repeat(2,1fr)}.categories{display:flex;overflow:auto}.category{min-width:120px}.workspace{grid-template-columns:1fr}.filters{display:none}.grid{grid-template-columns:1fr}.result-head h1{font-size:16px}}
+:root{--bg:#f5f8fc;--panel:#fff;--panel2:#f9fbfe;--text:#0b1728;--muted:#8291a7;--line:#e3eaf2;--blue:#096cf4;--blue2:#eaf3ff;--nav:#06192e;--shadow:0 4px 15px rgba(37,66,105,.06)}
+body.dark{--bg:#07131f;--panel:#0d1e30;--panel2:#102438;--text:#edf5ff;--muted:#91a4bb;--line:#1d344c;--blue2:#102d50;--shadow:0 6px 20px rgba(0,0,0,.24)}
+html,body{margin:0;min-height:100%;font-family:YEKAN,Tahoma,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select{font-family:YEKAN,Tahoma,sans-serif}.sidebar{position:fixed;right:0;top:0;bottom:0;width:205px;background:linear-gradient(180deg,#071b31,#041321);color:#d8e5f5;padding:15px 12px;z-index:20}
+.logo{display:flex;direction:ltr;align-items:center;gap:9px;padding:2px 7px 20px}.logo-icon{width:33px;height:33px;position:relative}.logo-icon:before,.logo-icon:after,.logo-icon i{content:"";position:absolute;width:25px;height:8px;left:3px;border-radius:3px 9px 9px 3px;transform:skewY(-28deg);background:#2da1ff}.logo-icon:before{top:2px}.logo-icon i{top:12px;left:0;background:#086cf4}.logo-icon:after{top:22px;background:#2bd4e9}.logo strong{font:700 18px Arial;color:#fff}.logo small{display:block;direction:rtl;font-size:8px;color:#9eb1c8;margin-top:3px}
+.nav button{border:0;background:transparent;color:#cad8e9;width:100%;border-radius:9px;padding:10px 12px;margin:2px 0;text-align:right;font-size:10px;cursor:pointer}.nav button.active,.nav button:hover{background:#0c6cf2;color:white}.nav i{display:inline-block;width:25px;font-style:normal;font-size:14px}.app{padding-right:205px;min-height:100vh}.top{height:61px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px;padding:0 23px;position:sticky;top:0;z-index:10}.search{height:39px;display:flex;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:var(--panel2);width:min(690px,70vw);margin:auto}.search input{flex:1;border:0;outline:0;background:transparent;color:var(--text);padding:0 14px;font-size:10px}.search button{border:0;background:var(--blue);color:#fff;padding:0 25px;font-size:10px;cursor:pointer}.theme{width:39px;height:39px;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:10px;cursor:pointer}
+main{max-width:1440px;margin:auto;padding:15px 21px 30px}.summary{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.metric{background:var(--panel);border:1px solid var(--line);border-radius:12px;min-height:77px;padding:12px 14px;box-shadow:var(--shadow);position:relative}.metric strong{font-size:17px}.metric b{display:block;font-size:9px;margin-top:3px}.metric small{font-size:8px;color:var(--muted)}.metric .mi{position:absolute;left:11px;top:11px;width:28px;height:28px;border-radius:8px;background:var(--blue2);color:var(--blue);display:grid;place-items:center}
+.categories{display:grid;grid-template-columns:repeat(9,1fr);gap:6px;margin:16px 0}.cat{height:64px;border:1px solid var(--line);border-radius:10px;background:#16314c center/cover;color:#fff;position:relative;display:flex;align-items:flex-end;justify-content:center;padding:7px;overflow:hidden;font-size:9px;cursor:pointer}.cat:after{content:"";position:absolute;inset:0;background:linear-gradient(transparent,#06111dcc)}.cat span{z-index:1}.cat.active{background:var(--blue2);color:var(--blue);border-color:#3586ff}.cat.active:after{display:none}.workspace{display:grid;grid-template-columns:205px minmax(0,1fr);gap:14px;direction:ltr}.filters,.results{direction:rtl}.filters{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px;box-shadow:var(--shadow);height:max-content}.filters h3{font-size:13px;margin:0 0 6px}.fg{padding:10px 0;border-top:1px solid var(--line)}.fg:first-of-type{border-top:0}.fg b{font-size:9px}.fg label{font-size:8.5px;display:block;margin:6px 0}.fg input[type=checkbox]{accent-color:var(--blue);vertical-align:middle}.fg input[type=range]{width:100%;accent-color:var(--blue)}
+.result-head{display:flex;justify-content:space-between;align-items:center;margin:1px 0 10px}.result-head h1{font-size:15px;margin:0 0 3px}.result-head small{font-size:8px;color:var(--muted)}.sort{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:8px;padding:7px 9px;font-size:8px}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:var(--shadow)}.thumb{aspect-ratio:16/9;background:#183149 center/cover no-repeat;position:relative}.tag{position:absolute;bottom:5px;background:#07111ddd;color:#fff;padding:2px 5px;border-radius:4px;font:9px Arial}.dur{left:5px}.qlt{right:5px}.fav{position:absolute;right:6px;top:6px;border:0;background:#07111dcc;color:#fff;border-radius:6px;width:25px;height:25px;cursor:pointer}.body{padding:7px 8px}.title{font-size:9.5px;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.meta{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:8px;color:var(--muted)}.actions{display:flex;gap:4px}.btn{border:1px solid #74adff;background:transparent;color:var(--blue);border-radius:6px;padding:3px 7px;font-size:8px;cursor:pointer}.btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.pagination{display:flex;justify-content:center;gap:5px;margin:17px 0 2px;direction:ltr}.page{min-width:31px;height:30px;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:7px;font-size:9px;cursor:pointer}.page.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.modal{position:fixed;inset:0;background:#03101bcf;z-index:100;display:none;align-items:center;justify-content:center;padding:20px}.modal.show{display:flex}.viewer{width:min(900px,94vw);background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 25px 80px #0008}.viewer-top{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;border-bottom:1px solid var(--line)}.viewer-top strong{font-size:11px}.close{border:0;background:var(--panel2);color:var(--text);border-radius:7px;width:31px;height:31px;cursor:pointer}.video-stage{aspect-ratio:16/9;background:#02070c;position:relative;display:grid;place-items:center;overflow:hidden}.video-stage img{width:100%;height:100%;object-fit:cover;opacity:.78}.play{position:absolute;width:60px;height:60px;border-radius:50%;border:0;background:#ffffffdf;color:#086cf4;font-size:22px;cursor:pointer}.viewer-info{padding:12px 14px}.viewer-info h2{font-size:13px;margin:0 0 5px}.viewer-info p{font-size:9px;color:var(--muted);margin:0 0 11px}.viewer-actions{display:flex;gap:7px}.viewer-actions button,.viewer-actions a{border:0;text-decoration:none;border-radius:8px;padding:8px 13px;font-size:9px;cursor:pointer}.download{background:var(--blue);color:#fff}.sourcebtn{background:var(--blue2);color:var(--blue)}.notice{font-size:8px;color:var(--muted);margin-top:9px}
+@media(max-width:1150px){.grid{grid-template-columns:repeat(3,1fr)}.categories{grid-template-columns:repeat(5,1fr)}}@media(max-width:850px){.sidebar{width:70px}.logo strong,.logo small,.nav button span{display:none}.app{padding-right:70px}.workspace{grid-template-columns:180px 1fr}.grid{grid-template-columns:repeat(2,1fr)}.summary{grid-template-columns:repeat(3,1fr)}}@media(max-width:620px){.sidebar{display:none}.app{padding-right:0}.top{padding:0 9px}.search{width:100%}main{padding:11px}.summary{grid-template-columns:repeat(2,1fr)}.categories{display:flex;overflow:auto}.cat{min-width:105px}.workspace{grid-template-columns:1fr}.filters{display:none}.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <aside class="sidebar">
- <div class="logo"><div class="logo-mark"><i></i><i></i><i></i></div><div class="logo-text"><strong>RushFinder</strong><small>همه ویدیوها، یکجا</small></div></div>
- <nav class="nav">
-  <button class="active"><span class="ico">▦</span><span>داشبورد</span></button>
-  <button><span class="ico">⌕</span><span>جستجو</span></button>
-  <button><span class="ico">▦</span><span>دسته‌بندی‌ها</span></button>
-  <button><span class="ico">▣</span><span>منابع</span></button>
-  <button><span class="ico">♡</span><span>ذخیره‌شده‌ها</span></button>
-  <button><span class="ico">◷</span><span>تاریخچه</span></button>
-  <button><span class="ico">⚙</span><span>تنظیمات</span></button>
- </nav>
- <div class="sidebar-bottom"><div class="mini">راهنما<br><small>راهنمای استفاده از RushFinder</small></div><div class="mini">بازخورد<br><small>ارسال پیشنهاد</small></div></div>
+<div class="logo"><div class="logo-icon"><i></i></div><div><strong>RushFinder</strong><small>جستجوی هوشمند راش و ویدیو</small></div></div>
+<nav class="nav"><button class="active"><i>▦</i><span>داشبورد</span></button><button><i>⌕</i><span>جستجو</span></button><button><i>▦</i><span>دسته‌بندی‌ها</span></button><button><i>▣</i><span>منابع</span></button><button><i>♡</i><span>ذخیره‌شده‌ها</span></button><button><i>◷</i><span>تاریخچه</span></button><button><i>⚙</i><span>تنظیمات</span></button></nav>
 </aside>
 <div class="app">
-<header class="top">
- <button class="iconbtn" id="theme" onclick="toggleTheme()">☾</button>
- <div class="searchbox"><input id="query" value="نفت" placeholder="راش موردنظرت را جستجو کن..."><button class="searchbtn" onclick="doSearch()">جستجو</button></div>
-</header>
-<main class="content">
+<header class="top"><button class="theme" id="theme" onclick="toggleTheme()">☾</button><div class="search"><input id="query" value="نفت" placeholder="راش موردنظرت را جستجو کن..."><button onclick="search()">جستجو</button></div></header>
+<main>
 <section class="summary">
- <div class="summary-card"><span class="bubble">◷</span><div class="num">۷</div><b>جستجوهای اخیر</b><small>موضوعات جستجو شده</small></div>
- <div class="summary-card"><span class="bubble">♡</span><div class="num">۱۲</div><b>ذخیره‌شده‌ها</b><small>ویدیوهای نشان‌شده</small></div>
- <div class="summary-card"><span class="bubble">▦</span><div class="num">۹</div><b>دسته‌بندی‌ها</b><small>موضوعات آماده جستجو</small></div>
- <div class="summary-card"><span class="bubble">◎</span><div class="num">۳</div><b>منابع جستجو</b><small>YouTube، Google، Vecteezy</small></div>
- <div class="summary-card"><span class="bubble">⌕</span><div class="num">۲۴۰</div><b>نتایج پیدا شده</b><small>برای جستجوی فعلی</small></div>
+<div class="metric"><span class="mi">◷</span><strong>۷</strong><b>جستجوهای اخیر</b><small>موضوعات جستجو شده</small></div>
+<div class="metric"><span class="mi">♡</span><strong>۱۲</strong><b>ذخیره‌شده‌ها</b><small>ویدیوهای نشان‌شده</small></div>
+<div class="metric"><span class="mi">▦</span><strong>۹</strong><b>دسته‌بندی‌ها</b><small>موضوعات آماده جستجو</small></div>
+<div class="metric"><span class="mi">◎</span><strong>۳</strong><b>منابع جستجو</b><small>YouTube، Google، Vecteezy</small></div>
+<div class="metric"><span class="mi">⌕</span><strong id="count">۱۰۰</strong><b>نتایج پیدا شده</b><small>برای جستجوی فعلی</small></div>
 </section>
 <section class="categories">
- <div class="category active"><span>▦ همه دسته‌ها</span></div>
- <div class="category" style="background-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=70')"><span>طبیعت</span></div>
- <div class="category" style="background-image:url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=70')"><span>شهر و معماری</span></div>
- <div class="category" style="background-image:url('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=70')"><span>انسان و زندگی</span></div>
- <div class="category" style="background-image:url('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=70')"><span>تکنولوژی</span></div>
- <div class="category" style="background-image:url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=400&q=70')"><span>کسب و کار</span></div>
- <div class="category" style="background-image:url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=70')"><span>غذا</span></div>
- <div class="category" style="background-image:url('https://images.unsplash.com/photo-1546182990-dffeafbe841d?auto=format&fit=crop&w=400&q=70')"><span>حیوانات</span></div>
- <div class="category" style="background-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=70')"><span>گردشگری</span></div>
+<div class="cat active"><span>▦ همه دسته‌ها</span></div>
+<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=70')"><span>طبیعت</span></div>
+<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=70')"><span>شهر و معماری</span></div>
+<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=70')"><span>انسان و زندگی</span></div>
+<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=70')"><span>تکنولوژی</span></div>
+<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=400&q=70')"><span>کسب و کار</span></div>
+<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=70')"><span>غذا</span></div>
+<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1546182990-dffeafbe841d?auto=format&fit=crop&w=400&q=70')"><span>حیوانات</span></div>
+<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=70')"><span>گردشگری</span></div>
 </section>
 <div class="workspace">
-<aside class="filters">
- <h3>⚲ فیلتر نتایج</h3>
- <div class="fg"><b>منبع ویدیو</b><label><input type="checkbox" checked> همه منابع</label><label><input type="checkbox"> YouTube</label><label><input type="checkbox"> Google</label><label><input type="checkbox"> Vecteezy</label></div>
- <div class="fg"><b>کیفیت ویدیو</b><label><input type="checkbox" checked> همه کیفیت‌ها</label><label><input type="checkbox"> 4K (UHD)</label><label><input type="checkbox"> Full HD (1080p)</label><label><input type="checkbox"> HD (720p)</label><label><input type="checkbox"> SD</label></div>
- <div class="fg"><b>مدت زمان</b><input type="range" min="0" max="60" value="40"></div>
- <div class="fg"><b>نوع مجوز</b><label><input type="checkbox" checked> همه</label><label><input type="checkbox"> رایگان</label><label><input type="checkbox"> Creative Commons</label></div>
- <div class="fg"><b>جهت ویدیو</b><label><input type="checkbox" checked> همه</label><label><input type="checkbox"> افقی</label><label><input type="checkbox"> عمودی</label></div>
+<aside class="filters"><h3>⚲ فیلتر نتایج</h3>
+<div class="fg"><b>منبع ویدیو</b><label><input type="checkbox" checked> همه منابع</label><label><input type="checkbox"> YouTube</label><label><input type="checkbox"> Google</label><label><input type="checkbox"> Vecteezy</label></div>
+<div class="fg"><b>کیفیت ویدیو</b><label><input type="checkbox" checked> همه کیفیت‌ها</label><label><input type="checkbox"> 4K (UHD)</label><label><input type="checkbox"> Full HD (1080p)</label><label><input type="checkbox"> HD (720p)</label></div>
+<div class="fg"><b>مدت زمان</b><input type="range" min="0" max="60" value="38"></div>
+<div class="fg"><b>نوع مجوز</b><label><input type="checkbox" checked> همه</label><label><input type="checkbox"> رایگان</label><label><input type="checkbox"> Creative Commons</label></div>
+<div class="fg"><b>جهت ویدیو</b><label><input type="checkbox" checked> همه</label><label><input type="checkbox"> افقی</label><label><input type="checkbox"> عمودی</label></div>
 </aside>
 <section class="results">
- <div class="result-head"><div><h1 id="resultTitle">نتایج جستجو برای «نفت»</h1><small>نتایج نمونه برای بررسی رابط کاربری — اتصال موتور جستجو در مرحله بعد</small></div><select class="sort"><option>مرتبط‌ترین</option><option>جدیدترین</option></select></div>
- <div class="grid" id="grid"></div>
-</section>
+<div class="result-head"><div><h1 id="title">نتایج جستجو برای «نفت»</h1><small>نمایش ۱۶ نتیجه در هر صفحه</small></div><select class="sort"><option>مرتبط‌ترین</option><option>جدیدترین</option></select></div>
+<div class="grid" id="grid"></div><div class="pagination" id="pagination"></div>
+</section></div></main></div>
+
+<div class="modal" id="modal" onclick="backdrop(event)">
+<div class="viewer"><div class="viewer-top"><strong>پیش‌نمایش راش</strong><button class="close" onclick="closeViewer()">✕</button></div>
+<div class="video-stage"><img id="viewerImg"><button class="play" title="پخش نمونه">▶</button></div>
+<div class="viewer-info"><h2 id="viewerTitle"></h2><p id="viewerMeta"></p><div class="viewer-actions"><button class="download" id="downloadBtn">دانلود مستقیم</button><a class="sourcebtn" id="sourceLink" target="_blank" rel="noopener">رفتن به منبع</a></div><div class="notice">دانلود مستقیم فقط برای منابعی فعال می‌شود که فایل قابل دانلود و مجوز مناسب ارائه کنند.</div></div></div>
 </div>
-</main></div>
+
 <script>
-const data=[
-["چاه نفت در غروب","Pexels","https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=650&q=80","00:28","4K"],
-["پالایشگاه نفت - ویدیوی زمینه","Pixabay","https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=650&q=80","00:15","FHD"],
-["سکوی نفتی در دریا","Videvo","https://images.unsplash.com/photo-1548337138-e87d889cc369?auto=format&fit=crop&w=650&q=80","00:32","4K"],
-["کشتی نفتکش - نمای هوایی","Mixkit","https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=650&q=80","00:20","FHD"],
-["خطوط لوله انتقال نفت","Coverr","https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=650&q=80","00:26","FHD"],
-["بازار نفت و نمودار قیمت","Pexels","https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=650&q=80","00:40","4K"],
-["سوزاندن گازهای همراه نفت","Pixabay","https://images.unsplash.com/photo-1516939884455-1445c8652f83?auto=format&fit=crop&w=650&q=80","00:25","HD"],
-["پالایشگاه مدرن","Unsplash","https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&w=650&q=80","00:30","FHD"],
-["بازرس در میدان نفتی","Storyblocks","https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=650&q=80","00:22","4K"],
-["پمپ نفت در غروب","Videvo","https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=650&q=80","00:33","FHD"],
-["خط لوله نفت - نمای نزدیک","Pexels","https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=650&q=80","00:18","HD"],
-["پالایشگاه و مخازن نفت","Pixabay","https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?auto=format&fit=crop&w=650&q=80","00:27","4K"]
+const base=[
+["چاه نفت در غروب","Pexels","https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=700&q=80","00:28","4K"],
+["پالایشگاه نفت - ویدیوی زمینه","Pixabay","https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=700&q=80","00:15","FHD"],
+["سکوی نفتی در دریا","Videvo","https://images.unsplash.com/photo-1548337138-e87d889cc369?auto=format&fit=crop&w=700&q=80","00:32","4K"],
+["کشتی نفتکش - نمای هوایی","Mixkit","https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=700&q=80","00:20","FHD"],
+["خطوط لوله انتقال نفت","Coverr","https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=700&q=80","00:26","FHD"],
+["بازار نفت و نمودار قیمت","Pexels","https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=700&q=80","00:40","4K"],
+["سوزاندن گازهای همراه نفت","Pixabay","https://images.unsplash.com/photo-1516939884455-1445c8652f83?auto=format&fit=crop&w=700&q=80","00:25","HD"],
+["پالایشگاه مدرن","Unsplash","https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&w=700&q=80","00:30","FHD"],
+["بازرس در میدان نفتی","Storyblocks","https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=700&q=80","00:22","4K"],
+["پمپ نفت در غروب","Videvo","https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=700&q=80","00:33","FHD"],
+["خط لوله نفت - نمای نزدیک","Pexels","https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=700&q=80","00:18","HD"],
+["پالایشگاه و مخازن نفت","Pixabay","https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?auto=format&fit=crop&w=700&q=80","00:27","4K"],
+["صنعت انرژی و نفت","Pexels","https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?auto=format&fit=crop&w=700&q=80","00:31","FHD"],
+["تأسیسات صنعتی","Pixabay","https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=700&q=80","00:19","4K"],
+["میدان نفتی","Videvo","https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=700&q=80","00:36","HD"],
+["انبار انرژی","Mixkit","https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=700&q=80","00:24","FHD"]
 ];
+const results=Array.from({length:100},(_,i)=>{let x=[...base[i%base.length]];x[0]+=" "+(i+1);return x});
+let current=1; const perPage=16;
 function render(){
- document.getElementById("grid").innerHTML=data.map(x=>`<article class="video-card"><div class="thumb" style="background-image:url('${x[2]}')"><span class="bookmark">♡</span><span class="pill duration">▶ ${x[3]}</span><span class="pill quality">${x[4]}</span></div><div class="card-body"><div class="video-title">${x[0]}</div><div class="card-meta"><span class="source"><i class="source-dot">${x[1][0]}</i>${x[1]}</span><button class="action">مشاهده</button></div></div></article>`).join("")
+ const start=(current-1)*perPage, list=results.slice(start,start+perPage);
+ document.getElementById("grid").innerHTML=list.map((x,j)=>`<article class="card"><div class="thumb" style="background-image:url('${x[2]}')"><button class="fav">♡</button><span class="tag dur">▶ ${x[3]}</span><span class="tag qlt">${x[4]}</span></div><div class="body"><div class="title">${x[0]}</div><div class="meta"><span>${x[1]}</span><div class="actions"><button class="btn primary" onclick="openViewer(${start+j})">نمایش</button><button class="btn" onclick="downloadItem(${start+j})">دانلود</button></div></div></div></article>`).join("");
+ renderPages();
 }
-function doSearch(){const q=document.getElementById("query").value.trim()||"همه";document.getElementById("resultTitle").textContent=`نتایج جستجو برای «${q}»`;const g=document.getElementById("grid");g.classList.add("loading");setTimeout(()=>g.classList.remove("loading"),350)}
-function setThemeIcon(){document.getElementById("theme").textContent=document.body.classList.contains("dark")?"☀":"☾"}
-function toggleTheme(){document.body.classList.toggle("dark");localStorage.setItem("rushfinder-theme",document.body.classList.contains("dark")?"dark":"light");setThemeIcon()}
-if(localStorage.getItem("rushfinder-theme")==="dark")document.body.classList.add("dark");
-document.getElementById("query").addEventListener("keydown",e=>{if(e.key==="Enter")doSearch()});
-setThemeIcon();render();
+function renderPages(){
+ const pages=Math.ceil(results.length/perPage), p=document.getElementById("pagination"); let s=`<button class="page" ${current===1?"disabled":""} onclick="go(${current-1})">قبلی</button>`;
+ for(let i=1;i<=pages;i++)s+=`<button class="page ${i===current?"active":""}" onclick="go(${i})">${i}</button>`;
+ s+=`<button class="page" ${current===pages?"disabled":""} onclick="go(${current+1})">بعدی</button>`;p.innerHTML=s;
+}
+function go(p){if(p<1||p>Math.ceil(results.length/perPage))return;current=p;render();document.querySelector(".results").scrollIntoView({behavior:"smooth",block:"start"})}
+function openViewer(i){const x=results[i];document.getElementById("viewerImg").src=x[2];document.getElementById("viewerTitle").textContent=x[0];document.getElementById("viewerMeta").textContent=`منبع: ${x[1]} • کیفیت: ${x[4]} • مدت: ${x[3]}`;document.getElementById("sourceLink").href=x[2];document.getElementById("downloadBtn").onclick=()=>downloadItem(i);document.getElementById("modal").classList.add("show")}
+function closeViewer(){document.getElementById("modal").classList.remove("show")} function backdrop(e){if(e.target.id==="modal")closeViewer()}
+function downloadItem(i){const x=results[i];alert("در نسخه UI لینک فایل ویدیویی واقعی هنوز متصل نیست. پس از اتصال API، دانلود مستقیم فقط برای منابع مجاز فعال می‌شود.")}
+function search(){const q=document.getElementById("query").value.trim()||"همه";document.getElementById("title").textContent=`نتایج جستجو برای «${q}»`;current=1;render()}
+function toggleTheme(){document.body.classList.toggle("dark");localStorage.setItem("rf-theme",document.body.classList.contains("dark")?"dark":"light");document.getElementById("theme").textContent=document.body.classList.contains("dark")?"☀":"☾"}
+if(localStorage.getItem("rf-theme")==="dark"){document.body.classList.add("dark");document.getElementById("theme").textContent="☀"}
+document.getElementById("query").addEventListener("keydown",e=>{if(e.key==="Enter")search()});render();
 </script>
 </body></html>
