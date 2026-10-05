@@ -581,6 +581,14 @@ body.rf-dark .popular-searches button{background:#15283c;border-color:#2a415a;co
 body.rf-dark .result-head:before{background:#183b5d;color:#79b7ff}
 </style>
 
+
+<style>
+/* V011 */
+.header-brand,.header-brand *{border:0!important;box-shadow:none!important;outline:0!important;background-color:transparent!important}
+.header-brand{padding-bottom:0!important;margin-bottom:0!important}
+header:has(.header-brand){border-bottom:0!important;box-shadow:none!important}
+.source-filter-row{display:flex!important}
+</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -683,73 +691,70 @@ body.rf-dark .result-head:before{background:#183b5d;color:#79b7ff}
 
 <script>
 let results=[];
-let current=1; const perPage=16;
+let current=1;
+const perPage=16;
+let totalAccessible=0, activeQuery="", activeSource="pixabay";
+
 function formatDuration(sec){sec=Number(sec||0);const m=Math.floor(sec/60),ss=sec%60;return faDigits(String(m).padStart(2,"0")+":"+String(ss).padStart(2,"0"))}
-function qualityLabel(x){const w=Number(x.width||0);return w>=3840?"4K":w>=1920?"FHD":w>=1280?"HD":"SD"}
+function qualityLabel(x){const w=Number(x.width||0),h=Number(x.height||0),m=Math.max(w,h);return m>=3840?"4K":m>=1920?"FHD":m>=1280?"HD":"SD"}
 function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
+function selectedQuality(){
+ const labels=[...document.querySelectorAll(".filter label")];
+ for(const l of labels){const t=l.textContent.replace(/\s+/g," ");const c=l.querySelector("input[type=checkbox]");if(c&&c.checked){if(t.includes("4K"))return"4k";if(t.includes("Full HD"))return"fhd";if(/\bHD\b/.test(t))return"hd"}}
+ return"all";
+}
+function selectedOrientation(){
+ const labels=[...document.querySelectorAll(".filter label")];
+ for(const l of labels){const t=l.textContent.trim(),c=l.querySelector("input[type=checkbox]");if(c&&c.checked){if(t.includes("افقی"))return"horizontal";if(t.includes("عمودی"))return"vertical"}}
+ return"all";
+}
 function render(){
- const start=(current-1)*perPage,list=results.slice(start,start+perPage),grid=document.getElementById("grid");
- if(!list.length){grid.innerHTML='<div style="grid-column:1/-1;padding:50px;text-align:center;color:var(--muted)">نتیجه‌ای پیدا نشد.</div>';document.getElementById("pagination").innerHTML="";return}
- grid.innerHTML=list.map((x,j)=>`<article class="card"><div class="thumb" style="background-image:url('${escapeHtml(x.thumbnail)}')"><button class="fav">♡</button><span class="tag dur">▶ ${formatDuration(x.duration)}</span><span class="tag qlt">${qualityLabel(x)}</span></div><div class="body"><div class="title">${escapeHtml(x.title||"ویدیوی Pixabay")}</div><div class="meta"><span>Pixabay</span><div class="actions"><button class="btn primary" onclick="openViewer(${start+j})">نمایش</button><button class="btn" onclick="downloadItem(${start+j})">دانلود</button></div></div></div></article>`).join("");
+ const grid=document.getElementById("grid");
+ if(!results.length){grid.innerHTML='<div style="grid-column:1/-1;padding:50px;text-align:center;color:var(--muted)">نتیجه‌ای با این فیلتر پیدا نشد.</div>';renderPages();return}
+ grid.innerHTML=results.map((x,i)=>`<article class="card"><div class="thumb" style="background-image:url('${escapeHtml(x.thumbnail)}')"><button class="fav">♡</button><span class="tag dur">▶ ${formatDuration(x.duration)}</span><span class="tag qlt">${qualityLabel(x)}</span></div><div class="body"><div class="title">${escapeHtml(x.title||"ویدیوی Pixabay")}</div><div class="meta"><span>Pixabay</span><div class="actions"><button class="btn primary" onclick="openViewer(${i})">نمایش</button><button class="btn" onclick="downloadItem(${i})">دانلود</button></div></div></div></article>`).join("");
  renderPages();
 }
 function renderPages(){
- const pages=Math.ceil(results.length/perPage),p=document.getElementById("pagination");if(pages<=1){p.innerHTML="";return}
+ const pages=Math.max(1,Math.ceil(totalAccessible/perPage)),p=document.getElementById("pagination");
+ if(pages<=1){p.innerHTML="";return}
+ let nums=[]; for(let i=Math.max(1,current-2);i<=Math.min(pages,current+2);i++)nums.push(i);
  let out=`<button class="page" ${current===1?"disabled":""} onclick="go(${current-1})">قبلی</button>`;
- for(let i=1;i<=pages;i++)out+=`<button class="page ${i===current?"active":""}" onclick="go(${i})">${faDigits(i)}</button>`;
+ if(nums[0]>1)out+=`<button class="page" onclick="go(1)">۱</button><span>…</span>`;
+ for(const i of nums)out+=`<button class="page ${i===current?"active":""}" onclick="go(${i})">${faDigits(i)}</button>`;
+ if(nums.at(-1)<pages)out+=`<span>…</span><button class="page" onclick="go(${pages})">${faDigits(pages)}</button>`;
  out+=`<button class="page" ${current===pages?"disabled":""} onclick="go(${current+1})">بعدی</button>`;p.innerHTML=out;
 }
-function go(p){if(p<1||p>Math.ceil(results.length/perPage))return;current=p;render();document.querySelector(".results").scrollIntoView({behavior:"smooth",block:"start"})}
+async function go(p){if(p<1||p>Math.ceil(totalAccessible/perPage))return;current=p;await loadPage();document.querySelector(".results").scrollIntoView({behavior:"smooth",block:"start"})}
 function openViewer(i){const x=results[i],v=document.getElementById("viewerVideo");v.pause();v.src=x.video;v.poster=x.thumbnail||"";document.getElementById("viewerTitle").textContent=x.title||"ویدیوی Pixabay";document.getElementById("viewerMeta").textContent=`منبع: Pixabay • کیفیت: ${qualityLabel(x)} • مدت: ${formatDuration(x.duration)}`;document.getElementById("sourceLink").href=x.pageURL;document.getElementById("downloadBtn").onclick=()=>downloadItem(i);document.getElementById("modal").classList.add("show")}
 function closeViewer(){document.getElementById("viewerVideo").pause();document.getElementById("modal").classList.remove("show")}
 function backdrop(e){if(e.target.id==="modal")closeViewer()}
 function downloadItem(i){const x=results[i],a=document.createElement("a");a.href=x.download||x.video;a.target="_blank";a.rel="noopener";a.download="";document.body.appendChild(a);a.click();a.remove()}
+async function loadPage(){
+ const grid=document.getElementById("grid");grid.innerHTML='<div style="grid-column:1/-1;padding:55px;text-align:center;color:var(--muted)">در حال دریافت نتایج از Pixabay...</div>';
+ const params=new URLSearchParams({q:activeQuery,page:String(current),per_page:String(perPage),quality:selectedQuality(),orientation:selectedOrientation()});
+ const r=await fetch(`/api/search?${params}`),data=await r.json();if(!r.ok)throw new Error(data.error||"خطا در جستجو");
+ results=Array.isArray(data.results)?data.results:[];totalAccessible=Number(data.totalAccessible||0);
+ const sub=document.querySelector(".result-head small");if(sub)sub.textContent=`${faDigits(totalAccessible)} راش قابل دسترسی از Pixabay`;
+ render();
+}
 async function search(qOverride){
- const input=document.getElementById("query"),q=(qOverride||input.value).trim();if(!q)return;input.value=q;
+ const input=document.getElementById("query"),q=(qOverride||input.value).trim();if(!q)return;input.value=q;activeQuery=q;current=1;
  document.getElementById("homeState").style.display="none";document.getElementById("searchContent").hidden=false;
- document.getElementById("title").textContent=`در حال جستجو برای «${q}»...`;
- document.getElementById("grid").innerHTML='<div style="grid-column:1/-1;padding:55px;text-align:center;color:var(--muted)">در حال دریافت راش‌های واقعی از Pixabay...</div>';
- document.getElementById("pagination").innerHTML="";
- try{
-  const r=await fetch(`/api/search?q=${encodeURIComponent(q)}`),data=await r.json();
-  if(!r.ok)throw new Error(data.error||"خطا در جستجو");
-  results=Array.isArray(data.results)?data.results:[];current=1;
-  document.getElementById("title").textContent=`نتایج جستجو برای «${q}»`;
-  const sub=document.querySelector(".result-head small");if(sub)sub.textContent=`${faDigits(results.length)} راش واقعی از Pixabay`;
-  render();
- }catch(err){results=[];document.getElementById("title").textContent="خطا در جستجو";document.getElementById("grid").innerHTML=`<div style="grid-column:1/-1;padding:50px;text-align:center;color:#d33">ارتباط با Pixabay برقرار نشد.<br><small>${escapeHtml(err.message)}</small></div>`}
+ document.getElementById("title").textContent=`نتایج جستجو برای «${q}»`;
+ try{await loadPage()}catch(err){results=[];document.getElementById("grid").innerHTML=`<div style="grid-column:1/-1;padding:50px;text-align:center;color:#d33">${escapeHtml(err.message)}</div>`}
 }
-
-function showSourceNotice(text){
- const n=document.getElementById("sourceNotice"); if(!n)return;
- n.textContent=text;n.classList.add("show");clearTimeout(window.__srcTimer);
- window.__srcTimer=setTimeout(()=>n.classList.remove("show"),2600);
-}
+function showSourceNotice(text){const n=document.getElementById("sourceNotice");if(!n)return;n.textContent=text;n.classList.add("show");clearTimeout(window.__srcTimer);window.__srcTimer=setTimeout(()=>n.classList.remove("show"),2600)}
 function setupSourceFilters(){
- const all=document.getElementById("allSources");
- const boxes=[...document.querySelectorAll(".source-filter")];
- if(!all||!boxes.length)return;
- boxes.forEach(b=>b.addEventListener("change",()=>{
-   if(b.checked){
-     all.checked=false;
-     boxes.forEach(x=>{if(x!==b)x.checked=false});
-     if(b.value==="pixabay"){
-       const q=document.getElementById("query").value.trim();
-       if(q) search(q);
-     }else{
-       showSourceNotice(
-         b.value==="youtube"?"اتصال YouTube API هنوز فعال نشده است.":
-         b.value==="google"?"اتصال Google Video هنوز فعال نشده است.":
-         "اتصال Vecteezy هنوز فعال نشده است."
-       );
-     }
-   }else if(!boxes.some(x=>x.checked)) all.checked=true;
- }));
- all.addEventListener("change",()=>{
-   if(all.checked){boxes.forEach(x=>x.checked=false);const q=document.getElementById("query").value.trim();if(q)search(q)}
- });
-}
+ const all=document.getElementById("allSources"),boxes=[...document.querySelectorAll(".source-filter")];
+ boxes.forEach(b=>b.addEventListener("change",()=>{if(b.checked){all&&(all.checked=false);boxes.forEach(x=>{if(x!==b)x.checked=false});if(b.value==="pixabay"){activeSource="pixabay";if(activeQuery)search(activeQuery)}else showSourceNotice("API این منبع هنوز متصل نشده است.")}else if(!boxes.some(x=>x.checked)&&all)all.checked=true}));
+ if(all)all.addEventListener("change",()=>{if(all.checked){boxes.forEach(x=>x.checked=false);activeSource="pixabay";if(activeQuery)search(activeQuery)}});
 
+ // Real quality/orientation filters: one selection per group, then reload from source.
+ const labels=[...document.querySelectorAll(".filter label")];
+ const qLabels=labels.filter(l=>/4K|Full HD|\bHD\b/.test(l.textContent));
+ const oLabels=labels.filter(l=>/همه|افقی|عمودی/.test(l.textContent)).slice(-3);
+ for(const group of [qLabels,oLabels]) group.forEach(l=>{const c=l.querySelector("input[type=checkbox]");if(c)c.addEventListener("change",()=>{if(c.checked)group.forEach(x=>{const z=x.querySelector("input[type=checkbox]");if(z&&z!==c)z.checked=false});if(activeQuery){current=1;loadPage().catch(()=>{})}})});
+}
 function toggleTheme(){document.body.classList.toggle("dark");localStorage.setItem("rf-theme",document.body.classList.contains("dark")?"dark":"light");document.getElementById("theme").textContent=document.body.classList.contains("dark")?"☀":"☾"}
 if(localStorage.getItem("rf-theme")==="dark"){document.body.classList.add("dark");document.getElementById("theme").textContent="☀"}
 document.getElementById("query").addEventListener("keydown",e=>{if(e.key==="Enter")search()});
