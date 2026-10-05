@@ -173,6 +173,18 @@ body,button,input,select,option,
 .rf-save-btn{border:0;border-radius:11px;background:#1677ff;color:#fff;font-family:inherit;font-size:13px;padding:10px 28px;cursor:pointer}
 .rf-save-status{font-size:11px;color:var(--muted,#8795aa)}
 
+
+.rf-settings-head-card{
+ display:flex;align-items:center;gap:14px;background:var(--card,#fff);
+ border:1px solid var(--border,#e4ebf4);border-radius:15px;
+ padding:14px 18px;margin:0 0 12px;
+}
+.rf-settings-head-icon{
+ width:46px;height:46px;flex:0 0 46px;border-radius:12px;
+ display:flex;align-items:center;justify-content:center;
+ background:#eef6ff;color:#1677ff;
+}
+
 </style>
 
 <style>
@@ -1242,7 +1254,15 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
 
 <section id="rfSettingsPage" class="rf-settings-page" dir="rtl">
  <div class="rf-settings-inner">
-  <div class="rf-settings-head"><div><h1 class="rf-settings-title">تنظیمات</h1><div class="rf-settings-sub">تنظیمات شخصی‌سازی تجربه جستجو در RushFinder</div></div></div>
+  <div class="rf-settings-head-card">
+    <div class="rf-settings-head-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.12 2.12-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.55V20.3h-3v-.09a1.7 1.7 0 0 0-1.03-1.55 1.7 1.7 0 0 0-1.88.34l-.06.06-2.12-2.12.06-.06A1.7 1.7 0 0 0 7 15a1.7 1.7 0 0 0-1.55-1.03H5.3v-3h.15A1.7 1.7 0 0 0 7 9.94a1.7 1.7 0 0 0-.34-1.88L6.6 8l2.12-2.12.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 11.7 4.7V4.6h3v.1a1.7 1.7 0 0 0 1.03 1.55 1.7 1.7 0 0 0 1.88-.34l.06-.06L19.8 8l-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.55 1.03h.15v3h-.15A1.7 1.7 0 0 0 19.4 15z"></path>
+      </svg>
+    </div>
+    <div><h1 class="rf-settings-title">تنظیمات</h1><div class="rf-settings-sub">تنظیمات شخصی‌سازی تجربه جستجو در RushFinder</div></div>
+  </div>
   <div class="rf-setting-row"><div class="rf-setting-info"><div class="rf-setting-name">ظاهر برنامه</div><div class="rf-setting-desc">انتخاب حالت نمایش رابط کاربری</div></div><div class="rf-setting-options" data-setting="theme"><button class="rf-set-btn" data-value="light">روشن</button><button class="rf-set-btn" data-value="dark">تاریک</button><button class="rf-set-btn" data-value="system">سیستم</button></div></div>
   <div class="rf-setting-row"><div class="rf-setting-info"><div class="rf-setting-name">تعداد نتایج در هر صفحه</div><div class="rf-setting-desc">تعداد ویدیوهایی که در هر صفحه نمایش داده می‌شود</div></div><div class="rf-setting-options" data-setting="perPage"><button class="rf-set-btn" data-value="12">۱۲</button><button class="rf-set-btn" data-value="24">۲۴</button><button class="rf-set-btn" data-value="36">۳۶</button></div></div>
   <div class="rf-setting-row"><div class="rf-setting-info"><div class="rf-setting-name">منبع پیش‌فرض جستجو</div><div class="rf-setting-desc">منبعی که جستجو به صورت پیش‌فرض با آن انجام می‌شود</div></div><div class="rf-setting-options" data-setting="source"><button class="rf-set-btn" data-value="all">همه منابع</button><button class="rf-set-btn" data-value="YouTube">YouTube</button><button class="rf-set-btn" data-value="Aparat">Aparat</button><button class="rf-set-btn" data-value="Vecteezy">Vecteezy</button><button class="rf-set-btn" data-value="Pixabay">Pixabay</button></div></div>
@@ -1316,6 +1336,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
      applyToEngine(draft);
      document.getElementById("rfSaveStatus").textContent="✓ تنظیمات ذخیره شد";
      if(typeof activeQuery!=="undefined" && activeQuery){current=1;loadPage().catch(()=>{})}
+     setTimeout(()=>closeSettings(),250);
    }else{
      document.getElementById("rfSaveStatus").textContent="ذخیره تنظیمات انجام نشد";
    }
