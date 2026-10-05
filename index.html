@@ -924,18 +924,9 @@ function renderPages(){
 }
 async function go(p){if(p<1||p>Math.ceil(totalAccessible/perPage))return;current=p;await loadPage();document.querySelector(".results").scrollIntoView({behavior:"smooth",block:"start"})}
 function openViewer(i){
- const yt=results[i];
- if(yt?.source==="YouTube"){
-   document.getElementById("viewerTitle").textContent=yt.title||"YouTube";
-   const body=document.querySelector(".viewer-body");
-   if(body){
-     body.innerHTML=`<iframe id="youtubeFrame" src="https://www.youtube.com/embed/${encodeURIComponent(yt.id)}?autoplay=1&rel=0" title="${String(yt.title||"YouTube").replace(/"/g,"&quot;")}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="width:100%;height:100%;min-height:420px;border:0;background:#000;border-radius:14px"></iframe>`;
-   }
-   document.getElementById("viewer").classList.add("show");
-   return;
- }
-const x=results[i],v=document.getElementById("viewerVideo");v.pause();v.src=x.video;v.poster=x.thumbnail||"";document.getElementById("viewerTitle").textContent=x.title||"ویدیوی راش";document.getElementById("viewerMeta").textContent=`منبع: ${x.source||"منبع"} • کیفیت: ${qualityLabel(x)} • مدت: ${formatDuration(x.duration)}`;document.getElementById("sourceLink").href=x.pageURL;document.getElementById("downloadBtn").onclick=()=>downloadItem(i);document.getElementById("modal").classList.add("show")}
-function closeViewer(){const yf=document.getElementById("youtubeFrame");if(yf)yf.remove();document.getElementById("viewerVideo").pause();document.getElementById("modal").classList.remove("show")}
+ const selected=results[i];
+ if(selected?.source==="YouTube"){openYouTubeViewer(selected);return;}const x=results[i],v=document.getElementById("viewerVideo");v.pause();v.src=x.video;v.poster=x.thumbnail||"";document.getElementById("viewerTitle").textContent=x.title||"ویدیوی راش";document.getElementById("viewerMeta").textContent=`منبع: ${x.source||"منبع"} • کیفیت: ${qualityLabel(x)} • مدت: ${formatDuration(x.duration)}`;document.getElementById("sourceLink").href=x.pageURL;document.getElementById("downloadBtn").onclick=()=>downloadItem(i);document.getElementById("modal").classList.add("show")}
+function closeViewer(){document.getElementById("viewerVideo").pause();document.getElementById("modal").classList.remove("show")}
 function backdrop(e){if(e.target.id==="modal")closeViewer()}
 function downloadItem(i){
  const x=results[i];
@@ -1069,4 +1060,56 @@ window.addEventListener("DOMContentLoaded",()=>rfObserver.observe(document.body,
  buttons.forEach(b=>b.addEventListener('click',()=>apply(b.dataset.theme)));
  apply(localStorage.getItem('rushfinder-theme')||'light');
 })();
-</script></body></html>
+</script>
+<div id="ytModal" class="rf-yt-modal" aria-hidden="true">
+  <div class="rf-yt-backdrop" onclick="closeYouTubeViewer()"></div>
+  <div class="rf-yt-dialog" role="dialog" aria-modal="true" aria-labelledby="ytModalTitle">
+    <div class="rf-yt-head">
+      <div id="ytModalTitle" class="rf-yt-title">YouTube</div>
+      <button class="rf-yt-close" type="button" onclick="closeYouTubeViewer()" aria-label="بستن">×</button>
+    </div>
+    <div id="ytPlayerWrap" class="rf-yt-player"></div>
+  </div>
+</div>
+<style>
+.rf-yt-modal{display:none;position:fixed;inset:0;z-index:99999;align-items:center;justify-content:center;padding:24px}
+.rf-yt-modal.show{display:flex}
+.rf-yt-backdrop{position:absolute;inset:0;background:rgba(3,10,25,.78);backdrop-filter:blur(5px)}
+.rf-yt-dialog{position:relative;z-index:1;width:min(1000px,94vw);background:#0b1220;border:1px solid rgba(255,255,255,.14);border-radius:20px;box-shadow:0 28px 80px rgba(0,0,0,.45);overflow:hidden}
+.rf-yt-head{height:58px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 18px;color:#fff;direction:rtl}
+.rf-yt-title{font-family:inherit;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rf-yt-close{width:36px;height:36px;border:0;border-radius:10px;background:rgba(255,255,255,.1);color:#fff;font-size:27px;line-height:1;cursor:pointer}
+.rf-yt-player{aspect-ratio:16/9;width:100%;background:#000}
+.rf-yt-player iframe{display:block;width:100%;height:100%;border:0}
+@media(max-width:700px){.rf-yt-modal{padding:10px}.rf-yt-dialog{width:98vw;border-radius:14px}.rf-yt-head{height:52px}}
+</style>
+<script>
+function openYouTubeViewer(item){
+ const modal=document.getElementById("ytModal");
+ const wrap=document.getElementById("ytPlayerWrap");
+ const title=document.getElementById("ytModalTitle");
+ if(!modal||!wrap||!item||!item.id)return;
+ title.textContent=item.title||"YouTube";
+ wrap.innerHTML="";
+ const frame=document.createElement("iframe");
+ frame.src="https://www.youtube.com/embed/"+encodeURIComponent(item.id)+"?autoplay=1&rel=0";
+ frame.title=item.title||"YouTube";
+ frame.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+ frame.allowFullscreen=true;
+ frame.referrerPolicy="strict-origin-when-cross-origin";
+ wrap.appendChild(frame);
+ modal.classList.add("show");
+ modal.setAttribute("aria-hidden","false");
+ document.body.style.overflow="hidden";
+}
+function closeYouTubeViewer(){
+ const modal=document.getElementById("ytModal");
+ const wrap=document.getElementById("ytPlayerWrap");
+ if(wrap)wrap.innerHTML="";
+ if(modal){modal.classList.remove("show");modal.setAttribute("aria-hidden","true");}
+ document.body.style.overflow="";
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer();});
+</script>
+
+</body></html>
