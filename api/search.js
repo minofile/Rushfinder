@@ -183,6 +183,35 @@ async function vecteezyDownload(id,res){
   return res.redirect(302,url);
 }
 
+
+function isoDurationSeconds(v){
+ const m=String(v||"").match(/^P(?:([\d.]+)D)?T?(?:([\d.]+)H)?(?:([\d.]+)M)?(?:([\d.]+)S)?$/);
+ return m?Math.round(Number(m[1]||0)*86400+Number(m[2]||0)*3600+Number(m[3]||0)*60+Number(m[4]||0)):0;
+}
+async function youtubeSearch({q,page,quality,orientation,limit=16}){
+ const key=process.env.YOUTUBE_API_KEY;if(!key)throw new Error("YOUTUBE_API_KEY در Vercel تنظیم نشده است.");
+ let token="",data={};
+ for(let p=1;p<=page;p++){
+  const u=new URL("https://www.googleapis.com/youtube/v3/search");
+  u.searchParams.set("part","snippet");u.searchParams.set("type","video");u.searchParams.set("q",q);u.searchParams.set("maxResults",String(limit));
+  u.searchParams.set("order","relevance");u.searchParams.set("safeSearch","moderate");u.searchParams.set("key",key);
+  if(quality!=="all")u.searchParams.set("videoDefinition","high");if(token)u.searchParams.set("pageToken",token);
+  const r=await fetch(u);data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data?.error?.message||"YouTube API error");
+  if(p<page){token=data.nextPageToken||"";if(!token)break;}
+ }
+ const items=arr(data.items),ids=items.map(x=>x?.id?.videoId).filter(Boolean),total=num(data?.pageInfo?.totalResults);
+ if(!ids.length)return{results:[],totalAccessible:total,sourceTotalHits:total,total};
+ const u=new URL("https://www.googleapis.com/youtube/v3/videos");u.searchParams.set("part","contentDetails,snippet");u.searchParams.set("id",ids.join(","));u.searchParams.set("key",key);
+ const r=await fetch(u),vd=await r.json().catch(()=>({}));if(!r.ok)throw new Error(vd?.error?.message||"YouTube videos API error");
+ const dm=new Map(arr(vd.items).map(x=>[x.id,x]));
+ let results=items.map(x=>{const id=x.id.videoId,d=dm.get(id)||{},sn=d.snippet||x.snippet||{},th=sn.thumbnails||{};
+  return{id,title:sn.title||`YouTube video ${id}`,source:"YouTube",pageURL:`https://www.youtube.com/watch?v=${id}`,
+   thumbnail:th.maxres?.url||th.standard?.url||th.high?.url||th.medium?.url||th.default?.url||"",duration:isoDurationSeconds(d?.contentDetails?.duration),
+   width:num(th.maxres?.width||th.high?.width),height:num(th.maxres?.height||th.high?.height),video:"",download:"",canDownload:false};}).filter(x=>x.id);
+ if(orientation==="vertical")results=results.filter(x=>x.height>x.width);
+ return{results:results.slice(0,limit),totalAccessible:total,sourceTotalHits:total,total};
+}
+
 module.exports = async function handler(req,res){
   const q=String(req.query.q||"").trim();
   const action=String(req.query.action||"");
@@ -197,7 +226,9 @@ module.exports = async function handler(req,res){
   const quality=String(req.query.quality||"all"), orientation=String(req.query.orientation||"all");
   try{
     let payload;
-    if(source==="vecteezy"){
+    if(source==="youtube"){
+      payload=await youtubeSearch({q,page,quality,orientation,limit:perPage}); payload.sourceLabel="YouTube";
+    }else if(source==="vecteezy"){
       payload=await vecteezySearch({q,page,quality,orientation,limit:perPage});
       payload.sourceLabel="Vecteezy";
     }else if(source==="pixabay"){
@@ -205,25 +236,19 @@ module.exports = async function handler(req,res){
       payload.sourceLabel="Pixabay";
     }else{
       // "All sources": currently the two connected providers.
-      const [p,v]=await Promise.allSettled([
-        pixabaySearch({q,page,quality,orientation,limit:8}),
-        vecteezySearch({q,page,quality,orientation,limit:8})
+      const [p,v,y]=await Promise.allSettled([
+        pixabaySearch({q,page,quality,orientation,limit:6}),
+        vecteezySearch({q,page,quality,orientation,limit:5}),
+        youtubeSearch({q,page,quality,orientation,limit:5})
       ]);
       const pr=p.status==="fulfilled"?p.value:{results:[],totalAccessible:0,sourceTotalHits:0,total:0};
       const vr=v.status==="fulfilled"?v.value:{results:[],totalAccessible:0,sourceTotalHits:0,total:0};
-      const mixed=[]; const max=Math.max(pr.results.length,vr.results.length);
-      for(let i=0;i<max;i++){ if(pr.results[i])mixed.push(pr.results[i]); if(vr.results[i])mixed.push(vr.results[i]); }
-      payload={
-        results:mixed.slice(0,perPage),
-        totalAccessible:num(pr.totalAccessible)+num(vr.totalAccessible),
-        sourceTotalHits:num(pr.sourceTotalHits)+num(vr.sourceTotalHits),
-        total:num(pr.total)+num(vr.total),
-        sourceLabel:"Pixabay + Vecteezy",
-        providerErrors:[
-          p.status==="rejected"?"Pixabay":null,
-          v.status==="rejected"?"Vecteezy":null
-        ].filter(Boolean)
-      };
+      const yr=y.status==="fulfilled"?y.value:{results:[],totalAccessible:0,sourceTotalHits:0,total:0};
+      const mixed=[];const max=Math.max(pr.results.length,vr.results.length,yr.results.length);
+      for(let i=0;i<max;i++){if(pr.results[i])mixed.push(pr.results[i]);if(vr.results[i])mixed.push(vr.results[i]);if(yr.results[i])mixed.push(yr.results[i]);}
+      payload={results:mixed.slice(0,perPage),totalAccessible:num(pr.totalAccessible)+num(vr.totalAccessible)+num(yr.totalAccessible),
+        sourceTotalHits:num(pr.sourceTotalHits)+num(vr.sourceTotalHits)+num(yr.sourceTotalHits),total:num(pr.total)+num(vr.total)+num(yr.total),
+        sourceLabel:"Pixabay + Vecteezy + YouTube",providerErrors:[p.status==="rejected"?"Pixabay":null,v.status==="rejected"?"Vecteezy":null,y.status==="rejected"?"YouTube":null].filter(Boolean)};
     }
     res.setHeader("Cache-Control","s-maxage=300, stale-while-revalidate=600");
     return res.status(200).json({...payload,page,perPage});

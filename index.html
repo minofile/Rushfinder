@@ -879,7 +879,7 @@ function formatDuration(sec){
  return faDigits(txt);
 }
 function probeVideoDuration(item,index){
- if(!item || Number(item.duration)>0 || !item.video)return;
+ if(!item || Number(item.duration)>0 || !item.video || item.source==="YouTube")return;
  const v=document.createElement("video");v.preload="metadata";v.muted=true;v.playsInline=true;
  let finished=false;
  const done=()=>{
@@ -923,11 +923,12 @@ function renderPages(){
  out+=`<button class="page" ${current===pages?"disabled":""} onclick="go(${current+1})">بعدی</button>`;p.innerHTML=out;
 }
 async function go(p){if(p<1||p>Math.ceil(totalAccessible/perPage))return;current=p;await loadPage();document.querySelector(".results").scrollIntoView({behavior:"smooth",block:"start"})}
-function openViewer(i){const x=results[i],v=document.getElementById("viewerVideo");v.pause();v.src=x.video;v.poster=x.thumbnail||"";document.getElementById("viewerTitle").textContent=x.title||"ویدیوی راش";document.getElementById("viewerMeta").textContent=`منبع: ${x.source||"منبع"} • کیفیت: ${qualityLabel(x)} • مدت: ${formatDuration(x.duration)}`;document.getElementById("sourceLink").href=x.pageURL;document.getElementById("downloadBtn").onclick=()=>downloadItem(i);document.getElementById("modal").classList.add("show")}
+function openViewer(i){const yt=results[i];if(yt?.source==="YouTube"){window.open(yt.pageURL,"_blank","noopener");return;}const x=results[i],v=document.getElementById("viewerVideo");v.pause();v.src=x.video;v.poster=x.thumbnail||"";document.getElementById("viewerTitle").textContent=x.title||"ویدیوی راش";document.getElementById("viewerMeta").textContent=`منبع: ${x.source||"منبع"} • کیفیت: ${qualityLabel(x)} • مدت: ${formatDuration(x.duration)}`;document.getElementById("sourceLink").href=x.pageURL;document.getElementById("downloadBtn").onclick=()=>downloadItem(i);document.getElementById("modal").classList.add("show")}
 function closeViewer(){document.getElementById("viewerVideo").pause();document.getElementById("modal").classList.remove("show")}
 function backdrop(e){if(e.target.id==="modal")closeViewer()}
 function downloadItem(i){
  const x=results[i];
+ if(x.source==="YouTube"){alert("دانلود مستقیم از YouTube در RushFinder ارائه نمی‌شود.");return;}
  if(x.source==="Vecteezy" && x.id){
    window.open(`/api/search?action=download&source=vecteezy&id=${encodeURIComponent(x.id)}`,"_blank","noopener");
    return;
@@ -937,7 +938,7 @@ function downloadItem(i){
 }
 async function loadPage(){
  const grid=document.getElementById("grid");
- const srcName=activeSource==="vecteezy"?"Vecteezy":activeSource==="pixabay"?"Pixabay":"منابع متصل";
+ const srcName=activeSource==="vecteezy"?"Vecteezy":activeSource==="pixabay"?"Pixabay":activeSource==="youtube"?"YouTube":"منابع متصل";
  grid.innerHTML=`<div style="grid-column:1/-1;padding:55px;text-align:center;color:var(--muted)">در حال دریافت نتایج از ${srcName}...</div>`;
  const params=new URLSearchParams({q:activeQuery,page:String(current),per_page:String(perPage),quality:selectedQuality(),orientation:selectedOrientation(),source:activeSource});
  const r=await fetch(`/api/search?${params}`),data=await r.json();if(!r.ok)throw new Error(data.error||"خطا در جستجو");
@@ -946,7 +947,7 @@ async function loadPage(){
  const countEl=document.getElementById("count");
  if(countEl) countEl.textContent=faDigits(totalAccessible);
  const sub=document.querySelector(".result-head small");
- const srcLabel=data.sourceLabel||(activeSource==="vecteezy"?"Vecteezy":activeSource==="pixabay"?"Pixabay":"منابع متصل");
+ const srcLabel=data.sourceLabel||(activeSource==="vecteezy"?"Vecteezy":activeSource==="pixabay"?"Pixabay":activeSource==="youtube"?"YouTube":"منابع متصل");
  if(sub)sub.textContent=`${faDigits(totalAccessible)} راش قابل دسترسی از ${srcLabel}`;
  render();
 }
@@ -986,7 +987,7 @@ function setupSourceFilters(){
  const apply=document.getElementById("applyFilters");
  if(apply) apply.addEventListener("click",async()=>{
    const chosen=sources.find(x=>x.checked);
-   if(chosen && (chosen.value==="youtube" || chosen.value==="google")){
+   if(chosen && chosen.value==="google"){
      showSourceNotice("API این منبع هنوز متصل نشده است.");
      return;
    }
