@@ -419,6 +419,32 @@ body,button,input,select,.nav button,.metric,.filters,.results,.cat,.btn,.sort,.
 }
 </style>
 
+
+<style>
+/* Rush-V05 */
+.rf-toolbar{display:flex;align-items:center;gap:8px;direction:ltr;flex:0 0 auto;font-family:YEKAN,Tahoma,Arial,sans-serif}
+.rf-tool,.rf-date,.rf-modes{height:36px;border:1px solid #dce5ef;background:#f8fafc;border-radius:11px;color:#647891;box-sizing:border-box}
+.rf-tool{width:38px;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+.rf-tool svg,.rf-date svg,.rf-mode svg,.filter-title-icon svg{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.rf-tool svg{width:16px;height:16px}.rf-online span{width:9px;height:9px;border-radius:50%;background:#45d3a2;box-shadow:0 0 0 5px rgba(69,211,162,.13)}
+.rf-date{display:flex;align-items:center;gap:8px;padding:0 12px;direction:rtl;font-size:9px;white-space:nowrap;font-weight:400}
+.rf-date svg{width:14px;height:14px}
+.rf-modes{display:flex;align-items:center;gap:2px;padding:4px}
+.rf-mode{width:28px;height:28px;border:0;background:transparent;border-radius:7px;color:#667a93;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.rf-mode svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.6}
+.rf-mode.active{background:#fff;color:#1677ff;box-shadow:0 1px 5px rgba(26,54,86,.10)}
+.filter-title-icon{display:inline-flex;vertical-align:middle;align-items:center;justify-content:center;margin-left:6px;color:#1677ff}
+.filter-title-icon svg{width:15px;height:15px}
+body.rf-dark{background:#0d1724!important;color:#e8eef6!important}
+body.rf-dark main,body.rf-dark .content,body.rf-dark .main{background:#0d1724!important}
+body.rf-dark .top,body.rf-dark header{background:#111e2d!important;border-color:#26374a!important}
+body.rf-dark .card,body.rf-dark .metric,body.rf-dark .filters,body.rf-dark .cat{background:#152335!important;color:#e9f0f8!important;border-color:#26384c!important}
+body.rf-dark .rf-tool,body.rf-dark .rf-date,body.rf-dark .rf-modes{background:#172638;border-color:#2a3d52;color:#c8d4e2}
+body.rf-dark .rf-mode.active{background:#22354a;color:#72aaff}
+body.rf-dark input,body.rf-dark select{background:#152335!important;color:#eef4fa!important;border-color:#2a3d52!important}
+@media(max-width:1050px){.rf-date{display:none}}
+</style>
+
 </head>
 <body>
 <aside class="sidebar">
@@ -443,52 +469,29 @@ body,button,input,select,.nav button,.metric,.filters,.results,.cat,.btn,.sort,.
 <div class="app">
 <header class="top">
 <div class="header-brand"><img src="assets/logos/rushfinder-color.png" alt="RushFinder"></div><button class="theme" id="theme" onclick="toggleTheme()">☾</button><div class="search"><input id="query" value="نفت" placeholder="راش موردنظرت را جستجو کن..."><button onclick="search()">جستجو</button></div>
-<div class="top-tools-v03">
-  <div class="tool-pill-v03 modes-v03" title="حالت نمایش">
-    <span class="active">▣</span><span>☾</span><span>☼</span>
+<div class="rf-toolbar" aria-label="ابزارهای نمایش">
+  <button class="rf-tool rf-refresh" id="rfRefresh" title="بارگذاری مجدد" aria-label="بارگذاری مجدد">
+    <svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.34 5.66"/><path d="M20 4v7h-7"/></svg>
+  </button>
+  <div class="rf-tool rf-online" title="آنلاین"><span></span></div>
+  <div class="rf-date">
+    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>
+    <span>۱۵ مهر ۱۴۰۵</span>
   </div>
-  <div class="tool-pill-v03 today-v03">▣ <span id="todayV03">امروز</span></div>
-  <div class="tool-pill-v03 status-v03" title="آنلاین"><i></i></div>
-  <button class="tool-pill-v03 tool-icon-v03" type="button" onclick="location.reload()" title="بارگذاری مجدد">↻</button>
+  <div class="rf-modes">
+    <button class="rf-mode active" data-theme="light" title="نمایش روشن">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+    </button>
+    <button class="rf-mode" data-theme="dark" title="حالت شب">
+      <svg viewBox="0 0 24 24"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 8.5 8.5 0 1 0 20.5 14.5z"/></svg>
+    </button>
+    <button class="rf-mode" data-theme="light" title="حالت روز">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"/></svg>
+    </button>
+  </div>
 </div>
-</header>
-<main>
-<section class="summary"><div class="metric"><span class="mi">◉</span><strong>۵</strong><b>منبع جستجو</b><small>منابع آماده جستجو</small></div>
-<div class="metric"><span class="mi">◷</span><strong>۷</strong><b>جستجوهای اخیر</b><small>موضوعات جستجو شده</small></div>
-<div class="metric"><span class="mi">♡</span><strong>۱۲</strong><b>ذخیره‌شده‌ها</b><small>ویدیوهای نشان‌شده</small></div>
-<div class="metric"><span class="mi">▦</span><strong>۹</strong><b>دسته‌بندی‌ها</b><small>موضوعات آماده جستجو</small></div>
-<div class="metric"><span class="mi">◎</span><strong>۳</strong><b>منابع جستجو</b><small>YouTube، Google، Vecteezy</small></div>
-<div class="metric"><span class="mi">⌕</span><strong id="count">۲۴۰</strong><b>نتایج پیدا شده</b><small>برای جستجوی فعلی</small></div>
-</section>
-<section class="categories">
-<div class="cat active"><span>▦ همه دسته‌ها</span></div>
-<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=70')"><span>طبیعت</span></div>
-<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=400&q=70')"><span>شهر و معماری</span></div>
-<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=400&q=70')"><span>انسان و زندگی</span></div>
-<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&q=70')"><span>تکنولوژی</span></div>
-<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=400&q=70')"><span>کسب و کار</span></div>
-<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=70')"><span>غذا</span></div>
-<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1546182990-dffeafbe841d?auto=format&fit=crop&w=400&q=70')"><span>حیوانات</span></div>
-<div class="cat" style="background-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=400&q=70')"><span>گردشگری</span></div>
-</section>
-<div class="workspace">
-<aside class="filters"><h3>⚲ فیلتر نتایج</h3>
-<div class="fg"><b>منبع ویدیو</b><label><input type="checkbox" checked> همه منابع</label><label><input type="checkbox"> YouTube</label><label><input type="checkbox"> Google</label><label><input type="checkbox"> Vecteezy</label></div>
-<div class="fg"><b>کیفیت ویدیو</b><label><input type="checkbox" checked> همه کیفیت‌ها</label><label><input type="checkbox"> 4K (UHD)</label><label><input type="checkbox"> Full HD (1080p)</label><label><input type="checkbox"> HD (720p)</label></div>
-<div class="fg"><b>مدت زمان</b><input type="range" min="0" max="60" value="38"></div>
-<div class="fg"><b>نوع مجوز</b><label><input type="checkbox" checked> همه</label><label><input type="checkbox"> رایگان</label><label><input type="checkbox"> Creative Commons</label></div>
-<div class="fg"><b>جهت ویدیو</b><label><input type="checkbox" checked> همه</label><label><input type="checkbox"> افقی</label><label><input type="checkbox"> عمودی</label></div>
-</aside>
-<section class="results">
-<div class="result-head"><div><h1 id="title">نتایج جستجو برای «نفت»</h1><small>نمایش ۱۶ نتیجه در هر صفحه</small></div><select class="sort"><option>مرتبط‌ترین</option><option>جدیدترین</option></select></div>
-<div class="grid" id="grid"></div><div class="pagination" id="pagination"></div>
-</section></div></main></div>
 
-<div class="modal" id="modal" onclick="backdrop(event)">
-<div class="viewer"><div class="viewer-top"><strong>پیش‌نمایش راش</strong><button class="close" onclick="closeViewer()">✕</button></div>
-<div class="video-stage"><img id="viewerImg"><button class="play" title="پخش نمونه">▶</button></div>
-<div class="viewer-info"><h2 id="viewerTitle"></h2><p id="viewerMeta"></p><div class="viewer-actions"><button class="download" id="downloadBtn">دانلود مستقیم</button><a class="sourcebtn" id="sourceLink" target="_blank" rel="noopener">رفتن به منبع</a></div><div class="notice">دانلود مستقیم فقط برای منابعی فعال می‌شود که فایل قابل دانلود و مجوز مناسب ارائه کنند.</div></div></div>
-</div>
+
 
 <script>
 const base=[
@@ -566,6 +569,22 @@ window.addEventListener("DOMContentLoaded",()=>rfObserver.observe(document.body,
       el.textContent='امروز: '+s;
     }
   }catch(e){}
+})();
+</script>
+
+
+<script>
+(function(){
+  const body=document.body;
+  const modes=[...document.querySelectorAll('.rf-mode')];
+  function setTheme(t){
+    body.classList.toggle('rf-dark',t==='dark');
+    modes.forEach(b=>b.classList.toggle('active',b.dataset.theme===t && (t==='dark' || b.title==='حالت روز')));
+    localStorage.setItem('rushfinder-theme',t);
+  }
+  document.getElementById('rfRefresh')?.addEventListener('click',()=>location.reload());
+  modes.forEach(b=>b.addEventListener('click',()=>setTheme(b.dataset.theme)));
+  setTheme(localStorage.getItem('rushfinder-theme')||'light');
 })();
 </script>
 
