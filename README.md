@@ -1,8 +1,17 @@
-# RushFinder UI
+# RushFinder
 
-نسخه UI آزمایشی RushFinder بر اساس طرح تأییدشده.
-- RTL / Persian
-- Light & Dark mode
-- Responsive
-- Interactive search UI
-- API search integration is intentionally left for the next phase.
+نسخه اصلی رابط کاربری برای GitHub Pages.
+
+- رابط فارسی و RTL
+- طراحی مطابق UI تاییدشده RushFinder
+- حالت روز و شب
+- کارت‌های ویدیویی 16:9 و گرید واکنش‌گرا
+- فیلترها و جستجوی نمایشی
+- بدون ورود/ثبت‌نام و بدون قابلیت‌های حضور و غیاب
+- فونت UI روی YEKAN تنظیم شده است و در صورت نصب بودن Yekan روی دستگاه استفاده می‌شود.
+
+## انتشار
+فایل `index.html` باید در ریشه Repository قرار بگیرد.
+
+## مرحله بعد
+اتصال موتور جستجوی واقعی YouTube / Google / Vecteezy از طریق backend و API.
