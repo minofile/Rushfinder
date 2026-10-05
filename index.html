@@ -266,20 +266,79 @@ body,button,input,select,.nav button,.metric,.filters,.results,.cat,.btn,.sort,.
 }
 </style>
 
+
+<style>
+/* Rush-V02 */
+.sidebrand.sidebrand-text{
+  height:auto!important;
+  min-height:74px!important;
+  padding:22px 20px 16px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  direction:rtl!important;
+  color:#fff!important;
+  font-family:YEKAN,Tahoma,Arial,sans-serif!important;
+  font-size:11px!important;
+  line-height:1.9!important;
+  font-weight:400!important;
+}
+.sidebrand.sidebrand-text::after{display:none!important}
+.developer-badge{
+  position:absolute;
+  top:52%;
+  right:17px;
+  left:17px;
+  transform:translateY(-50%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  direction:rtl;
+  color:#fff;
+  font-family:YEKAN,Tahoma,Arial,sans-serif!important;
+  font-size:9px;
+  font-weight:400!important;
+  line-height:1.8;
+  padding:11px 10px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:10px;
+  background:rgba(255,255,255,.035);
+}
+.developer-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  flex:0 0 auto;
+}
+.time,.duration,.quality,.badge,.video-time,.video-duration,.video-quality,
+.card [class*="time"],.card [class*="duration"],.card [class*="quality"],
+.card span,.card small{
+  font-family:YEKAN,Tahoma,Arial,sans-serif!important;
+  font-weight:400!important;
+}
+</style>
+
 </head>
 <body>
 <aside class="sidebar">
-<div class="sidebrand"><img src="assets/logos/rushfinder-white.png" alt="RushFinder"></div><nav class="nav"><button class="active"><i>▦</i><span>داشبورد</span></button>
+<div class="sidebrand sidebrand-text">سامانه موتور جستجوی راش ویدیو</div><nav class="nav"><button class="active"><i>▦</i><span>داشبورد</span></button>
 <button><i>⚙</i><span>تنظیمات</span></button></nav>
 
 
 </div>
 
 
-<div class="sidebar-about-final">
-  
-  <div class="about-copy">سامانه موتور جستجوی راش ویدیو</div>
-  <div class="about-dev">طراحی و توسعه: مصطفی رجبی</div>
+
+<div class="developer-badge">
+  <span class="developer-icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M16 18l6-6-6-6"/><path d="M8 6l-6 6 6 6"/><path d="M14.5 4l-5 16"/>
+    </svg>
+  </span>
+  <span>طراحی و توسعه: مصطفی رجبی</span>
 </div>
 
 </aside>
