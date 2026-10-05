@@ -20,22 +20,95 @@ main{max-width:1440px;margin:auto;padding:15px 21px 30px}.summary{display:grid;g
 .pagination{display:flex;justify-content:center;gap:5px;margin:17px 0 2px;direction:ltr}.page{min-width:31px;height:30px;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:7px;font-size:9px;cursor:pointer}.page.active{background:var(--blue);border-color:var(--blue);color:#fff}
 .modal{position:fixed;inset:0;background:#03101bcf;z-index:100;display:none;align-items:center;justify-content:center;padding:20px}.modal.show{display:flex}.viewer{width:min(900px,94vw);background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 25px 80px #0008}.viewer-top{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;border-bottom:1px solid var(--line)}.viewer-top strong{font-size:11px}.close{border:0;background:var(--panel2);color:var(--text);border-radius:7px;width:31px;height:31px;cursor:pointer}.video-stage{aspect-ratio:16/9;background:#02070c;position:relative;display:grid;place-items:center;overflow:hidden}.video-stage img{width:100%;height:100%;object-fit:cover;opacity:.78}.play{position:absolute;width:60px;height:60px;border-radius:50%;border:0;background:#ffffffdf;color:#086cf4;font-size:22px;cursor:pointer}.viewer-info{padding:12px 14px}.viewer-info h2{font-size:13px;margin:0 0 5px}.viewer-info p{font-size:9px;color:var(--muted);margin:0 0 11px}.viewer-actions{display:flex;gap:7px}.viewer-actions button,.viewer-actions a{border:0;text-decoration:none;border-radius:8px;padding:8px 13px;font-size:9px;cursor:pointer}.download{background:var(--blue);color:#fff}.sourcebtn{background:var(--blue2);color:var(--blue)}.notice{font-size:8px;color:var(--muted);margin-top:9px}
 @media(max-width:1150px){.grid{grid-template-columns:repeat(3,1fr)}.categories{grid-template-columns:repeat(5,1fr)}}@media(max-width:1150px){.summary{grid-template-columns:repeat(3,1fr)}}@media(max-width:850px){.sidebar{width:70px}.logo strong,.logo small,.nav button span{display:none}.app{padding-right:70px}.workspace{grid-template-columns:180px 1fr}.grid{grid-template-columns:repeat(2,1fr)}.summary{grid-template-columns:repeat(3,1fr)}}@media(max-width:620px){.sidebar{display:none}.app{padding-right:0}.top{padding:0 9px}.search{width:100%}main{padding:11px}.summary{grid-template-columns:repeat(2,1fr)}.categories{display:flex;overflow:auto}.cat{min-width:105px}.workspace{grid-template-columns:1fr}.filters{display:none}.grid{grid-template-columns:1fr}}
+
+/* Final visual alignment to approved reference */
+.top{height:68px;padding:0 26px;direction:ltr;gap:14px}
+.header-brand{width:225px;display:flex;align-items:center;gap:10px;direction:ltr;flex:0 0 auto}
+.header-mark{width:39px;height:39px;position:relative}
+.header-mark:before,.header-mark:after,.header-mark i{content:"";position:absolute;left:3px;width:30px;height:10px;border-radius:4px 10px 10px 4px;transform:skewY(-29deg)}
+.header-mark:before{top:2px;background:#35c6f3}.header-mark i{top:14px;left:0;background:#126cf5}.header-mark:after{top:26px;background:#24aaf2}
+.header-brand-text strong{display:block;font:700 20px Arial;color:#07172e;letter-spacing:-.5px}
+.header-brand-text strong span{color:#07172e}.header-brand-text strong{color:#0871f8}
+.header-brand-text small{display:block;direction:rtl;text-align:left;font-size:7px;color:#64758c;margin-top:2px}
+body.dark .header-brand-text strong span{color:#fff}
+.search{margin:0 auto;width:min(690px,58vw)}
+.theme{order:3}
+.summary{margin-top:2px}
+.metric{min-height:78px}
+.metric strong{font-size:13px}
+.metric b{font-size:7.5px}
+.metric small{font-size:6.7px}
+.categories{margin:15px 0 14px}
+.workspace{grid-template-columns:205px minmax(0,1fr);gap:14px}
+.grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.card{border-radius:9px}
+.body{padding:6px 8px 7px}
+.title{font-size:8.7px}
+.meta{font-size:7.5px}
+.btn{font-size:7.5px;padding:3px 7px}
+.result-head h1{font-size:14px}
+.result-head small{font-size:7.5px}
+.filters h3{font-size:12px}
+.fg b{font-size:8.5px}.fg label{font-size:8px}
+.sidebrand{display:flex;direction:ltr;align-items:center;gap:8px;padding:3px 8px 19px;color:#fff}
+.sidebrand strong{font:700 15px Arial}
+.side-mark{width:27px;height:27px;position:relative}
+.side-mark:before,.side-mark:after,.side-mark i{content:"";position:absolute;left:2px;width:21px;height:7px;border-radius:3px 8px 8px 3px;transform:skewY(-29deg)}
+.side-mark:before{top:1px;background:#35c6f3}.side-mark i{top:10px;left:0;background:#126cf5}.side-mark:after{top:19px;background:#24aaf2}
+@media(max-width:900px){.header-brand{width:170px}.header-brand-text strong{font-size:16px}.search{width:auto;flex:1}}
+@media(max-width:700px){.header-brand{display:none}}
+
+
+/* FINAL APPROVED DESKTOP UI — designed for browser Zoom 100% */
+@media (min-width:1100px){
+  main{max-width:1440px;margin:0 auto;padding:15px 21px 30px}
+  .grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+  .workspace{grid-template-columns:205px minmax(0,1fr);gap:14px}
+  .summary{grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+  .metric{min-height:82px;padding:12px 14px}
+  .metric strong{font-size:17px;line-height:1.25}
+  .metric b{font-size:10px;line-height:1.55;margin-top:4px}
+  .metric small{font-size:8px;line-height:1.55}
+  .metric .mi{width:28px;height:28px;font-size:12px}
+  .categories{gap:7px;margin:16px 0}
+  .cat{height:68px;font-size:10px}
+  .result-head h1{font-size:18px;line-height:1.6}
+  .result-head small{font-size:9px}
+  .filters{padding:14px}
+  .filters h3{font-size:14px}
+  .fg b{font-size:10px}
+  .fg label{font-size:9.5px;line-height:1.7}
+  .title{font-size:10.5px;line-height:1.7}
+  .meta{font-size:9px}
+  .btn{font-size:9px;padding:4px 8px}
+  .nav button{font-size:11px;padding:11px 12px}
+  .header-brand-text strong{font-size:21px}
+  .header-brand-text small{font-size:8px}
+  .search input,.search button{font-size:11px}
+  .sort{font-size:9px}
+  .page{font-size:10px}
+}
+
 </style>
 </head>
 <body>
 <aside class="sidebar">
-<div class="logo"><div class="logo-icon"><i></i></div><div><strong>RushFinder</strong><small>جستجوی هوشمند راش و ویدیو</small></div></div>
-<nav class="nav"><button class="active"><i>▦</i><span>داشبورد</span></button><button><i>⌕</i><span>جستجو</span></button><button><i>▦</i><span>دسته‌بندی‌ها</span></button><button><i>▣</i><span>منابع</span></button><button><i>♡</i><span>ذخیره‌شده‌ها</span></button><button><i>◷</i><span>تاریخچه</span></button><button><i>⚙</i><span>تنظیمات</span></button></nav>
+<div class="sidebrand"><div class="side-mark"><i></i></div><strong>RushFinder</strong></div><nav class="nav"><button class="active"><i>▦</i><span>داشبورد</span></button><button><i>⌕</i><span>جستجو</span></button><button><i>▦</i><span>دسته‌بندی‌ها</span></button><button><i>▣</i><span>منابع</span></button><button><i>♡</i><span>ذخیره‌شده‌ها</span></button><button><i>◷</i><span>تاریخچه</span></button><button><i>⚙</i><span>تنظیمات</span></button></nav>
 </aside>
 <div class="app">
-<header class="top"><button class="theme" id="theme" onclick="toggleTheme()">☾</button><div class="search"><input id="query" value="نفت" placeholder="راش موردنظرت را جستجو کن..."><button onclick="search()">جستجو</button></div></header>
+<header class="top">
+<div class="header-brand">
+  <div class="header-mark"><i></i></div>
+  <div class="header-brand-text"><strong><span>Rush</span>Finder</strong><small>جستجوی هوشمند راش و ویدیو</small></div>
+</div>
+<button class="theme" id="theme" onclick="toggleTheme()">☾</button><div class="search"><input id="query" value="نفت" placeholder="راش موردنظرت را جستجو کن..."><button onclick="search()">جستجو</button></div></header>
 <main>
 <section class="summary"><div class="metric"><span class="mi">◉</span><strong>۵</strong><b>منبع جستجو</b><small>منابع آماده جستجو</small></div>
 <div class="metric"><span class="mi">◷</span><strong>۷</strong><b>جستجوهای اخیر</b><small>موضوعات جستجو شده</small></div>
 <div class="metric"><span class="mi">♡</span><strong>۱۲</strong><b>ذخیره‌شده‌ها</b><small>ویدیوهای نشان‌شده</small></div>
 <div class="metric"><span class="mi">▦</span><strong>۹</strong><b>دسته‌بندی‌ها</b><small>موضوعات آماده جستجو</small></div>
 <div class="metric"><span class="mi">◎</span><strong>۳</strong><b>منابع جستجو</b><small>YouTube، Google، Vecteezy</small></div>
-<div class="metric"><span class="mi">⌕</span><strong id="count">۱۰۰</strong><b>نتایج پیدا شده</b><small>برای جستجوی فعلی</small></div>
+<div class="metric"><span class="mi">⌕</span><strong id="count">۲۴۰</strong><b>نتایج پیدا شده</b><small>برای جستجوی فعلی</small></div>
 </section>
 <section class="categories">
 <div class="cat active"><span>▦ همه دسته‌ها</span></div>

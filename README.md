@@ -1,7 +1,16 @@
-# RushFinder Web v4
-- YEKAN font from the user-provided font package
-- Six compact top metric cards with smaller typography
-- Logo placement/sizing refined to match the approved reference
-- 16 results per page + pagination
-- Preview modal and download/source actions
-- Light/dark mode
+# RushFinder Final — Zoom 100%
+
+نسخه نهایی مطابق مرجع تأییدشده:
+- طراحی برای Zoom 100%
+- فونت واقعی YEKAN از فایل کاربر
+- لوگو بالا سمت چپ
+- سایدبار سمت راست
+- ۶ کارت آماری
+- ۴ راش در هر ردیف
+- ۱۶ راش در هر صفحه
+- Pagination
+- Preview
+- Download UI
+- Light / Dark mode
+
+داده‌های ویدیو فعلاً نمونه UI هستند؛ API واقعی در مرحله بعد متصل می‌شود.
