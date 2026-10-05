@@ -82,6 +82,28 @@ function vectItems(data){
 function vectTotal(data, fallback){
   return num(data?.total ?? data?.total_count ?? data?.meta?.total ?? data?.pagination?.total ?? data?.count) || fallback;
 }
+function durationSeconds(x){
+  const candidates=[
+    x?.duration,x?.duration_seconds,x?.durationSeconds,
+    x?.video_duration,x?.videoDuration,
+    x?.metadata?.duration,x?.metadata?.duration_seconds,
+    x?.video?.duration,x?.video?.duration_seconds,
+    x?.file?.duration,x?.source?.duration
+  ];
+  for(const v of candidates){
+    if(typeof v==="number" && Number.isFinite(v) && v>0) return Math.round(v);
+    if(typeof v==="string" && v.trim()){
+      const t=v.trim();
+      if(/^\d+(\.\d+)?$/.test(t)) return Math.round(Number(t));
+      if(/^\d{1,2}:\d{2}(:\d{2})?$/.test(t)){
+        const a=t.split(":").map(Number);
+        return a.length===3 ? a[0]*3600+a[1]*60+a[2] : a[0]*60+a[1];
+      }
+    }
+  }
+  const ms=num(x?.duration_ms ?? x?.durationMs ?? x?.metadata?.duration_ms ?? x?.video?.duration_ms);
+  return ms>0 ? Math.round(ms/1000) : 0;
+}
 function normalizeVecteezy(x){
   const [w,h]=dims(x);
   const urls=deepUrls(x);
@@ -101,7 +123,7 @@ function normalizeVecteezy(x){
   return {
     id,
     title:String(x?.title ?? x?.name ?? x?.description ?? `Vecteezy video ${id}`),
-    source:"Vecteezy", pageURL, thumbnail, duration:num(x?.duration ?? x?.video?.duration ?? x?.metadata?.duration),
+    source:"Vecteezy", pageURL, thumbnail, duration:durationSeconds(x),
     width:w,height:h,video, download:id?`/api/search?action=download&source=vecteezy&id=${encodeURIComponent(id)}`:""
   };
 }
@@ -119,7 +141,32 @@ async function vecteezySearch({q,page,quality,orientation,limit=16}){
   if(!r.ok) throw new Error(data?.message||data?.error||`Vecteezy API error (${r.status})`);
   const raw=vectItems(data), normalized=raw.map(normalizeVecteezy).filter(x=>x.id && (x.thumbnail||x.video||x.pageURL));
   const filtered=normalized.filter(x=>allowed(x.width,x.height,quality,orientation));
-  return {results:filtered.slice(0,limit), totalAccessible:vectTotal(data,filtered.length), sourceTotalHits:vectTotal(data,raw.length), total:vectTotal(data,raw.length)};
+  const visible=filtered.slice(0,limit);
+
+  // Search responses may omit video duration. For only the visible cards that
+  // still have 0 duration, request the documented single-resource endpoint.
+  await Promise.all(visible.map(async item=>{
+    if(item.duration>0 || !item.id) return;
+    try{
+      const rr=await fetch(`${VECTEEZY}/v2/${encodeURIComponent(account)}/resources/${encodeURIComponent(item.id)}`,{
+        headers:{Authorization:`Bearer ${key}`,Accept:"application/json"}
+      });
+      if(!rr.ok) return;
+      const detail=await rr.json();
+      const resource=detail?.resource ?? detail?.data ?? detail;
+      const d=durationSeconds(resource);
+      if(d>0) item.duration=d;
+      // Also improve dimensions/preview if detail contains them.
+      const enriched=normalizeVecteezy(resource);
+      if(!item.width && enriched.width) item.width=enriched.width;
+      if(!item.height && enriched.height) item.height=enriched.height;
+      if(!item.video && enriched.video) item.video=enriched.video;
+      if(!item.thumbnail && enriched.thumbnail) item.thumbnail=enriched.thumbnail;
+      if(!item.pageURL && enriched.pageURL) item.pageURL=enriched.pageURL;
+    }catch(_){}
+  }));
+
+  return {results:visible, totalAccessible:vectTotal(data,filtered.length), sourceTotalHits:vectTotal(data,raw.length), total:vectTotal(data,raw.length)};
 }
 async function vecteezyDownload(id,res){
   const key=process.env.VECTEEZY_API_KEY, account=process.env.VECTEEZY_ACCOUNT_ID;

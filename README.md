@@ -1,15 +1,10 @@
-# RushFinder V017
+# RushFinder V018
 
-تغییرات:
-- اتصال Vecteezy API در سمت سرور با Bearer Token
-- استفاده از VECTEEZY_API_KEY و VECTEEZY_ACCOUNT_ID از Vercel
-- جستجوی ویدیوهای Vecteezy
-- منبع پویا روی کارت و Viewer
-- دانلود Vecteezy فقط با endpoint رسمی هنگام کلیک کاربر
-- حالت «همه منابع»: Pixabay + Vecteezy
-- YouTube و Google همچنان غیرفعال
-- 16 نتیجه در هر صفحه
-- فیلتر کیفیت و جهت برای ویدیوها سمت سرور
+تغییر اصلی:
+- اصلاح زمان ویدیوهای Vecteezy
+- پشتیبانی از چند ساختار رایج duration
+- اگر Search API زمان را ندهد، برای 16 کارت قابل نمایش از endpoint رسمی تک‌منبع Vecteezy جزئیات گرفته می‌شود
+- Pixabay و اتصال Vecteezy نسخه قبل حفظ شده‌اند
 
 Commit پیشنهادی:
-Rush-V017
+Rush-V018
