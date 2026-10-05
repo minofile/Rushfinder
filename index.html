@@ -139,6 +139,28 @@ body,button,input,select,option,
   font-weight:700 !important;
 }
 
+
+/* RushFinder V037 Settings */
+.rf-settings-page{display:none;padding:4px 0 28px}
+.rf-settings-page.active{display:block}
+.rf-settings-head{display:flex;align-items:center;justify-content:space-between;margin:8px 0 18px}
+.rf-settings-title{font-size:25px;font-weight:400;margin:0}
+.rf-settings-sub{font-size:13px;color:var(--muted,#8190a8);margin-top:5px}
+.rf-setting-row{display:flex;align-items:center;justify-content:space-between;gap:24px;background:var(--card,#fff);border:1px solid var(--border,#e4ebf4);border-radius:17px;padding:18px 22px;margin-bottom:10px}
+.rf-setting-info{min-width:260px}
+.rf-setting-name{font-size:16px;margin-bottom:5px}
+.rf-setting-desc{font-size:12px;color:var(--muted,#8795aa)}
+.rf-setting-options{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-start}
+.rf-set-btn{border:1px solid var(--border,#dfe7f1);background:transparent;color:inherit;border-radius:11px;padding:10px 20px;font-family:inherit;cursor:pointer}
+.rf-set-btn.active{border-color:#1677ff;background:#eef6ff;color:#1677ff}
+.rf-setting-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.rf-action-card{display:flex;align-items:center;justify-content:space-between;background:var(--card,#fff);border:1px solid var(--border,#e4ebf4);border-radius:17px;padding:18px 22px}
+.rf-action-card.danger{background:#fff7f6;border-color:#ffd9d4}
+.rf-action-card.danger .rf-setting-name{color:#e94132}
+.rf-about-card{display:flex;align-items:center;justify-content:space-between;background:var(--card,#fff);border:1px solid var(--border,#e4ebf4);border-radius:17px;padding:18px 22px;margin-top:12px}
+.rf-settings-select{font-family:inherit;border:1px solid var(--border,#dfe7f1);border-radius:11px;background:var(--card,#fff);color:inherit;padding:10px 16px}
+@media(max-width:900px){.rf-setting-row{align-items:flex-start;flex-direction:column}.rf-setting-actions{grid-template-columns:1fr}.rf-about-card{align-items:flex-start;flex-direction:column;gap:10px}}
+
 </style>
 
 <style>
@@ -1175,6 +1197,124 @@ function closeYouTubeViewer(){
  document.body.style.overflow="";
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer();});
+</script>
+
+
+<section id="rfSettingsPage" class="rf-settings-page" dir="rtl">
+  <div class="rf-settings-head">
+    <div>
+      <h1 class="rf-settings-title">تنظیمات</h1>
+      <div class="rf-settings-sub">تنظیمات شخصی‌سازی تجربه جستجو در RushFinder</div>
+    </div>
+  </div>
+
+  <div class="rf-setting-row">
+    <div class="rf-setting-info"><div class="rf-setting-name">ظاهر برنامه</div><div class="rf-setting-desc">انتخاب حالت نمایش رابط کاربری</div></div>
+    <div class="rf-setting-options" data-setting="theme">
+      <button class="rf-set-btn" data-value="light">روشن</button>
+      <button class="rf-set-btn" data-value="dark">تاریک</button>
+      <button class="rf-set-btn" data-value="system">سیستم</button>
+    </div>
+  </div>
+
+  <div class="rf-setting-row">
+    <div class="rf-setting-info"><div class="rf-setting-name">تعداد نتایج در هر صفحه</div><div class="rf-setting-desc">تعداد ویدیوهایی که در هر صفحه نمایش داده می‌شود</div></div>
+    <div class="rf-setting-options" data-setting="perPage">
+      <button class="rf-set-btn" data-value="12">۱۲</button><button class="rf-set-btn" data-value="24">۲۴</button><button class="rf-set-btn" data-value="36">۳۶</button>
+    </div>
+  </div>
+
+  <div class="rf-setting-row">
+    <div class="rf-setting-info"><div class="rf-setting-name">منبع پیش‌فرض جستجو</div><div class="rf-setting-desc">منبعی که جستجو به صورت پیش‌فرض با آن انجام می‌شود</div></div>
+    <div class="rf-setting-options" data-setting="source">
+      <button class="rf-set-btn" data-value="all">همه منابع</button><button class="rf-set-btn" data-value="YouTube">YouTube</button><button class="rf-set-btn" data-value="Aparat">Aparat</button><button class="rf-set-btn" data-value="Vecteezy">Vecteezy</button><button class="rf-set-btn" data-value="Pixabay">Pixabay</button>
+    </div>
+  </div>
+
+  <div class="rf-setting-row">
+    <div class="rf-setting-info"><div class="rf-setting-name">کیفیت پیش‌فرض</div><div class="rf-setting-desc">کیفیت ویدیوهای نمایش داده‌شده</div></div>
+    <div class="rf-setting-options" data-setting="quality">
+      <button class="rf-set-btn" data-value="all">همه</button><button class="rf-set-btn" data-value="HD">HD</button><button class="rf-set-btn" data-value="Full HD">Full HD</button><button class="rf-set-btn" data-value="4K">4K</button>
+    </div>
+  </div>
+
+  <div class="rf-setting-row">
+    <div class="rf-setting-info"><div class="rf-setting-name">جهت ویدیو</div><div class="rf-setting-desc">جهت پیش‌فرض نمایش نتایج</div></div>
+    <div class="rf-setting-options" data-setting="orientation">
+      <button class="rf-set-btn" data-value="all">همه</button><button class="rf-set-btn" data-value="horizontal">افقی</button><button class="rf-set-btn" data-value="vertical">عمودی</button>
+    </div>
+  </div>
+
+  <div class="rf-setting-row">
+    <div class="rf-setting-info"><div class="rf-setting-name">مرتب‌سازی پیش‌فرض</div><div class="rf-setting-desc">ترتیب نمایش نتایج جستجو</div></div>
+    <div class="rf-setting-options" data-setting="sort">
+      <button class="rf-set-btn" data-value="relevant">مرتبط‌ترین</button><button class="rf-set-btn" data-value="newest">جدیدترین</button>
+    </div>
+  </div>
+
+  <div class="rf-setting-actions">
+    <div class="rf-action-card danger"><div><div class="rf-setting-name">پاک کردن جستجوهای اخیر</div><div class="rf-setting-desc">تمام سوابق جستجوی ذخیره‌شده در مرورگر پاک می‌شود</div></div><button id="rfClearHistory" class="rf-set-btn">پاک کردن</button></div>
+    <div class="rf-action-card"><div><div class="rf-setting-name">بازنشانی تنظیمات</div><div class="rf-setting-desc">بازگشت همه تنظیمات به حالت پیش‌فرض</div></div><button id="rfResetSettings" class="rf-set-btn">بازنشانی</button></div>
+  </div>
+
+  <div class="rf-about-card">
+    <div><div class="rf-setting-name">درباره RushFinder</div><div class="rf-setting-desc">سامانه موتور جستجوی راش ویدیو</div></div>
+    <div style="font-size:13px;line-height:2">نسخه برنامه: <b>V037</b><br>طراحی و توسعه: مصطفی رجبی</div>
+  </div>
+</section>
+
+
+<script>
+(function(){
+ const defaults={theme:"system",perPage:"12",source:"all",quality:"all",orientation:"all",sort:"relevant"};
+ const key="rushfinder_settings_v1";
+ const get=()=>{try{return {...defaults,...JSON.parse(localStorage.getItem(key)||"{}")}}catch(e){return {...defaults}}};
+ const save=s=>localStorage.setItem(key,JSON.stringify(s));
+ function paint(){
+   const s=get();
+   document.querySelectorAll(".rf-setting-options").forEach(g=>{
+     const k=g.dataset.setting;
+     g.querySelectorAll(".rf-set-btn").forEach(b=>b.classList.toggle("active",String(b.dataset.value)===String(s[k])));
+   });
+ }
+ document.addEventListener("click",function(e){
+   const b=e.target.closest(".rf-setting-options .rf-set-btn");
+   if(b){
+     const g=b.closest(".rf-setting-options"), s=get(); s[g.dataset.setting]=b.dataset.value; save(s); paint();
+     if(g.dataset.setting==="theme"){
+       const mode=b.dataset.value;
+       if(mode==="system"){ document.documentElement.removeAttribute("data-theme"); }
+       else document.documentElement.setAttribute("data-theme",mode);
+     }
+   }
+ });
+ const page=document.getElementById("rfSettingsPage");
+ function openSettings(){
+   if(!page)return;
+   const main=page.parentElement;
+   [...main.children].forEach(el=>{if(el!==page){el.dataset.rfOldDisplay=el.style.display||"";el.style.display="none"}});
+   page.style.display="block";page.classList.add("active");paint();window.scrollTo({top:0,behavior:"smooth"});
+ }
+ function closeSettings(){
+   if(!page)return;
+   const main=page.parentElement;
+   [...main.children].forEach(el=>{if(el!==page){el.style.display=el.dataset.rfOldDisplay||""}});
+   page.style.display="";page.classList.remove("active");
+ }
+ // Connect the existing sidebar Settings item without changing dashboard markup.
+ document.querySelectorAll("a,button,.nav-item,.menu-item").forEach(el=>{
+   if((el.textContent||"").trim().includes("تنظیمات")) el.addEventListener("click",function(ev){ev.preventDefault();openSettings()});
+   if((el.textContent||"").trim()==="داشبورد") el.addEventListener("click",function(ev){if(page.classList.contains("active")){ev.preventDefault();closeSettings()}});
+ });
+ document.getElementById("rfClearHistory")?.addEventListener("click",()=>{
+   ["recentSearches","rushfinder_recent","searchHistory"].forEach(k=>localStorage.removeItem(k));
+   alert("جستجوهای اخیر پاک شد.");
+ });
+ document.getElementById("rfResetSettings")?.addEventListener("click",()=>{
+   localStorage.removeItem(key);document.documentElement.removeAttribute("data-theme");paint();alert("تنظیمات بازنشانی شد.");
+ });
+ paint();
+})();
 </script>
 
 </body></html>
