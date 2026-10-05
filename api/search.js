@@ -6,31 +6,21 @@ function arr(v){ return Array.isArray(v)?v:[]; }
 function first(...v){ return v.find(x=>typeof x==="string" && /^https?:\/\//i.test(x)) || ""; }
 
 function findFileUrl(obj){
-  const candidates=[];
   const all=obj?.file_link_all;
-  if(Array.isArray(all)){
-    for(const x of all){
-      if(typeof x==="string") candidates.push(x);
-      else if(x && typeof x==="object"){
-        for(const k of ["file_link","url","link","src"]) if(typeof x[k]==="string") candidates.push(x[k]);
-      }
-    }
-  }else if(all && typeof all==="object"){
-    for(const k of Object.keys(all)){
-      const x=all[k];
-      if(typeof x==="string") candidates.push(x);
-      else if(x && typeof x==="object"){
-        for(const kk of ["file_link","url","link","src"]) if(typeof x[kk]==="string") candidates.push(x[kk]);
-      }
-    }
-  }
-  const deep=deepUrls(obj);
-  candidates.push(...deep);
-  const unique=[...new Set(candidates.filter(u=>/^https?:\/\//i.test(u)))];
-  const mp4=unique.find(u=>/\.mp4(\?|$)/i.test(u));
-  if(mp4) return mp4;
-  const file=unique.find(u=>/(download|file_link|filelink|video_file|media)/i.test(u) && !/\.m3u8(\?|$)/i.test(u));
-  return file||"";
+  if(!Array.isArray(all) || !all.length) return "";
+
+  const files=all.map((x,index)=>{
+    if(!x || typeof x!=="object") return null;
+    const urls=Array.isArray(x.urls)?x.urls:[];
+    const url=urls.find(u=>typeof u==="string" && /^https?:\/\//i.test(u))||"";
+    const profile=String(x.profile||x.quality||x.label||"");
+    const q=parseInt((profile.match(/(\d{3,4})/)||[])[1]||"0",10);
+    return url?{url,q,index}:null;
+  }).filter(Boolean);
+
+  if(!files.length) return "";
+  files.sort((a,b)=>(b.q-a.q)||(b.index-a.index));
+  return files[0].url;
 }
 
 async function aparatDirectFile(uid){
