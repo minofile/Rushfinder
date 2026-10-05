@@ -708,6 +708,45 @@ header,.topbar,.header,.site-header,.app-header{border-bottom:0!important;box-sh
 }
 </style>
 
+
+<style>
+/* Rush-V016 — live result count + unified dashboard cards */
+.categories{
+  grid-template-columns:repeat(8,1fr)!important;
+  gap:9px!important;
+  margin:16px 0!important;
+}
+.categories .cat{
+  height:82px!important;
+  min-height:82px!important;
+  padding:0!important;
+  border:1px solid var(--line)!important;
+  border-radius:11px!important;
+  box-shadow:0 4px 14px rgba(40,67,103,.045)!important;
+  background-color:var(--panel)!important;
+  transition:.18s ease!important;
+}
+.categories .cat:hover{
+  transform:translateY(-1px)!important;
+  box-shadow:0 7px 18px rgba(40,67,103,.075)!important;
+}
+.categories .cat span{
+  width:100%!important;
+  min-height:34px!important;
+  padding:8px 5px!important;
+  box-sizing:border-box!important;
+  font-size:9px!important;
+  font-weight:400!important;
+}
+@media(max-width:1150px){
+  .categories{grid-template-columns:repeat(4,1fr)!important}
+}
+@media(max-width:620px){
+  .categories{display:flex!important}
+  .categories .cat{min-width:120px!important}
+}
+</style>
+
 </head>
 <body>
 <aside class="sidebar">
@@ -869,7 +908,10 @@ async function loadPage(){
  const grid=document.getElementById("grid");grid.innerHTML='<div style="grid-column:1/-1;padding:55px;text-align:center;color:var(--muted)">در حال دریافت نتایج از Pixabay...</div>';
  const params=new URLSearchParams({q:activeQuery,page:String(current),per_page:String(perPage),quality:selectedQuality(),orientation:selectedOrientation()});
  const r=await fetch(`/api/search?${params}`),data=await r.json();if(!r.ok)throw new Error(data.error||"خطا در جستجو");
- results=Array.isArray(data.results)?data.results:[];totalAccessible=Number(data.totalAccessible||0);
+ results=Array.isArray(data.results)?data.results:[];
+ totalAccessible=Number(data.totalAccessible ?? data.totalHits ?? data.total ?? 0);
+ const countEl=document.getElementById("count");
+ if(countEl) countEl.textContent=faDigits(totalAccessible);
  const sub=document.querySelector(".result-head small");if(sub)sub.textContent=`${faDigits(totalAccessible)} راش قابل دسترسی از Pixabay`;
  render();
 }
@@ -877,7 +919,7 @@ async function search(qOverride){
  const input=document.getElementById("query"),q=(qOverride||input.value).trim();if(!q)return;input.value=q;activeQuery=q;current=1;
  document.getElementById("homeState").style.display="none";document.getElementById("searchContent").hidden=false;
  document.getElementById("title").textContent=`نتایج جستجو برای «${q}»`;
- try{await loadPage()}catch(err){results=[];document.getElementById("grid").innerHTML=`<div style="grid-column:1/-1;padding:50px;text-align:center;color:#d33">${escapeHtml(err.message)}</div>`}
+ try{await loadPage()}catch(err){results=[];totalAccessible=0;const countEl=document.getElementById("count");if(countEl)countEl.textContent="۰";document.getElementById("grid").innerHTML=`<div style="grid-column:1/-1;padding:50px;text-align:center;color:#d33">${escapeHtml(err.message)}</div>`}
 }
 function showSourceNotice(text){const n=document.getElementById("sourceNotice");if(!n)return;n.textContent=text;n.classList.add("show");clearTimeout(window.__srcTimer);window.__srcTimer=setTimeout(()=>n.classList.remove("show"),2600)}
 function setupSourceFilters(){
