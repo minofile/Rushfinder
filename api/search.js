@@ -222,7 +222,7 @@ module.exports = async function handler(req,res){
     try{return await vecteezyDownload(id,res)}catch(e){return res.status(500).json({error:"خطا در دانلود از Vecteezy."})}
   }
   if(!q) return res.status(400).json({error:"عبارت جستجو وارد نشده است."});
-  const page=Math.max(1,parseInt(req.query.page||"1",10)), perPage=16;
+  const page=Math.max(1,parseInt(req.query.page||"1",10)), perPage=12;
   const quality=String(req.query.quality||"all"), orientation=String(req.query.orientation||"all");
   try{
     let payload;
@@ -237,9 +237,9 @@ module.exports = async function handler(req,res){
     }else{
       // "All sources": currently the two connected providers.
       const [p,v,y]=await Promise.allSettled([
-        pixabaySearch({q,page,quality,orientation,limit:6}),
-        vecteezySearch({q,page,quality,orientation,limit:5}),
-        youtubeSearch({q,page,quality,orientation,limit:5})
+        pixabaySearch({q,page,quality,orientation,limit:4}),
+        vecteezySearch({q,page,quality,orientation,limit:4}),
+        youtubeSearch({q,page,quality,orientation,limit:4})
       ]);
       const pr=p.status==="fulfilled"?p.value:{results:[],totalAccessible:0,sourceTotalHits:0,total:0};
       const vr=v.status==="fulfilled"?v.value:{results:[],totalAccessible:0,sourceTotalHits:0,total:0};
