@@ -2308,6 +2308,7 @@ let results=[];
 let current=1;
 let perPage=12;
 let totalAccessible=0, activeQuery="", activeSource="all";
+let activeSources=[];
 
 function formatDuration(sec){
  sec=Math.max(0,Math.round(Number(sec||0)));
@@ -2353,6 +2354,7 @@ function rfApplySearchSettings(){
  const s=rfSettingMap();
  perPage=Number(s.perPage||12);
  activeSource=String(s.source||"all").toLowerCase();
+ activeSources=activeSource==="all"?[]:[activeSource];
 
  const sourceBoxes=[...document.querySelectorAll(".source-filter")];
  const all=document.getElementById("allSources");
@@ -2433,7 +2435,8 @@ async function loadPage(){
  const grid=document.getElementById("grid");
  const srcName=activeSource==="vecteezy"?"Vecteezy":activeSource==="pixabay"?"Pixabay":activeSource==="youtube"?"YouTube":activeSource==="aparat"?"Aparat":"منابع متصل";
  grid.innerHTML=`<div style="grid-column:1/-1;padding:55px;text-align:center;color:var(--muted)">در حال دریافت نتایج از ${srcName}...</div>`;
- const params=new URLSearchParams({q:activeQuery,page:String(current),per_page:String(perPage),quality:selectedQuality(),orientation:selectedOrientation(),duration:selectedDuration(),source:activeSource});
+ const sourceParam=activeSources.length?activeSources.join(","):activeSource;
+ const params=new URLSearchParams({q:activeQuery,page:String(current),per_page:String(perPage),quality:selectedQuality(),orientation:selectedOrientation(),duration:selectedDuration(),source:sourceParam});
  const r=await fetch(`/api/search?${params}`),data=await r.json();if(!r.ok)throw new Error(data.error||"خطا در جستجو");
  results=Array.isArray(data.results)?data.results:[];
  totalAccessible=Number(data.totalAccessible ?? data.totalHits ?? data.total ?? 0);
@@ -2470,12 +2473,8 @@ function setupSourceFilters(){
  }));
 
  sources.forEach(b=>b.addEventListener("change",()=>{
-   if(b.checked){
-     if(all) all.checked=false;
-     sources.forEach(x=>{if(x!==b)x.checked=false});
-   } else if(!sources.some(x=>x.checked) && all){
-     all.checked=true;
-   }
+   if(b.checked && all) all.checked=false;
+   if(!sources.some(x=>x.checked) && all) all.checked=true;
  }));
  if(all) all.addEventListener("change",()=>{
    if(all.checked) sources.forEach(x=>x.checked=false);
@@ -2483,12 +2482,9 @@ function setupSourceFilters(){
 
  const apply=document.getElementById("applyFilters");
  if(apply) apply.addEventListener("click",async()=>{
-   const chosen=sources.find(x=>x.checked);
-   if(chosen && chosen.value==="google"){
-     showSourceNotice("API این منبع هنوز متصل نشده است.");
-     return;
-   }
-   activeSource=chosen ? chosen.value : "all";
+   const chosen=sources.filter(x=>x.checked);
+   activeSources=chosen.map(x=>x.value);
+   activeSource=activeSources.length===1 ? activeSources[0] : (activeSources.length?activeSources.join(","):"all");
    const q=document.getElementById("query").value.trim();
    if(!q){showSourceNotice("ابتدا عبارت جستجو را وارد کنید.");return}
    activeQuery=q; current=1;

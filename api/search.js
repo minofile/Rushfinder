@@ -44,11 +44,7 @@ function relevanceScore(item,q){
 function improveRelevance(results,q){
   const list=Array.isArray(results)?results:[];
   const scored=list.map((item,index)=>({item,index,score:relevanceScore(item,q)}));
-  const relevant=scored.filter(x=>x.score>0);
-  // Only hard-filter when we have enough matched items; otherwise rank matches first
-  // so sparse providers do not make the page empty.
-  const chosen=relevant.length>=Math.min(4,list.length)?relevant:scored;
-  return chosen.sort((a,b)=>(b.score-a.score)||(a.index-b.index)).map(x=>x.item);
+  return scored.sort((a,b)=>(b.score-a.score)||(a.index-b.index)).map(x=>x.item);
 }
 
 function findFileUrl(obj){
@@ -464,6 +460,57 @@ async function youtubeSearch({q,page,quality,orientation,limit=16}){
  return{results:results.slice(0,limit),totalAccessible:total,sourceTotalHits:total,total};
 }
 
+
+async function searchOneSource(source,args){
+  if(source==="youtube") return {...await youtubeSearch(args),sourceLabel:"YouTube"};
+  if(source==="vecteezy") return {...await vecteezySearch(args),sourceLabel:"Vecteezy"};
+  if(source==="pixabay") return {...await pixabaySearch(args),sourceLabel:"Pixabay"};
+  if(source==="aparat") return {...await aparatSearch(args),sourceLabel:"Aparat"};
+  return {results:[],totalAccessible:0,sourceTotalHits:0,total:0,sourceLabel:source};
+}
+function durationOK(item,filter){
+  if(filter==="all") return true;
+  const d=Number(item?.duration||0);
+  if(!Number.isFinite(d)||d<=0) return false;
+  return filter==="under1" ? d<60 : d>=60;
+}
+async function filledMultiSearch({sources,q,page,perPage,quality,orientation,durationFilter,originalQ}){
+  // Build a stable virtual result stream by fetching enough provider pages to fill
+  // every requested UI page. This prevents page 2/3 becoming short after filters.
+  const need=page*perPage;
+  const buckets=Object.fromEntries(sources.map(x=>[x,[]]));
+  const totals={};
+  const maxRounds=Math.max(3,Math.ceil(need/Math.max(1,perPage))*3);
+  for(let round=1;round<=maxRounds;round++){
+    const jobs=await Promise.allSettled(sources.map(src=>searchOneSource(src,{q,page:round,quality,orientation,limit:perPage})));
+    jobs.forEach((job,i)=>{
+      const src=sources[i]; if(job.status!=="fulfilled") return;
+      const val=job.value; totals[src]=num(val.totalAccessible||val.total||val.sourceTotalHits);
+      let rows=improveRelevance(arr(val.results),originalQ).filter(x=>durationOK(x,durationFilter));
+      const seen=new Set(buckets[src].map(x=>`${x.source}:${x.id||x.uid||x.pageURL}`));
+      for(const x of rows){const k=`${x.source}:${x.id||x.uid||x.pageURL}`;if(!seen.has(k)){seen.add(k);buckets[src].push(x)}}
+    });
+    const available=Object.values(buckets).reduce((n,a)=>n+a.length,0);
+    if(available>=need) break;
+    const exhausted=sources.every(src=>!totals[src] || buckets[src].length>=totals[src]);
+    if(exhausted) break;
+  }
+  const mixed=[]; let i=0;
+  while(mixed.length<need){
+    let added=false;
+    for(const src of sources){if(buckets[src][i]){mixed.push(buckets[src][i]);added=true;if(mixed.length>=need)break}}
+    if(!added)break; i++;
+  }
+  const start=(page-1)*perPage;
+  // Provider totals are the best available count; filtered totals are capped to what
+  // can actually be discovered while filling pages, avoiding absurd pagination.
+  const rawTotal=Object.values(totals).reduce((a,b)=>a+num(b),0);
+  const discovered=Object.values(buckets).reduce((n,a)=>n+a.length,0);
+  const totalAccessible=durationFilter==="all"?rawTotal:Math.max(discovered, mixed.length);
+  return {results:mixed.slice(start,start+perPage),totalAccessible,sourceTotalHits:rawTotal,total:rawTotal,
+    sourceLabel:sources.map(x=>({youtube:"YouTube",aparat:"Aparat",vecteezy:"Vecteezy",pixabay:"Pixabay"}[x]||x)).join(" + ")};
+}
+
 module.exports = async function handler(req,res){
   const q=String(req.query.q||"").trim();
   const action=String(req.query.action||"");
@@ -484,45 +531,13 @@ module.exports = async function handler(req,res){
   const searchQ=providerQuery(q);
   try{
     let payload;
-    if(source==="youtube"){
-      payload=await youtubeSearch({q:searchQ,page,quality,orientation,limit:perPage}); payload.sourceLabel="YouTube";
-    }else if(source==="vecteezy"){
-      payload=await vecteezySearch({q:searchQ,page,quality,orientation,limit:perPage});
-      payload.sourceLabel="Vecteezy";
-    }else if(source==="pixabay"){
-      payload=await pixabaySearch({q:searchQ,page,quality,orientation,limit:perPage});
-      payload.sourceLabel="Pixabay";
-    }else if(source==="aparat"){
-      payload=await aparatSearch({q:searchQ,page,quality,orientation,limit:perPage});
-      payload.sourceLabel="Aparat";
+    const validSources=["youtube","aparat","vecteezy","pixabay"];
+    let requestedSources=source==="all" ? validSources : source.split(",").map(x=>x.trim()).filter(x=>validSources.includes(x));
+    if(!requestedSources.length) requestedSources=validSources;
+    if(requestedSources.length>1){
+      payload=await filledMultiSearch({sources:requestedSources,q:searchQ,page,perPage,quality,orientation,durationFilter,originalQ:q});
     }else{
-      // "All sources": all four connected providers.
-      // In "all sources", ask each provider for the selected page-size batch.
-      // Then interleave them and fill the page up to the selected page size whenever
-      // one provider returns fewer results or temporarily fails.
-      const [p,v,y,a]=await Promise.allSettled([
-        pixabaySearch({q:searchQ,page,quality,orientation,limit:perPage}),
-        vecteezySearch({q:searchQ,page,quality,orientation,limit:perPage}),
-        youtubeSearch({q:searchQ,page,quality,orientation,limit:perPage}),
-        aparatSearch({q:searchQ,page,quality,orientation,limit:perPage})
-      ]);
-      const pr=p.status==="fulfilled"?p.value:{results:[],totalAccessible:0,sourceTotalHits:0,total:0};
-      const vr=v.status==="fulfilled"?v.value:{results:[],totalAccessible:0,sourceTotalHits:0,total:0};
-      const yr=y.status==="fulfilled"?y.value:{results:[],totalAccessible:0,sourceTotalHits:0,total:0};
-      const ar=a.status==="fulfilled"?a.value:{results:[],totalAccessible:0,sourceTotalHits:0,total:0};
-      const lists=[pr.results,vr.results,yr.results,ar.results];
-      const mixed=[];const max=Math.max(...lists.map(x=>x.length));
-      for(let i=0;i<max && mixed.length<perPage;i++){
-        for(const list of lists){
-          if(list[i] && mixed.length<perPage)mixed.push(list[i]);
-        }
-      }
-      payload={results:mixed.slice(0,perPage),
-        totalAccessible:num(pr.totalAccessible)+num(vr.totalAccessible)+num(yr.totalAccessible)+num(ar.totalAccessible),
-        sourceTotalHits:num(pr.sourceTotalHits)+num(vr.sourceTotalHits)+num(yr.sourceTotalHits)+num(ar.sourceTotalHits),
-        total:num(pr.total)+num(vr.total)+num(yr.total)+num(ar.total),
-        sourceLabel:"Pixabay + Vecteezy + YouTube + Aparat",
-        providerErrors:[p.status==="rejected"?"Pixabay":null,v.status==="rejected"?"Vecteezy":null,y.status==="rejected"?"YouTube":null,a.status==="rejected"?"Aparat":null].filter(Boolean)};
+      payload=await searchOneSource(requestedSources[0],{q:searchQ,page,quality,orientation,limit:perPage});
     }
     // Rank/filter weakly related results before other filters.
     if(Array.isArray(payload?.results)) payload.results=improveRelevance(payload.results,q);

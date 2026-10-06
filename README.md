@@ -1,7 +1,5 @@
-# RushFinder V074
-
-- Based on Rush-V073.
-- Removed only the white inner box and its symbols from the search-results banner.
-- Preserved the colored graphical results banner and the rest of the interface.
-
-V075: improved Persian/English query expansion and relevance ranking (e.g. امریکا).
+# RushFinder V076
+- Multi-source filters: select any combination such as YouTube + Aparat.
+- All Sources remains mutually exclusive with individual source selections.
+- Pagination refill logic fetches additional provider batches to keep normal pages filled to 12/24/36 where enough results exist.
+- Pagination count uses provider totals; duration-filtered searches use discovered eligible totals to avoid inflated page counts.
