@@ -1442,6 +1442,100 @@ body{color-scheme:light!important}
 /* enforce light-only top UI */
 body.rf-dark{background:#f6f9fd!important;color:inherit!important}
 </style>
+<style>
+/* RushFinder V053 — latest requested edits */
+
+/* 1) Smaller save button */
+.rf-settings-savebar{
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
+}
+.rf-save-btn{
+  min-width:0!important;
+  width:260px!important;
+  max-width:260px!important;
+  min-height:44px!important;
+  padding:10px 22px!important;
+  border-radius:14px!important;
+  font-size:12px!important;
+}
+
+/* 2) Default quality: all four controls in one line */
+.rf-setting-row[data-art="4k"] .rf-setting-options{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  white-space:nowrap!important;
+  gap:6px!important;
+  align-items:center!important;
+}
+.rf-setting-row[data-art="4k"] .rf-set-btn{
+  flex:0 0 auto!important;
+  min-width:54px!important;
+  padding-left:10px!important;
+  padding-right:10px!important;
+}
+
+/* 3 + 4) Default source: title/text and all five controls stay on one line */
+.rf-setting-row[data-art="play"] .rf-setting-name{
+  white-space:nowrap!important;
+  word-break:keep-all!important;
+}
+.rf-setting-row[data-art="play"] .rf-setting-desc{
+  white-space:nowrap!important;
+  word-break:keep-all!important;
+  overflow:visible!important;
+}
+.rf-setting-row[data-art="play"] .rf-setting-options{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  white-space:nowrap!important;
+  gap:5px!important;
+  align-items:center!important;
+}
+.rf-setting-row[data-art="play"] .rf-set-btn{
+  flex:0 0 auto!important;
+  min-width:0!important;
+  padding-left:8px!important;
+  padding-right:8px!important;
+  font-size:9px!important;
+}
+
+/* 5 + 6) Remove old crossed geometric sidebar artwork and replace it
+   with a blue mountain silhouette matching the approved sample. */
+.side:before{
+  content:""!important;
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  bottom:78px!important;
+  height:42%!important;
+  opacity:1!important;
+  pointer-events:none!important;
+  background:
+    linear-gradient(151deg, transparent 0 43%, #0d4778 43.4% 57%, transparent 57.4%) 0 100%/100% 100% no-repeat,
+    linear-gradient(210deg, transparent 0 46%, #0a3965 46.4% 62%, transparent 62.4%) 0 100%/100% 100% no-repeat,
+    linear-gradient(158deg, transparent 0 57%, #082e53 57.4% 72%, transparent 72.4%) 0 100%/100% 100% no-repeat!important;
+  filter:drop-shadow(0 -12px 24px rgba(20,103,168,.22))!important;
+  transform:none!important;
+}
+.side:after{
+  content:""!important;
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  bottom:74px!important;
+  height:33%!important;
+  pointer-events:none!important;
+  background:
+    linear-gradient(153deg, transparent 0 47%, rgba(21,83,133,.88) 47.3% 61%, transparent 61.3%),
+    linear-gradient(205deg, transparent 0 52%, rgba(8,50,88,.95) 52.3% 68%, transparent 68.3%)!important;
+  opacity:.92!important;
+}
+
+/* keep the mountain behind sidebar content */
+.side > *{position:relative;z-index:2}
+</style>
 </head>
 <body>
 <aside class="sidebar">
