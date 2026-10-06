@@ -2182,6 +2182,42 @@ body, body.rf-dark{
   html{ zoom:1.5; }
 }
 </style>
+
+<style id="rush-v080-text-wrap-fix">
+/* V080 — analyzed text containment/alignment */
+.rf-rush-page .rf-analysis-card,
+.rf-rush-page .rf-analysis-item,
+.rf-rush-page .rf-result-section,
+.rf-rush-page .rf-section-card{
+  min-width:0 !important;
+  max-width:100% !important;
+  overflow:hidden !important;
+  box-sizing:border-box !important;
+}
+.rf-rush-page .rf-analysis-card p,
+.rf-rush-page .rf-analysis-item p,
+.rf-rush-page .rf-result-section p,
+.rf-rush-page .rf-section-card p,
+.rf-rush-page .rf-analysis-card .text,
+.rf-rush-page .rf-analysis-item .text,
+.rf-rush-page .rf-result-section .text,
+.rf-rush-page .rf-section-card .text{
+  width:100% !important;
+  max-width:100% !important;
+  white-space:normal !important;
+  overflow-wrap:anywhere !important;
+  word-break:normal !important;
+  line-height:2 !important;
+  text-align:right !important;
+  direction:rtl !important;
+  box-sizing:border-box !important;
+}
+.rf-rush-page [class*="analysis"] > *,
+.rf-rush-page [class*="section"] > *{
+  min-width:0;
+}
+</style>
+
 </head>
 <body>
 <aside class="sidebar">
