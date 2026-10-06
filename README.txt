@@ -1,2 +1,2 @@
-RushFinder V098
-Filter CSS rebuilt cleanly. V090-V097 filter patch blocks were removed. The four real filter IDs now have complete borders, no generated separator lines, no reserved separator spacing, centered equal widths, and title icons safely inside each card.
+RushFinder V099
+Duration filter cleanup: duplicate small left-side time icons are removed with no reserved space. The existing colored green/red duration icons are moved into that left-side position, leaving one icon per row.

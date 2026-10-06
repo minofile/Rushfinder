@@ -2463,6 +2463,52 @@ body, body.rf-dark{
 }
 </style>
 
+
+<style id="rush-v099-duration-icons">
+/* V099 — زمان ویدیو: فقط یک آیکون در هر ردیف */
+
+/* آیکون کوچک/تکراری قدیمی سمت چپ حذف شود و هیچ فضایی نگیرد */
+#durationFilters label > .rf-time-mini,
+#durationFilters label > .time-mini-icon,
+#durationFilters label > .duration-mini-icon,
+#durationFilters label > .rf-mini-icon{
+  display:none !important;
+  width:0 !important;
+  min-width:0 !important;
+  height:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  flex:0 0 0 !important;
+}
+
+/* آیکون رنگی اصلی به محل آیکون حذف‌شده در سمت چپ ردیف منتقل شود */
+#durationFilters > label{
+  position:relative !important;
+}
+#durationFilters > label > .rf-real-icon{
+  order:99 !important;
+  margin-right:auto !important;
+  margin-left:0 !important;
+  width:34px !important;
+  height:34px !important;
+  min-width:34px !important;
+  min-height:34px !important;
+  flex:0 0 34px !important;
+}
+
+/* اگر آیکون تکراری به صورت svg/i مستقیم در ابتدای ردیف ساخته شده، فقط اولین مورد اضافی را مخفی کن */
+#durationFilters > label > i:not(.rf-real-icon):first-child,
+#durationFilters > label > svg:first-child:not(:only-child){
+  display:none !important;
+  width:0 !important;
+  height:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+}
+
+/* متن و چک‌باکس بدون تغییر عملکرد */
+</style>
+
 </head>
 <body>
 <aside class="sidebar">
