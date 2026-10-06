@@ -1272,6 +1272,116 @@ html[data-theme="light"] body{color-scheme:light!important}
  text-shadow:0 3px 9px rgba(35,105,180,.12);
 }
 </style>
+<style>
+/* RushFinder V052 — web implementation of approved reference */
+@media (min-width:1051px){
+  .rf-settings-page{right:205px!important;left:0!important}
+}
+.rf-settings-page.active{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:
+    radial-gradient(circle at 12% 82%,rgba(46,205,167,.13),transparent 22%),
+    radial-gradient(circle at 87% 84%,rgba(76,190,255,.16),transparent 25%),
+    linear-gradient(135deg,#f9fbff 0%,#edf5ff 54%,#f7fbff 100%)!important;
+}
+.rf-settings-inner{
+  width:min(1140px,calc(100% - 44px))!important;
+  max-height:none!important;
+  padding:0!important;
+  margin:auto!important;
+  transform:none!important;
+}
+.rf-settings-head-card{
+  height:158px!important;min-height:158px!important;
+  border-radius:23px!important;padding:22px 28px!important;margin-bottom:16px!important;
+  background:linear-gradient(110deg,rgba(255,255,255,.88),rgba(247,251,255,.78))!important;
+  box-shadow:0 18px 42px rgba(66,106,165,.10),inset 0 1px 0 #fff!important;
+}
+.rf-settings-title{font-size:29px!important;line-height:1.2!important}
+.rf-settings-sub{font-size:13px!important;margin-top:7px!important}
+.rf-settings-head-icon{
+  width:68px!important;height:68px!important;flex-basis:68px!important;border-radius:19px!important
+}
+.rf-settings-hero-art{width:420px!important;height:125px!important;flex-basis:420px!important}
+.hero-gear{font-size:84px!important;left:58px!important;top:2px!important}
+.hero-sliders{left:155px!important;top:29px!important;width:174px!important;height:82px!important;padding:17px 21px!important}
+.orb-a{width:104px!important;height:104px!important;left:3px!important;top:31px!important}
+.orb-b{width:120px!important;height:120px!important;right:6px!important;top:-25px!important}
+
+.rf-settings-grid{grid-template-columns:1fr 1fr!important;gap:16px 18px!important}
+.rf-settings-grid .rf-setting-row{
+  height:144px!important;min-height:144px!important;
+  padding:23px 94px 20px 24px!important;border-radius:22px!important;
+  box-shadow:0 14px 30px rgba(59,102,160,.08),inset 0 1px 0 #fff!important;
+}
+.rf-settings-grid .rf-setting-row:before{
+  width:62px!important;height:62px!important;right:20px!important;top:27px!important;
+  border-radius:18px!important;font-size:26px!important
+}
+.rf-setting-row[data-art="4k"]:before{font-size:20px!important}
+.rf-setting-name{font-size:16px!important}
+.rf-setting-desc{font-size:11.5px!important;margin-top:4px!important}
+.rf-setting-options{margin-top:16px!important;gap:9px!important}
+.rf-set-btn{
+  min-height:38px!important;padding:8px 18px!important;border-radius:12px!important;
+  font-size:11px!important
+}
+.rf-setting-row[data-art="sun"] .rf-set-btn{min-width:96px!important}
+.rf-setting-row[data-art="play"] .rf-setting-options{
+  display:flex!important;flex-wrap:nowrap!important;gap:7px!important;white-space:nowrap!important
+}
+.rf-setting-row[data-art="play"] .rf-set-btn{
+  padding-left:11px!important;padding-right:11px!important;font-size:10px!important
+}
+
+.rf-setting-actions{gap:18px!important;margin-top:16px!important}
+.rf-action-card{
+  height:92px!important;min-height:92px!important;border-radius:20px!important;padding:17px 22px!important
+}
+.rf-action-card .rf-setting-name{font-size:15px!important}
+.rf-action-card .rf-setting-desc{font-size:10.5px!important}
+.rf-settings-savebar{margin:18px 0 0!important}
+.rf-save-btn{
+  min-width:455px!important;min-height:70px!important;padding:15px 38px!important;
+  border-radius:18px!important;font-size:15px!important;
+  background:linear-gradient(135deg,#397fff,#0878f7)!important;
+  box-shadow:0 16px 30px rgba(18,113,247,.25)!important
+}
+
+/* richer lower decorative composition */
+.rf-ref-leaf{
+  left:-70px!important;bottom:-45px!important;width:300px!important;height:315px!important;
+  filter:blur(2.5px)!important;opacity:.86!important
+}
+.rf-ref-leaf i{width:110px!important;height:155px!important}
+.rf-ref-bottom-orb{
+  width:350px!important;height:350px!important;right:-95px!important;bottom:-155px!important;opacity:.78!important
+}
+
+/* Sidebar — approved dark navy + mountain artwork */
+.side,.sidebar,.rf-sidebar{
+  background:
+    linear-gradient(to bottom,rgba(4,28,52,.02) 0 47%,rgba(3,25,47,.22) 64%,rgba(3,24,45,.75) 100%),
+    linear-gradient(180deg,#061f38 0%,#06243f 52%,#041a30 100%)!important;
+  overflow:hidden!important;
+}
+.side:before,.sidebar:before,.rf-sidebar:before{
+  content:"";position:absolute!important;left:0!important;right:0!important;bottom:95px!important;
+  height:250px!important;pointer-events:none!important;opacity:.78!important;
+  background:
+    linear-gradient(145deg,transparent 0 24%,rgba(23,82,137,.9) 25% 31%,transparent 32%) 0 100%/54% 72% no-repeat,
+    linear-gradient(220deg,transparent 0 28%,rgba(18,68,118,.92) 29% 36%,transparent 37%) 100% 100%/62% 88% no-repeat,
+    linear-gradient(155deg,transparent 0 35%,rgba(10,48,87,.98) 36% 55%,transparent 56%) 50% 100%/100% 100% no-repeat!important;
+  z-index:0!important;
+}
+.side>* ,.sidebar>* ,.rf-sidebar>*{position:relative;z-index:1}
+
+/* prevent any dark mode styling from appearing from old saved values */
+html{color-scheme:light!important}
+body{color-scheme:light!important}
+</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -1754,7 +1864,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
         <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.12 2.12-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.55V20.3h-3v-.09a1.7 1.7 0 0 0-1.03-1.55 1.7 1.7 0 0 0-1.88.34l-.06.06-2.12-2.12.06-.06A1.7 1.7 0 0 0 7 15a1.7 1.7 0 0 0-1.55-1.03H5.3v-3h.15A1.7 1.7 0 0 0 7 9.94a1.7 1.7 0 0 0-.34-1.88L6.6 8l2.12-2.12.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 11.7 4.7V4.6h3v.1a1.7 1.7 0 0 0 1.03 1.55 1.7 1.7 0 0 0 1.88-.34l.06-.06L19.8 8l-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.55 1.03h.15v3h-.15A1.7 1.7 0 0 0 19.4 15z"></path>
       </svg>
     </div>
-    <div><h1 class="rf-settings-title">تنظیمات</h1><div class="rf-settings-sub">تنظیمات شخصی‌سازی تجربه جستجو در RushFinder</div></div>
+    <div><h1 class="rf-settings-title">تنظیمات</h1><div class="rf-settings-sub">تنظیمات شخصی‌سازی تجربه جستجو در راش‌فایندر</div></div>
   </div>
   <div class="rf-settings-grid"><div class="rf-setting-row" data-art="sun"><div class="rf-setting-info"><div class="rf-setting-name">ظاهر برنامه</div><div class="rf-setting-desc">انتخاب حالت نمایش رابط کاربری</div></div><div class="rf-setting-options" data-setting="theme"><button class="rf-set-btn" data-value="light">روشن</button><button class="rf-set-btn" data-value="system">سیستم</button></div></div>
   <div class="rf-setting-row" data-art="video"><div class="rf-setting-info"><div class="rf-setting-name">تعداد نتایج در هر صفحه</div><div class="rf-setting-desc">تعداد ویدیوهایی که در هر صفحه نمایش داده می‌شود</div></div><div class="rf-setting-options" data-setting="perPage"><button class="rf-set-btn" data-value="12">۱۲</button><button class="rf-set-btn" data-value="24">۲۴</button><button class="rf-set-btn" data-value="36">۳۶</button></div></div>
