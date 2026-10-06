@@ -2153,6 +2153,28 @@ body, body.rf-dark{
 .filters #durationFilters .rf-fi{background:#fff0cf!important;color:#f39a00!important}
 .filters .apply-filters{min-height:54px!important;border-radius:15px!important;font-size:17px!important;font-weight:700!important}
 </style>
+
+<style>
+/* ===== RushFinder V070 ===== */
+/* remove duplicate filter magnifier and section divider lines */
+.filters h3:before{display:none!important;content:none!important}
+.filters .fg{border-bottom:0!important}
+
+/* graphical colorful search-result header */
+.result-head{
+  min-height:78px!important; padding:14px 70px 14px 170px!important;
+  border:1px solid #d8e9fb!important; border-radius:20px!important; overflow:hidden!important;
+  background:linear-gradient(100deg,#f8fcff 0%,#eef8ff 45%,#f8efff 72%,#eafcff 100%)!important;
+  box-shadow:0 12px 30px rgba(45,113,205,.10)!important;
+}
+.result-head:after{content:"▶   ●   V   px";position:absolute;left:20px;top:50%;transform:translateY(-50%);direction:ltr;white-space:pre;letter-spacing:7px;font:700 13px Arial;color:#1685ff;background:rgba(255,255,255,.7);padding:10px 12px;border-radius:14px;box-shadow:0 6px 18px rgba(55,105,190,.10)}
+.result-head:before{content:"⌕"!important;width:40px!important;height:40px!important;border-radius:13px!important;background:#fff!important;color:#087bff!important;box-shadow:0 6px 18px rgba(30,120,240,.13)!important;font-size:25px!important}
+.result-head #title{font-size:18px!important;color:#0b2445!important}
+.result-head #title::first-line{color:#0b2445}
+.result-head small{color:#7890ad!important}
+.result-head .sort{display:none!important}
+@media(max-width:900px){.result-head{padding-left:18px!important}.result-head:after{display:none!important}}
+</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -2845,4 +2867,19 @@ document.addEventListener("DOMContentLoaded",()=>{
   .app{padding-right:0!important}
   .rf-settings-page{right:0!important}
 }
+</style>
+<style id="rf-v071">
+/* V071 — restore clean separators between filter groups */
+.filters .fg{border-top:1px solid #d7e5f5!important;margin-top:12px!important;padding-top:16px!important}
+.filters .fg:first-of-type{border-top:0!important;margin-top:0!important;padding-top:10px!important}
+/* Graphic search-results banner */
+.result-head{min-height:92px!important;padding:18px 82px 18px 245px!important;border:1px solid #d8e8fb!important;border-radius:22px!important;background:linear-gradient(100deg,rgba(233,249,255,.96),rgba(247,239,255,.95),rgba(235,250,255,.97))!important;box-shadow:0 12px 32px rgba(62,126,206,.12)!important;overflow:hidden!important;position:relative!important}
+.result-head:before{content:"⌕"!important;position:absolute!important;right:22px!important;top:50%!important;transform:translateY(-50%)!important;width:52px!important;height:52px!important;display:flex!important;align-items:center!important;justify-content:center!important;border-radius:16px!important;background:rgba(255,255,255,.92)!important;color:#087bff!important;font-size:30px!important;box-shadow:0 7px 20px rgba(30,120,240,.15)!important;z-index:3!important}
+.result-head:after{content:"▶   ●   V   px"!important;position:absolute!important;left:22px!important;top:50%!important;transform:translateY(-50%)!important;direction:ltr!important;white-space:pre!important;letter-spacing:10px!important;font:700 15px Arial!important;color:#1685ff!important;background:rgba(255,255,255,.86)!important;padding:14px 18px!important;border-radius:16px!important;box-shadow:0 7px 20px rgba(55,105,190,.12)!important;z-index:3!important}
+.result-head>div{position:relative!important;z-index:2!important}
+.result-head>div:after{content:"";position:absolute;inset:-34px -35px -34px -55px;z-index:-1;background:linear-gradient(110deg,transparent 8%,rgba(34,177,255,.08) 32%,rgba(169,80,255,.12) 55%,rgba(255,88,194,.08) 72%,transparent 92%);transform:skewX(-14deg)}
+.result-head #title{font-size:19px!important;line-height:1.5!important;color:#0b2445!important}
+.result-head small{font-size:9px!important;color:#7890ad!important;margin-top:4px!important}
+.result-head .sort{display:none!important}
+@media(max-width:900px){.result-head{padding-left:18px!important}.result-head:after{display:none!important}}
 </style>
