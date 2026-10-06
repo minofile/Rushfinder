@@ -296,54 +296,6 @@ body,button,input,select,option,
   .rf-settings-inner{max-width:1000px !important}
 }
 
-
-/* Rush-V046 — approved graphical design system */
-:root{--rf-blue:#1677ff;--rf-blue2:#4b8dff;--rf-ink:#071b31;--rf-soft:#eef6ff;--rf-glass:rgba(255,255,255,.88)}
-body:not(.rf-dark){background:
- radial-gradient(circle at 9% 12%,rgba(76,141,255,.14),transparent 22%),
- radial-gradient(circle at 78% 88%,rgba(39,214,190,.10),transparent 20%),
- linear-gradient(145deg,#f7fbff 0%,#edf5ff 48%,#f9fbff 100%)!important;background-attachment:fixed}
-body:not(.rf-dark) main{background:transparent!important}
-.top{background:rgba(255,255,255,.78)!important;backdrop-filter:blur(18px);border-bottom:1px solid rgba(110,155,215,.14)!important;box-shadow:0 8px 28px rgba(40,82,135,.045)!important}
-.search{filter:drop-shadow(0 8px 18px rgba(22,119,255,.08))}
-.search input{background:rgba(255,255,255,.94)!important;border-color:#dbe8f8!important}
-.search button,.apply-filters,.btn.primary,.rf-save-btn{background:linear-gradient(135deg,#4a8dff 0%,#0875f5 70%,#0669e7 100%)!important;box-shadow:0 8px 20px rgba(22,119,255,.20)!important;border:0!important}
-.sidebar{background:linear-gradient(180deg,#061d35 0%,#06172a 56%,#03111f 100%)!important;box-shadow:-8px 0 28px rgba(3,18,35,.14)!important}
-.nav button{border-radius:12px!important;margin-bottom:7px!important;transition:.18s ease!important}
-.nav button.active{background:linear-gradient(135deg,#1684ff,#086ce9)!important;box-shadow:0 8px 18px rgba(0,112,255,.23)!important}
-.home-state{position:relative;overflow:hidden;background:rgba(255,255,255,.62);border:1px solid rgba(137,177,229,.20);border-radius:24px;padding:34px 28px 28px!important;box-shadow:0 18px 50px rgba(54,91,140,.07);backdrop-filter:blur(12px)}
-.home-state:before,.home-state:after{content:"";position:absolute;border-radius:50%;filter:blur(1px);pointer-events:none}.home-state:before{width:240px;height:240px;left:-90px;top:-110px;background:radial-gradient(circle,rgba(65,140,255,.20),rgba(65,140,255,0) 70%)}.home-state:after{width:260px;height:260px;right:-100px;bottom:-120px;background:radial-gradient(circle,rgba(55,222,194,.15),rgba(55,222,194,0) 70%)}
-.home-visual{filter:drop-shadow(0 18px 22px rgba(35,101,194,.16));transform:scale(.96)}
-.home-cats button{border-radius:15px!important;box-shadow:0 9px 22px rgba(20,55,95,.10)!important;border:1px solid rgba(255,255,255,.65)!important;transition:.2s ease!important}.home-cats button:hover{transform:translateY(-4px);box-shadow:0 15px 28px rgba(20,55,95,.15)!important}
-.popular-searches button{background:rgba(255,255,255,.82)!important;border:1px solid #dce9f8!important;border-radius:11px!important;box-shadow:0 5px 14px rgba(43,83,130,.045)}
-.summary{gap:11px!important}.metric{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(242,248,255,.90))!important;border:1px solid rgba(131,173,225,.22)!important;border-radius:16px!important;box-shadow:0 10px 25px rgba(44,84,132,.065)!important;padding-top:14px!important}.metric:after{content:"";position:absolute;width:58px;height:58px;left:-20px;top:-22px;border-radius:50%;background:radial-gradient(circle,rgba(74,141,255,.18),transparent 70%)}.metric .mi{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:linear-gradient(145deg,#e5f2ff,#f5faff);color:#1677ff!important;box-shadow:inset 0 0 0 1px rgba(22,119,255,.08),0 6px 14px rgba(22,119,255,.08)}
-.filters,.result-head,.card{background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(245,249,255,.91))!important;border:1px solid rgba(128,169,220,.20)!important;box-shadow:0 10px 26px rgba(45,84,130,.065)!important;backdrop-filter:blur(10px)}
-.filters{border-radius:17px!important}.result-head{border-radius:16px!important;padding:13px 16px!important}.card{border-radius:15px!important;transition:.2s ease!important}.card:hover{transform:translateY(-3px);box-shadow:0 15px 32px rgba(45,84,130,.12)!important}.thumb{border-radius:14px 14px 0 0}.btn{border-radius:8px!important}.sort{border-radius:10px!important;background:#fff!important}
-.cat{border-radius:13px!important;box-shadow:0 7px 18px rgba(24,54,90,.09)!important}.cat:hover{transform:translateY(-2px)}
-.modal{backdrop-filter:blur(8px)}.viewer{border-radius:20px!important;overflow:hidden!important;box-shadow:0 28px 80px rgba(0,18,45,.28)!important}.viewer-top,.viewer-info{background:linear-gradient(145deg,#fff,#f2f7ff)!important}
-/* settings: same approved mockup language */
-.rf-settings-page{background:
- radial-gradient(circle at 10% 10%,rgba(75,141,255,.16),transparent 24%),
- radial-gradient(circle at 88% 86%,rgba(47,219,190,.12),transparent 21%),
- linear-gradient(145deg,#f8fbff,#edf5ff 55%,#f8fbff)!important}
-.rf-settings-inner{max-width:1080px!important;padding:22px 24px 28px!important}
-.rf-settings-head-card{position:relative;overflow:hidden;min-height:118px!important;padding:18px 24px!important;border-radius:20px!important;background:linear-gradient(120deg,rgba(255,255,255,.93),rgba(231,242,255,.92))!important;border:1px solid rgba(122,170,230,.23)!important;box-shadow:0 14px 34px rgba(48,91,145,.09)!important}
-.rf-settings-head-card:before{content:"⚙";position:absolute;left:45px;top:4px;font-family:Arial,sans-serif;font-size:88px;line-height:1;color:#247dff;opacity:.13;transform:rotate(-15deg);filter:drop-shadow(0 12px 10px rgba(22,119,255,.20))}.rf-settings-head-card:after{content:"";position:absolute;left:118px;bottom:-58px;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle,rgba(52,213,192,.23),rgba(52,213,192,0) 70%)}
-.rf-settings-head-icon{width:54px!important;height:54px!important;flex-basis:54px!important;border-radius:16px!important;background:linear-gradient(145deg,#e5f2ff,#f6fbff)!important;color:#1677ff!important;box-shadow:0 8px 20px rgba(22,119,255,.12),inset 0 0 0 1px rgba(22,119,255,.08)}
-.rf-settings-title{font-size:24px!important}.rf-settings-sub{font-size:11px!important}
-.rf-setting-row{position:relative;min-height:88px!important;padding:15px 76px 15px 18px!important;margin-bottom:10px!important;border-radius:17px!important;background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(242,248,255,.91))!important;border:1px solid rgba(130,174,228,.20)!important;box-shadow:0 10px 25px rgba(45,84,130,.065)!important}
-.rf-setting-row:after{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font:22px Arial;background:linear-gradient(145deg,#e9f4ff,#f8fbff);box-shadow:0 7px 16px rgba(22,119,255,.10)}
-.rf-setting-row:nth-of-type(2):after{content:"☀";color:#13bfae;background:linear-gradient(145deg,#dffcf7,#effffa)}
-.rf-setting-row:nth-of-type(3):after{content:"▶";color:#7457ff;background:linear-gradient(145deg,#eee9ff,#faf8ff)}
-.rf-setting-row:nth-of-type(4):after{content:"●";color:#ff5b67;background:linear-gradient(145deg,#ffe7ea,#fff7f8)}
-.rf-setting-row:nth-of-type(5):after{content:"4K";font-size:15px;font-weight:bold;color:#e89a00;background:linear-gradient(145deg,#fff1c9,#fff9ea)}
-.rf-setting-row:nth-of-type(6):after{content:"↔";color:#11bcae;background:linear-gradient(145deg,#ddfbf7,#f4fffd)}
-.rf-setting-row:nth-of-type(7):after{content:"↕";color:#2680ff;background:linear-gradient(145deg,#e2efff,#f6faff)}
-.rf-setting-name{font-size:13px!important}.rf-setting-desc{font-size:10px!important}.rf-set-btn{border-radius:10px!important;padding:7px 14px!important;background:rgba(255,255,255,.82)!important}.rf-set-btn.active{background:linear-gradient(135deg,#4b8eff,#0876f6)!important;color:#fff!important;box-shadow:0 7px 16px rgba(22,119,255,.20)!important;border-color:transparent!important}
-.rf-setting-actions{gap:10px!important}.rf-action-card{border-radius:16px!important;box-shadow:0 9px 22px rgba(45,84,130,.055)!important}.rf-action-card.danger{background:linear-gradient(135deg,#fff,#fff0ef)!important;border-color:#ffd5d2!important}.rf-save-btn{min-width:220px;padding:11px 24px!important;border-radius:13px!important;font-size:13px!important}.rf-about-card{border-radius:16px!important;background:linear-gradient(145deg,#fff,#f2f7ff)!important;box-shadow:0 9px 22px rgba(45,84,130,.055)!important}
-body.rf-dark .rf-settings-page{background:linear-gradient(145deg,#07182b,#0a2038)!important}body.rf-dark .rf-setting-row,body.rf-dark .rf-settings-head-card,body.rf-dark .rf-about-card{background:linear-gradient(145deg,#0c2743,#0a2037)!important;border-color:#183b5d!important}
-@media(min-width:1000px){.rf-settings-inner{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}.rf-settings-head-card,.rf-setting-actions,.rf-settings-savebar,.rf-about-card{grid-column:1/-1}.rf-setting-row{margin-bottom:0!important}.rf-setting-actions{margin-top:2px!important}.rf-settings-savebar{justify-content:center!important}.rf-about-card{margin-top:0!important}}
-
 </style>
 
 <style>
@@ -952,6 +904,158 @@ header,.topbar,.header,.site-header,.app-header{border-bottom:0!important;box-sh
 }
 </style>
 
+<style>
+/* RushFinder V047 — approved graphical design system */
+html,body{background:#eef6ff}
+body:not(.rf-dark){
+  background:
+    radial-gradient(circle at 8% 92%,rgba(34,197,157,.16),transparent 19%),
+    radial-gradient(circle at 83% 87%,rgba(67,189,255,.16),transparent 22%),
+    radial-gradient(circle at 25% 9%,rgba(92,124,250,.13),transparent 26%),
+    linear-gradient(135deg,#f8fbff 0%,#edf5ff 52%,#f7fbff 100%) !important;
+}
+body:not(.rf-dark) main{background:transparent!important}
+body:not(.rf-dark) .app{background:transparent!important}
+
+/* Settings stays below the real header, so date/day/night controls remain visible */
+.rf-settings-page{
+  top:61px!important; bottom:0!important; left:0!important;
+  z-index:9!important;
+  background:
+    radial-gradient(circle at 6% 88%,rgba(27,198,157,.18),transparent 18%),
+    radial-gradient(circle at 89% 88%,rgba(64,190,255,.20),transparent 23%),
+    radial-gradient(circle at 22% 4%,rgba(111,116,255,.13),transparent 28%),
+    linear-gradient(135deg,#f8fbff 0%,#edf5ff 55%,#f7fbff 100%)!important;
+}
+@media(min-width:900px){.rf-settings-page{right:205px!important}}
+.rf-settings-page:before,.rf-settings-page:after{
+  content:"";position:fixed;pointer-events:none;border-radius:50%;filter:blur(1px);opacity:.7
+}
+.rf-settings-page:before{width:230px;height:230px;left:-105px;bottom:-85px;background:radial-gradient(circle at 65% 35%,#51e1bd,rgba(81,225,189,.05) 68%,transparent 70%)}
+.rf-settings-page:after{width:300px;height:300px;right:140px;bottom:-155px;background:radial-gradient(circle at 40% 30%,#61d9ff,rgba(95,137,255,.08) 65%,transparent 68%)}
+
+.rf-settings-inner{
+  width:min(1140px,calc(100% - 44px))!important;
+  max-width:none!important;margin:0 auto!important;padding:18px 0 26px!important;
+  position:relative;z-index:1;
+}
+.rf-settings-head-card{
+  min-height:142px!important;padding:22px 28px!important;margin:0 0 16px!important;
+  border:1px solid rgba(255,255,255,.92)!important;border-radius:23px!important;
+  background:linear-gradient(110deg,rgba(255,255,255,.84),rgba(246,250,255,.72))!important;
+  box-shadow:0 18px 45px rgba(70,112,170,.11),inset 0 1px 0 rgba(255,255,255,.95)!important;
+  backdrop-filter:blur(14px);position:relative;overflow:hidden;
+}
+.rf-settings-head-card:after{
+  content:"";position:absolute;inset:auto 0 0 0;height:52%;
+  background:linear-gradient(180deg,transparent,rgba(85,159,255,.07));pointer-events:none
+}
+.rf-settings-head-icon{
+  order:0;width:62px!important;height:62px!important;flex:0 0 62px!important;border-radius:18px!important;
+  background:linear-gradient(145deg,#eef7ff,#dcecff)!important;color:#087cff!important;
+  box-shadow:0 12px 26px rgba(38,126,255,.13),inset 0 1px 0 #fff!important;
+}
+.rf-settings-head-icon svg{width:31px;height:31px}
+.rf-settings-title{font-size:27px!important;font-weight:400!important;color:#081a36;margin:0!important}
+.rf-settings-sub{font-size:12px!important;color:#6f88ae!important;margin-top:7px!important}
+.rf-settings-head-card>div:last-child{position:relative;z-index:3}
+
+.rf-settings-hero-art{
+  direction:ltr;margin-left:auto;width:390px;height:112px;position:relative;flex:0 0 390px;
+}
+.hero-gear{
+  position:absolute;left:58px;top:4px;font-family:Arial,sans-serif;font-size:78px;line-height:1;color:#246df4;
+  text-shadow:0 13px 20px rgba(41,103,239,.24);transform:rotate(-12deg);z-index:3
+}
+.hero-sliders{
+  position:absolute;left:145px;top:28px;width:160px;height:78px;border-radius:18px;
+  background:linear-gradient(145deg,rgba(255,255,255,.95),rgba(211,233,255,.94));
+  box-shadow:0 15px 30px rgba(53,116,196,.18);transform:rotate(5deg);z-index:2;padding:17px 20px
+}
+.hero-sliders i{display:block;height:7px;border-radius:8px;background:linear-gradient(90deg,#30bfff,#3c7dff);margin:9px 0;position:relative}
+.hero-sliders i:after{content:"";position:absolute;width:17px;height:17px;border-radius:50%;background:#48a8ff;top:-5px;left:var(--x,55%);box-shadow:0 3px 8px rgba(28,105,220,.28)}
+.hero-sliders i:nth-child(2):after{--x:28%}.hero-sliders i:nth-child(3):after{--x:68%}
+.hero-orb{position:absolute;border-radius:50%;filter:blur(.2px)}
+.orb-a{width:96px;height:96px;left:4px;top:30px;background:radial-gradient(circle at 65% 35%,#8af6df,#3ed5c0 42%,rgba(61,212,193,.05) 72%)}
+.orb-b{width:112px;height:112px;right:8px;top:-24px;background:radial-gradient(circle at 35% 60%,#8fe5ff,#87a9ff 45%,rgba(117,148,255,.04) 72%)}
+
+.rf-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
+.rf-settings-grid .rf-setting-row{
+  min-height:122px!important;margin:0!important;padding:20px 82px 18px 22px!important;
+  border-radius:21px!important;border:1px solid rgba(255,255,255,.95)!important;
+  background:linear-gradient(115deg,rgba(255,255,255,.93),rgba(249,252,255,.80))!important;
+  box-shadow:0 13px 30px rgba(62,102,155,.085),inset 0 1px 0 #fff!important;
+  backdrop-filter:blur(10px);position:relative;overflow:hidden;
+}
+.rf-settings-grid .rf-setting-row:before{
+  content:"";position:absolute!important;right:18px!important;top:22px!important;width:48px!important;height:48px!important;
+  border-radius:15px!important;bottom:auto!important;opacity:1!important;
+  display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;font-size:22px;font-weight:700;
+  box-shadow:0 9px 20px rgba(40,90,150,.10)
+}
+.rf-setting-row[data-art="sun"]:before{content:"☀";color:#05ad9d;background:linear-gradient(145deg,#dffff8,#c9fbef)}
+.rf-setting-row[data-art="video"]:before{content:"▶";color:#7357ff;background:linear-gradient(145deg,#eee9ff,#ded6ff)}
+.rf-setting-row[data-art="play"]:before{content:"▶";color:#ff5360;background:linear-gradient(145deg,#ffe9eb,#ffd9dd)}
+.rf-setting-row[data-art="4k"]:before{content:"4K";color:#f3a300;background:linear-gradient(145deg,#fff5d7,#ffe9a8);font-size:16px}
+.rf-setting-row[data-art="orient"]:before{content:"↔";color:#08aa9d;background:linear-gradient(145deg,#dcfff8,#c7f8ee)}
+.rf-setting-row[data-art="sort"]:before{content:"↕";color:#3185ff;background:linear-gradient(145deg,#e9f4ff,#d8eaff)}
+.rf-settings-grid .rf-setting-row:after{
+  content:"";position:absolute;width:90px;height:90px;right:-42px;bottom:-48px;border-radius:50%;
+  background:radial-gradient(circle,rgba(66,142,255,.10),transparent 70%)
+}
+.rf-setting-info{min-width:0!important}
+.rf-setting-name{font-size:14px!important;color:#0c1b35;font-weight:400!important}
+.rf-setting-desc{font-size:10.5px!important;color:#8293ae!important}
+.rf-setting-options{gap:7px!important;margin-top:12px}
+.rf-set-btn{
+  padding:7px 15px!important;border-radius:11px!important;background:rgba(255,255,255,.84)!important;
+  border:1px solid #dbe6f4!important;box-shadow:0 3px 8px rgba(62,95,140,.04);
+  color:#172843!important
+}
+.rf-set-btn.active{
+  background:linear-gradient(135deg,#3892ff,#0877f9)!important;color:white!important;border-color:transparent!important;
+  box-shadow:0 8px 18px rgba(20,119,255,.22)!important
+}
+.rf-setting-actions{gap:16px!important;margin-top:14px!important}
+.rf-action-card{
+  min-height:82px!important;border-radius:19px!important;padding:15px 20px!important;
+  background:linear-gradient(110deg,rgba(255,255,255,.92),rgba(241,248,255,.86))!important;
+  border:1px solid rgba(129,184,255,.32)!important;box-shadow:0 10px 24px rgba(70,110,160,.06)
+}
+.rf-action-card.danger{
+  background:linear-gradient(110deg,#fffafa,#fff0ef)!important;border-color:#ffd0cc!important
+}
+.rf-settings-savebar{justify-content:center!important;margin:18px 0 12px!important;position:relative;z-index:3}
+.rf-save-btn{
+  min-width:350px!important;padding:13px 30px!important;border-radius:15px!important;
+  background:linear-gradient(135deg,#3c8fff,#0875f5)!important;
+  box-shadow:0 13px 26px rgba(13,116,246,.24)!important;font-size:13px!important
+}
+.rf-about-card{
+  min-height:68px!important;border-radius:18px!important;background:rgba(255,255,255,.82)!important;
+  border:1px solid rgba(255,255,255,.96)!important;box-shadow:0 9px 22px rgba(65,100,145,.055)!important
+}
+
+/* keep the main header crisp above settings */
+.top{z-index:80!important;background:rgba(255,255,255,.91)!important;backdrop-filter:blur(16px)}
+.rf-toolbar{position:relative;z-index:82}
+
+/* light first-paint */
+html:not([data-theme="dark"]){color-scheme:light}
+@media(max-width:1050px){
+  .rf-settings-hero-art{display:none}
+  .rf-settings-grid{grid-template-columns:1fr}
+}
+</style>
+<script>
+(function(){
+ try{
+  const s=JSON.parse(localStorage.getItem("rushfinder_settings_v2")||"{}");
+  const mode=s.theme||"light";
+  document.documentElement.setAttribute("data-theme",mode==="dark"?"dark":"light");
+ }catch(e){document.documentElement.setAttribute("data-theme","light")}
+})();
+</script>
 </head>
 <body>
 <aside class="sidebar">
@@ -1414,6 +1518,11 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
 <section id="rfSettingsPage" class="rf-settings-page" dir="rtl">
  <div class="rf-settings-inner">
   <div class="rf-settings-head-card">
+    <div class="rf-settings-hero-art" aria-hidden="true">
+      <span class="hero-gear">⚙</span>
+      <span class="hero-sliders"><i></i><i></i><i></i></span>
+      <span class="hero-orb orb-a"></span><span class="hero-orb orb-b"></span>
+    </div>
     <div class="rf-settings-head-icon" aria-hidden="true">
       <svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"></circle>
@@ -1422,13 +1531,13 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
     </div>
     <div><h1 class="rf-settings-title">تنظیمات</h1><div class="rf-settings-sub">تنظیمات شخصی‌سازی تجربه جستجو در RushFinder</div></div>
   </div>
-  <div class="rf-setting-row"><div class="rf-setting-info"><div class="rf-setting-name">ظاهر برنامه</div><div class="rf-setting-desc">انتخاب حالت نمایش رابط کاربری</div></div><div class="rf-setting-options" data-setting="theme"><button class="rf-set-btn" data-value="light">روشن</button><button class="rf-set-btn" data-value="dark">تاریک</button><button class="rf-set-btn" data-value="system">سیستم</button></div></div>
-  <div class="rf-setting-row"><div class="rf-setting-info"><div class="rf-setting-name">تعداد نتایج در هر صفحه</div><div class="rf-setting-desc">تعداد ویدیوهایی که در هر صفحه نمایش داده می‌شود</div></div><div class="rf-setting-options" data-setting="perPage"><button class="rf-set-btn" data-value="12">۱۲</button><button class="rf-set-btn" data-value="24">۲۴</button><button class="rf-set-btn" data-value="36">۳۶</button></div></div>
-  <div class="rf-setting-row"><div class="rf-setting-info"><div class="rf-setting-name">منبع پیش‌فرض جستجو</div><div class="rf-setting-desc">منبعی که جستجو به صورت پیش‌فرض با آن انجام می‌شود</div></div><div class="rf-setting-options" data-setting="source"><button class="rf-set-btn" data-value="all">همه منابع</button><button class="rf-set-btn" data-value="YouTube">YouTube</button><button class="rf-set-btn" data-value="Aparat">Aparat</button><button class="rf-set-btn" data-value="Vecteezy">Vecteezy</button><button class="rf-set-btn" data-value="Pixabay">Pixabay</button></div></div>
-  <div class="rf-setting-row"><div class="rf-setting-info"><div class="rf-setting-name">کیفیت پیش‌فرض</div><div class="rf-setting-desc">کیفیت ویدیوهای نمایش داده‌شده</div></div><div class="rf-setting-options" data-setting="quality"><button class="rf-set-btn" data-value="all">همه</button><button class="rf-set-btn" data-value="HD">HD</button><button class="rf-set-btn" data-value="Full HD">Full HD</button><button class="rf-set-btn" data-value="4K">4K</button></div></div>
-  <div class="rf-setting-row"><div class="rf-setting-info"><div class="rf-setting-name">جهت ویدیو</div><div class="rf-setting-desc">جهت پیش‌فرض نمایش نتایج</div></div><div class="rf-setting-options" data-setting="orientation"><button class="rf-set-btn" data-value="all">همه</button><button class="rf-set-btn" data-value="horizontal">افقی</button><button class="rf-set-btn" data-value="vertical">عمودی</button></div></div>
-  <div class="rf-setting-row"><div class="rf-setting-info"><div class="rf-setting-name">مرتب‌سازی پیش‌فرض</div><div class="rf-setting-desc">ترتیب نمایش نتایج جستجو</div></div><div class="rf-setting-options" data-setting="sort"><button class="rf-set-btn" data-value="relevant">مرتبط‌ترین</button><button class="rf-set-btn" data-value="newest">جدیدترین</button></div></div>
-  <div class="rf-setting-actions"><div class="rf-action-card danger"><div><div class="rf-setting-name">پاک کردن جستجوهای اخیر</div><div class="rf-setting-desc">سوابق جستجو از این مرورگر پاک می‌شود</div></div><button id="rfClearHistory" class="rf-set-btn">پاک کردن</button></div><div class="rf-action-card"><div><div class="rf-setting-name">بازنشانی تنظیمات</div><div class="rf-setting-desc">بازگشت همه تنظیمات به حالت پیش‌فرض</div></div><button id="rfResetSettings" class="rf-set-btn">بازنشانی</button></div></div>
+  <div class="rf-settings-grid"><div class="rf-setting-row" data-art="sun"><div class="rf-setting-info"><div class="rf-setting-name">ظاهر برنامه</div><div class="rf-setting-desc">انتخاب حالت نمایش رابط کاربری</div></div><div class="rf-setting-options" data-setting="theme"><button class="rf-set-btn" data-value="light">روشن</button><button class="rf-set-btn" data-value="dark">تاریک</button><button class="rf-set-btn" data-value="system">سیستم</button></div></div>
+  <div class="rf-setting-row" data-art="video"><div class="rf-setting-info"><div class="rf-setting-name">تعداد نتایج در هر صفحه</div><div class="rf-setting-desc">تعداد ویدیوهایی که در هر صفحه نمایش داده می‌شود</div></div><div class="rf-setting-options" data-setting="perPage"><button class="rf-set-btn" data-value="12">۱۲</button><button class="rf-set-btn" data-value="24">۲۴</button><button class="rf-set-btn" data-value="36">۳۶</button></div></div>
+  <div class="rf-setting-row" data-art="play"><div class="rf-setting-info"><div class="rf-setting-name">منبع پیش‌فرض جستجو</div><div class="rf-setting-desc">منبعی که جستجو به صورت پیش‌فرض با آن انجام می‌شود</div></div><div class="rf-setting-options" data-setting="source"><button class="rf-set-btn" data-value="all">همه منابع</button><button class="rf-set-btn" data-value="YouTube">YouTube</button><button class="rf-set-btn" data-value="Aparat">Aparat</button><button class="rf-set-btn" data-value="Vecteezy">Vecteezy</button><button class="rf-set-btn" data-value="Pixabay">Pixabay</button></div></div>
+  <div class="rf-setting-row" data-art="4k"><div class="rf-setting-info"><div class="rf-setting-name">کیفیت پیش‌فرض</div><div class="rf-setting-desc">کیفیت ویدیوهای نمایش داده‌شده</div></div><div class="rf-setting-options" data-setting="quality"><button class="rf-set-btn" data-value="all">همه</button><button class="rf-set-btn" data-value="HD">HD</button><button class="rf-set-btn" data-value="Full HD">Full HD</button><button class="rf-set-btn" data-value="4K">4K</button></div></div>
+  <div class="rf-setting-row" data-art="orient"><div class="rf-setting-info"><div class="rf-setting-name">جهت ویدیو</div><div class="rf-setting-desc">جهت پیش‌فرض نمایش نتایج</div></div><div class="rf-setting-options" data-setting="orientation"><button class="rf-set-btn" data-value="all">همه</button><button class="rf-set-btn" data-value="horizontal">افقی</button><button class="rf-set-btn" data-value="vertical">عمودی</button></div></div>
+  <div class="rf-setting-row" data-art="sort"><div class="rf-setting-info"><div class="rf-setting-name">مرتب‌سازی پیش‌فرض</div><div class="rf-setting-desc">ترتیب نمایش نتایج جستجو</div></div><div class="rf-setting-options" data-setting="sort"><button class="rf-set-btn" data-value="relevant">مرتبط‌ترین</button><button class="rf-set-btn" data-value="newest">جدیدترین</button></div></div>
+  </div><div class="rf-setting-actions"><div class="rf-action-card danger"><div><div class="rf-setting-name">پاک کردن جستجوهای اخیر</div><div class="rf-setting-desc">سوابق جستجو از این مرورگر پاک می‌شود</div></div><button id="rfClearHistory" class="rf-set-btn">پاک کردن</button></div><div class="rf-action-card"><div><div class="rf-setting-name">بازنشانی تنظیمات</div><div class="rf-setting-desc">بازگشت همه تنظیمات به حالت پیش‌فرض</div></div><button id="rfResetSettings" class="rf-set-btn">بازنشانی</button></div></div>
   <div class="rf-settings-savebar"><button id="rfSaveSettings" class="rf-save-btn">ذخیره تنظیمات</button><span id="rfSaveStatus" class="rf-save-status"></span></div>
   <div class="rf-about-card"><div><div class="rf-setting-name">درباره RushFinder</div><div class="rf-setting-desc">سامانه موتور جستجوی راش ویدیو</div></div><div style="font-size:12px;line-height:2">نسخه برنامه: V.01<br>طراحی و توسعه: مصطفی رجبی</div></div>
  </div>
@@ -1438,7 +1547,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
 <script>
 (function(){
  const KEY="rushfinder_settings_v2";
- const D={theme:"system",perPage:"12",source:"all",quality:"all",orientation:"all",sort:"relevant"};
+ const D={theme:"light",perPage:"12",source:"all",quality:"all",orientation:"all",sort:"relevant"};
  const load=()=>{try{return Object.assign({},D,JSON.parse(localStorage.getItem(KEY)||"{}"))}catch(_){return {...D}}};
  const save=s=>{try{localStorage.setItem(KEY,JSON.stringify(s));return true}catch(_){return false}};
  const page=document.getElementById("rfSettingsPage");
@@ -1471,7 +1580,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
    });
  }
  function openSettings(){draft=load();page?.classList.add("active");paint();document.getElementById("rfSaveStatus").textContent="";window.scrollTo(0,0)}
- function closeSettings(){page?.classList.remove("active")}
+ function closeSettings(){draft=load();page?.classList.remove("active")}
 
  document.addEventListener("click",e=>{
    const opt=e.target.closest(".rf-setting-options .rf-set-btn");
