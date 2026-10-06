@@ -1164,6 +1164,41 @@ document.documentElement.setAttribute("data-theme","light");
 .rf-about-card{display:none!important}
 html[data-theme="light"] body{color-scheme:light!important}
 </style>
+<style>
+/* V050 — vertically center the complete Settings composition */
+.rf-settings-page{
+  display:none!important;
+  overflow:hidden!important;
+  padding:0!important;
+}
+.rf-settings-page.active{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.rf-settings-inner{
+  width:min(1040px,calc(100% - 36px))!important;
+  margin:0 auto!important;
+  padding:10px 0!important;
+  transform:none!important;
+  max-height:calc(100vh - 76px)!important;
+}
+
+/* On shorter desktop screens, scale the whole composition as one unit,
+   while keeping it vertically centered. */
+@media (min-width:1051px) and (max-height:760px){
+  .rf-settings-inner{
+    transform:scale(.92)!important;
+    transform-origin:center center!important;
+    width:min(1130px,calc(100% - 28px))!important;
+  }
+}
+@media (min-width:1051px) and (min-height:761px){
+  .rf-settings-inner{
+    transform:none!important;
+  }
+}
+</style>
 </head>
 <body>
 <aside class="sidebar">
