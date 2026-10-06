@@ -2056,6 +2056,54 @@ body, body.rf-dark{
   .filters{width:100%!important;max-width:none!important;min-width:0!important}
 }
 </style>
+<style>
+/* ===== RushFinder V065 — richer filter panel ===== */
+.filters{font-size:14px!important}
+.filters .filter-title,.filters h3,.filters h4{font-size:17px!important;font-weight:700!important}
+.filters label,.filters .frow,.filters .filter-option{font-size:14px!important}
+.filters .rf-v065-icon{
+ width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;
+ justify-content:center;font-size:15px;font-weight:700;flex:0 0 34px;
+ box-shadow:0 5px 14px rgba(29,116,255,.10);margin-inline-start:8px
+}
+.filters .rf-v065-row{display:flex!important;align-items:center!important;gap:7px!important}
+.rf-i-all{background:#e8f4ff;color:#1685ff}
+.rf-i-yt{background:#ffe8eb;color:#ff304f}
+.rf-i-ap{background:#ffe8f1;color:#dc2d72}
+.rf-i-vz{background:#fff0df;color:#f58220}
+.rf-i-px{background:#e8f8e9;color:#42a85a}
+.rf-i-4k{background:#fff1c9;color:#b77a00}
+.rf-i-fhd{background:#e8f3ff;color:#1685ff}
+.rf-i-hd{background:#e4fbf8;color:#12a89d}
+.rf-i-dir{background:#e8f4ff;color:#1685ff}
+.rf-i-land{background:#eee9ff;color:#7057db}
+.rf-i-port{background:#ffe8f2;color:#d53d85}
+.rf-i-under{background:#e5faf5;color:#0cae91}
+.rf-i-over{background:#ffe8ed;color:#ef405b}
+
+/* source rows */
+.filters [data-source="all"]::after{content:"▰";}.filters [data-source="youtube"]::after{content:"▶";}
+.filters [data-source="aparat"]::after{content:"●";}.filters [data-source="vecteezy"]::after{content:"V";}
+.filters [data-source="pixabay"]::after{content:"px";}
+.filters [data-source]::after,.filters [data-quality]::after,.filters [data-orientation]::after,.filters [data-duration]::after{
+ width:30px;height:30px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;
+ margin-inline-start:8px;font-weight:700;font-size:12px;box-shadow:0 4px 12px rgba(30,100,220,.10)
+}
+.filters [data-source="all"]::after{background:#e8f4ff;color:#1685ff}
+.filters [data-source="youtube"]::after{background:#ffe8eb;color:#ff304f}
+.filters [data-source="aparat"]::after{background:#ffe8f1;color:#dc2d72}
+.filters [data-source="vecteezy"]::after{background:#fff0df;color:#f58220}
+.filters [data-source="pixabay"]::after{background:#e8f8e9;color:#42a85a}
+.filters [data-quality="4k"]::after{content:"4K";background:#fff1c9;color:#b77a00}
+.filters [data-quality="fullhd"]::after,.filters [data-quality="fhd"]::after{content:"FHD";background:#e8f3ff;color:#1685ff}
+.filters [data-quality="hd"]::after{content:"HD";background:#e4fbf8;color:#12a89d}
+.filters [data-quality="all"]::after{content:"▰";background:#e8f4ff;color:#1685ff}
+.filters [data-orientation="all"]::after{content:"▦";background:#e8f4ff;color:#1685ff}
+.filters [data-orientation="horizontal"]::after{content:"▭";background:#eee9ff;color:#7057db}
+.filters [data-orientation="vertical"]::after{content:"▯";background:#ffe8f2;color:#d53d85}
+.filters [data-duration="under1"]::after{content:"◷";background:#e5faf5;color:#0cae91;font-size:18px}
+.filters [data-duration="over1"]::after{content:"◴";background:#ffe8ed;color:#ef405b;font-size:18px}
+</style>
 </head>
 <body>
 <aside class="sidebar">
