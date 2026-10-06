@@ -2297,6 +2297,64 @@ body, body.rf-dark{
 }
 </style>
 
+
+<style id="rush-v090-filter-separators">
+/* V090 — جداکننده‌های یکسان، هم‌اندازه و دقیقاً وسط بین چهار بخش فیلتر */
+.filters .section,
+.filter-panel .section,
+.filters .filter-section,
+.filter-panel .filter-section{
+  position:relative !important;
+}
+
+/* هر جداکننده با یک عرض، رنگ و فاصله یکسان */
+.filters .section:not(:last-of-type)::after,
+.filter-panel .section:not(:last-of-type)::after,
+.filters .filter-section:not(:last-of-type)::after,
+.filter-panel .filter-section:not(:last-of-type)::after{
+  content:"" !important;
+  display:block !important;
+  width:calc(100% - 28px) !important;
+  height:1px !important;
+  background:#d6e3f2 !important;
+  margin:28px auto !important;
+  position:relative !important;
+  left:auto !important;
+  right:auto !important;
+  top:auto !important;
+  bottom:auto !important;
+}
+
+/* حذف خطوط قدیمی احتمالی تا دوبل نشوند */
+.filters .divider,
+.filter-panel .divider,
+.filters hr,
+.filter-panel hr{
+  display:none !important;
+}
+
+/* فاصله داخلی چهار بخش هماهنگ */
+.filters .section,
+.filter-panel .section,
+.filters .filter-section,
+.filter-panel .filter-section{
+  margin:0 !important;
+  padding-top:0 !important;
+  padding-bottom:0 !important;
+}
+
+/* خط بالای دکمه اعمال فیلترها هم دقیقاً هم‌اندازه جداکننده‌ها */
+.filters .apply-wrap,
+.filter-panel .apply-wrap,
+.filters .filter-actions,
+.filter-panel .filter-actions{
+  border-top:1px solid #d6e3f2 !important;
+  width:calc(100% - 28px) !important;
+  margin:28px auto 0 !important;
+  padding-top:14px !important;
+}
+</style>
+
 </head>
 <body>
 <aside class="sidebar">
