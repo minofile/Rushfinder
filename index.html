@@ -2537,6 +2537,39 @@ body, body.rf-dark{
 }
 </style>
 
+
+<style id="rush-v0103-real-source-logos">
+/* V0103 — لوگوهای واقعی منابع، با همان فایل‌هایی که قبلاً کاربر داده */
+#sourceFilters .rf-real-icon{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  overflow:hidden !important;
+}
+#sourceFilters .rf-source-logo-img{
+  display:block !important;
+  width:24px !important;
+  height:24px !important;
+  max-width:24px !important;
+  max-height:24px !important;
+  object-fit:contain !important;
+}
+/* آیکون همه منابع دست‌نخورده می‌ماند */
+</style>
+
+
+<style id="rush-v0104-exact-source-logos">
+/* V0104 — فایل‌های لوگوی دقیق ارسال‌شده توسط کاربر */
+#sourceFilters .rf-source-logo-img{
+  width:26px !important;
+  height:26px !important;
+  max-width:26px !important;
+  max-height:26px !important;
+  object-fit:contain !important;
+  object-position:center !important;
+}
+</style>
+
 </head>
 <body>
 <aside class="sidebar">
@@ -2628,10 +2661,10 @@ body, body.rf-dark{
 <div class="fg" id="sourceFilters">
 <b class="rf-filter-title"><span class="rf-fi"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></svg></span>منبع ویدیو</b>
 <label><input id="allSources" type="checkbox" checked> همه منابع <span class="rf-real-icon all">▰</span></label>
-<label><input class="source-filter" type="checkbox" value="youtube"> YouTube <span class="rf-real-icon yt">▶</span></label>
-<label><input class="source-filter" type="checkbox" value="aparat"> Aparat <span class="rf-real-icon ap">●</span></label>
-<label><input class="source-filter" type="checkbox" value="vecteezy"> Vecteezy <span class="rf-real-icon vz">V</span></label>
-<label><input class="source-filter" type="checkbox" value="pixabay"> Pixabay <span class="rf-real-icon px">px</span></label>
+<label><input class="source-filter" type="checkbox" value="youtube"> YouTube <span class="rf-real-icon yt"><img src="assets/logos/sources/youtube.png" alt="youtube" class="rf-source-logo-img"></span></label>
+<label><input class="source-filter" type="checkbox" value="aparat"> Aparat <span class="rf-real-icon ap"><img src="assets/logos/sources/aparat.png" alt="aparat" class="rf-source-logo-img"></span></label>
+<label><input class="source-filter" type="checkbox" value="vecteezy"> Vecteezy <span class="rf-real-icon vz"><img src="assets/logos/sources/vecteezy.png" alt="vecteezy" class="rf-source-logo-img"></span></label>
+<label><input class="source-filter" type="checkbox" value="pixabay"> Pixabay <span class="rf-real-icon px"><img src="assets/logos/sources/pixabay.png" alt="pixabay" class="rf-source-logo-img"></span></label>
 </div>
 <div class="fg" id="qualityFilters">
 <b class="rf-filter-title"><span class="rf-fi"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg></span>کیفیت ویدیو</b>
