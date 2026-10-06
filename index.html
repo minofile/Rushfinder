@@ -2267,6 +2267,40 @@ body, body.rf-dark{
 @media(max-width:700px){.rf-rush-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 
+
+<style id="rush-v085-sidebar-only">
+/* فقط اصلاح ظاهر منوی نسخه 083: بدون کادر دور گزینه‌های غیرفعال */
+.nav{
+  gap:8px !important;
+}
+.nav button{
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+  background:transparent !important;
+  border-radius:14px !important;
+  margin:0 12px !important;
+  width:calc(100% - 24px) !important;
+  min-height:46px !important;
+}
+.nav button:hover{
+  background:rgba(255,255,255,.055) !important;
+}
+.nav button.active{
+  border:0 !important;
+  background:linear-gradient(135deg,#1685ff,#2469ef) !important;
+  box-shadow:0 8px 20px rgba(0,105,255,.22) !important;
+}
+.nav button i{
+  border:0 !important;
+  box-shadow:none !important;
+  background:transparent !important;
+}
+.nav button.active i{
+  background:rgba(255,255,255,.08) !important;
+}
+</style>
+
 </head>
 <body>
 <aside class="sidebar">
