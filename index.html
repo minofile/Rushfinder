@@ -1652,6 +1652,117 @@ body.rf-dark{background:#f6f9fd!important;color:inherit!important}
 }
 .side > *{position:relative!important;z-index:2!important}
 </style>
+<style>
+/* RushFinder V055 — source card + sidebar mountain fixes */
+
+/* Source default card: remove title and description completely */
+.rf-setting-row:has(.rf-set-btn[data-value="youtube"]):has(.rf-set-btn[data-value="aparat"]) .rf-setting-copy,
+.rf-setting-row:has(.rf-set-btn[data-value="youtube"]):has(.rf-set-btn[data-value="aparat"]) .rf-setting-name,
+.rf-setting-row:has(.rf-set-btn[data-value="youtube"]):has(.rf-set-btn[data-value="aparat"]) .rf-setting-desc{
+  display:none!important;
+}
+
+/* Put the five source buttons and their media icon on one clean centered row */
+.rf-setting-row:has(.rf-set-btn[data-value="youtube"]):has(.rf-set-btn[data-value="aparat"]){
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:16px!important;
+  padding:14px 18px!important;
+}
+.rf-setting-row:has(.rf-set-btn[data-value="youtube"]):has(.rf-set-btn[data-value="aparat"]) .rf-setting-options{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+  margin:0!important;
+  width:auto!important;
+  white-space:nowrap!important;
+}
+.rf-setting-row:has(.rf-set-btn[data-value="youtube"]):has(.rf-set-btn[data-value="aparat"]) .rf-set-btn{
+  flex:0 0 auto!important;
+  padding:8px 12px!important;
+  font-size:9px!important;
+}
+/* visible media/play element beside the five source buttons */
+.rf-setting-row:has(.rf-set-btn[data-value="youtube"]):has(.rf-set-btn[data-value="aparat"]):before{
+  content:"▶"!important;
+  position:static!important;
+  display:flex!important;
+  flex:0 0 56px!important;
+  width:56px!important;
+  height:56px!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border-radius:16px!important;
+  margin:0!important;
+  background:linear-gradient(145deg,#ffe7ea,#ffd8df)!important;
+  color:#ff5262!important;
+  font-size:25px!important;
+  box-shadow:0 10px 25px rgba(255,82,98,.13),inset 0 1px 0 #fff!important;
+}
+
+/* Mountain artwork: use actual layered SVG background instead of crossed CSS lines */
+.side{
+  position:fixed!important;
+  background:#041e35!important;
+  overflow:hidden!important;
+}
+.side .rf-mountain-art{
+  position:absolute!important;
+  z-index:0!important;
+  left:0!important;
+  right:0!important;
+  bottom:72px!important;
+  width:100%!important;
+  height:47%!important;
+  pointer-events:none!important;
+  opacity:1!important;
+}
+.side:before,.side:after{
+  display:none!important;
+  content:none!important;
+}
+.side > *:not(.rf-mountain-art){
+  position:relative!important;
+  z-index:2!important;
+}
+</style>
+<style>
+/* V055 FIX — keep only the source title, remove its subtitle */
+.rf-setting-row:has(.rf-set-btn[data-value="youtube"]):has(.rf-set-btn[data-value="aparat"]) .rf-setting-copy{
+  display:block!important;
+  flex:0 0 auto!important;
+  width:auto!important;
+  min-width:105px!important;
+  text-align:right!important;
+  margin:0!important;
+  padding:0!important;
+}
+.rf-setting-row:has(.rf-set-btn[data-value="youtube"]):has(.rf-set-btn[data-value="aparat"]) .rf-setting-name{
+  display:block!important;
+  white-space:nowrap!important;
+  font-size:13px!important;
+  line-height:1.4!important;
+}
+.rf-setting-row:has(.rf-set-btn[data-value="youtube"]):has(.rf-set-btn[data-value="aparat"]) .rf-setting-name::after{
+  content:""!important;
+}
+.rf-setting-row:has(.rf-set-btn[data-value="youtube"]):has(.rf-set-btn[data-value="aparat"]) .rf-setting-desc{
+  display:none!important;
+}
+/* order: buttons | title | play icon in RTL card */
+.rf-setting-row:has(.rf-set-btn[data-value="youtube"]):has(.rf-set-btn[data-value="aparat"]){
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:14px!important;
+}
+</style>
 </head>
 <body>
 <aside class="sidebar">
