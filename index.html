@@ -3046,16 +3046,39 @@ document.addEventListener("DOMContentLoaded",()=>{
  function closeAll(){page.classList.remove('active');settings&&settings.classList.remove('active')}
  document.addEventListener('click',e=>{const b=e.target.closest('.nav button');if(!b)return;const t=b.textContent.trim();if(t.includes('پیشنهاد راش')){e.preventDefault();settings&&settings.classList.remove('active');page.classList.add('active');activeNav('پیشنهاد راش');window.scrollTo(0,0)}else if(t.includes('داشبورد')){page.classList.remove('active');activeNav('داشبورد')}else if(t.includes('تنظیمات')){page.classList.remove('active');activeNav('تنظیمات')}});
  const rules=[
-  [/مجلس|شورای ملی|نمایند/i,['مجلس شورای ملی','مجلس مشروطه','نمایندگان مجلس','پارلمان ایران','جلسه تاریخی مجلس']],
-  [/کاخ گلستان|گلستان/i,['کاخ گلستان','Golestan Palace Tehran','تهران دوره قاجار','معماری قاجار','تهران قدیم']],
-  [/مشروطه/i,['نهضت مشروطه','مشروطه خواهان','Persian Constitutional Revolution','قانون اساسی مشروطه','تهران دوره مشروطه']],
-  [/مظفرالدین|قاجار/i,['مظفرالدین شاه قاجار','Mozaffar ad-Din Shah Qajar','دربار قاجار','تصاویر دوره قاجار','شاهان قاجار']],
-  [/قانون|حقوقی|قانون.?گذاری/i,['قانون اساسی ایران','اسناد تاریخی ایران','قانون گذاری','دستخط تاریخی','سند قدیمی']],
-  [/جنگ ایران|عراق|پشت جبهه/i,['جنگ ایران و عراق','رزمندگان ایرانی','پشت جبهه','کمک های مردمی جنگ','ارسال تدارکات جنگ']],
-  [/انقلاب/i,['انقلاب ایران','تظاهرات تاریخی ایران','آرشیو انقلاب','جمعیت معترض','خیابان های تهران تاریخی']],
-  [/تاریخ ایران|تاریخی/i,['آرشیو تاریخی ایران','تهران قدیم','اسناد تاریخی','تقویم ایرانی','رویدادهای تاریخی ایران']]
+  [/خرمشهر|مقاومت خرمشهر/i,['خرمشهر جنگ ایران عراق','مقاومت خرمشهر','نبرد خرمشهر','Khorramshahr Iran Iraq War','Khorramshahr battle']],
+  [/جنگ ایران|جنگ.*عراق|عراق.*جنگ|نخستین روزهای جنگ/i,['جنگ ایران و عراق','آغاز جنگ ایران و عراق','رزمندگان ایرانی جنگ','Iran Iraq War archival footage']],
+  [/صنعت|صنعتی|کارخانه|ذوب.?آهن|فولاد/i,['صنعت ایران کارخانه','کارخانه صنعتی ایران','ذوب آهن ایران','Iran industry factory','Iran steel factory']],
+  [/اقتصاد|اقتصادی|توسعه اقتصادی/i,['اقتصاد ایران','توسعه صنعتی ایران','صنعت و اقتصاد ایران','Iran industrial development']],
+  [/تحولات سیاسی|سیاسی/i,['تحولات سیاسی ایران','سیاست ایران آرشیو','Iran political history','Iran politics archival footage']],
+  [/مجلس|شورای ملی|نمایند/i,['مجلس شورای ملی','مجلس مشروطه','نمایندگان مجلس','پارلمان ایران']],
+  [/کاخ گلستان|گلستان/i,['کاخ گلستان','Golestan Palace Tehran','تهران دوره قاجار']],
+  [/مشروطه/i,['نهضت مشروطه','مشروطه خواهان','Persian Constitutional Revolution','قانون اساسی مشروطه']],
+  [/مظفرالدین|قاجار/i,['مظفرالدین شاه قاجار','Mozaffar ad-Din Shah Qajar','دربار قاجار']],
+  [/قانون|حقوقی|قانون.?گذاری/i,['قانون اساسی ایران','اسناد تاریخی ایران','قانون گذاری ایران']],
+  [/انقلاب/i,['انقلاب ایران','تظاهرات تاریخی ایران','آرشیو انقلاب ایران']],
+  [/تاریخ معاصر ایران|تاریخ ایران/i,['تاریخ معاصر ایران','آرشیو تاریخی ایران']]
  ];
- function suggestions(s,n){let out=[];rules.forEach(([r,a])=>{if(r.test(s))out.push(...a)});if(!out.length){out=['آرشیو تاریخی','تصاویر مرتبط','نمای عمومی ایران','اسناد و روزنامه قدیمی','مردم ایران','تهران'];}return [...new Set(out)].slice(0,n)}
+ const rfStop=new Set(['سیزدهم','چهاردهم','مهر','تاریخ','معاصر','ایران','روزی','است','توان','می‌توان','ردپای','تصویر','متفاوت','دید','برای','ساختن','تغییر','چهره','کشور','تحولات','سرانجام','نخستین','روزهای','یکی','مهم‌ترین','کانون‌های','تبدیل','کرد','این','آن','های','یک','در','از','به','را','که','با','و','تا','شد','بود']);
+ function rfImportantPhrases(s){
+   const out=[];
+   const add=x=>{x=String(x||'').trim(); if(x && !out.includes(x)) out.push(x)};
+   if(/خرمشهر/.test(s)){add('خرمشهر جنگ ایران عراق');add('مقاومت خرمشهر');add('نبرد خرمشهر')}
+   if(/صنعت|صنعتی|کارخانه|ذوب.?آهن|فولاد/.test(s)){add('صنعت ایران کارخانه');add('توسعه صنعتی ایران')}
+   if(/اقتصاد|اقتصادی/.test(s)) add('اقتصاد و صنعت ایران');
+   if(/سیاسی/.test(s)) add('تحولات سیاسی ایران');
+   if(/جنگ/.test(s) && /عراق|خرمشهر/.test(s)) add('آغاز جنگ ایران و عراق');
+   const toks=rfNorm(s).split(' ').filter(w=>w.length>2&&!rfStop.has(w));
+   for(let i=0;i<toks.length-1;i++) add(toks[i]+' '+toks[i+1]);
+   return out;
+ }
+ function suggestions(s,n){
+   let out=[];
+   rules.forEach(([r,a])=>{if(r.test(s)) out.push(...a)});
+   out.push(...rfImportantPhrases(s));
+   // Never fall back to vague searches such as "related images" or "people of Iran".
+   return [...new Set(out)].filter(Boolean).slice(0,Math.max(n,5));
+ }
  function splitText(txt){let a=txt.split(/(?<=[.!؟\n])\s+/).map(x=>x.trim()).filter(x=>x.length>20);if(a.length>6){let g=[];for(let i=0;i<a.length;i+=2)g.push(a.slice(i,i+2).join(' '));a=g}return a.slice(0,8)}
  function esc(s){return s.replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
  const rfRushUsed=new Set();
@@ -3063,23 +3086,28 @@ document.addEventListener("DOMContentLoaded",()=>{
  function rfTokens(s){return rfNorm(s).split(' ').filter(w=>w.length>2 && !['برای','این','است','بود','شد','های','یک','در','از','به','را','که','با','و','یا','the','and','for','with','from'].includes(w))}
  function rfRushKey(x){return String(x?.id||x?.uid||x?.pageURL||x?.url||x?.thumbnail||x?.thumbnailUrl||'')}
  function rfRushScore(x,q,context){
-   const hay=rfNorm([x?.title,x?.description,x?.tags,x?.channel,x?.source].filter(Boolean).join(' '));
-   const qts=rfTokens(q), cts=rfTokens(context);
-   let s=0;
-   qts.forEach(t=>{if(hay.includes(t))s+=6});
+   const hay=rfNorm([x?.title,x?.description,x?.tags,x?.channel].filter(Boolean).join(' '));
+   const qts=rfTokens(q).filter(t=>!['ایران','تاریخ','آرشیو','iran','history','archival','footage'].includes(t));
+   const cts=rfTokens(context).filter(t=>!['ایران','تاریخ','معاصر','روزهای','کشور'].includes(t));
+   let s=0, hits=0;
+   qts.forEach(t=>{if(hay.includes(t)){s+=12;hits++}});
    cts.forEach(t=>{if(hay.includes(t))s+=2});
-   if(hay.includes(rfNorm(q)))s+=12;
+   if(hay.includes(rfNorm(q)))s+=30;
+   // Named subjects are mandatory when present in the query.
+   const must=['خرمشهر','khorramshahr','ذوب آهن','فولاد','steel','مجلس','مشروطه','qajar','گلستان'];
+   for(const m of must){if(rfNorm(q).includes(m) && !hay.includes(m)) s-=35}
+   if(qts.length && hits===0) s-=30;
    return s;
  }
  async function rfRushFetchOne(q,context){
    try{
-     const params=new URLSearchParams({q,page:'1',per_page:'12',source:'all'});
+     const params=new URLSearchParams({q,page:'1',per_page:'36',source:'all'});
      const r=await fetch(`/api/search?${params}`);
      const d=await r.json();
      const arr=(Array.isArray(d.results)?d.results:[])
        .filter(x=>{const k=rfRushKey(x);return k&&!rfRushUsed.has(k)})
        .sort((a,b)=>rfRushScore(b,q,context)-rfRushScore(a,q,context));
-     const best=arr.find(x=>rfRushScore(x,q,context)>0)||arr[0]||null;
+     const best=arr.find(x=>rfRushScore(x,q,context)>=10)||null;
      if(best) rfRushUsed.add(rfRushKey(best));
      return best;
    }catch(_){return null}
@@ -3101,7 +3129,7 @@ document.addEventListener("DOMContentLoaded",()=>{
      const rs=[];
      for(const q of qs){rs.push(await rfRushFetchOne(q,p));}
      const grid=document.querySelector(`#rfRushPart${i} .rf-rush-preview-grid`);
-     if(grid) grid.innerHTML=rs.map((x,j)=>rfRushPreviewHTML(x,qs[j])).join('');
+     if(grid){const cards=rs.map((x,j)=>x?rfRushPreviewHTML(x,qs[j]):'').filter(Boolean);grid.innerHTML=cards.join('')||'<div class="rf-rush-empty">برای این بخش راش مرتبط مطمئن پیدا نشد.</div>';}
    }));
  };
  document.addEventListener('click',e=>{const c=e.target.closest('.rf-rush-chip,.rf-rush-preview');if(!c)return;const q=c.dataset.q||c.textContent.trim();closeAll();activeNav('داشبورد');const input=document.getElementById('query');if(input)input.value=q;if(typeof search==='function')search(q);});
