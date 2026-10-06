@@ -2930,3 +2930,50 @@ document.addEventListener("DOMContentLoaded",()=>{
 @media(max-width:1100px){.result-head{padding-left:28px!important}}
 @media(max-width:900px){.result-head{padding-left:20px!important}}
 </style>
+
+<!-- Rush-V078: Rush Suggestions page -->
+<style id="rf-v078-rush-suggest-style">
+.nav button{border:1px solid rgba(255,255,255,.12)!important;border-radius:14px!important;margin:7px 12px!important;width:calc(100% - 24px)!important;min-height:48px!important;padding:0 14px!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:12px!important}
+.nav button i{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-style:normal;font-size:16px;background:rgba(255,255,255,.06)}
+.nav button.active{background:linear-gradient(135deg,#087dff,#1768ef)!important;border-color:#278dff!important;box-shadow:0 9px 22px rgba(0,105,255,.28)!important}
+.rf-rush-page{position:fixed;z-index:70;inset:0 205px 0 0;display:none;overflow:auto;direction:rtl;background:radial-gradient(circle at 6% 92%,rgba(30,190,139,.14),transparent 20%),radial-gradient(circle at 90% 92%,rgba(76,194,255,.17),transparent 25%),linear-gradient(135deg,#f8fbff,#eef6ff 52%,#f8fbff)}
+.rf-rush-page.active{display:block}.rf-rush-inner{width:min(1060px,calc(100% - 36px));margin:0 auto;padding:28px 0 45px}.rf-rush-hero,.rf-rush-results{background:rgba(255,255,255,.82);border:1px solid #dbeafa;border-radius:22px;box-shadow:0 13px 34px rgba(52,104,175,.09);padding:20px;margin-bottom:14px}.rf-rush-herohead{display:flex;align-items:center;gap:12px;margin-bottom:14px}.rf-rush-icon{width:46px;height:46px;border-radius:15px;background:linear-gradient(145deg,#e8f5ff,#f2efff);display:grid;place-items:center;font-size:25px;box-shadow:0 8px 20px rgba(38,115,230,.12)}.rf-rush-title{font-size:20px;color:#0d284c;margin:0;font-weight:400}.rf-rush-textarea{width:100%;height:160px;resize:vertical;border:1.5px solid #6aaeff;border-radius:15px;background:#fff;padding:15px 17px;line-height:2;font-family:Yekan,sans-serif;font-size:12px;color:#142d4e;outline:none;box-sizing:border-box}.rf-rush-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}.rf-rush-count{display:flex;align-items:center;gap:8px;color:#617895;font-size:11px}.rf-rush-count select{border:1px solid #dbe8f5;border-radius:10px;padding:7px 10px;font-family:Yekan;background:white}.rf-rush-analyze{border:0;border-radius:12px;background:linear-gradient(135deg,#087dff,#1768ef);color:white;font-family:Yekan;padding:11px 28px;cursor:pointer;box-shadow:0 8px 18px rgba(15,111,245,.22)}.rf-rush-result-head{display:flex;align-items:center;gap:10px;color:#102c51;font-size:16px;margin-bottom:14px}.rf-rush-sections{display:grid;gap:12px}.rf-rush-section{background:linear-gradient(110deg,#fff,#f5faff);border:1px solid #e0ecf8;border-radius:17px;padding:14px}.rf-rush-section-title{font-size:14px;color:#0e2a4d;margin-bottom:4px}.rf-rush-section-snippet{font-size:10px;color:#8191a7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:10px}.rf-rush-chips{display:flex;flex-wrap:wrap;gap:8px}.rf-rush-chip{border:1px solid #dbe9f8;background:#fff;border-radius:11px;padding:8px 12px;font-family:Yekan;color:#17385f;cursor:pointer;box-shadow:0 5px 12px rgba(60,105,165,.06)}.rf-rush-chip:before{content:'⌕';color:#1685ff;margin-left:7px}.rf-rush-chip:hover{border-color:#58a5ff;background:#f2f8ff}.rf-rush-empty{text-align:center;color:#8798ad;padding:28px 10px;font-size:12px}
+@media(max-width:899px){.rf-rush-page{right:0}.rf-rush-controls{align-items:stretch;flex-direction:column}.rf-rush-analyze{width:100%}}
+</style>
+<section id="rfRushPage" class="rf-rush-page">
+ <div class="rf-rush-inner">
+  <div class="rf-rush-hero">
+   <div class="rf-rush-herohead"><div class="rf-rush-icon">💡</div><div><h1 class="rf-rush-title">پیشنهاد راش از روی متن</h1></div></div>
+   <textarea id="rfRushText" class="rf-rush-textarea" placeholder="متن یا سناریوی خود را اینجا وارد کنید..."></textarea>
+   <div class="rf-rush-controls"><div class="rf-rush-count"><span>تعداد پیشنهاد برای هر بخش</span><select id="rfRushCount"><option value="3">۳</option><option value="5" selected>۵</option><option value="7">۷</option></select></div><button id="rfRushAnalyze" class="rf-rush-analyze">✦ تحلیل و پیشنهاد راش</button></div>
+  </div>
+  <div class="rf-rush-results"><div class="rf-rush-result-head"><span class="rf-rush-icon" style="width:36px;height:36px;font-size:18px">▣</span><span>نتیجه تحلیل متن</span></div><div id="rfRushSections" class="rf-rush-sections"><div class="rf-rush-empty">متن را وارد کنید تا پیشنهادهای راش اینجا نمایش داده شوند.</div></div></div>
+ </div>
+</section>
+<script id="rf-v078-rush-suggest-js">
+(function(){
+ const page=document.getElementById('rfRushPage'), settings=document.getElementById('rfSettingsPage');
+ const nav=document.querySelector('.nav');
+ if(nav && ![...nav.querySelectorAll('button')].some(b=>b.textContent.includes('پیشنهاد راش'))){
+   const b=document.createElement('button'); b.innerHTML='<i>💡</i><span>پیشنهاد راش</span>'; nav.insertBefore(b,nav.children[1]||null);
+ }
+ function activeNav(label){document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.textContent.includes(label)))}
+ function closeAll(){page.classList.remove('active');settings&&settings.classList.remove('active')}
+ document.addEventListener('click',e=>{const b=e.target.closest('.nav button');if(!b)return;const t=b.textContent.trim();if(t.includes('پیشنهاد راش')){e.preventDefault();settings&&settings.classList.remove('active');page.classList.add('active');activeNav('پیشنهاد راش');window.scrollTo(0,0)}else if(t.includes('داشبورد')){page.classList.remove('active');activeNav('داشبورد')}else if(t.includes('تنظیمات')){page.classList.remove('active');activeNav('تنظیمات')}});
+ const rules=[
+  [/مجلس|شورای ملی|نمایند/i,['مجلس شورای ملی','مجلس مشروطه','نمایندگان مجلس','پارلمان ایران','جلسه تاریخی مجلس']],
+  [/کاخ گلستان|گلستان/i,['کاخ گلستان','Golestan Palace Tehran','تهران دوره قاجار','معماری قاجار','تهران قدیم']],
+  [/مشروطه/i,['نهضت مشروطه','مشروطه خواهان','Persian Constitutional Revolution','قانون اساسی مشروطه','تهران دوره مشروطه']],
+  [/مظفرالدین|قاجار/i,['مظفرالدین شاه قاجار','Mozaffar ad-Din Shah Qajar','دربار قاجار','تصاویر دوره قاجار','شاهان قاجار']],
+  [/قانون|حقوقی|قانون.?گذاری/i,['قانون اساسی ایران','اسناد تاریخی ایران','قانون گذاری','دستخط تاریخی','سند قدیمی']],
+  [/جنگ ایران|عراق|پشت جبهه/i,['جنگ ایران و عراق','رزمندگان ایرانی','پشت جبهه','کمک های مردمی جنگ','ارسال تدارکات جنگ']],
+  [/انقلاب/i,['انقلاب ایران','تظاهرات تاریخی ایران','آرشیو انقلاب','جمعیت معترض','خیابان های تهران تاریخی']],
+  [/تاریخ ایران|تاریخی/i,['آرشیو تاریخی ایران','تهران قدیم','اسناد تاریخی','تقویم ایرانی','رویدادهای تاریخی ایران']]
+ ];
+ function suggestions(s,n){let out=[];rules.forEach(([r,a])=>{if(r.test(s))out.push(...a)});if(!out.length){out=['آرشیو تاریخی','تصاویر مرتبط','نمای عمومی ایران','اسناد و روزنامه قدیمی','مردم ایران','تهران'];}return [...new Set(out)].slice(0,n)}
+ function splitText(txt){let a=txt.split(/(?<=[.!؟\n])\s+/).map(x=>x.trim()).filter(x=>x.length>20);if(a.length>6){let g=[];for(let i=0;i<a.length;i+=2)g.push(a.slice(i,i+2).join(' '));a=g}return a.slice(0,8)}
+ function esc(s){return s.replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+ document.getElementById('rfRushAnalyze').onclick=()=>{const txt=document.getElementById('rfRushText').value.trim(), box=document.getElementById('rfRushSections'), n=+document.getElementById('rfRushCount').value;if(!txt){box.innerHTML='<div class="rf-rush-empty">ابتدا متن یا سناریو را وارد کنید.</div>';return}const parts=splitText(txt);box.innerHTML=parts.map((p,i)=>`<div class="rf-rush-section"><div class="rf-rush-section-title">بخش ${String(i+1).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d])}</div><div class="rf-rush-section-snippet">${esc(p)}</div><div class="rf-rush-chips">${suggestions(p,n).map(x=>`<button class="rf-rush-chip" data-q="${esc(x)}">${esc(x)}</button>`).join('')}</div></div>`).join('')};
+ document.addEventListener('click',e=>{const c=e.target.closest('.rf-rush-chip');if(!c)return;const q=c.dataset.q||c.textContent.trim();closeAll();activeNav('داشبورد');const input=document.getElementById('query');if(input)input.value=q;if(typeof search==='function')search();});
+})();
+</script>
