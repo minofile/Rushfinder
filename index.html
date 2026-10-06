@@ -1931,6 +1931,22 @@ body, body.rf-dark{
   background-size:100% auto!important;
 }
 </style>
+<style>
+/* ===== V060 — remove every subtitle in Settings ===== */
+#rfSettingsPage .rf-setting-desc,
+#rfSettingsPage .setting-desc,
+#rfSettingsPage .settings-desc,
+#rfSettingsPage .rf-settings-subtitle,
+#rfSettingsPage .setting-subtitle,
+#rfSettingsPage .subtitle,
+#rfSettingsPage small {
+  display:none!important;
+}
+#rfSettingsPage .rf-setting-name,
+#rfSettingsPage .setting-title {
+  margin-bottom:0!important;
+}
+</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -2415,13 +2431,13 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
     </div>
     <div><h1 class="rf-settings-title">تنظیمات</h1><div class="rf-settings-sub">تنظیمات شخصی‌سازی تجربه جستجو در راش‌فایندر</div></div>
   </div>
-  <div class="rf-settings-grid"><div class="rf-setting-row" data-art="sun"><div class="rf-setting-info"><div class="rf-setting-name">ظاهر برنامه</div><div class="rf-setting-desc">انتخاب حالت نمایش رابط کاربری</div></div><div class="rf-setting-options" data-setting="theme"><button class="rf-set-btn" data-value="light">روشن</button><button class="rf-set-btn" data-value="system">سیستم</button></div></div>
-  <div class="rf-setting-row" data-art="video"><div class="rf-setting-info"><div class="rf-setting-name">تعداد نتایج در هر صفحه</div><div class="rf-setting-desc">تعداد ویدیوهایی که در هر صفحه نمایش داده می‌شود</div></div><div class="rf-setting-options" data-setting="perPage"><button class="rf-set-btn" data-value="12">۱۲</button><button class="rf-set-btn" data-value="24">۲۴</button><button class="rf-set-btn" data-value="36">۳۶</button></div></div>
+  <div class="rf-settings-grid"><div class="rf-setting-row" data-art="sun"><div class="rf-setting-info"><div class="rf-setting-name">ظاهر برنامه</div></div><div class="rf-setting-options" data-setting="theme"><button class="rf-set-btn" data-value="light">روشن</button><button class="rf-set-btn" data-value="system">سیستم</button></div></div>
+  <div class="rf-setting-row" data-art="video"><div class="rf-setting-info"><div class="rf-setting-name">تعداد نتایج در هر صفحه</div></div><div class="rf-setting-options" data-setting="perPage"><button class="rf-set-btn" data-value="12">۱۲</button><button class="rf-set-btn" data-value="24">۲۴</button><button class="rf-set-btn" data-value="36">۳۶</button></div></div>
   <div class="rf-setting-row" data-art="play"><div class="rf-setting-info"><div class="rf-setting-name">منبع جستجو</div></div><div class="rf-setting-options" data-setting="source"><button class="rf-set-btn" data-value="all">همه منابع</button><button class="rf-set-btn" data-value="YouTube">YouTube</button><button class="rf-set-btn" data-value="Aparat">Aparat</button><button class="rf-set-btn" data-value="Vecteezy">Vecteezy</button><button class="rf-set-btn" data-value="Pixabay">Pixabay</button></div></div>
-  <div class="rf-setting-row" data-art="4k"><div class="rf-setting-info"><div class="rf-setting-name">کیفیت پیش‌فرض</div><div class="rf-setting-desc">کیفیت ویدیوهای نمایش داده‌شده</div></div><div class="rf-setting-options" data-setting="quality"><button class="rf-set-btn" data-value="all">همه</button><button class="rf-set-btn" data-value="HD">HD</button><button class="rf-set-btn" data-value="Full HD">Full HD</button><button class="rf-set-btn" data-value="4K">4K</button></div></div>
-  <div class="rf-setting-row" data-art="orient"><div class="rf-setting-info"><div class="rf-setting-name">جهت ویدیو</div><div class="rf-setting-desc">جهت پیش‌فرض نمایش نتایج</div></div><div class="rf-setting-options" data-setting="orientation"><button class="rf-set-btn" data-value="all">همه</button><button class="rf-set-btn" data-value="horizontal">افقی</button><button class="rf-set-btn" data-value="vertical">عمودی</button></div></div>
-  <div class="rf-setting-row" data-art="sort"><div class="rf-setting-info"><div class="rf-setting-name">مرتب‌سازی پیش‌فرض</div><div class="rf-setting-desc">ترتیب نمایش نتایج جستجو</div></div><div class="rf-setting-options" data-setting="sort"><button class="rf-set-btn" data-value="relevant">مرتبط‌ترین</button><button class="rf-set-btn" data-value="newest">جدیدترین</button></div></div>
-  </div><div class="rf-setting-actions"><div class="rf-action-card danger"><div><div class="rf-setting-name">پاک کردن جستجوهای اخیر</div><div class="rf-setting-desc">سوابق جستجو از این مرورگر پاک می‌شود</div></div><button id="rfClearHistory" class="rf-set-btn">پاک کردن</button></div><div class="rf-action-card"><div><div class="rf-setting-name">بازنشانی تنظیمات</div><div class="rf-setting-desc">بازگشت همه تنظیمات به حالت پیش‌فرض</div></div><button id="rfResetSettings" class="rf-set-btn">بازنشانی</button></div></div>
+  <div class="rf-setting-row" data-art="4k"><div class="rf-setting-info"><div class="rf-setting-name">کیفیت پیش‌فرض</div></div><div class="rf-setting-options" data-setting="quality"><button class="rf-set-btn" data-value="all">همه</button><button class="rf-set-btn" data-value="HD">HD</button><button class="rf-set-btn" data-value="Full HD">Full HD</button><button class="rf-set-btn" data-value="4K">4K</button></div></div>
+  <div class="rf-setting-row" data-art="orient"><div class="rf-setting-info"><div class="rf-setting-name">جهت ویدیو</div></div><div class="rf-setting-options" data-setting="orientation"><button class="rf-set-btn" data-value="all">همه</button><button class="rf-set-btn" data-value="horizontal">افقی</button><button class="rf-set-btn" data-value="vertical">عمودی</button></div></div>
+  <div class="rf-setting-row" data-art="sort"><div class="rf-setting-info"><div class="rf-setting-name">مرتب‌سازی پیش‌فرض</div></div><div class="rf-setting-options" data-setting="sort"><button class="rf-set-btn" data-value="relevant">مرتبط‌ترین</button><button class="rf-set-btn" data-value="newest">جدیدترین</button></div></div>
+  </div><div class="rf-setting-actions"><div class="rf-action-card danger"><div><div class="rf-setting-name">پاک کردن جستجوهای اخیر</div></div><button id="rfClearHistory" class="rf-set-btn">پاک کردن</button></div><div class="rf-action-card"><div><div class="rf-setting-name">بازنشانی تنظیمات</div></div><button id="rfResetSettings" class="rf-set-btn">بازنشانی</button></div></div>
   <div class="rf-settings-savebar"><button id="rfSaveSettings" class="rf-save-btn">ذخیره تنظیمات</button><span id="rfSaveStatus" class="rf-save-status"></span></div>
 </div>
 </section>
