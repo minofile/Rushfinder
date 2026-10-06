@@ -2121,7 +2121,18 @@ body, body.rf-dark{
 .rf-i-land{background:#eee9ff;color:#7057db}.rf-i-port{background:#ffe8f2;color:#d53d85}
 .rf-i-under{background:#e5faf5;color:#0cae91;font-size:18px}.rf-i-over{background:#ffe8ed;color:#ef405b;font-size:18px}
 </style>
-</head>
+<style>
+/* V067: actual inline badges in every filter row */
+.filters label{display:flex!important;align-items:center!important;gap:8px!important}
+.filters label input{flex:0 0 auto}
+.rf-real-icon{margin-right:auto;width:30px;height:30px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;box-shadow:0 4px 12px rgba(30,100,220,.12)}
+.rf-real-icon.all{background:#e8f4ff;color:#1685ff}.rf-real-icon.yt{background:#ffe8eb;color:#ff304f}
+.rf-real-icon.ap{background:#ffe8f1;color:#dc2d72}.rf-real-icon.vz{background:#fff0df;color:#f58220}
+.rf-real-icon.px{background:#e8f8e9;color:#42a85a}.rf-real-icon.k4{background:#fff1c9;color:#b77a00}
+.rf-real-icon.fhd{background:#e8f3ff;color:#1685ff}.rf-real-icon.hd{background:#e4fbf8;color:#12a89d}
+.rf-real-icon.land{background:#eee9ff;color:#7057db;font-size:19px}.rf-real-icon.port{background:#ffe8f2;color:#d53d85;font-size:19px}
+.rf-real-icon.under{background:#e5faf5;color:#0cae91;font-size:19px}.rf-real-icon.over{background:#ffe8ed;color:#ef405b;font-size:19px}
+</style></head>
 <body>
 <aside class="sidebar">
 <div class="sidebrand sidebrand-final"><img src="assets/logos/rushfinder-sidebar-white.png" alt="RushFinder"></div><nav class="nav"><button class="active"><i>▦</i><span>داشبورد</span></button>
@@ -2207,32 +2218,32 @@ body, body.rf-dark{
 <aside class="filters"><h3>⚲ فیلتر نتایج</h3>
 <div class="fg" id="sourceFilters">
 <b class="rf-filter-title"><span class="rf-fi"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></svg></span>منبع ویدیو</b>
-<label><input id="allSources" type="checkbox" checked> همه منابع</label>
-<label><input class="source-filter" type="checkbox" value="youtube"> YouTube</label>
-<label><input class="source-filter" type="checkbox" value="aparat"> Aparat</label>
-<label><input class="source-filter" type="checkbox" value="vecteezy"> Vecteezy</label>
-<label><input class="source-filter" type="checkbox" value="pixabay"> Pixabay</label>
+<label><input id="allSources" type="checkbox" checked> همه منابع <span class="rf-real-icon all">▰</span></label>
+<label><input class="source-filter" type="checkbox" value="youtube"> YouTube <span class="rf-real-icon yt">▶</span></label>
+<label><input class="source-filter" type="checkbox" value="aparat"> Aparat <span class="rf-real-icon ap">●</span></label>
+<label><input class="source-filter" type="checkbox" value="vecteezy"> Vecteezy <span class="rf-real-icon vz">V</span></label>
+<label><input class="source-filter" type="checkbox" value="pixabay"> Pixabay <span class="rf-real-icon px">px</span></label>
 </div>
 <div class="fg" id="qualityFilters">
 <b class="rf-filter-title"><span class="rf-fi"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg></span>کیفیت ویدیو</b>
-<label><input name="quality" type="checkbox" value="all" checked> همه کیفیت‌ها</label>
-<label><input name="quality" type="checkbox" value="4k"> 4K (UHD)</label>
-<label><input name="quality" type="checkbox" value="fhd"> Full HD (1080p)</label>
-<label><input name="quality" type="checkbox" value="hd"> HD (720p)</label>
+<label><input name="quality" type="checkbox" value="all" checked> همه کیفیت‌ها <span class="rf-real-icon all">▰</span></label>
+<label><input name="quality" type="checkbox" value="4k"> 4K (UHD) <span class="rf-real-icon k4">4K</span></label>
+<label><input name="quality" type="checkbox" value="fhd"> Full HD (1080p) <span class="rf-real-icon fhd">FHD</span></label>
+<label><input name="quality" type="checkbox" value="hd"> HD (720p) <span class="rf-real-icon hd">HD</span></label>
 </div>
 <div class="fg" id="orientationFilters">
 <b>جهت ویدیو</b>
-<label><input name="orientation" type="checkbox" value="all" checked> همه</label>
-<label><input name="orientation" type="checkbox" value="horizontal"> افقی</label>
-<label><input name="orientation" type="checkbox" value="vertical"> عمودی</label>
+<label><input name="orientation" type="checkbox" value="all" checked> همه <span class="rf-real-icon all">▦</span></label>
+<label><input name="orientation" type="checkbox" value="horizontal"> افقی <span class="rf-real-icon land">▭</span></label>
+<label><input name="orientation" type="checkbox" value="vertical"> عمودی <span class="rf-real-icon port">▯</span></label>
 </div>
 
 <div class="fg" id="durationFilters">
 <b class="rf-filter-title"><span class="rf-fi">
 <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v5l3 2M9 2h6M12 5V2"/></svg>
 </span>زمان ویدیو</b>
-<label><input name="duration" type="checkbox" value="under1"> زیر ۱ دقیقه</label>
-<label><input name="duration" type="checkbox" value="over1"> بالای ۱ دقیقه</label>
+<label><input name="duration" type="checkbox" value="under1"> زیر ۱ دقیقه <span class="rf-real-icon under">◷</span></label>
+<label><input name="duration" type="checkbox" value="over1"> بالای ۱ دقیقه <span class="rf-real-icon over">◴</span></label>
 </div>
 
 <div class="filter-apply-wrap"><button id="applyFilters" class="apply-filters" type="button">اعمال فیلترها</button></div>
