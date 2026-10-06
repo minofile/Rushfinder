@@ -2052,6 +2052,15 @@ body, body.rf-dark{
 <label><input name="orientation" type="checkbox" value="horizontal"> افقی</label>
 <label><input name="orientation" type="checkbox" value="vertical"> عمودی</label>
 </div>
+
+<div class="fg" id="durationFilters">
+<b class="rf-filter-title"><span class="rf-fi">
+<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v5l3 2M9 2h6M12 5V2"/></svg>
+</span>زمان ویدیو</b>
+<label><input name="duration" type="checkbox" value="under1"> زیر ۱ دقیقه</label>
+<label><input name="duration" type="checkbox" value="over1"> بالای ۱ دقیقه</label>
+</div>
+
 <div class="filter-apply-wrap"><button id="applyFilters" class="apply-filters" type="button">اعمال فیلترها</button></div>
 </aside>
 <section class="results">
@@ -2103,6 +2112,10 @@ function selectedQuality(){
 }
 function selectedOrientation(){
  const c=document.querySelector('#orientationFilters input:checked');
+ return c ? c.value : "all";
+}
+function selectedDuration(){
+ const c=document.querySelector('#durationFilters input:checked');
  return c ? c.value : "all";
 }
 function rfSettingMap(){
@@ -2192,7 +2205,7 @@ async function loadPage(){
  const grid=document.getElementById("grid");
  const srcName=activeSource==="vecteezy"?"Vecteezy":activeSource==="pixabay"?"Pixabay":activeSource==="youtube"?"YouTube":activeSource==="aparat"?"Aparat":"منابع متصل";
  grid.innerHTML=`<div style="grid-column:1/-1;padding:55px;text-align:center;color:var(--muted)">در حال دریافت نتایج از ${srcName}...</div>`;
- const params=new URLSearchParams({q:activeQuery,page:String(current),per_page:String(perPage),quality:selectedQuality(),orientation:selectedOrientation(),source:activeSource});
+ const params=new URLSearchParams({q:activeQuery,page:String(current),per_page:String(perPage),quality:selectedQuality(),orientation:selectedOrientation(),duration:selectedDuration(),source:activeSource});
  const r=await fetch(`/api/search?${params}`),data=await r.json();if(!r.ok)throw new Error(data.error||"خطا در جستجو");
  results=Array.isArray(data.results)?data.results:[];
  totalAccessible=Number(data.totalAccessible ?? data.totalHits ?? data.total ?? 0);
@@ -2223,6 +2236,10 @@ function setupSourceFilters(){
  }
  singleCheck('#qualityFilters input[name="quality"]');
  singleCheck('#orientationFilters input[name="orientation"]');
+ const durationBoxes=[...document.querySelectorAll('#durationFilters input[name="duration"]')];
+ durationBoxes.forEach(b=>b.addEventListener("change",()=>{
+   if(b.checked) durationBoxes.forEach(x=>{if(x!==b)x.checked=false});
+ }));
 
  sources.forEach(b=>b.addEventListener("change",()=>{
    if(b.checked){

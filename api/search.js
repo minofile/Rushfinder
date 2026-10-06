@@ -434,7 +434,7 @@ module.exports = async function handler(req,res){
   const page=Math.max(1,parseInt(req.query.page||"1",10));
   const requestedPerPage=parseInt(req.query.per_page||"12",10);
   const perPage=[12,24,36].includes(requestedPerPage)?requestedPerPage:12;
-  const quality=String(req.query.quality||"all"), orientation=String(req.query.orientation||"all");
+  const quality=String(req.query.quality||"all"), orientation=String(req.query.orientation||"all"), durationFilter=String(req.query.duration||"all");
   try{
     let payload;
     if(source==="youtube"){
@@ -479,7 +479,14 @@ module.exports = async function handler(req,res){
     }
     res.setHeader("Cache-Control","s-maxage=300, stale-while-revalidate=600");
     return res.status(200).json({...payload,page,perPage});
-  }catch(e){
+  if(Array.isArray(payload?.results) && durationFilter!=="all"){
+      payload.results=payload.results.filter(item=>{
+        const d=Number(item?.duration||0);
+        if(!(d>0)) return false;
+        return durationFilter==="under1" ? d<60 : durationFilter==="over1" ? d>=60 : true;
+      });
+    }
+    }catch(e){
     return res.status(500).json({error:e?.message||"خطا در ارتباط با سرویس جستجو."});
   }
 };
