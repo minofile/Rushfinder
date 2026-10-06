@@ -2461,72 +2461,59 @@ body, body.rf-dark{
 </style>
 
 
-<style id="rush-v093-filter-cards">
-/* V093 — هر گروه فیلتر داخل یک کارت مستقل، مطابق ماکاپ تاییدشده */
+<style id="rush-v094-filter-cards-final">
+/* V094 — چهار کارت مستقل، هم‌عرض و وسط؛ بدون خط صاف */
 .fg{
   box-sizing:border-box !important;
-  width:calc(100% - 18px) !important;
-  margin:0 auto 16px !important;
+  width:calc(100% - 20px) !important;
+  height:auto !important;
+  min-height:0 !important;
+  max-height:none !important;
+  margin:0 auto 14px !important;
   padding:14px 10px 12px !important;
-  background:rgba(255,255,255,.72) !important;
-  border:1px solid #d8e5f3 !important;
+  background:#fff !important;
+  border:1px solid #dce8f4 !important;
   border-radius:18px !important;
-  box-shadow:0 5px 16px rgba(40,82,125,.035) !important;
-  overflow:hidden !important;
+  box-shadow:0 4px 14px rgba(35,76,118,.035) !important;
+  overflow:visible !important;
 }
 
-/* دیگر بین گروه‌ها خط جداکننده نداریم؛ خود کارت‌ها جداکننده‌اند */
-.fg::after,
-.fg::before{
+/* حذف کامل تمام خط‌های قدیمی */
+.fg::before,.fg::after{
   content:none !important;
   display:none !important;
 }
 .fg + .fg{
-  border-top:1px solid #d8e5f3 !important;
+  border-top:1px solid #dce8f4 !important;
 }
-
-/* خطوط/Dividerهای قدیمی پنل حذف شوند */
-.filters hr,
-.filter-panel hr,
-.filter hr,
-.filters .divider,
-.filter-panel .divider,
-.filter .divider{
+.filters hr,.filter-panel hr,.filter hr,
+.filters .divider,.filter-panel .divider,.filter .divider,
+.fg hr,.fg .divider{
   display:none !important;
+  border:0 !important;
 }
 
-/* عنوان هر کارت کمی منظم‌تر و هم‌فاصله */
-.fg > h3,
-.fg > h4,
-.fg .fg-title,
-.fg .filter-title{
+/* هیچ فضای مصنوعی در پایین گروه‌ها باقی نماند */
+.fg > :last-child{
+  margin-bottom:0 !important;
+}
+.fg > h3,.fg > h4,.fg .fg-title,.fg .filter-title{
   margin-top:0 !important;
-  margin-bottom:12px !important;
 }
 
-/* دکمه اعمال فیلتر بیرون کارت‌ها و بدون خط اضافه */
-.filter .apply,
-.filters .apply,
-.filter-panel .apply,
-.filter .apply-btn,
-.filters .apply-btn,
-.filter-panel .apply-btn,
-.filter .apply-wrap,
-.filters .apply-wrap,
-.filter-panel .apply-wrap{
-  border-top:0 !important;
-  margin-top:2px !important;
+/* دکمه پایین دقیقاً هم‌محور با کارت‌ها */
+.filter .apply,.filters .apply,.filter-panel .apply,
+.filter .apply-btn,.filters .apply-btn,.filter-panel .apply-btn,
+.filter .apply-wrap,.filters .apply-wrap,.filter-panel .apply-wrap{
+  box-sizing:border-box !important;
+  width:calc(100% - 20px) !important;
+  margin:2px auto 0 !important;
   padding-top:0 !important;
+  border-top:0 !important;
 }
-.filter .apply::before,
-.filters .apply::before,
-.filter-panel .apply::before,
-.filter .apply-btn::before,
-.filters .apply-btn::before,
-.filter-panel .apply-btn::before,
-.filter .apply-wrap::before,
-.filters .apply-wrap::before,
-.filter-panel .apply-wrap::before{
+.filter .apply::before,.filters .apply::before,.filter-panel .apply::before,
+.filter .apply-btn::before,.filters .apply-btn::before,.filter-panel .apply-btn::before,
+.filter .apply-wrap::before,.filters .apply-wrap::before,.filter-panel .apply-wrap::before{
   content:none !important;
   display:none !important;
 }
