@@ -5,6 +5,52 @@ function num(v){ const n=Number(v); return Number.isFinite(n)?n:0; }
 function arr(v){ return Array.isArray(v)?v:[]; }
 function first(...v){ return v.find(x=>typeof x==="string" && /^https?:\/\//i.test(x)) || ""; }
 
+// V075: Persian query expansion + lightweight relevance ranking.
+// This keeps searches such as «امریکا» focused across English-heavy stock providers.
+const QUERY_EXPANSIONS = {
+  "امریکا": ["امریکا","آمریکا","america","usa","united states","american"],
+  "آمریکا": ["آمریکا","امریکا","america","usa","united states","american"],
+  "ایالات متحده": ["ایالات متحده","america","usa","united states","american"],
+  "طلا": ["طلا","gold","golden"],
+  "سکه": ["سکه","coin","gold coin"],
+  "نفت": ["نفت","oil","petroleum"],
+  "انرژی": ["انرژی","energy"],
+  "جنگ": ["جنگ","war","military","combat"],
+  "فناوری": ["فناوری","technology","tech"],
+  "اقتصاد": ["اقتصاد","economic","economy","finance"],
+  "اقتصادی": ["اقتصادی","economic","economy","finance"],
+  "سیاسی": ["سیاسی","political","politics"]
+};
+function queryTerms(q){
+  const key=String(q||"").trim().toLowerCase();
+  const expanded=QUERY_EXPANSIONS[key]||[key];
+  return [...new Set(expanded.map(x=>String(x).trim().toLowerCase()).filter(Boolean))];
+}
+function providerQuery(q){
+  const terms=queryTerms(q);
+  // Stock APIs generally understand English better; retain the original too.
+  return terms.join(" ");
+}
+function relevanceScore(item,q){
+  const text=[item?.title,item?.tags,item?.description,item?.channelTitle,item?.source].filter(Boolean).join(" ").toLowerCase();
+  const terms=queryTerms(q);
+  let score=0;
+  for(const term of terms){
+    if(text.includes(term)) score += term.includes(" ") ? 5 : 3;
+    for(const token of term.split(/\s+/)){ if(token.length>2 && text.includes(token)) score += 1; }
+  }
+  return score;
+}
+function improveRelevance(results,q){
+  const list=Array.isArray(results)?results:[];
+  const scored=list.map((item,index)=>({item,index,score:relevanceScore(item,q)}));
+  const relevant=scored.filter(x=>x.score>0);
+  // Only hard-filter when we have enough matched items; otherwise rank matches first
+  // so sparse providers do not make the page empty.
+  const chosen=relevant.length>=Math.min(4,list.length)?relevant:scored;
+  return chosen.sort((a,b)=>(b.score-a.score)||(a.index-b.index)).map(x=>x.item);
+}
+
 function findFileUrl(obj){
   const all=obj?.file_link_all;
   if(!Array.isArray(all) || !all.length) return "";
@@ -435,18 +481,19 @@ module.exports = async function handler(req,res){
   const requestedPerPage=parseInt(req.query.per_page||"12",10);
   const perPage=[12,24,36].includes(requestedPerPage)?requestedPerPage:12;
   const quality=String(req.query.quality||"all"), orientation=String(req.query.orientation||"all"), durationFilter=String(req.query.duration||"all");
+  const searchQ=providerQuery(q);
   try{
     let payload;
     if(source==="youtube"){
-      payload=await youtubeSearch({q,page,quality,orientation,limit:perPage}); payload.sourceLabel="YouTube";
+      payload=await youtubeSearch({q:searchQ,page,quality,orientation,limit:perPage}); payload.sourceLabel="YouTube";
     }else if(source==="vecteezy"){
-      payload=await vecteezySearch({q,page,quality,orientation,limit:perPage});
+      payload=await vecteezySearch({q:searchQ,page,quality,orientation,limit:perPage});
       payload.sourceLabel="Vecteezy";
     }else if(source==="pixabay"){
-      payload=await pixabaySearch({q,page,quality,orientation,limit:perPage});
+      payload=await pixabaySearch({q:searchQ,page,quality,orientation,limit:perPage});
       payload.sourceLabel="Pixabay";
     }else if(source==="aparat"){
-      payload=await aparatSearch({q,page,quality,orientation,limit:perPage});
+      payload=await aparatSearch({q:searchQ,page,quality,orientation,limit:perPage});
       payload.sourceLabel="Aparat";
     }else{
       // "All sources": all four connected providers.
@@ -454,10 +501,10 @@ module.exports = async function handler(req,res){
       // Then interleave them and fill the page up to the selected page size whenever
       // one provider returns fewer results or temporarily fails.
       const [p,v,y,a]=await Promise.allSettled([
-        pixabaySearch({q,page,quality,orientation,limit:perPage}),
-        vecteezySearch({q,page,quality,orientation,limit:perPage}),
-        youtubeSearch({q,page,quality,orientation,limit:perPage}),
-        aparatSearch({q,page,quality,orientation,limit:perPage})
+        pixabaySearch({q:searchQ,page,quality,orientation,limit:perPage}),
+        vecteezySearch({q:searchQ,page,quality,orientation,limit:perPage}),
+        youtubeSearch({q:searchQ,page,quality,orientation,limit:perPage}),
+        aparatSearch({q:searchQ,page,quality,orientation,limit:perPage})
       ]);
       const pr=p.status==="fulfilled"?p.value:{results:[],totalAccessible:0,sourceTotalHits:0,total:0};
       const vr=v.status==="fulfilled"?v.value:{results:[],totalAccessible:0,sourceTotalHits:0,total:0};
@@ -477,6 +524,9 @@ module.exports = async function handler(req,res){
         sourceLabel:"Pixabay + Vecteezy + YouTube + Aparat",
         providerErrors:[p.status==="rejected"?"Pixabay":null,v.status==="rejected"?"Vecteezy":null,y.status==="rejected"?"YouTube":null,a.status==="rejected"?"Aparat":null].filter(Boolean)};
     }
+    // Rank/filter weakly related results before other filters.
+    if(Array.isArray(payload?.results)) payload.results=improveRelevance(payload.results,q);
+
     // Apply duration filter BEFORE sending the response.
     // V063 had this block after `return`, so it never executed.
     if(Array.isArray(payload?.results) && durationFilter!=="all"){
