@@ -2519,6 +2519,77 @@ body, body.rf-dark{
 }
 </style>
 
+
+<style id="rush-v095-filter-alignment">
+/* V095 — کارت‌ها دقیقاً وسط، دورخط واضح و اجزای داخلی یکدست */
+.fg{
+  box-sizing:border-box !important;
+  width:calc(100% - 28px) !important;
+  max-width:none !important;
+  height:auto !important;
+  min-height:0 !important;
+  margin:0 auto 16px !important;
+  padding:14px 12px 14px !important;
+  background:#fff !important;
+  border:1.25px solid #c9ddef !important;
+  border-radius:18px !important;
+  box-shadow:0 4px 14px rgba(31,75,120,.045) !important;
+  position:relative !important;
+  left:auto !important;
+  right:auto !important;
+  transform:none !important;
+  overflow:hidden !important;
+}
+
+/* هیچ خط صاف اضافه‌ای داخل یا پایین کارت وجود نداشته باشد */
+.fg::before,.fg::after,
+.fg hr,.fg .divider{
+  content:none !important;
+  display:none !important;
+}
+
+/* عنوان و آیکون همه گروه‌ها در یک ساختار */
+.fg .filter-head,
+.fg .fg-head,
+.fg > header{
+  min-height:42px !important;
+  display:flex !important;
+  align-items:center !important;
+  margin:0 0 10px !important;
+}
+
+/* ردیف‌های گزینه‌ها هم‌اندازه */
+.fg label,
+.fg .option,
+.fg .filter-option{
+  box-sizing:border-box !important;
+  min-height:42px !important;
+  height:42px !important;
+  margin:5px 0 !important;
+  border-radius:12px !important;
+  display:flex !important;
+  align-items:center !important;
+}
+
+/* آیکون‌های رنگی ردیف‌ها یک اندازه */
+.fg label > span:first-child,
+.fg .option > span:first-child,
+.fg .filter-option > span:first-child{
+  flex:0 0 auto;
+}
+
+/* دکمه پایین دقیقاً هم‌عرض و هم‌محور کارت‌ها */
+.filter .apply,.filters .apply,.filter-panel .apply,
+.filter .apply-btn,.filters .apply-btn,.filter-panel .apply-btn,
+.filter .apply-wrap,.filters .apply-wrap,.filter-panel .apply-wrap{
+  box-sizing:border-box !important;
+  width:calc(100% - 28px) !important;
+  margin:0 auto !important;
+  border-top:0 !important;
+  padding-top:0 !important;
+}
+</style>
+
 </head>
 <body>
 <aside class="sidebar">
