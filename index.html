@@ -2267,40 +2267,25 @@ body, body.rf-dark{
 @media(max-width:700px){.rf-rush-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 
-
-<style id="rush-v085-sidebar-only">
-/* فقط اصلاح ظاهر منوی نسخه 083: بدون کادر دور گزینه‌های غیرفعال */
-.nav{
-  gap:8px !important;
+<style id="rush-v086-fixed">
+.summary.rf86-summary{
+ display:grid!important;grid-template-columns:1.35fr repeat(4,1fr)!important;gap:0!important;
+ background:#fff!important;border:1px solid #e3edf8!important;border-radius:16px!important;
+ min-height:78px!important;padding:0 14px!important;box-shadow:0 7px 22px rgba(40,67,103,.055)!important;
+ overflow:hidden!important;align-items:center!important
 }
-.nav button{
-  border:0 !important;
-  outline:0 !important;
-  box-shadow:none !important;
-  background:transparent !important;
-  border-radius:14px !important;
-  margin:0 12px !important;
-  width:calc(100% - 24px) !important;
-  min-height:46px !important;
-}
-.nav button:hover{
-  background:rgba(255,255,255,.055) !important;
-}
-.nav button.active{
-  border:0 !important;
-  background:linear-gradient(135deg,#1685ff,#2469ef) !important;
-  box-shadow:0 8px 20px rgba(0,105,255,.22) !important;
-}
-.nav button i{
-  border:0 !important;
-  box-shadow:none !important;
-  background:transparent !important;
-}
-.nav button.active i{
-  background:rgba(255,255,255,.08) !important;
-}
+.rf86-total{display:flex;align-items:center;gap:11px;padding:12px 8px;direction:rtl}
+.rf86-search{width:38px;height:38px;border-radius:12px;background:#edf6ff;color:#147cf3;display:grid;place-items:center;font-size:18px}
+.rf86-total>strong{font-size:24px!important;color:#153657!important;font-weight:400!important;line-height:1!important}
+.rf86-totaltext b,.rf86-source b{display:block!important;font-size:10px!important;color:#17385f!important;font-weight:400!important}
+.rf86-totaltext small,.rf86-source small{display:block!important;font-size:7px!important;color:#91a4ba!important;margin-top:3px}
+.rf86-source{display:flex;align-items:center;justify-content:center;gap:9px;min-height:48px;border-right:1px solid #e7eef7;direction:ltr}
+.rf86-source div{text-align:left}
+.rf86-badge{width:31px;height:31px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:700}
+.rf86-badge.yt{background:#fff0f2;color:#f21e36}.rf86-badge.ap{background:#fff0f7;color:#ed2b78}
+.rf86-badge.ve{background:#fff4e9;color:#ff7b00}.rf86-badge.px{background:#effbef;color:#22a93b}
+@media(max-width:900px){.summary.rf86-summary{grid-template-columns:1fr 1fr!important}.rf86-total{grid-column:1/-1}.rf86-source{border-top:1px solid #e7eef7}}
 </style>
-
 </head>
 <body>
 <aside class="sidebar">
@@ -2366,12 +2351,16 @@ body, body.rf-dark{
   </div>
 </section>
 <div id="searchContent" hidden>
-<section class="summary"><div class="metric"><span class="mi">◉</span><strong>۵</strong><b>منبع جستجو</b><small>منابع آماده جستجو</small></div>
-<div class="metric"><span class="mi">◷</span><strong>۷</strong><b>جستجوهای اخیر</b><small>موضوعات جستجو شده</small></div>
-<div class="metric"><span class="mi">♡</span><strong>۱۲</strong><b>ذخیره‌شده‌ها</b><small>ویدیوهای نشان‌شده</small></div>
-<div class="metric"><span class="mi">▦</span><strong>۹</strong><b>دسته‌بندی‌ها</b><small>موضوعات آماده جستجو</small></div>
-<div class="metric"><span class="mi">◎</span><strong>۴</strong><b>منابع جستجو</b><small>YouTube، Aparat، Vecteezy، Pixabay</small></div>
-<div class="metric"><span class="mi">⌕</span><strong id="count">۲۴۰</strong><b>نتایج پیدا شده</b><small>برای جستجوی فعلی</small></div>
+<section class="summary rf86-summary">
+  <div class="rf86-total">
+    <span class="rf86-search">⌕</span>
+    <strong id="count">۲۴۰</strong>
+    <div class="rf86-totaltext"><b>نتیجه پیدا شد</b><small>برای جستجوی فعلی</small></div>
+  </div>
+  <div class="rf86-source"><span class="rf86-badge yt">▶</span><div><b>YouTube</b><small>منبع ویدیو</small></div></div>
+  <div class="rf86-source"><span class="rf86-badge ap">●</span><div><b>Aparat</b><small>منبع ویدیو</small></div></div>
+  <div class="rf86-source"><span class="rf86-badge ve">V</span><div><b>Vecteezy</b><small>استوک ویدیو</small></div></div>
+  <div class="rf86-source"><span class="rf86-badge px">px</span><div><b>Pixabay</b><small>استوک ویدیو</small></div></div>
 </section>
 <section class="categories" id="resultCategories">
 <div class="cat" data-q="طلا و سکه" style="background-image:url('https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&w=500&q=80')"><span>طلا و سکه</span></div>
