@@ -477,15 +477,20 @@ module.exports = async function handler(req,res){
         sourceLabel:"Pixabay + Vecteezy + YouTube + Aparat",
         providerErrors:[p.status==="rejected"?"Pixabay":null,v.status==="rejected"?"Vecteezy":null,y.status==="rejected"?"YouTube":null,a.status==="rejected"?"Aparat":null].filter(Boolean)};
     }
-    res.setHeader("Cache-Control","s-maxage=300, stale-while-revalidate=600");
-    return res.status(200).json({...payload,page,perPage});
-  if(Array.isArray(payload?.results) && durationFilter!=="all"){
+    // Apply duration filter BEFORE sending the response.
+    // V063 had this block after `return`, so it never executed.
+    if(Array.isArray(payload?.results) && durationFilter!=="all"){
       payload.results=payload.results.filter(item=>{
         const d=Number(item?.duration||0);
-        if(!(d>0)) return false;
-        return durationFilter==="under1" ? d<60 : durationFilter==="over1" ? d>=60 : true;
+        if(!Number.isFinite(d) || d<=0) return false;
+        if(durationFilter==="under1") return d < 60;
+        if(durationFilter==="over1") return d >= 60;
+        return true;
       });
     }
+
+    res.setHeader("Cache-Control","no-store");
+    return res.status(200).json({...payload,page,perPage});
     }catch(e){
     return res.status(500).json({error:e?.message||"خطا در ارتباط با سرویس جستجو."});
   }
