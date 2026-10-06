@@ -2218,6 +2218,55 @@ body, body.rf-dark{
 }
 </style>
 
+
+<style id="rf-v081-rush-results-fix">
+/* V081: full wrapped Persian text + actual rush preview cards */
+.rf-rush-section-snippet{
+  font-size:11px!important;
+  color:#7186a2!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+  line-height:2.15!important;
+  text-align:justify!important;
+  text-align-last:right!important;
+  direction:rtl!important;
+  width:100%!important;
+  max-width:100%!important;
+  margin:0 0 14px!important;
+}
+.rf-rush-preview-grid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:10px;
+  width:100%;
+}
+.rf-rush-preview{
+  min-width:0;
+  border:1px solid #dce9f7;
+  background:#fff;
+  border-radius:13px;
+  overflow:hidden;
+  box-shadow:0 6px 16px rgba(48,96,158,.07);
+  cursor:pointer;
+  transition:.18s ease;
+}
+.rf-rush-preview:hover{transform:translateY(-2px);border-color:#6eb2ff;box-shadow:0 9px 20px rgba(48,96,158,.12)}
+.rf-rush-preview-media{position:relative;aspect-ratio:16/9;background:linear-gradient(135deg,#eaf4ff,#f5f9ff);overflow:hidden}
+.rf-rush-preview-media img{width:100%;height:100%;object-fit:cover;display:block}
+.rf-rush-preview-source{position:absolute;top:7px;left:7px;background:rgba(6,28,55,.76);color:#fff;border-radius:7px;padding:3px 6px;font-size:8px;backdrop-filter:blur(5px)}
+.rf-rush-preview-body{padding:8px 9px}
+.rf-rush-preview-title{font-size:10px;color:#17385f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px}
+.rf-rush-preview-query{font-size:9px;color:#7389a4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rf-rush-preview-query:before{content:'⌕';color:#1685ff;margin-left:5px}
+.rf-rush-preview-loading{aspect-ratio:16/9;border-radius:13px;background:linear-gradient(100deg,#edf4fb 30%,#f8fbff 45%,#edf4fb 60%);background-size:220% 100%;animation:rfRushShimmer 1.2s infinite}
+@keyframes rfRushShimmer{to{background-position:-220% 0}}
+@media(max-width:1200px){.rf-rush-preview-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.rf-rush-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+
 </head>
 <body>
 <aside class="sidebar">
@@ -3009,8 +3058,35 @@ document.addEventListener("DOMContentLoaded",()=>{
  function suggestions(s,n){let out=[];rules.forEach(([r,a])=>{if(r.test(s))out.push(...a)});if(!out.length){out=['آرشیو تاریخی','تصاویر مرتبط','نمای عمومی ایران','اسناد و روزنامه قدیمی','مردم ایران','تهران'];}return [...new Set(out)].slice(0,n)}
  function splitText(txt){let a=txt.split(/(?<=[.!؟\n])\s+/).map(x=>x.trim()).filter(x=>x.length>20);if(a.length>6){let g=[];for(let i=0;i<a.length;i+=2)g.push(a.slice(i,i+2).join(' '));a=g}return a.slice(0,8)}
  function esc(s){return s.replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
- document.getElementById('rfRushAnalyze').onclick=()=>{const txt=document.getElementById('rfRushText').value.trim(), box=document.getElementById('rfRushSections'), n=+document.getElementById('rfRushCount').value;if(!txt){box.innerHTML='<div class="rf-rush-empty">ابتدا متن یا سناریو را وارد کنید.</div>';return}const parts=splitText(txt);box.innerHTML=parts.map((p,i)=>`<div class="rf-rush-section"><div class="rf-rush-section-title">بخش ${String(i+1).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d])}</div><div class="rf-rush-section-snippet">${esc(p)}</div><div class="rf-rush-chips">${suggestions(p,n).map(x=>`<button class="rf-rush-chip" data-q="${esc(x)}">${esc(x)}</button>`).join('')}</div></div>`).join('')};
- document.addEventListener('click',e=>{const c=e.target.closest('.rf-rush-chip');if(!c)return;const q=c.dataset.q||c.textContent.trim();closeAll();activeNav('داشبورد');const input=document.getElementById('query');if(input)input.value=q;if(typeof search==='function')search();});
+ async function rfRushFetchOne(q){
+   try{
+     const params=new URLSearchParams({q,page:'1',per_page:'1',source:'all'});
+     const r=await fetch(`/api/search?${params}`);
+     const d=await r.json();
+     const x=Array.isArray(d.results)?d.results[0]:null;
+     return x||null;
+   }catch(_){return null}
+ }
+ function rfRushPreviewHTML(x,q){
+   if(!x) return `<div class="rf-rush-preview" data-q="${esc(q)}"><div class="rf-rush-preview-media"></div><div class="rf-rush-preview-body"><div class="rf-rush-preview-title">${esc(q)}</div><div class="rf-rush-preview-query">جستجوی راش</div></div></div>`;
+   const thumb=x.thumbnail||x.thumbnailUrl||x.poster||x.image||'';
+   const title=x.title||q;
+   const source=x.source||'RushFinder';
+   return `<div class="rf-rush-preview" data-q="${esc(q)}"><div class="rf-rush-preview-media">${thumb?`<img src="${esc(thumb)}" alt="" loading="lazy">`:''}<span class="rf-rush-preview-source">${esc(source)}</span></div><div class="rf-rush-preview-body"><div class="rf-rush-preview-title">${esc(title)}</div><div class="rf-rush-preview-query">${esc(q)}</div></div></div>`;
+ }
+ document.getElementById('rfRushAnalyze').onclick=async()=>{
+   const txt=document.getElementById('rfRushText').value.trim(), box=document.getElementById('rfRushSections'), n=+document.getElementById('rfRushCount').value;
+   if(!txt){box.innerHTML='<div class="rf-rush-empty">ابتدا متن یا سناریو را وارد کنید.</div>';return}
+   const parts=splitText(txt);
+   box.innerHTML=parts.map((p,i)=>`<div class="rf-rush-section" id="rfRushPart${i}"><div class="rf-rush-section-title">بخش ${String(i+1).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d])}</div><div class="rf-rush-section-snippet">${esc(p)}</div><div class="rf-rush-preview-grid">${suggestions(p,n).map(()=>'<div class="rf-rush-preview-loading"></div>').join('')}</div></div>`).join('');
+   await Promise.all(parts.map(async(p,i)=>{
+     const qs=suggestions(p,n);
+     const rs=await Promise.all(qs.map(q=>rfRushFetchOne(q)));
+     const grid=document.querySelector(`#rfRushPart${i} .rf-rush-preview-grid`);
+     if(grid) grid.innerHTML=rs.map((x,j)=>rfRushPreviewHTML(x,qs[j])).join('');
+   }));
+ };
+ document.addEventListener('click',e=>{const c=e.target.closest('.rf-rush-chip,.rf-rush-preview');if(!c)return;const q=c.dataset.q||c.textContent.trim();closeAll();activeNav('داشبورد');const input=document.getElementById('query');if(input)input.value=q;if(typeof search==='function')search(q);});
 })();
 </script>
 </body>
