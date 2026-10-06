@@ -2854,7 +2854,14 @@ function setupSourceFilters(){
    const q=document.getElementById("query").value.trim();
    if(!q){showSourceNotice("ابتدا عبارت جستجو را وارد کنید.");return}
    activeQuery=q; current=1;
-   try{await loadPage()}catch(e){showSourceNotice("اعمال فیلترها با خطا روبه‌رو شد.")}
+   try{
+     await loadPage();
+   }catch(e){
+     const msg=(e&&e.message)?String(e.message):"خطا در دریافت نتایج.";
+     showSourceNotice(msg);
+     const grid=document.getElementById("grid");
+     if(grid) grid.innerHTML=`<div style="grid-column:1/-1;padding:46px 20px;text-align:center;color:#d33">${escapeHtml(msg)}</div>`;
+   }
  });
 }
 function toggleTheme(){document.body.classList.toggle("dark");localStorage.setItem("rf-theme",document.body.classList.contains("dark")?"dark":"light");document.getElementById("theme").textContent=document.body.classList.contains("dark")?"☀":"☾"}

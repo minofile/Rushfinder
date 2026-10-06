@@ -444,13 +444,25 @@ async function youtubeSearch({q,page,quality,orientation,limit=16}){
   u.searchParams.set("part","snippet");u.searchParams.set("type","video");u.searchParams.set("q",q);u.searchParams.set("maxResults",String(limit));
   u.searchParams.set("order","relevance");u.searchParams.set("safeSearch","moderate");u.searchParams.set("key",key);
   if(quality!=="all")u.searchParams.set("videoDefinition","high");if(token)u.searchParams.set("pageToken",token);
-  const r=await fetch(u);data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data?.error?.message||"YouTube API error");
+  const r=await fetch(u);data=await r.json().catch(()=>({}));
+  if(!r.ok){
+    const reason=data?.error?.errors?.[0]?.reason||"";
+    if(reason==="quotaExceeded" || r.status===429) throw new Error("سهمیه روزانه YouTube API تمام شده؛ پس از ریست سهمیه دوباره فعال می‌شود.");
+    if(reason==="keyInvalid" || r.status===401) throw new Error("کلید YouTube API معتبر نیست یا در Vercel تنظیم نشده است.");
+    if(reason==="accessNotConfigured") throw new Error("YouTube Data API v3 برای این پروژه فعال نیست.");
+    throw new Error(data?.error?.message||"خطا در ارتباط با YouTube API");
+  }
   if(p<page){token=data.nextPageToken||"";if(!token)break;}
  }
  const items=arr(data.items),ids=items.map(x=>x?.id?.videoId).filter(Boolean),total=num(data?.pageInfo?.totalResults);
  if(!ids.length)return{results:[],totalAccessible:total,sourceTotalHits:total,total};
  const u=new URL("https://www.googleapis.com/youtube/v3/videos");u.searchParams.set("part","contentDetails,snippet");u.searchParams.set("id",ids.join(","));u.searchParams.set("key",key);
- const r=await fetch(u),vd=await r.json().catch(()=>({}));if(!r.ok)throw new Error(vd?.error?.message||"YouTube videos API error");
+ const r=await fetch(u),vd=await r.json().catch(()=>({}));
+ if(!r.ok){
+   const reason=vd?.error?.errors?.[0]?.reason||"";
+   if(reason==="quotaExceeded" || r.status===429) throw new Error("سهمیه روزانه YouTube API تمام شده؛ پس از ریست سهمیه دوباره فعال می‌شود.");
+   throw new Error(vd?.error?.message||"خطا در دریافت جزئیات ویدیوهای YouTube");
+ }
  const dm=new Map(arr(vd.items).map(x=>[x.id,x]));
  let results=items.map(x=>{const id=x.id.videoId,d=dm.get(id)||{},sn=d.snippet||x.snippet||{},th=sn.thumbnails||{};
   return{id,title:sn.title||`YouTube video ${id}`,source:"YouTube",pageURL:`https://www.youtube.com/watch?v=${id}`,
@@ -482,7 +494,10 @@ async function filledMultiSearch({sources,q,page,perPage,quality,orientation,dur
   const totals={};
   const maxRounds=Math.max(3,Math.ceil(need/Math.max(1,perPage))*3);
   for(let round=1;round<=maxRounds;round++){
-    const jobs=await Promise.allSettled(sources.map(src=>searchOneSource(src,{q,page:round,quality,orientation,limit:perPage})));
+    const jobs=await Promise.allSettled(sources.map(src=>{
+      if(src==="youtube" && round>1) return Promise.resolve({results:[],totalAccessible:totals.youtube||0,sourceTotalHits:totals.youtube||0,total:totals.youtube||0,sourceLabel:"YouTube"});
+      return searchOneSource(src,{q,page:round,quality,orientation,limit:perPage});
+    }));
     jobs.forEach((job,i)=>{
       const src=sources[i]; if(job.status!=="fulfilled") return;
       const val=job.value; totals[src]=num(val.totalAccessible||val.total||val.sourceTotalHits);
