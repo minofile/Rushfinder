@@ -1845,6 +1845,72 @@ body, body.rf-dark{
 }
 .side > *:not(.rf-mountain-art){position:relative!important;z-index:2!important}
 </style>
+<style>
+/* ===== V057 exact source card fix ===== */
+.rf-setting-row[data-art="play"]{
+  display:grid!important;
+  grid-template-columns: 1fr auto 58px!important;
+  grid-template-areas:"options title art"!important;
+  align-items:center!important;
+  column-gap:14px!important;
+  direction:ltr!important;
+}
+.rf-setting-row[data-art="play"] .rf-setting-info{
+  grid-area:title!important;
+  width:auto!important;
+  min-width:90px!important;
+  margin:0!important;
+  padding:0!important;
+  text-align:right!important;
+  direction:rtl!important;
+}
+.rf-setting-row[data-art="play"] .rf-setting-name{
+  margin:0!important;
+  padding:0!important;
+  white-space:nowrap!important;
+  line-height:1.3!important;
+}
+.rf-setting-row[data-art="play"] .rf-setting-desc{display:none!important}
+.rf-setting-row[data-art="play"] .rf-setting-options{
+  grid-area:options!important;
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:6px!important;
+  width:max-content!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:0!important;
+  white-space:nowrap!important;
+  direction:rtl!important;
+}
+.rf-setting-row[data-art="play"] .rf-set-btn{
+  flex:0 0 auto!important;
+  white-space:nowrap!important;
+  min-width:auto!important;
+  padding:8px 10px!important;
+}
+/* hide any older generated art/pseudo element, then draw one clean play tile */
+.rf-setting-row[data-art="play"]::before{
+  content:"▶"!important;
+  grid-area:art!important;
+  position:static!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:56px!important;
+  height:56px!important;
+  border-radius:16px!important;
+  background:linear-gradient(145deg,#ffe9ec,#ffdce1)!important;
+  color:#ff5362!important;
+  font-size:24px!important;
+  line-height:1!important;
+  margin:0!important;
+  transform:none!important;
+}
+.rf-setting-row[data-art="play"]::after{display:none!important;content:none!important}
+</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -2331,7 +2397,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
   </div>
   <div class="rf-settings-grid"><div class="rf-setting-row" data-art="sun"><div class="rf-setting-info"><div class="rf-setting-name">ظاهر برنامه</div><div class="rf-setting-desc">انتخاب حالت نمایش رابط کاربری</div></div><div class="rf-setting-options" data-setting="theme"><button class="rf-set-btn" data-value="light">روشن</button><button class="rf-set-btn" data-value="system">سیستم</button></div></div>
   <div class="rf-setting-row" data-art="video"><div class="rf-setting-info"><div class="rf-setting-name">تعداد نتایج در هر صفحه</div><div class="rf-setting-desc">تعداد ویدیوهایی که در هر صفحه نمایش داده می‌شود</div></div><div class="rf-setting-options" data-setting="perPage"><button class="rf-set-btn" data-value="12">۱۲</button><button class="rf-set-btn" data-value="24">۲۴</button><button class="rf-set-btn" data-value="36">۳۶</button></div></div>
-  <div class="rf-setting-row" data-art="play"><div class="rf-setting-info"><div class="rf-setting-name">منبع جستجو</div><div class="rf-setting-desc">منبعی که جستجو به صورت پیش‌فرض با آن انجام می‌شود</div></div><div class="rf-setting-options" data-setting="source"><button class="rf-set-btn" data-value="all">همه منابع</button><button class="rf-set-btn" data-value="YouTube">YouTube</button><button class="rf-set-btn" data-value="Aparat">Aparat</button><button class="rf-set-btn" data-value="Vecteezy">Vecteezy</button><button class="rf-set-btn" data-value="Pixabay">Pixabay</button></div></div>
+  <div class="rf-setting-row" data-art="play"><div class="rf-setting-info"><div class="rf-setting-name">منبع جستجو</div></div><div class="rf-setting-options" data-setting="source"><button class="rf-set-btn" data-value="all">همه منابع</button><button class="rf-set-btn" data-value="YouTube">YouTube</button><button class="rf-set-btn" data-value="Aparat">Aparat</button><button class="rf-set-btn" data-value="Vecteezy">Vecteezy</button><button class="rf-set-btn" data-value="Pixabay">Pixabay</button></div></div>
   <div class="rf-setting-row" data-art="4k"><div class="rf-setting-info"><div class="rf-setting-name">کیفیت پیش‌فرض</div><div class="rf-setting-desc">کیفیت ویدیوهای نمایش داده‌شده</div></div><div class="rf-setting-options" data-setting="quality"><button class="rf-set-btn" data-value="all">همه</button><button class="rf-set-btn" data-value="HD">HD</button><button class="rf-set-btn" data-value="Full HD">Full HD</button><button class="rf-set-btn" data-value="4K">4K</button></div></div>
   <div class="rf-setting-row" data-art="orient"><div class="rf-setting-info"><div class="rf-setting-name">جهت ویدیو</div><div class="rf-setting-desc">جهت پیش‌فرض نمایش نتایج</div></div><div class="rf-setting-options" data-setting="orientation"><button class="rf-set-btn" data-value="all">همه</button><button class="rf-set-btn" data-value="horizontal">افقی</button><button class="rf-set-btn" data-value="vertical">عمودی</button></div></div>
   <div class="rf-setting-row" data-art="sort"><div class="rf-setting-info"><div class="rf-setting-name">مرتب‌سازی پیش‌فرض</div><div class="rf-setting-desc">ترتیب نمایش نتایج جستجو</div></div><div class="rf-setting-options" data-setting="sort"><button class="rf-set-btn" data-value="relevant">مرتبط‌ترین</button><button class="rf-set-btn" data-value="newest">جدیدترین</button></div></div>
