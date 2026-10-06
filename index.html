@@ -1199,6 +1199,79 @@ html[data-theme="light"] body{color-scheme:light!important}
   }
 }
 </style>
+<style>
+/* V051 — approved reference visual details */
+.rf-settings-page{
+  isolation:isolate!important;
+  background:
+    radial-gradient(circle at 5% 92%,rgba(30,190,139,.16),transparent 20%),
+    radial-gradient(circle at 91% 90%,rgba(76,194,255,.18),transparent 24%),
+    radial-gradient(circle at 20% 5%,rgba(117,141,255,.12),transparent 30%),
+    linear-gradient(135deg,#f8fbff 0%,#eef6ff 52%,#f8fbff 100%)!important;
+}
+.rf-ref-decor{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.rf-ref-bottom-orb{
+ position:absolute;width:285px;height:285px;right:-75px;bottom:-120px;border-radius:50%;
+ background:radial-gradient(circle at 38% 32%,#83f3dc 0%,#67d9f3 30%,#789fff 58%,rgba(116,153,255,.08) 72%);
+ filter:blur(.2px);opacity:.72;
+ box-shadow:inset 0 0 0 1px rgba(255,255,255,.65),0 0 55px rgba(65,177,255,.18);
+}
+.rf-ref-arc{
+ position:absolute;border:1px solid rgba(255,255,255,.8);border-radius:50%;
+}
+.rf-ref-arc.arc-one{width:460px;height:460px;right:-180px;bottom:-250px}
+.rf-ref-arc.arc-two{width:720px;height:720px;left:-420px;top:-490px}
+
+.rf-ref-leaf{
+ position:absolute;left:-48px;bottom:-72px;width:230px;height:245px;
+ filter:blur(2px);opacity:.78;transform:rotate(-10deg);
+}
+.rf-ref-leaf:before{
+ content:"";position:absolute;left:105px;bottom:0;width:14px;height:230px;border-radius:20px;
+ background:linear-gradient(180deg,#2bc49b,#148765);transform:rotate(20deg);
+ box-shadow:0 12px 30px rgba(18,131,94,.18);
+}
+.rf-ref-leaf i{
+ position:absolute;width:88px;height:128px;border-radius:90% 8% 90% 8%;
+ background:linear-gradient(145deg,#45d7a9,#138c68);
+ box-shadow:inset 12px 10px 28px rgba(255,255,255,.12),0 12px 24px rgba(15,128,93,.12);
+ transform-origin:bottom right;
+}
+.rf-ref-leaf i:nth-child(1){left:25px;bottom:28px;transform:rotate(-37deg)}
+.rf-ref-leaf i:nth-child(2){left:48px;bottom:80px;transform:rotate(-18deg) scale(.92)}
+.rf-ref-leaf i:nth-child(3){left:104px;bottom:72px;transform:rotate(35deg) scale(.92)}
+.rf-ref-leaf i:nth-child(4){left:110px;bottom:18px;transform:rotate(53deg) scale(.82)}
+.rf-ref-leaf i:nth-child(5){left:74px;bottom:128px;transform:rotate(5deg) scale(.76)}
+
+.rf-settings-inner{position:relative!important;z-index:2!important}
+
+/* Reference-like hero polish */
+.rf-settings-head-card{
+ background:
+  radial-gradient(circle at 18% 68%,rgba(73,222,194,.16),transparent 20%),
+  radial-gradient(circle at 34% 30%,rgba(105,157,255,.13),transparent 23%),
+  linear-gradient(110deg,rgba(255,255,255,.88),rgba(246,251,255,.74))!important;
+}
+.hero-gear{filter:drop-shadow(0 10px 11px rgba(44,101,225,.18))}
+.hero-sliders{border:1px solid rgba(255,255,255,.9)}
+.rf-settings-head-icon{box-shadow:0 10px 24px rgba(42,126,255,.12),inset 0 1px 0 white!important}
+
+/* With Dark removed, Light/System remain balanced */
+.rf-setting-row[data-art="sun"] .rf-setting-options{
+ display:flex!important;gap:10px!important;flex-wrap:nowrap!important;
+}
+.rf-setting-row[data-art="sun"] .rf-set-btn{
+ min-width:74px!important;
+}
+
+/* More dimensional card icons, matching the reference */
+.rf-settings-grid .rf-setting-row:before{
+ box-shadow:
+   0 10px 22px rgba(50,100,170,.12),
+   inset 0 1px 0 rgba(255,255,255,.9)!important;
+ text-shadow:0 3px 9px rgba(35,105,180,.12);
+}
+</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -1659,7 +1732,16 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
 
 
 <section id="rfSettingsPage" class="rf-settings-page" dir="rtl">
- <div class="rf-settings-inner">
+ 
+<div class="rf-ref-decor" aria-hidden="true">
+  <div class="rf-ref-leaf">
+    <i></i><i></i><i></i><i></i><i></i>
+  </div>
+  <div class="rf-ref-bottom-orb"></div>
+  <div class="rf-ref-arc arc-one"></div>
+  <div class="rf-ref-arc arc-two"></div>
+</div>
+<div class="rf-settings-inner">
   <div class="rf-settings-head-card">
     <div class="rf-settings-hero-art" aria-hidden="true">
       <span class="hero-gear">⚙</span>
@@ -1672,9 +1754,9 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
         <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.12 2.12-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.55V20.3h-3v-.09a1.7 1.7 0 0 0-1.03-1.55 1.7 1.7 0 0 0-1.88.34l-.06.06-2.12-2.12.06-.06A1.7 1.7 0 0 0 7 15a1.7 1.7 0 0 0-1.55-1.03H5.3v-3h.15A1.7 1.7 0 0 0 7 9.94a1.7 1.7 0 0 0-.34-1.88L6.6 8l2.12-2.12.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 11.7 4.7V4.6h3v.1a1.7 1.7 0 0 0 1.03 1.55 1.7 1.7 0 0 0 1.88-.34l.06-.06L19.8 8l-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.55 1.03h.15v3h-.15A1.7 1.7 0 0 0 19.4 15z"></path>
       </svg>
     </div>
-    <div><h1 class="rf-settings-title">تنظیمات</h1><div class="rf-settings-sub">تنظیمات شخصی‌سازی تجربه جستجو در راش‌فایندر</div></div>
+    <div><h1 class="rf-settings-title">تنظیمات</h1><div class="rf-settings-sub">تنظیمات شخصی‌سازی تجربه جستجو در RushFinder</div></div>
   </div>
-  <div class="rf-settings-grid"><div class="rf-setting-row" data-art="sun"><div class="rf-setting-info"><div class="rf-setting-name">ظاهر برنامه</div><div class="rf-setting-desc">انتخاب حالت نمایش رابط کاربری</div></div><div class="rf-setting-options" data-setting="theme"><button class="rf-set-btn" data-value="light">روشن</button><button class="rf-set-btn" data-value="dark">تاریک</button><button class="rf-set-btn" data-value="system">سیستم</button></div></div>
+  <div class="rf-settings-grid"><div class="rf-setting-row" data-art="sun"><div class="rf-setting-info"><div class="rf-setting-name">ظاهر برنامه</div><div class="rf-setting-desc">انتخاب حالت نمایش رابط کاربری</div></div><div class="rf-setting-options" data-setting="theme"><button class="rf-set-btn" data-value="light">روشن</button><button class="rf-set-btn" data-value="system">سیستم</button></div></div>
   <div class="rf-setting-row" data-art="video"><div class="rf-setting-info"><div class="rf-setting-name">تعداد نتایج در هر صفحه</div><div class="rf-setting-desc">تعداد ویدیوهایی که در هر صفحه نمایش داده می‌شود</div></div><div class="rf-setting-options" data-setting="perPage"><button class="rf-set-btn" data-value="12">۱۲</button><button class="rf-set-btn" data-value="24">۲۴</button><button class="rf-set-btn" data-value="36">۳۶</button></div></div>
   <div class="rf-setting-row" data-art="play"><div class="rf-setting-info"><div class="rf-setting-name">منبع پیش‌فرض جستجو</div><div class="rf-setting-desc">منبعی که جستجو به صورت پیش‌فرض با آن انجام می‌شود</div></div><div class="rf-setting-options" data-setting="source"><button class="rf-set-btn" data-value="all">همه منابع</button><button class="rf-set-btn" data-value="YouTube">YouTube</button><button class="rf-set-btn" data-value="Aparat">Aparat</button><button class="rf-set-btn" data-value="Vecteezy">Vecteezy</button><button class="rf-set-btn" data-value="Pixabay">Pixabay</button></div></div>
   <div class="rf-setting-row" data-art="4k"><div class="rf-setting-info"><div class="rf-setting-name">کیفیت پیش‌فرض</div><div class="rf-setting-desc">کیفیت ویدیوهای نمایش داده‌شده</div></div><div class="rf-setting-options" data-setting="quality"><button class="rf-set-btn" data-value="all">همه</button><button class="rf-set-btn" data-value="HD">HD</button><button class="rf-set-btn" data-value="Full HD">Full HD</button><button class="rf-set-btn" data-value="4K">4K</button></div></div>
