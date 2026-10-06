@@ -2104,6 +2104,23 @@ body, body.rf-dark{
 .filters [data-duration="under1"]::after{content:"◷";background:#e5faf5;color:#0cae91;font-size:18px}
 .filters [data-duration="over1"]::after{content:"◴";background:#ffe8ed;color:#ef405b;font-size:18px}
 </style>
+
+<style>
+/* V066: real per-row icon elements */
+.filters [data-source]::after,.filters [data-quality]::after,
+.filters [data-orientation]::after,.filters [data-duration]::after{display:none!important;content:none!important}
+.rf-v066-icon{
+ width:30px;height:30px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;
+ flex:0 0 30px;margin-inline-start:8px;font-size:12px;font-weight:700;
+ box-shadow:0 4px 12px rgba(30,100,220,.12)
+}
+.rf-i-all{background:#e8f4ff;color:#1685ff}.rf-i-yt{background:#ffe8eb;color:#ff304f}
+.rf-i-ap{background:#ffe8f1;color:#dc2d72}.rf-i-vz{background:#fff0df;color:#f58220}
+.rf-i-px{background:#e8f8e9;color:#42a85a}.rf-i-4k{background:#fff1c9;color:#b77a00}
+.rf-i-fhd{background:#e8f3ff;color:#1685ff}.rf-i-hd{background:#e4fbf8;color:#12a89d}
+.rf-i-land{background:#eee9ff;color:#7057db}.rf-i-port{background:#ffe8f2;color:#d53d85}
+.rf-i-under{background:#e5faf5;color:#0cae91;font-size:18px}.rf-i-over{background:#ffe8ed;color:#ef405b;font-size:18px}
+</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -2751,4 +2768,28 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
 })();
 </script>
 
+
+<script>
+document.addEventListener("DOMContentLoaded",()=>{
+  const specs=[
+    ['[data-source="all"]','▰','rf-i-all'],['[data-source="youtube"]','▶','rf-i-yt'],
+    ['[data-source="aparat"]','●','rf-i-ap'],['[data-source="vecteezy"]','V','rf-i-vz'],
+    ['[data-source="pixabay"]','px','rf-i-px'],
+    ['[data-quality="all"]','▰','rf-i-all'],['[data-quality="4k"]','4K','rf-i-4k'],
+    ['[data-quality="fullhd"],[data-quality="fhd"]','FHD','rf-i-fhd'],['[data-quality="hd"]','HD','rf-i-hd'],
+    ['[data-orientation="all"]','▦','rf-i-all'],['[data-orientation="horizontal"]','▭','rf-i-land'],
+    ['[data-orientation="vertical"]','▯','rf-i-port'],
+    ['[data-duration="under1"]','◷','rf-i-under'],['[data-duration="over1"]','◴','rf-i-over']
+  ];
+  specs.forEach(([sel,txt,cls])=>{
+    document.querySelectorAll('.filters '+sel).forEach(el=>{
+      if(el.querySelector('.rf-v066-icon')) return;
+      const badge=document.createElement('span');
+      badge.className='rf-v066-icon '+cls;
+      badge.textContent=txt;
+      el.appendChild(badge);
+    });
+  });
+});
+</script>
 </body></html>
