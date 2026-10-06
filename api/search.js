@@ -1,3 +1,27 @@
+
+// V0102 — YouTube quota saver cache.
+// Repeated identical searches on a warm Vercel instance are served without another YouTube API call.
+const RF_YT_CACHE = globalThis.__RF_YT_CACHE || (globalThis.__RF_YT_CACHE = new Map());
+const RF_YT_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
+const RF_YT_CACHE_MAX = 250;
+
+function rfYtCacheGet(key){
+  const item = RF_YT_CACHE.get(key);
+  if(!item) return null;
+  if(Date.now() - item.time > RF_YT_CACHE_TTL){
+    RF_YT_CACHE.delete(key);
+    return null;
+  }
+  return item.value;
+}
+function rfYtCacheSet(key,value){
+  if(RF_YT_CACHE.size >= RF_YT_CACHE_MAX){
+    const oldest = RF_YT_CACHE.keys().next().value;
+    if(oldest) RF_YT_CACHE.delete(oldest);
+  }
+  RF_YT_CACHE.set(key,{time:Date.now(),value});
+}
+
 const PIXABAY = "https://pixabay.com/api/videos/";
 const VECTEEZY = "https://api.vecteezy.com";
 
@@ -444,7 +468,17 @@ async function youtubeSearch({q,page,quality,orientation,limit=16}){
   u.searchParams.set("part","snippet");u.searchParams.set("type","video");u.searchParams.set("q",q);u.searchParams.set("maxResults",String(limit));
   u.searchParams.set("order","relevance");u.searchParams.set("safeSearch","moderate");u.searchParams.set("key",key);
   if(quality!=="all")u.searchParams.set("videoDefinition","high");if(token)u.searchParams.set("pageToken",token);
-  const r=await fetch(u);data=await r.json().catch(()=>({}));
+  const ytSearchResponseKey="search:"+u.toString();
+  const ytSearchCached=rfYtCacheGet(ytSearchResponseKey);
+  let r;
+  if(ytSearchCached){
+    data=ytSearchCached;
+    r={ok:true,status:200};
+  }else{
+    r=await fetch(u);
+    data=await r.json().catch(()=>({}));
+    if(r.ok) rfYtCacheSet(ytSearchResponseKey,data);
+  }
   if(!r.ok){
     const reason=data?.error?.errors?.[0]?.reason||"";
     if(reason==="quotaExceeded" || r.status===429) throw new Error("سهمیه روزانه YouTube API تمام شده؛ پس از ریست سهمیه دوباره فعال می‌شود.");
@@ -457,7 +491,17 @@ async function youtubeSearch({q,page,quality,orientation,limit=16}){
  const items=arr(data.items),ids=items.map(x=>x?.id?.videoId).filter(Boolean),total=num(data?.pageInfo?.totalResults);
  if(!ids.length)return{results:[],totalAccessible:total,sourceTotalHits:total,total};
  const u=new URL("https://www.googleapis.com/youtube/v3/videos");u.searchParams.set("part","contentDetails,snippet");u.searchParams.set("id",ids.join(","));u.searchParams.set("key",key);
- const r=await fetch(u),vd=await r.json().catch(()=>({}));
+ const ytVideosResponseKey="videos:"+u.toString();
+ let r,vd;
+ const ytVideosCached=rfYtCacheGet(ytVideosResponseKey);
+ if(ytVideosCached){
+   vd=ytVideosCached;
+   r={ok:true,status:200};
+ }else{
+   r=await fetch(u);
+   vd=await r.json().catch(()=>({}));
+   if(r.ok) rfYtCacheSet(ytVideosResponseKey,vd);
+ }
  if(!r.ok){
    const reason=vd?.error?.errors?.[0]?.reason||"";
    if(reason==="quotaExceeded" || r.status===429) throw new Error("سهمیه روزانه YouTube API تمام شده؛ پس از ریست سهمیه دوباره فعال می‌شود.");
