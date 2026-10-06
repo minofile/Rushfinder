@@ -1763,6 +1763,88 @@ body.rf-dark{background:#f6f9fd!important;color:inherit!important}
   gap:14px!important;
 }
 </style>
+<style>
+/* ===== RushFinder V056 ===== */
+
+/* LIGHT ONLY: dark/system can never turn the UI dark */
+html, body, body.rf-dark, html.rf-dark,
+[data-theme="dark"], [data-theme="system"] {
+  color-scheme: light!important;
+}
+body, body.rf-dark{
+  background:#f6f9fd!important;
+  color:#0b1f35!important;
+}
+.rf-mode[data-theme="dark"]{display:none!important}
+
+/* Source card: title remains, subtitle is gone, five buttons stay one line */
+.rf-setting-row:has(.rf-set-btn[data-value="youtube"]):has(.rf-set-btn[data-value="aparat"]){
+  display:grid!important;
+  grid-template-columns:minmax(390px,1fr) 120px 62px!important;
+  align-items:center!important;
+  gap:12px!important;
+  padding:14px 18px!important;
+}
+.rf-setting-row:has(.rf-set-btn[data-value="youtube"]):has(.rf-set-btn[data-value="aparat"]) .rf-setting-copy{
+  display:block!important;
+  grid-column:2!important;
+  width:120px!important;
+  min-width:120px!important;
+  text-align:right!important;
+  margin:0!important;padding:0!important;
+}
+.rf-setting-row:has(.rf-set-btn[data-value="youtube"]):has(.rf-set-btn[data-value="aparat"]) .rf-setting-name{
+  display:block!important;
+  white-space:nowrap!important;
+  font-size:13px!important;
+}
+.rf-setting-row:has(.rf-set-btn[data-value="youtube"]):has(.rf-set-btn[data-value="aparat"]) .rf-setting-desc{
+  display:none!important;
+}
+.rf-setting-row:has(.rf-set-btn[data-value="youtube"]):has(.rf-set-btn[data-value="aparat"]) .rf-setting-options{
+  grid-column:1!important;
+  display:flex!important;
+  flex-flow:row nowrap!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:6px!important;
+  width:100%!important;
+  margin:0!important;
+  white-space:nowrap!important;
+}
+.rf-setting-row:has(.rf-set-btn[data-value="youtube"]):has(.rf-set-btn[data-value="aparat"]) .rf-set-btn{
+  flex:0 0 auto!important;
+  min-width:0!important;
+  padding:8px 10px!important;
+  font-size:9px!important;
+}
+.rf-setting-row:has(.rf-set-btn[data-value="youtube"]):has(.rf-set-btn[data-value="aparat"]):before{
+  content:"▶"!important;
+  grid-column:3!important;
+  position:static!important;
+  display:flex!important;
+  width:56px!important;height:56px!important;
+  align-items:center!important;justify-content:center!important;
+  margin:0!important;border-radius:16px!important;
+  background:linear-gradient(145deg,#ffe8eb,#ffd9df)!important;
+  color:#ff5362!important;font-size:25px!important;
+}
+
+/* 12/24/36 always one line */
+.rf-setting-row:has(.rf-set-btn[data-value="12"]):has(.rf-set-btn[data-value="24"]):has(.rf-set-btn[data-value="36"]) .rf-setting-options{
+  display:flex!important;flex-flow:row nowrap!important;gap:8px!important;white-space:nowrap!important;
+}
+
+/* Real mountain SVG, not crossed lines */
+.side:before,.side:after{display:none!important;content:none!important}
+.side{background:#041e35!important;overflow:hidden!important}
+.rf-mountain-art{
+  display:block!important;position:absolute!important;z-index:0!important;
+  left:0!important;right:0!important;bottom:72px!important;
+  width:100%!important;height:48%!important;pointer-events:none!important;
+}
+.side > *:not(.rf-mountain-art){position:relative!important;z-index:2!important}
+</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -2249,7 +2331,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
   </div>
   <div class="rf-settings-grid"><div class="rf-setting-row" data-art="sun"><div class="rf-setting-info"><div class="rf-setting-name">ظاهر برنامه</div><div class="rf-setting-desc">انتخاب حالت نمایش رابط کاربری</div></div><div class="rf-setting-options" data-setting="theme"><button class="rf-set-btn" data-value="light">روشن</button><button class="rf-set-btn" data-value="system">سیستم</button></div></div>
   <div class="rf-setting-row" data-art="video"><div class="rf-setting-info"><div class="rf-setting-name">تعداد نتایج در هر صفحه</div><div class="rf-setting-desc">تعداد ویدیوهایی که در هر صفحه نمایش داده می‌شود</div></div><div class="rf-setting-options" data-setting="perPage"><button class="rf-set-btn" data-value="12">۱۲</button><button class="rf-set-btn" data-value="24">۲۴</button><button class="rf-set-btn" data-value="36">۳۶</button></div></div>
-  <div class="rf-setting-row" data-art="play"><div class="rf-setting-info"><div class="rf-setting-name">منبع پیش‌فرض جستجو</div><div class="rf-setting-desc">منبعی که جستجو به صورت پیش‌فرض با آن انجام می‌شود</div></div><div class="rf-setting-options" data-setting="source"><button class="rf-set-btn" data-value="all">همه منابع</button><button class="rf-set-btn" data-value="YouTube">YouTube</button><button class="rf-set-btn" data-value="Aparat">Aparat</button><button class="rf-set-btn" data-value="Vecteezy">Vecteezy</button><button class="rf-set-btn" data-value="Pixabay">Pixabay</button></div></div>
+  <div class="rf-setting-row" data-art="play"><div class="rf-setting-info"><div class="rf-setting-name">منبع جستجو</div><div class="rf-setting-desc">منبعی که جستجو به صورت پیش‌فرض با آن انجام می‌شود</div></div><div class="rf-setting-options" data-setting="source"><button class="rf-set-btn" data-value="all">همه منابع</button><button class="rf-set-btn" data-value="YouTube">YouTube</button><button class="rf-set-btn" data-value="Aparat">Aparat</button><button class="rf-set-btn" data-value="Vecteezy">Vecteezy</button><button class="rf-set-btn" data-value="Pixabay">Pixabay</button></div></div>
   <div class="rf-setting-row" data-art="4k"><div class="rf-setting-info"><div class="rf-setting-name">کیفیت پیش‌فرض</div><div class="rf-setting-desc">کیفیت ویدیوهای نمایش داده‌شده</div></div><div class="rf-setting-options" data-setting="quality"><button class="rf-set-btn" data-value="all">همه</button><button class="rf-set-btn" data-value="HD">HD</button><button class="rf-set-btn" data-value="Full HD">Full HD</button><button class="rf-set-btn" data-value="4K">4K</button></div></div>
   <div class="rf-setting-row" data-art="orient"><div class="rf-setting-info"><div class="rf-setting-name">جهت ویدیو</div><div class="rf-setting-desc">جهت پیش‌فرض نمایش نتایج</div></div><div class="rf-setting-options" data-setting="orientation"><button class="rf-set-btn" data-value="all">همه</button><button class="rf-set-btn" data-value="horizontal">افقی</button><button class="rf-set-btn" data-value="vertical">عمودی</button></div></div>
   <div class="rf-setting-row" data-art="sort"><div class="rf-setting-info"><div class="rf-setting-name">مرتب‌سازی پیش‌فرض</div><div class="rf-setting-desc">ترتیب نمایش نتایج جستجو</div></div><div class="rf-setting-options" data-setting="sort"><button class="rf-set-btn" data-value="relevant">مرتبط‌ترین</button><button class="rf-set-btn" data-value="newest">جدیدترین</button></div></div>
@@ -2355,6 +2437,41 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
  const initial=load();
  const bootSettings={...initial,theme:"light"};
  applyToEngine(bootSettings);paint();
+})();
+</script>
+
+
+<script>
+(function(){
+  const forceLight = () => {
+    document.documentElement.classList.remove('rf-dark','dark');
+    document.body && document.body.classList.remove('rf-dark','dark');
+    document.documentElement.style.colorScheme='light';
+    if(document.body){
+      document.body.style.colorScheme='light';
+      document.body.dataset.theme='light';
+    }
+  };
+  forceLight();
+  document.addEventListener('DOMContentLoaded', forceLight);
+  window.addEventListener('load', forceLight);
+
+  /* Neutralize any legacy theme application after settings save */
+  const obs = new MutationObserver(forceLight);
+  obs.observe(document.documentElement,{attributes:true,attributeFilter:['class','data-theme']});
+  document.addEventListener('click', function(e){
+    const b=e.target.closest && e.target.closest('#rfSaveSettings,.rf-save-btn');
+    if(b) setTimeout(forceLight,0);
+  }, true);
+
+  try{
+    const key='rushfinder_settings_v2';
+    const s=JSON.parse(localStorage.getItem(key)||'{}');
+    if(s && s.theme && s.theme!=='light'){
+      s.theme='light';
+      localStorage.setItem(key,JSON.stringify(s));
+    }
+  }catch(e){}
 })();
 </script>
 
