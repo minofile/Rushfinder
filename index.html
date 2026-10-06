@@ -1143,6 +1143,27 @@ document.documentElement.setAttribute("data-theme","light");
   .rf-settings-inner{transform:scale(.92);transform-origin:top center;width:min(1160px,calc(100% - 30px))!important}
 }
 </style>
+<style>
+/* V049 */
+.rf-settings-page{left:0!important}
+@media(min-width:900px){.rf-settings-page{right:205px!important}}
+.rf-settings-inner{
+ width:min(1040px,calc(100% - 36px))!important;
+ margin-left:auto!important;margin-right:auto!important;
+ transform:none!important;
+}
+.rf-settings-grid{width:100%!important;margin-inline:auto!important}
+.rf-setting-row[data-art="play"] .rf-setting-options{
+ display:flex!important;flex-wrap:nowrap!important;white-space:nowrap!important;
+ gap:4px!important;width:100%!important;
+}
+.rf-setting-row[data-art="play"] .rf-set-btn{
+ flex:0 0 auto!important;padding-left:7px!important;padding-right:7px!important;
+ font-size:8.4px!important;
+}
+.rf-about-card{display:none!important}
+html[data-theme="light"] body{color-scheme:light!important}
+</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -1626,8 +1647,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
   <div class="rf-setting-row" data-art="sort"><div class="rf-setting-info"><div class="rf-setting-name">مرتب‌سازی پیش‌فرض</div><div class="rf-setting-desc">ترتیب نمایش نتایج جستجو</div></div><div class="rf-setting-options" data-setting="sort"><button class="rf-set-btn" data-value="relevant">مرتبط‌ترین</button><button class="rf-set-btn" data-value="newest">جدیدترین</button></div></div>
   </div><div class="rf-setting-actions"><div class="rf-action-card danger"><div><div class="rf-setting-name">پاک کردن جستجوهای اخیر</div><div class="rf-setting-desc">سوابق جستجو از این مرورگر پاک می‌شود</div></div><button id="rfClearHistory" class="rf-set-btn">پاک کردن</button></div><div class="rf-action-card"><div><div class="rf-setting-name">بازنشانی تنظیمات</div><div class="rf-setting-desc">بازگشت همه تنظیمات به حالت پیش‌فرض</div></div><button id="rfResetSettings" class="rf-set-btn">بازنشانی</button></div></div>
   <div class="rf-settings-savebar"><button id="rfSaveSettings" class="rf-save-btn">ذخیره تنظیمات</button><span id="rfSaveStatus" class="rf-save-status"></span></div>
-  <div class="rf-about-card"><div><div class="rf-setting-name">درباره RushFinder</div><div class="rf-setting-desc">سامانه موتور جستجوی راش ویدیو</div></div><div style="font-size:12px;line-height:2">نسخه برنامه: V.01<br>طراحی و توسعه: مصطفی رجبی</div></div>
- </div>
+</div>
 </section>
 
 
@@ -1699,6 +1719,14 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
  document.getElementById("rfSaveSettings")?.addEventListener("click",()=>{
    if(save(draft)){
      applyToEngine(draft);
+     if(String(draft.theme||"light")!=="dark"){
+       document.documentElement.setAttribute("data-theme","light");
+       document.body.classList.remove("dark","rf-dark");
+       try{
+         localStorage.setItem("rushfinder-theme","light");
+         localStorage.setItem("rf-theme","light");
+       }catch(e){}
+     }
      document.getElementById("rfSaveStatus").textContent="✓ تنظیمات ذخیره شد";
      if(typeof activeQuery!=="undefined" && activeQuery){current=1;loadPage().catch(()=>{})}
      setTimeout(()=>closeSettings(),250);
