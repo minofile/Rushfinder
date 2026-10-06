@@ -2355,6 +2355,73 @@ body, body.rf-dark{
 }
 </style>
 
+
+<style id="rush-v091-fg-separators">
+/* V091 — اصلاح واقعی چهار بخش فیلتر بر اساس کلاس .fg */
+.filter .fg,
+.filters .fg,
+.filter-panel .fg,
+.fg{
+  border-top:0 !important;
+  border-bottom:0 !important;
+  position:relative !important;
+  margin:0 !important;
+  padding-top:0 !important;
+  padding-bottom:0 !important;
+}
+
+/* یک خط کاملاً یکسان و وسط‌چین بعد از هر بخش */
+.filter .fg:not(:last-of-type)::after,
+.filters .fg:not(:last-of-type)::after,
+.filter-panel .fg:not(:last-of-type)::after,
+.fg:not(:last-of-type)::after{
+  content:"" !important;
+  display:block !important;
+  position:relative !important;
+  width:calc(100% - 28px) !important;
+  height:1px !important;
+  min-height:1px !important;
+  background:#d6e3f2 !important;
+  border:0 !important;
+  margin:28px auto !important;
+  left:auto !important;
+  right:auto !important;
+  top:auto !important;
+  bottom:auto !important;
+}
+
+/* جلوگیری از خط‌های قدیمی/دوبل داخل پنل */
+.filter .fg + .fg,
+.filters .fg + .fg,
+.filter-panel .fg + .fg{
+  border-top:0 !important;
+}
+
+/* خط قبل از دکمه اعمال فیلترها، هم‌اندازه سه خط بالا */
+.filter .apply,
+.filters .apply,
+.filter-panel .apply,
+.filter .apply-btn,
+.filters .apply-btn,
+.filter-panel .apply-btn{
+  position:relative !important;
+  margin-top:28px !important;
+}
+.filter .apply::before,
+.filters .apply::before,
+.filter-panel .apply::before,
+.filter .apply-btn::before,
+.filters .apply-btn::before,
+.filter-panel .apply-btn::before{
+  content:"" !important;
+  display:block !important;
+  width:calc(100% - 28px) !important;
+  height:1px !important;
+  background:#d6e3f2 !important;
+  margin:0 auto 14px !important;
+}
+</style>
+
 </head>
 <body>
 <aside class="sidebar">

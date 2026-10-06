@@ -1,3 +1,2 @@
-RushFinder V090
-Based on V089.
-Filter panel separators are now uniform between Source, Quality, Orientation and Time sections: same width, same color, centered, and equal spacing.
+RushFinder V091
+Fixed filter separators using the actual .fg filter-section class. Source, Quality, Orientation and Time sections now use identical centered separators.
