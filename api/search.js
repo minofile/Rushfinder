@@ -431,7 +431,9 @@ module.exports = async function handler(req,res){
     return proxyAparatDownload(req,res);
   }
   if(!q) return res.status(400).json({error:"عبارت جستجو وارد نشده است."});
-  const page=Math.max(1,parseInt(req.query.page||"1",10)), perPage=12;
+  const page=Math.max(1,parseInt(req.query.page||"1",10));
+  const requestedPerPage=parseInt(req.query.per_page||"12",10);
+  const perPage=[12,24,36].includes(requestedPerPage)?requestedPerPage:12;
   const quality=String(req.query.quality||"all"), orientation=String(req.query.orientation||"all");
   try{
     let payload;
@@ -448,8 +450,8 @@ module.exports = async function handler(req,res){
       payload.sourceLabel="Aparat";
     }else{
       // "All sources": all four connected providers.
-      // In "all sources", ask each provider for a full 12-item batch.
-      // Then interleave them and fill the page up to exactly 12 whenever
+      // In "all sources", ask each provider for the selected page-size batch.
+      // Then interleave them and fill the page up to the selected page size whenever
       // one provider returns fewer results or temporarily fails.
       const [p,v,y,a]=await Promise.allSettled([
         pixabaySearch({q,page,quality,orientation,limit:perPage}),

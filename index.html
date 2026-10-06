@@ -1048,14 +1048,101 @@ html:not([data-theme="dark"]){color-scheme:light}
 }
 </style>
 <script>
-(function(){
- try{
-  const s=JSON.parse(localStorage.getItem("rushfinder_settings_v2")||"{}");
-  const mode=s.theme||"light";
-  document.documentElement.setAttribute("data-theme",mode==="dark"?"dark":"light");
- }catch(e){document.documentElement.setAttribute("data-theme","light")}
-})();
+/* V048: first paint is always light — prevents black/dark flash */
+document.documentElement.setAttribute("data-theme","light");
 </script>
+<style>
+/* V048 — compact approved settings reference */
+.rf-settings-page{
+  overflow-y:auto!important;
+}
+.rf-settings-inner{
+  width:min(1080px,calc(100% - 40px))!important;
+  padding:12px 0 14px!important;
+}
+.rf-settings-head-card{
+  min-height:112px!important;
+  height:112px!important;
+  padding:14px 22px!important;
+  margin-bottom:10px!important;
+  border-radius:20px!important;
+}
+.rf-settings-title{font-size:24px!important}
+.rf-settings-sub{font-size:11px!important;margin-top:4px!important}
+.rf-settings-head-icon{
+  width:54px!important;height:54px!important;flex-basis:54px!important;border-radius:16px!important
+}
+.rf-settings-hero-art{
+  width:350px!important;height:96px!important;flex-basis:350px!important
+}
+.hero-gear{font-size:66px!important;left:55px!important;top:0!important}
+.hero-sliders{width:145px!important;height:67px!important;left:137px!important;top:22px!important;padding:12px 18px!important}
+.hero-sliders i{height:6px!important;margin:8px 0!important}
+.orb-a{width:82px!important;height:82px!important;top:22px!important}
+.orb-b{width:92px!important;height:92px!important;top:-17px!important}
+
+.rf-settings-grid{gap:10px 12px!important}
+.rf-settings-grid .rf-setting-row{
+  min-height:92px!important;
+  height:92px!important;
+  padding:13px 68px 12px 17px!important;
+  border-radius:18px!important;
+}
+.rf-settings-grid .rf-setting-row:before{
+  right:15px!important;top:18px!important;
+  width:42px!important;height:42px!important;border-radius:13px!important;
+  font-size:19px!important
+}
+.rf-setting-row[data-art="4k"]:before{font-size:14px!important}
+.rf-setting-name{font-size:12.5px!important}
+.rf-setting-desc{font-size:9.2px!important}
+.rf-setting-options{gap:5px!important;margin-top:8px!important}
+.rf-set-btn{padding:5px 11px!important;border-radius:9px!important;font-size:9.3px!important}
+
+.rf-setting-actions{gap:12px!important;margin-top:10px!important}
+.rf-action-card{
+  min-height:60px!important;height:60px!important;
+  padding:10px 15px!important;border-radius:16px!important
+}
+.rf-action-card .rf-setting-name{font-size:12px!important}
+.rf-action-card .rf-setting-desc{font-size:8.8px!important}
+
+.rf-settings-savebar{margin:10px 0 7px!important}
+.rf-save-btn{
+  min-width:320px!important;
+  padding:10px 27px!important;
+  border-radius:13px!important;
+  font-size:11.5px!important
+}
+.rf-about-card{
+  min-height:50px!important;height:50px!important;
+  margin-top:6px!important;padding:7px 14px!important;border-radius:15px!important
+}
+
+/* more graphic depth, closer to the approved mockup */
+.rf-settings-head-card,
+.rf-settings-grid .rf-setting-row,
+.rf-action-card,
+.rf-about-card{
+  box-shadow:
+    0 12px 28px rgba(53,102,170,.09),
+    inset 0 1px 0 rgba(255,255,255,.98)!important;
+}
+.rf-settings-grid .rf-setting-row:nth-child(1){background:linear-gradient(115deg,rgba(255,255,255,.96),rgba(233,255,249,.78))!important}
+.rf-settings-grid .rf-setting-row:nth-child(2){background:linear-gradient(115deg,rgba(255,255,255,.96),rgba(242,237,255,.78))!important}
+.rf-settings-grid .rf-setting-row:nth-child(3){background:linear-gradient(115deg,rgba(255,255,255,.96),rgba(255,239,242,.70))!important}
+.rf-settings-grid .rf-setting-row:nth-child(4){background:linear-gradient(115deg,rgba(255,255,255,.96),rgba(255,247,222,.76))!important}
+.rf-settings-grid .rf-setting-row:nth-child(5){background:linear-gradient(115deg,rgba(255,255,255,.96),rgba(228,255,249,.76))!important}
+.rf-settings-grid .rf-setting-row:nth-child(6){background:linear-gradient(115deg,rgba(255,255,255,.96),rgba(232,243,255,.78))!important}
+
+/* fit typical desktop viewport without page scroll */
+@media (min-width:1200px) and (min-height:700px){
+  .rf-settings-page{overflow:hidden!important}
+}
+@media(max-height:760px) and (min-width:1051px){
+  .rf-settings-inner{transform:scale(.92);transform-origin:top center;width:min(1160px,calc(100% - 30px))!important}
+}
+</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -1360,7 +1447,7 @@ function setupSourceFilters(){
  });
 }
 function toggleTheme(){document.body.classList.toggle("dark");localStorage.setItem("rf-theme",document.body.classList.contains("dark")?"dark":"light");document.getElementById("theme").textContent=document.body.classList.contains("dark")?"☀":"☾"}
-if(localStorage.getItem("rf-theme")==="dark"){document.body.classList.add("dark");document.getElementById("theme").textContent="☀"}
+document.body.classList.remove("dark");
 document.getElementById("query").addEventListener("keydown",e=>{if(e.key==="Enter")search()});
 document.querySelectorAll("[data-q]").forEach(el=>el.addEventListener("click",()=>search(el.dataset.q)));
 setupSourceFilters();
@@ -1418,7 +1505,7 @@ window.addEventListener("DOMContentLoaded",()=>rfObserver.observe(document.body,
  }
  document.getElementById('rfRefresh')?.addEventListener('click',()=>location.reload());
  buttons.forEach(b=>b.addEventListener('click',()=>apply(b.dataset.theme)));
- apply(localStorage.getItem('rushfinder-theme')||'light');
+ apply('light');
 })();
 </script>
 <div id="ytModal" class="rf-yt-modal" aria-hidden="true">
@@ -1629,7 +1716,9 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeYouTubeViewer()
    draft={...D};paint();document.getElementById("rfSaveStatus").textContent="برای ثبت بازنشانی، «ذخیره تنظیمات» را بزنید.";
  });
 
- const initial=load();applyToEngine(initial);paint();
+ const initial=load();
+ const bootSettings={...initial,theme:"light"};
+ applyToEngine(bootSettings);paint();
 })();
 </script>
 
