@@ -1,2 +1,2 @@
-RushFinder V096
-Stable filter-card correction based on the real HTML selectors. All four filter cards are centered and equal width; borders are clearly visible; title icons remain fully inside the card with equal padding; option rows and icons are uniform; all straight separator lines are removed; Apply Filters is centered and equal width.
+RushFinder V098
+Filter CSS rebuilt cleanly. V090-V097 filter patch blocks were removed. The four real filter IDs now have complete borders, no generated separator lines, no reserved separator spacing, centered equal widths, and title icons safely inside each card.

@@ -2298,439 +2298,168 @@ body, body.rf-dark{
 </style>
 
 
-<style id="rush-v090-filter-separators">
-/* V090 — جداکننده‌های یکسان، هم‌اندازه و دقیقاً وسط بین چهار بخش فیلتر */
-.filters .section,
-.filter-panel .section,
-.filters .filter-section,
-.filter-panel .filter-section{
-  position:relative !important;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<style id="rush-v098-filter-rebuild">
+/* V098 — بازسازی نهایی کارت‌های فیلتر، بدون تکیه به Patchهای V090 تا V097 */
+
+.filters #sourceFilters,
+.filters #qualityFilters,
+.filters #orientationFilters,
+.filters #durationFilters{
+  box-sizing:border-box!important;
+  display:block!important;
+  position:relative!important;
+  width:calc(100% - 24px)!important;
+  max-width:calc(100% - 24px)!important;
+  height:auto!important;
+  min-height:0!important;
+  margin:0 auto 16px!important;
+  padding:12px 10px 12px!important;
+  background:#fff!important;
+  border:1.3px solid #c8dced!important;
+  border-top:1.3px solid #c8dced!important;
+  border-right:1.3px solid #c8dced!important;
+  border-bottom:1.3px solid #c8dced!important;
+  border-left:1.3px solid #c8dced!important;
+  border-radius:17px!important;
+  overflow:hidden!important;
+  inset:auto!important;
+  transform:none!important;
 }
 
-/* هر جداکننده با یک عرض، رنگ و فاصله یکسان */
-.filters .section:not(:last-of-type)::after,
-.filter-panel .section:not(:last-of-type)::after,
-.filters .filter-section:not(:last-of-type)::after,
-.filter-panel .filter-section:not(:last-of-type)::after{
-  content:"" !important;
-  display:block !important;
-  width:calc(100% - 28px) !important;
-  height:1px !important;
-  background:#d6e3f2 !important;
-  margin:28px auto !important;
-  position:relative !important;
-  left:auto !important;
-  right:auto !important;
-  top:auto !important;
-  bottom:auto !important;
-}
-
-/* حذف خطوط قدیمی احتمالی تا دوبل نشوند */
-.filters .divider,
-.filter-panel .divider,
-.filters hr,
-.filter-panel hr{
-  display:none !important;
-}
-
-/* فاصله داخلی چهار بخش هماهنگ */
-.filters .section,
-.filter-panel .section,
-.filters .filter-section,
-.filter-panel .filter-section{
-  margin:0 !important;
-  padding-top:0 !important;
-  padding-bottom:0 !important;
-}
-
-/* خط بالای دکمه اعمال فیلترها هم دقیقاً هم‌اندازه جداکننده‌ها */
-.filters .apply-wrap,
-.filter-panel .apply-wrap,
-.filters .filter-actions,
-.filter-panel .filter-actions{
-  border-top:1px solid #d6e3f2 !important;
-  width:calc(100% - 28px) !important;
-  margin:28px auto 0 !important;
-  padding-top:14px !important;
-}
-</style>
-
-
-<style id="rush-v091-fg-separators">
-/* V091 — اصلاح واقعی چهار بخش فیلتر بر اساس کلاس .fg */
-.filter .fg,
-.filters .fg,
-.filter-panel .fg,
-.fg{
-  border-top:0 !important;
-  border-bottom:0 !important;
-  position:relative !important;
-  margin:0 !important;
-  padding-top:0 !important;
-  padding-bottom:0 !important;
-}
-
-/* یک خط کاملاً یکسان و وسط‌چین بعد از هر بخش */
-.filter .fg:not(:last-of-type)::after,
+/* حذف واقعی خط‌های قبلی و فضای ۲۸px آنها، حتی selectorهای :not قدیمی */
+.filters #sourceFilters::before,.filters #sourceFilters::after,
+.filters #qualityFilters::before,.filters #qualityFilters::after,
+.filters #orientationFilters::before,.filters #orientationFilters::after,
+.filters #durationFilters::before,.filters #durationFilters::after,
 .filters .fg:not(:last-of-type)::after,
-.filter-panel .fg:not(:last-of-type)::after,
-.fg:not(:last-of-type)::after{
-  content:"" !important;
-  display:block !important;
-  position:relative !important;
-  width:calc(100% - 28px) !important;
-  height:1px !important;
-  min-height:1px !important;
-  background:#d6e3f2 !important;
-  border:0 !important;
-  margin:28px auto !important;
-  left:auto !important;
-  right:auto !important;
-  top:auto !important;
-  bottom:auto !important;
-}
-
-/* جلوگیری از خط‌های قدیمی/دوبل داخل پنل */
-.filter .fg + .fg,
-.filters .fg + .fg,
-.filter-panel .fg + .fg{
-  border-top:0 !important;
-}
-
-/* خط قبل از دکمه اعمال فیلترها، هم‌اندازه سه خط بالا */
-.filter .apply,
-.filters .apply,
-.filter-panel .apply,
-.filter .apply-btn,
-.filters .apply-btn,
-.filter-panel .apply-btn{
-  position:relative !important;
-  margin-top:28px !important;
-}
-.filter .apply::before,
-.filters .apply::before,
-.filter-panel .apply::before,
-.filter .apply-btn::before,
-.filters .apply-btn::before,
-.filter-panel .apply-btn::before{
-  content:"" !important;
-  display:block !important;
-  width:calc(100% - 28px) !important;
-  height:1px !important;
-  background:#d6e3f2 !important;
-  margin:0 auto 14px !important;
-}
-</style>
-
-
-<style id="rush-v092-filter-final">
-/* V092: چهار بخش کاملاً یکدست مطابق ماکاپ تاییدشده */
-.fg{
-  border:0!important;
+.filters .fg:not(:last-of-type)::before{
+  content:none!important;
+  display:none!important;
+  position:static!important;
+  width:0!important;
+  height:0!important;
+  min-height:0!important;
   margin:0!important;
   padding:0!important;
-}
-.fg::after{
-  content:""!important;
-  display:block!important;
-  width:calc(100% - 28px)!important;
-  height:1px!important;
-  background:#d6e3f2!important;
-  margin:28px auto!important;
   border:0!important;
-  position:static!important;
+  background:none!important;
 }
-/* حذف هر خط قدیمی و جلوگیری از دوبل شدن */
-.fg + .fg{border-top:0!important}
-.filters hr,.filter-panel hr,.filter .divider,.filters .divider,.filter-panel .divider{display:none!important}
 
-/* خط پایین زمان دقیقاً مثل سه خط دیگر؛ دکمه خط جداگانه دیگری نسازد */
-.filter .apply::before,.filters .apply::before,.filter-panel .apply::before,
-.filter .apply-btn::before,.filters .apply-btn::before,.filter-panel .apply-btn::before,
-.filter .apply-wrap::before,.filters .apply-wrap::before,.filter-panel .apply-wrap::before{
+/* هیچ خط داخلی یا spacer قدیمی */
+.filters #sourceFilters hr,.filters #qualityFilters hr,
+.filters #orientationFilters hr,.filters #durationFilters hr,
+.filters #sourceFilters .divider,.filters #qualityFilters .divider,
+.filters #orientationFilters .divider,.filters #durationFilters .divider{
   display:none!important;
-  content:none!important;
-}
-.filter .apply,.filters .apply,.filter-panel .apply,
-.filter .apply-btn,.filters .apply-btn,.filter-panel .apply-btn,
-.filter .apply-wrap,.filters .apply-wrap,.filter-panel .apply-wrap{
-  border-top:0!important;
-  margin-top:0!important;
-  padding-top:0!important;
-}
-</style>
-
-
-<style id="rush-v094-filter-cards-final">
-/* V094 — چهار کارت مستقل، هم‌عرض و وسط؛ بدون خط صاف */
-.fg{
-  box-sizing:border-box !important;
-  width:calc(100% - 20px) !important;
-  height:auto !important;
-  min-height:0 !important;
-  max-height:none !important;
-  margin:0 auto 14px !important;
-  padding:14px 10px 12px !important;
-  background:#fff !important;
-  border:1px solid #dce8f4 !important;
-  border-radius:18px !important;
-  box-shadow:0 4px 14px rgba(35,76,118,.035) !important;
-  overflow:visible !important;
+  height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
 }
 
-/* حذف کامل تمام خط‌های قدیمی */
-.fg::before,.fg::after{
-  content:none !important;
-  display:none !important;
+/* عنوان + آیکون کاملاً داخل کارت */
+.filters #sourceFilters > .rf-filter-title,
+.filters #qualityFilters > .rf-filter-title,
+.filters #orientationFilters > .rf-filter-title,
+.filters #durationFilters > .rf-filter-title{
+  box-sizing:border-box!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  direction:rtl!important;
+  gap:8px!important;
+  width:100%!important;
+  min-height:38px!important;
+  margin:0 0 9px!important;
+  padding:0 2px!important;
+  line-height:1.35!important;
 }
-.fg + .fg{
-  border-top:1px solid #dce8f4 !important;
-}
-.filters hr,.filter-panel hr,.filter hr,
-.filters .divider,.filter-panel .divider,.filter .divider,
-.fg hr,.fg .divider{
-  display:none !important;
-  border:0 !important;
-}
-
-/* هیچ فضای مصنوعی در پایین گروه‌ها باقی نماند */
-.fg > :last-child{
-  margin-bottom:0 !important;
-}
-.fg > h3,.fg > h4,.fg .fg-title,.fg .filter-title{
-  margin-top:0 !important;
-}
-
-/* دکمه پایین دقیقاً هم‌محور با کارت‌ها */
-.filter .apply,.filters .apply,.filter-panel .apply,
-.filter .apply-btn,.filters .apply-btn,.filter-panel .apply-btn,
-.filter .apply-wrap,.filters .apply-wrap,.filter-panel .apply-wrap{
-  box-sizing:border-box !important;
-  width:calc(100% - 20px) !important;
-  margin:2px auto 0 !important;
-  padding-top:0 !important;
-  border-top:0 !important;
-}
-.filter .apply::before,.filters .apply::before,.filter-panel .apply::before,
-.filter .apply-btn::before,.filters .apply-btn::before,.filter-panel .apply-btn::before,
-.filter .apply-wrap::before,.filters .apply-wrap::before,.filter-panel .apply-wrap::before{
-  content:none !important;
-  display:none !important;
-}
-</style>
-
-
-<style id="rush-v095-filter-alignment">
-/* V095 — کارت‌ها دقیقاً وسط، دورخط واضح و اجزای داخلی یکدست */
-.fg{
-  box-sizing:border-box !important;
-  width:calc(100% - 28px) !important;
-  max-width:none !important;
-  height:auto !important;
-  min-height:0 !important;
-  margin:0 auto 16px !important;
-  padding:14px 12px 14px !important;
-  background:#fff !important;
-  border:1.25px solid #c9ddef !important;
-  border-radius:18px !important;
-  box-shadow:0 4px 14px rgba(31,75,120,.045) !important;
-  position:relative !important;
-  left:auto !important;
-  right:auto !important;
-  transform:none !important;
-  overflow:hidden !important;
+.filters .fg > .rf-filter-title > .rf-fi{
+  box-sizing:border-box!important;
+  position:static!important;
+  width:36px!important;
+  height:36px!important;
+  min-width:36px!important;
+  min-height:36px!important;
+  flex:0 0 36px!important;
+  margin:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:11px!important;
 }
 
-/* هیچ خط صاف اضافه‌ای داخل یا پایین کارت وجود نداشته باشد */
-.fg::before,.fg::after,
-.fg hr,.fg .divider{
-  content:none !important;
-  display:none !important;
+/* ردیف‌ها کاملاً یکدست */
+.filters #sourceFilters > label,
+.filters #qualityFilters > label,
+.filters #orientationFilters > label,
+.filters #durationFilters > label{
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-height:38px!important;
+  height:38px!important;
+  margin:5px 0 0!important;
+  padding:0 9px!important;
+  display:flex!important;
+  align-items:center!important;
+  border-radius:11px!important;
+}
+.filters .fg > label:last-of-type{
+  margin-bottom:0!important;
 }
 
-/* عنوان و آیکون همه گروه‌ها در یک ساختار */
-.fg .filter-head,
-.fg .fg-head,
-.fg > header{
-  min-height:42px !important;
-  display:flex !important;
-  align-items:center !important;
-  margin:0 0 10px !important;
+/* آیکون رنگی هر ردیف هم‌اندازه */
+.filters .fg > label > .rf-real-icon{
+  box-sizing:border-box!important;
+  width:34px!important;
+  height:34px!important;
+  min-width:34px!important;
+  min-height:34px!important;
+  max-width:34px!important;
+  max-height:34px!important;
+  flex:0 0 34px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:10px!important;
 }
 
-/* ردیف‌های گزینه‌ها هم‌اندازه */
-.fg label,
-.fg .option,
-.fg .filter-option{
-  box-sizing:border-box !important;
-  min-height:42px !important;
-  height:42px !important;
-  margin:5px 0 !important;
-  border-radius:12px !important;
-  display:flex !important;
-  align-items:center !important;
-}
-
-/* آیکون‌های رنگی ردیف‌ها یک اندازه */
-.fg label > span:first-child,
-.fg .option > span:first-child,
-.fg .filter-option > span:first-child{
-  flex:0 0 auto;
-}
-
-/* دکمه پایین دقیقاً هم‌عرض و هم‌محور کارت‌ها */
-.filter .apply,.filters .apply,.filter-panel .apply,
-.filter .apply-btn,.filters .apply-btn,.filter-panel .apply-btn,
-.filter .apply-wrap,.filters .apply-wrap,.filter-panel .apply-wrap{
-  box-sizing:border-box !important;
-  width:calc(100% - 28px) !important;
-  margin:0 auto !important;
-  border-top:0 !important;
-  padding-top:0 !important;
-}
-</style>
-
-
-<style id="rush-v096-filter-final">
-/* V096 — بازسازی دقیق کارت‌های فیلتر بر اساس ساختار واقعی HTML */
-
-/* خود چهار کارت: وسط، هم‌عرض، Border واضح */
-.filters > .fg{
-  box-sizing:border-box !important;
-  display:block !important;
-  width:calc(100% - 24px) !important;
-  max-width:calc(100% - 24px) !important;
-  min-width:0 !important;
-  height:auto !important;
-  min-height:0 !important;
-  margin:0 auto 16px !important;
-  padding:12px 10px 12px !important;
-  background:#fff !important;
-  border:1.25px solid #c9dced !important;
-  border-radius:17px !important;
-  box-shadow:0 4px 12px rgba(31,75,120,.035) !important;
-  overflow:hidden !important;
-  position:relative !important;
-  inset:auto !important;
-  transform:none !important;
-}
-
-/* حذف قطعی تمام خط‌های صاف نسخه‌های قبلی */
-.filters > .fg::before,
-.filters > .fg::after{
-  content:none !important;
-  display:none !important;
-  width:0 !important;
-  height:0 !important;
-  margin:0 !important;
-  background:none !important;
-}
-.filters > .fg + .fg{
-  border-top:1.25px solid #c9dced !important;
-}
-.filters > .fg hr,
-.filters > .fg .divider,
-.filters > hr,
-.filters > .divider{
-  display:none !important;
-}
-
-/* عنوان + آیکون: کامل داخل کادر و با فاصله از Border */
-.filters > .fg > .rf-filter-title{
-  box-sizing:border-box !important;
-  width:100% !important;
-  min-height:38px !important;
-  margin:0 0 9px !important;
-  padding:2px 2px 2px 4px !important;
-  display:flex !important;
-  flex-direction:row !important;
-  align-items:center !important;
-  justify-content:flex-start !important;
-  gap:8px !important;
-  direction:rtl !important;
-  line-height:1.4 !important;
-}
-
-/* آیکون عنوان در هر چهار کارت دقیقاً هم‌اندازه و بدون تماس با Border */
-.filters > .fg > .rf-filter-title > .rf-fi{
-  box-sizing:border-box !important;
-  width:36px !important;
-  height:36px !important;
-  min-width:36px !important;
-  min-height:36px !important;
-  max-width:36px !important;
-  max-height:36px !important;
-  margin:0 !important;
-  flex:0 0 36px !important;
-  display:grid !important;
-  place-items:center !important;
-  border-radius:11px !important;
-  position:static !important;
-  transform:none !important;
-}
-.filters > .fg > .rf-filter-title > .rf-fi svg{
-  width:19px !important;
-  height:19px !important;
-}
-
-/* تمام گزینه‌های داخلی: عرض/ارتفاع/Padding یکسان */
-.filters > .fg > label{
-  box-sizing:border-box !important;
-  width:100% !important;
-  height:38px !important;
-  min-height:38px !important;
-  margin:5px 0 0 !important;
-  padding:0 9px !important;
-  border-radius:11px !important;
-  display:flex !important;
-  align-items:center !important;
-  direction:rtl !important;
-}
-
-/* آیکون رنگی همه ردیف‌ها دقیقاً هم‌اندازه */
-.filters > .fg > label > .rf-real-icon{
-  box-sizing:border-box !important;
-  width:34px !important;
-  height:34px !important;
-  min-width:34px !important;
-  min-height:34px !important;
-  max-width:34px !important;
-  max-height:34px !important;
-  flex:0 0 34px !important;
-  display:grid !important;
-  place-items:center !important;
-  margin:0 auto 0 0 !important;
-  border-radius:10px !important;
-}
-
-/* چک‌باکس‌ها هم‌محور */
-.filters > .fg > label > input[type="checkbox"]{
-  flex:0 0 auto !important;
-  margin:0 0 0 8px !important;
-}
-
-/* بعد از آخرین گزینه هیچ فضای خالی مصنوعی نماند */
-.filters > .fg > label:last-child{
-  margin-bottom:0 !important;
-}
-
-/* دکمه دقیقاً وسط و هم‌عرض کارت‌ها؛ بدون خط بالا */
+/* دکمه پایین هم‌محور، بدون خط یا فضای اضافه */
 .filters > .filter-apply-wrap{
-  box-sizing:border-box !important;
-  width:calc(100% - 24px) !important;
-  max-width:calc(100% - 24px) !important;
-  margin:2px auto 0 !important;
-  padding:0 !important;
-  border:0 !important;
+  box-sizing:border-box!important;
+  width:calc(100% - 24px)!important;
+  max-width:calc(100% - 24px)!important;
+  margin:0 auto!important;
+  padding:0!important;
+  border:0!important;
 }
 .filters > .filter-apply-wrap::before,
 .filters > .filter-apply-wrap::after{
-  content:none !important;
-  display:none !important;
+  content:none!important;
+  display:none!important;
 }
 .filters > .filter-apply-wrap > .apply-filters{
-  width:100% !important;
-  box-sizing:border-box !important;
+  box-sizing:border-box!important;
+  width:100%!important;
 }
 </style>
 
