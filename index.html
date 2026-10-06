@@ -2422,6 +2422,44 @@ body, body.rf-dark{
 }
 </style>
 
+
+<style id="rush-v092-filter-final">
+/* V092: چهار بخش کاملاً یکدست مطابق ماکاپ تاییدشده */
+.fg{
+  border:0!important;
+  margin:0!important;
+  padding:0!important;
+}
+.fg::after{
+  content:""!important;
+  display:block!important;
+  width:calc(100% - 28px)!important;
+  height:1px!important;
+  background:#d6e3f2!important;
+  margin:28px auto!important;
+  border:0!important;
+  position:static!important;
+}
+/* حذف هر خط قدیمی و جلوگیری از دوبل شدن */
+.fg + .fg{border-top:0!important}
+.filters hr,.filter-panel hr,.filter .divider,.filters .divider,.filter-panel .divider{display:none!important}
+
+/* خط پایین زمان دقیقاً مثل سه خط دیگر؛ دکمه خط جداگانه دیگری نسازد */
+.filter .apply::before,.filters .apply::before,.filter-panel .apply::before,
+.filter .apply-btn::before,.filters .apply-btn::before,.filter-panel .apply-btn::before,
+.filter .apply-wrap::before,.filters .apply-wrap::before,.filter-panel .apply-wrap::before{
+  display:none!important;
+  content:none!important;
+}
+.filter .apply,.filters .apply,.filter-panel .apply,
+.filter .apply-btn,.filters .apply-btn,.filter-panel .apply-btn,
+.filter .apply-wrap,.filters .apply-wrap,.filter-panel .apply-wrap{
+  border-top:0!important;
+  margin-top:0!important;
+  padding-top:0!important;
+}
+</style>
+
 </head>
 <body>
 <aside class="sidebar">
