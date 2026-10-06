@@ -2590,6 +2590,150 @@ body, body.rf-dark{
 }
 </style>
 
+
+<style id="rush-v096-filter-final">
+/* V096 — بازسازی دقیق کارت‌های فیلتر بر اساس ساختار واقعی HTML */
+
+/* خود چهار کارت: وسط، هم‌عرض، Border واضح */
+.filters > .fg{
+  box-sizing:border-box !important;
+  display:block !important;
+  width:calc(100% - 24px) !important;
+  max-width:calc(100% - 24px) !important;
+  min-width:0 !important;
+  height:auto !important;
+  min-height:0 !important;
+  margin:0 auto 16px !important;
+  padding:12px 10px 12px !important;
+  background:#fff !important;
+  border:1.25px solid #c9dced !important;
+  border-radius:17px !important;
+  box-shadow:0 4px 12px rgba(31,75,120,.035) !important;
+  overflow:hidden !important;
+  position:relative !important;
+  inset:auto !important;
+  transform:none !important;
+}
+
+/* حذف قطعی تمام خط‌های صاف نسخه‌های قبلی */
+.filters > .fg::before,
+.filters > .fg::after{
+  content:none !important;
+  display:none !important;
+  width:0 !important;
+  height:0 !important;
+  margin:0 !important;
+  background:none !important;
+}
+.filters > .fg + .fg{
+  border-top:1.25px solid #c9dced !important;
+}
+.filters > .fg hr,
+.filters > .fg .divider,
+.filters > hr,
+.filters > .divider{
+  display:none !important;
+}
+
+/* عنوان + آیکون: کامل داخل کادر و با فاصله از Border */
+.filters > .fg > .rf-filter-title{
+  box-sizing:border-box !important;
+  width:100% !important;
+  min-height:38px !important;
+  margin:0 0 9px !important;
+  padding:2px 2px 2px 4px !important;
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:8px !important;
+  direction:rtl !important;
+  line-height:1.4 !important;
+}
+
+/* آیکون عنوان در هر چهار کارت دقیقاً هم‌اندازه و بدون تماس با Border */
+.filters > .fg > .rf-filter-title > .rf-fi{
+  box-sizing:border-box !important;
+  width:36px !important;
+  height:36px !important;
+  min-width:36px !important;
+  min-height:36px !important;
+  max-width:36px !important;
+  max-height:36px !important;
+  margin:0 !important;
+  flex:0 0 36px !important;
+  display:grid !important;
+  place-items:center !important;
+  border-radius:11px !important;
+  position:static !important;
+  transform:none !important;
+}
+.filters > .fg > .rf-filter-title > .rf-fi svg{
+  width:19px !important;
+  height:19px !important;
+}
+
+/* تمام گزینه‌های داخلی: عرض/ارتفاع/Padding یکسان */
+.filters > .fg > label{
+  box-sizing:border-box !important;
+  width:100% !important;
+  height:38px !important;
+  min-height:38px !important;
+  margin:5px 0 0 !important;
+  padding:0 9px !important;
+  border-radius:11px !important;
+  display:flex !important;
+  align-items:center !important;
+  direction:rtl !important;
+}
+
+/* آیکون رنگی همه ردیف‌ها دقیقاً هم‌اندازه */
+.filters > .fg > label > .rf-real-icon{
+  box-sizing:border-box !important;
+  width:34px !important;
+  height:34px !important;
+  min-width:34px !important;
+  min-height:34px !important;
+  max-width:34px !important;
+  max-height:34px !important;
+  flex:0 0 34px !important;
+  display:grid !important;
+  place-items:center !important;
+  margin:0 auto 0 0 !important;
+  border-radius:10px !important;
+}
+
+/* چک‌باکس‌ها هم‌محور */
+.filters > .fg > label > input[type="checkbox"]{
+  flex:0 0 auto !important;
+  margin:0 0 0 8px !important;
+}
+
+/* بعد از آخرین گزینه هیچ فضای خالی مصنوعی نماند */
+.filters > .fg > label:last-child{
+  margin-bottom:0 !important;
+}
+
+/* دکمه دقیقاً وسط و هم‌عرض کارت‌ها؛ بدون خط بالا */
+.filters > .filter-apply-wrap{
+  box-sizing:border-box !important;
+  width:calc(100% - 24px) !important;
+  max-width:calc(100% - 24px) !important;
+  margin:2px auto 0 !important;
+  padding:0 !important;
+  border:0 !important;
+}
+.filters > .filter-apply-wrap::before,
+.filters > .filter-apply-wrap::after{
+  content:none !important;
+  display:none !important;
+}
+.filters > .filter-apply-wrap > .apply-filters{
+  width:100% !important;
+  box-sizing:border-box !important;
+}
+</style>
+
 </head>
 <body>
 <aside class="sidebar">
