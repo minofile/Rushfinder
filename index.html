@@ -2267,6 +2267,33 @@ body, body.rf-dark{
 @media(max-width:700px){.rf-rush-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 
+
+<style id="rf-v084-ai-chat">
+.rf-ai-page{position:fixed;z-index:45;top:70px;right:240px;bottom:0;left:0;display:none;overflow:auto;background:linear-gradient(145deg,#f7fbff,#eef6ff);direction:rtl}
+.rf-ai-page.active{display:block}
+.rf-ai-inner{max-width:980px;margin:28px auto;padding:0 22px 32px}
+.rf-ai-hero{background:#fff;border:1px solid #dce9f7;border-radius:24px;padding:20px 22px;box-shadow:0 15px 38px rgba(35,89,150,.09);display:flex;align-items:center;gap:14px}
+.rf-ai-orb{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,#0b86ff,#635bff);color:#fff;font-size:23px;box-shadow:0 9px 22px rgba(27,115,255,.24)}
+.rf-ai-hero h1{font-size:19px;font-weight:400;color:#17385f;margin:0 0 5px}
+.rf-ai-hero p{font-size:11px;color:#7a8fa9;margin:0}
+.rf-ai-chat{margin-top:16px;background:#fff;border:1px solid #dce9f7;border-radius:24px;min-height:520px;display:flex;flex-direction:column;box-shadow:0 15px 38px rgba(35,89,150,.07);overflow:hidden}
+.rf-ai-messages{flex:1;padding:22px;overflow:auto;max-height:calc(100vh - 300px)}
+.rf-ai-welcome{text-align:center;color:#8296ad;padding:90px 20px}
+.rf-ai-welcome b{display:block;color:#24476f;font-size:17px;font-weight:400;margin-bottom:8px}
+.rf-ai-msg{display:flex;margin:11px 0}
+.rf-ai-msg.user{justify-content:flex-start}.rf-ai-msg.assistant{justify-content:flex-end}
+.rf-ai-bubble{max-width:78%;padding:12px 15px;border-radius:17px;white-space:pre-wrap;line-height:2;font-size:12px}
+.rf-ai-msg.user .rf-ai-bubble{background:#117cf3;color:#fff;border-bottom-right-radius:5px}
+.rf-ai-msg.assistant .rf-ai-bubble{background:#f2f7fd;color:#24476f;border:1px solid #e0ebf7;border-bottom-left-radius:5px}
+.rf-ai-compose{border-top:1px solid #e5eef8;padding:14px;display:flex;gap:10px;align-items:flex-end;background:#fbfdff}
+.rf-ai-input{flex:1;resize:none;min-height:48px;max-height:130px;border:1px solid #d8e7f6;border-radius:15px;padding:13px 15px;font-family:inherit;font-weight:400;outline:none;direction:rtl}
+.rf-ai-input:focus{border-color:#62aaff;box-shadow:0 0 0 3px rgba(41,139,255,.08)}
+.rf-ai-send{height:48px;border:0;border-radius:14px;background:#117cf3;color:#fff;padding:0 22px;font-family:inherit;cursor:pointer}
+.rf-ai-send:disabled{opacity:.55;cursor:wait}
+.rf-ai-error{color:#c53c52;background:#fff0f3;border:1px solid #ffd8df;padding:10px 13px;border-radius:12px;font-size:11px;margin:10px 22px}
+@media(max-width:800px){.rf-ai-page{right:0}.rf-ai-inner{padding:0 10px 20px}.rf-ai-bubble{max-width:90%}}
+</style>
+
 </head>
 <body>
 <aside class="sidebar">
@@ -3135,5 +3162,72 @@ document.addEventListener("DOMContentLoaded",()=>{
  document.addEventListener('click',e=>{const c=e.target.closest('.rf-rush-chip,.rf-rush-preview');if(!c)return;const q=c.dataset.q||c.textContent.trim();closeAll();activeNav('داشبورد');const input=document.getElementById('query');if(input)input.value=q;if(typeof search==='function')search(q);});
 })();
 </script>
+
+<section id="rfAiPage" class="rf-ai-page">
+ <div class="rf-ai-inner">
+  <div class="rf-ai-hero">
+   <div class="rf-ai-orb">✦</div>
+   <div><h1>دستیار هوشمند RushFinder</h1><p>برای پیدا کردن راش، ساخت عبارت جستجو، شات‌لیست و تحلیل متن با دستیار گفتگو کنید.</p></div>
+  </div>
+  <div class="rf-ai-chat">
+   <div id="rfAiMessages" class="rf-ai-messages"><div class="rf-ai-welcome"><b>چه راشی لازم داری؟</b>متن، سوژه یا ایده‌ات را بنویس.</div></div>
+   <div id="rfAiError"></div>
+   <div class="rf-ai-compose">
+    <textarea id="rfAiInput" class="rf-ai-input" placeholder="پیام خود را بنویسید..."></textarea>
+    <button id="rfAiSend" class="rf-ai-send">ارسال</button>
+   </div>
+  </div>
+ </div>
+</section>
+
+
+<script id="rf-v084-ai-script">
+(()=>{
+ const page=document.getElementById('rfAiPage'), msgs=document.getElementById('rfAiMessages'),
+ input=document.getElementById('rfAiInput'), send=document.getElementById('rfAiSend'), err=document.getElementById('rfAiError');
+ let history=[];
+ const nav=document.querySelector('.nav');
+ let aiBtn=null;
+ if(nav){
+   aiBtn=document.createElement('button');
+   aiBtn.innerHTML='<i>✦</i><span>دستیار هوشمند</span>';
+   aiBtn.dataset.rfAi='1';
+   const settings=[...nav.querySelectorAll('button')].find(b=>b.textContent.includes('تنظیمات'));
+   nav.insertBefore(aiBtn,settings||null);
+ }
+ function closeOther(){
+   document.getElementById('rfRushPage')?.classList.remove('active');
+   document.querySelectorAll('.settings-page,.rf-settings-page').forEach(x=>x.classList.remove('active'));
+ }
+ function activate(){
+   closeOther(); page.classList.add('active');
+   nav?.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+   aiBtn?.classList.add('active'); setTimeout(()=>input.focus(),50);
+ }
+ aiBtn?.addEventListener('click',activate);
+ nav?.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b!==aiBtn&&!b.dataset.rfAi)page.classList.remove('active')});
+ function add(role,text){
+   const welcome=msgs.querySelector('.rf-ai-welcome'); if(welcome)welcome.remove();
+   const row=document.createElement('div'); row.className='rf-ai-msg '+role;
+   const bubble=document.createElement('div'); bubble.className='rf-ai-bubble'; bubble.textContent=text;
+   row.appendChild(bubble); msgs.appendChild(row); msgs.scrollTop=msgs.scrollHeight;
+ }
+ async function submit(){
+   const text=input.value.trim(); if(!text||send.disabled)return;
+   err.innerHTML=''; add('user',text); input.value=''; send.disabled=true; send.textContent='...';
+   history.push({role:'user',content:text});
+   try{
+     const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:history.slice(-16)})});
+     const d=await r.json();
+     if(!r.ok)throw new Error(d.error||'خطا در ارتباط با دستیار');
+     add('assistant',d.text); history.push({role:'assistant',content:d.text});
+   }catch(e){err.textContent=e.message||'خطا در ارتباط با دستیار';}
+   finally{send.disabled=false;send.textContent='ارسال';input.focus()}
+ }
+ send.addEventListener('click',submit);
+ input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submit()}});
+})();
+</script>
+
 </body>
 </html>
