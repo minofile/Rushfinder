@@ -2919,3 +2919,11 @@ document.addEventListener("DOMContentLoaded",()=>{
 @media(max-width:1100px){.result-head{padding-left:300px!important}.result-head:after{width:245px!important;letter-spacing:8px!important}}
 @media(max-width:900px){.result-head{padding-left:20px!important}.result-head:after{display:none!important}}
 </style>
+
+<style id="rush-v074-patch">
+/* V074: keep the colored results banner, remove only the white inner artwork box and its symbols */
+.result-head:after{content:none!important;display:none!important;box-shadow:none!important;background:none!important}
+.result-head{padding-left:28px!important}
+@media(max-width:1100px){.result-head{padding-left:28px!important}}
+@media(max-width:900px){.result-head{padding-left:20px!important}}
+</style>
