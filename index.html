@@ -1911,6 +1911,26 @@ body, body.rf-dark{
 }
 .rf-setting-row[data-art="play"]::after{display:none!important;content:none!important}
 </style>
+<style>
+/* ===== V058: exact mountain from user's reference ===== */
+.side, .sidebar{
+  position:fixed!important;
+  overflow:hidden!important;
+}
+.side::before, .side::after,
+.sidebar::before, .sidebar::after{
+  content:none!important;
+  display:none!important;
+}
+/* dedicated mountain layer from reference image */
+.side{
+  background-color:#041e35!important;
+  background-image:url("assets/sidebar-mountain.png")!important;
+  background-repeat:no-repeat!important;
+  background-position:center 68%!important;
+  background-size:100% auto!important;
+}
+</style>
 </head>
 <body>
 <aside class="sidebar">
