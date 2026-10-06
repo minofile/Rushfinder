@@ -3058,17 +3058,34 @@ document.addEventListener("DOMContentLoaded",()=>{
  function suggestions(s,n){let out=[];rules.forEach(([r,a])=>{if(r.test(s))out.push(...a)});if(!out.length){out=['آرشیو تاریخی','تصاویر مرتبط','نمای عمومی ایران','اسناد و روزنامه قدیمی','مردم ایران','تهران'];}return [...new Set(out)].slice(0,n)}
  function splitText(txt){let a=txt.split(/(?<=[.!؟\n])\s+/).map(x=>x.trim()).filter(x=>x.length>20);if(a.length>6){let g=[];for(let i=0;i<a.length;i+=2)g.push(a.slice(i,i+2).join(' '));a=g}return a.slice(0,8)}
  function esc(s){return s.replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
- async function rfRushFetchOne(q){
+ const rfRushUsed=new Set();
+ function rfNorm(s){return String(s||'').toLowerCase().replace(/[يى]/g,'ی').replace(/ك/g,'ک').replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim()}
+ function rfTokens(s){return rfNorm(s).split(' ').filter(w=>w.length>2 && !['برای','این','است','بود','شد','های','یک','در','از','به','را','که','با','و','یا','the','and','for','with','from'].includes(w))}
+ function rfRushKey(x){return String(x?.id||x?.uid||x?.pageURL||x?.url||x?.thumbnail||x?.thumbnailUrl||'')}
+ function rfRushScore(x,q,context){
+   const hay=rfNorm([x?.title,x?.description,x?.tags,x?.channel,x?.source].filter(Boolean).join(' '));
+   const qts=rfTokens(q), cts=rfTokens(context);
+   let s=0;
+   qts.forEach(t=>{if(hay.includes(t))s+=6});
+   cts.forEach(t=>{if(hay.includes(t))s+=2});
+   if(hay.includes(rfNorm(q)))s+=12;
+   return s;
+ }
+ async function rfRushFetchOne(q,context){
    try{
-     const params=new URLSearchParams({q,page:'1',per_page:'1',source:'all'});
+     const params=new URLSearchParams({q,page:'1',per_page:'12',source:'all'});
      const r=await fetch(`/api/search?${params}`);
      const d=await r.json();
-     const x=Array.isArray(d.results)?d.results[0]:null;
-     return x||null;
+     const arr=(Array.isArray(d.results)?d.results:[])
+       .filter(x=>{const k=rfRushKey(x);return k&&!rfRushUsed.has(k)})
+       .sort((a,b)=>rfRushScore(b,q,context)-rfRushScore(a,q,context));
+     const best=arr.find(x=>rfRushScore(x,q,context)>0)||arr[0]||null;
+     if(best) rfRushUsed.add(rfRushKey(best));
+     return best;
    }catch(_){return null}
  }
  function rfRushPreviewHTML(x,q){
-   if(!x) return `<div class="rf-rush-preview" data-q="${esc(q)}"><div class="rf-rush-preview-media"></div><div class="rf-rush-preview-body"><div class="rf-rush-preview-title">${esc(q)}</div><div class="rf-rush-preview-query">جستجوی راش</div></div></div>`;
+   if(!x) return `<div class="rf-rush-preview" data-q="${esc(q)}"><div class="rf-rush-preview-media"></div><div class="rf-rush-preview-body"><div class="rf-rush-preview-title">${esc(q)}</div><div class="rf-rush-preview-query">برای دیدن نتایج بیشتر کلیک کنید</div></div></div>`;
    const thumb=x.thumbnail||x.thumbnailUrl||x.poster||x.image||'';
    const title=x.title||q;
    const source=x.source||'RushFinder';
@@ -3077,11 +3094,12 @@ document.addEventListener("DOMContentLoaded",()=>{
  document.getElementById('rfRushAnalyze').onclick=async()=>{
    const txt=document.getElementById('rfRushText').value.trim(), box=document.getElementById('rfRushSections'), n=+document.getElementById('rfRushCount').value;
    if(!txt){box.innerHTML='<div class="rf-rush-empty">ابتدا متن یا سناریو را وارد کنید.</div>';return}
-   const parts=splitText(txt);
+   const parts=splitText(txt); rfRushUsed.clear();
    box.innerHTML=parts.map((p,i)=>`<div class="rf-rush-section" id="rfRushPart${i}"><div class="rf-rush-section-title">بخش ${String(i+1).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d])}</div><div class="rf-rush-section-snippet">${esc(p)}</div><div class="rf-rush-preview-grid">${suggestions(p,n).map(()=>'<div class="rf-rush-preview-loading"></div>').join('')}</div></div>`).join('');
    await Promise.all(parts.map(async(p,i)=>{
      const qs=suggestions(p,n);
-     const rs=await Promise.all(qs.map(q=>rfRushFetchOne(q)));
+     const rs=[];
+     for(const q of qs){rs.push(await rfRushFetchOne(q,p));}
      const grid=document.querySelector(`#rfRushPart${i} .rf-rush-preview-grid`);
      if(grid) grid.innerHTML=rs.map((x,j)=>rfRushPreviewHTML(x,qs[j])).join('');
    }));
