@@ -1,1 +1,2 @@
-RushFinder V0126 — based on clean V0104. Adds accessible Music sidebar item and compact graphical music page.
+RushFinder V0104
+Replaced YouTube, Aparat, Vecteezy and Pixabay source-filter logo assets with the exact four image files supplied by the user in this turn.

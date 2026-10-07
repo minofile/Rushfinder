@@ -2570,32 +2570,8 @@ body, body.rf-dark{
 }
 </style>
 
-
-<style id="rush-v0126-music">
-#rf126Music{display:none;direction:rtl;min-height:calc(100vh - 66px);padding:22px 28px 36px;background:#f6faff;font-family:YEKAN,Yekan,sans-serif;font-weight:400;color:#12263a}
-#rf126Music.rf126-on{display:block}
-.rf126-wrap{max-width:1280px;margin:0 auto}
-.rf126-head{background:#fff;border-radius:18px;padding:18px 22px;margin-bottom:16px;box-shadow:0 5px 20px #183b5d0d}
-.rf126-head h2{font-size:24px;font-weight:400;margin:0 0 12px}
-.rf126-search{display:flex;gap:9px}.rf126-search input{flex:1;height:44px;border:1px solid #cfdeec;border-radius:11px;padding:0 14px;font-family:inherit}.rf126-search button{width:96px;border:0;border-radius:11px;background:#087cff;color:#fff;font-family:inherit}
-.rf126-cats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:18px}
-.rf126-cat{height:132px;background:#fff;border-radius:13px;overflow:hidden;position:relative;box-shadow:0 4px 13px #153a5a12}
-.rf126-cat img{width:100%;height:100%;object-fit:cover;display:block}
-.rf126-cat span{position:absolute;right:0;left:0;bottom:0;height:34px;display:flex;align-items:center;justify-content:center;background:rgba(8,25,43,.88);color:#fff;font-size:15px}
-.rf126-tools{display:flex;align-items:center;gap:10px;margin:4px 0 13px}.rf126-tools select{height:38px;border:1px solid #d2dfeb;border-radius:9px;background:#fff;padding:0 12px;font-family:inherit}.rf126-count{margin-right:auto;font-size:13px}
-.rf126-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.rf126-card{background:#fff;border:1px solid #e1ebf4;border-radius:12px;overflow:hidden;box-shadow:0 3px 12px #183b5d0c}
-.rf126-cover{height:108px;position:relative}.rf126-cover img{width:100%;height:100%;object-fit:cover}
-.rf126-play{position:absolute;right:10px;bottom:9px;width:32px;height:32px;border-radius:50%;border:0;background:#fff;color:#087cff}
-.rf126-time{position:absolute;left:9px;bottom:9px;background:#0a1a29d9;color:#fff;border-radius:6px;padding:3px 6px;font-size:11px}
-.rf126-body{padding:9px 10px;direction:ltr}.rf126-title{font-size:14px;margin-bottom:6px}.rf126-tags{display:flex;gap:5px}.rf126-tags span{font-size:10px;background:#e8eff6;padding:3px 7px;border-radius:7px}
-.rf126-source{font-size:11px;color:#607184;margin:8px 0}.rf126-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;direction:rtl}.rf126-actions button{height:34px;border:0;border-radius:8px;font-family:YEKAN,Yekan,sans-serif}.rf126-dl{background:#087cff;color:#fff}.rf126-more{background:#edf4fa;color:#20384e}
-@media(max-width:1100px){.rf126-cats{grid-template-columns:repeat(3,1fr)}.rf126-grid{grid-template-columns:repeat(2,1fr)}}
-</style>
-
 </head>
 <body>
-<button id="rf126MusicNav" type="button" style="font-family:YEKAN,Yekan,sans-serif;font-weight:400">♫&nbsp;&nbsp; موزیک</button>
 <aside class="sidebar">
 <div class="sidebrand sidebrand-final"><img src="assets/logos/rushfinder-sidebar-white.png" alt="RushFinder"></div><nav class="nav"><button class="active"><i>▦</i><span>داشبورد</span></button>
 <button><i>⚙</i><span>تنظیمات</span></button></nav>
@@ -3473,23 +3449,5 @@ document.addEventListener("DOMContentLoaded",()=>{
  document.addEventListener('click',e=>{const c=e.target.closest('.rf-rush-chip,.rf-rush-preview');if(!c)return;const q=c.dataset.q||c.textContent.trim();closeAll();activeNav('داشبورد');const input=document.getElementById('query');if(input)input.value=q;if(typeof search==='function')search(q);});
 })();
 </script>
-<section id="rf126Music"><div class="rf126-wrap"><div class="rf126-head"><h2>موزیک برای تدوین</h2><div class="rf126-search"><input placeholder="جستجوی موزیک..."><button>جستجو</button></div></div><div class="rf126-cats"><div class="rf126-cat"><img src="assets/music-v0126/cat1.webp"><span>خبری</span></div><div class="rf126-cat"><img src="assets/music-v0126/cat2.webp"><span>سیاسی</span></div><div class="rf126-cat"><img src="assets/music-v0126/cat3.webp"><span>ورزشی</span></div><div class="rf126-cat"><img src="assets/music-v0126/cat4.webp"><span>حماسی</span></div><div class="rf126-cat"><img src="assets/music-v0126/cat5.webp"><span>سینمایی</span></div><div class="rf126-cat"><img src="assets/music-v0126/cat6.webp"><span>هیجانی</span></div><div class="rf126-cat"><img src="assets/music-v0126/cat7.webp"><span>آرام</span></div><div class="rf126-cat"><img src="assets/music-v0126/cat8.webp"><span>غمگین</span></div><div class="rf126-cat"><img src="assets/music-v0126/cat9.webp"><span>انرژی</span></div><div class="rf126-cat"><img src="assets/music-v0126/cat10.webp"><span>دراماتیک</span></div><div class="rf126-cat"><img src="assets/music-v0126/cat11.webp"><span>تکنولوژی</span></div><div class="rf126-cat"><img src="assets/music-v0126/cat12.webp"><span>مستند</span></div></div><div class="rf126-tools"><select><option>همه منابع</option></select><span class="rf126-count">۱۲٬۴۶۰ نتیجه</span><select><option>جدیدترین</option></select></div><div class="rf126-grid"><div class="rf126-card"><div class="rf126-cover"><img src="assets/music-v0126/track1.webp"><button class="rf126-play">▶</button><span class="rf126-time">02:18</span></div><div class="rf126-body"><div class="rf126-title">World News Intro</div><div class="rf126-tags"><span>خبری</span><span>معرفی</span></div><div class="rf126-source">Pixabay Music</div><div class="rf126-actions"><button class="rf126-dl">↓ دانلود</button><button class="rf126-more">نمایش جزئیات</button></div></div></div><div class="rf126-card"><div class="rf126-cover"><img src="assets/music-v0126/track2.webp"><button class="rf126-play">▶</button><span class="rf126-time">01:42</span></div><div class="rf126-body"><div class="rf126-title">Political Tension</div><div class="rf126-tags"><span>سیاسی</span><span>تحلیل</span></div><div class="rf126-source">Free Music Archive</div><div class="rf126-actions"><button class="rf126-dl">↓ دانلود</button><button class="rf126-more">نمایش جزئیات</button></div></div></div><div class="rf126-card"><div class="rf126-cover"><img src="assets/music-v0126/track3.webp"><button class="rf126-play">▶</button><span class="rf126-time">01:57</span></div><div class="rf126-body"><div class="rf126-title">Sport Energy</div><div class="rf126-tags"><span>ورزشی</span><span>هیجانی</span></div><div class="rf126-source">Pixabay Music</div><div class="rf126-actions"><button class="rf126-dl">↓ دانلود</button><button class="rf126-more">نمایش جزئیات</button></div></div></div><div class="rf126-card"><div class="rf126-cover"><img src="assets/music-v0126/track4.webp"><button class="rf126-play">▶</button><span class="rf126-time">02:36</span></div><div class="rf126-body"><div class="rf126-title">Epic Motivation</div><div class="rf126-tags"><span>حماسی</span><span>الهام‌بخش</span></div><div class="rf126-source">YouTube Audio Library</div><div class="rf126-actions"><button class="rf126-dl">↓ دانلود</button><button class="rf126-more">نمایش جزئیات</button></div></div></div><div class="rf126-card"><div class="rf126-cover"><img src="assets/music-v0126/track5.webp"><button class="rf126-play">▶</button><span class="rf126-time">03:12</span></div><div class="rf126-body"><div class="rf126-title">Cinematic Trailer</div><div class="rf126-tags"><span>سینمایی</span><span>تریلر</span></div><div class="rf126-source">Pixabay Music</div><div class="rf126-actions"><button class="rf126-dl">↓ دانلود</button><button class="rf126-more">نمایش جزئیات</button></div></div></div><div class="rf126-card"><div class="rf126-cover"><img src="assets/music-v0126/track6.webp"><button class="rf126-play">▶</button><span class="rf126-time">02:05</span></div><div class="rf126-body"><div class="rf126-title">Urban Technology</div><div class="rf126-tags"><span>تکنولوژی</span><span>مدرن</span></div><div class="rf126-source">Free Music Archive</div><div class="rf126-actions"><button class="rf126-dl">↓ دانلود</button><button class="rf126-more">نمایش جزئیات</button></div></div></div><div class="rf126-card"><div class="rf126-cover"><img src="assets/music-v0126/track7.webp"><button class="rf126-play">▶</button><span class="rf126-time">03:28</span></div><div class="rf126-body"><div class="rf126-title">Sad Ambient</div><div class="rf126-tags"><span>غمگین</span><span>احساسی</span></div><div class="rf126-source">Pixabay Music</div><div class="rf126-actions"><button class="rf126-dl">↓ دانلود</button><button class="rf126-more">نمایش جزئیات</button></div></div></div><div class="rf126-card"><div class="rf126-cover"><img src="assets/music-v0126/track8.webp"><button class="rf126-play">▶</button><span class="rf126-time">04:10</span></div><div class="rf126-body"><div class="rf126-title">Calm Piano</div><div class="rf126-tags"><span>آرام</span><span>ریلکسیشن</span></div><div class="rf126-source">YouTube Audio Library</div><div class="rf126-actions"><button class="rf126-dl">↓ دانلود</button><button class="rf126-more">نمایش جزئیات</button></div></div></div></div></div></section>
-
-<script id="rush-v0126-music-js">
-(function(){
- function openMusic(){
-   var p=document.getElementById('rf126Music'); if(!p)return;
-   // hide visible page-level content except fixed/sidebar/header descendants and our music page
-   document.querySelectorAll('main, .main-content, #mainContent, .content-area, .dashboard-content').forEach(function(x){if(!x.contains(p))x.style.display='none';});
-   p.classList.add('rf126-on');
-   window.scrollTo(0,0);
- }
- document.addEventListener('DOMContentLoaded',function(){
-   var b=document.getElementById('rf126MusicNav');
-   if(b)b.addEventListener('click',function(e){e.preventDefault();openMusic();});
- });
-})();
-</script>
-
 </body>
 </html>
