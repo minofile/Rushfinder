@@ -1,10 +1,5 @@
-RushFinder V0113
-Base: V0112 / V0104 lineage.
-Music page:
-- 12 graphical category cards in 2 rows x 6 on desktop.
-- 4 music cards per desktop row.
-- Removed “نمایش جزئیات”.
-- Play/Pause happens directly on the music card.
-- Only one track can be active at a time once real direct audio URLs are connected.
-- One full-width Download button per card.
-Important: current sample cards are UI/demo data inherited from the prototype. Real playback/download needs licensed direct audio URLs from the selected music source/API.
+RushFinder V0114
+- Keeps the exact 12 category images from the approved user reference.
+- Adds clean Persian category titles and small white graphic icons as HTML overlays inside each card.
+- Adds a dark bottom gradient for readability; no title/icon can fall below the card.
+- Music result grid remains 4 per desktop row; on-card play/pause and download-only action retained.
