@@ -1,2 +1,4 @@
-RushFinder V0104
-Replaced YouTube, Aparat, Vecteezy and Pixabay source-filter logo assets with the exact four image files supplied by the user in this turn.
+RushFinder V0141 Web
+Music section connected to the official Free To Use public API (no API key required).
+Category buttons trigger real music searches; cards include play and download actions when URLs are supplied by the API.
+License terms remain those of Free To Use; commercial use may require a paid license.

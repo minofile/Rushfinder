@@ -2570,6 +2570,230 @@ body, body.rf-dark{
 }
 </style>
 
+<style id="mu136-css">
+#mu136{display:none;position:fixed;z-index:50;top:66px;right:230px;left:0;bottom:0;overflow:auto;box-sizing:border-box;direction:rtl;background:radial-gradient(circle at 30% 10%,#eafcff 0,#f5f9ff 28%,#edf6ff 100%);font-family:YEKAN,Yekan,sans-serif;font-weight:400;color:#0c2745}
+#mu136.active{display:block}.mu136-wrap{width:calc(100% - 34px);max-width:1420px;margin:auto;padding:18px 0 40px;box-sizing:border-box}
+.mu136-search{display:flex;gap:10px;align-items:center;margin-bottom:18px}.mu136-searchBox{flex:1;height:48px;background:#fff;border:1px solid #d9e9f7;border-radius:13px;box-shadow:0 8px 24px #3874a918;display:flex;align-items:center;padding:0 15px}.mu136-searchBox:before{content:"⌕";font-size:27px;color:#0b3e83;margin-left:10px}.mu136-searchBox input{width:100%;border:0;outline:0;background:transparent;font-family:inherit;font-size:13px}.mu136-search>button{height:48px;width:125px;border:0;border-radius:11px;background:linear-gradient(135deg,#168bff,#0872ef);box-shadow:0 8px 18px #087cff3b;color:#fff;font-family:inherit}
+.mu136-cats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:13px;margin-bottom:18px}.mu136-cat{height:130px;border:0;border-radius:15px;overflow:hidden;padding:0;position:relative;cursor:pointer;background:#102c4a;box-shadow:0 8px 20px #315f8524;transition:.18s}.mu136-cat:hover,.mu136-cat.active{transform:translateY(-3px);box-shadow:0 12px 28px #177de04a}.mu136-cat img{width:100%;height:100%;object-fit:cover;filter:saturate(1.18) contrast(1.04)}.mu136-cat:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#0516299e 0,#05162922 60%,transparent)}.mu136-catText{position:absolute;z-index:2;right:14px;bottom:14px;text-align:right;color:#fff}.mu136-catText b{display:block;font-size:17px;font-weight:400;text-shadow:0 2px 5px #001}.mu136-catText small{display:block;font-size:9px;margin-top:3px;color:#f5fbff}.mu136-cat>i{position:absolute;z-index:3;left:11px;bottom:11px;width:27px;height:27px;border-radius:50%;background:#ffffffd9;display:flex;align-items:center;justify-content:center;color:#0b579f;font-style:normal}
+.mu136-tools{display:flex;align-items:center;gap:10px;margin-bottom:15px}.mu136-tools button,.mu136-tools select{height:41px;border:1px solid #d6e5f1;border-radius:10px;background:#fff;padding:0 13px;font-family:inherit;color:#17334f}.mu136-tools .primary{background:#087cff;color:#fff;border-color:#087cff}.mu136-status{margin-right:auto;font-size:11px;color:#698096}
+.mu136-results{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:13px}.mu136-card{direction:ltr;background:#fff;border:1px solid #dfeaf3;border-radius:12px;overflow:hidden;box-shadow:0 6px 18px #315f8515}.mu136-art{height:122px;position:relative;background:linear-gradient(135deg,#072a55,#7a27e6);overflow:hidden}.mu136-art img{width:100%;height:100%;object-fit:cover}.mu136-art.noimg:before{content:"♫";position:absolute;font-size:90px;color:#ffffff24;right:20px;top:2px}.mu136-player{position:absolute;left:0;right:0;bottom:0;height:42px;padding:0 9px 8px;display:flex;align-items:flex-end;gap:8px;background:linear-gradient(transparent,#03101ce8)}.mu136-play{width:31px;height:31px;flex:0 0 31px;border:0;border-radius:50%;background:#fff;color:#0c2c4c}.mu136-wave{height:23px;flex:1;display:flex;align-items:center;gap:2px}.mu136-wave i{display:block;width:2px;height:8px;border-radius:2px;background:#fff}.mu136-wave i:nth-child(3n){height:18px}.mu136-wave i:nth-child(4n+1){height:13px}.mu136-wave i:nth-child(7n){height:21px}.mu136-dur{font-size:10px;color:#fff;padding-bottom:5px}.mu136-body{padding:9px 10px}.mu136-title{font-size:13px;font-weight:400;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mu136-meta{display:flex;justify-content:space-between;align-items:center;margin:7px 0;color:#657a8e;font-size:10px}.mu136-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;direction:rtl}.mu136-actions button,.mu136-actions a{height:31px;border:0;border-radius:7px;background:#edf4fa;color:#17334f;font-family:YEKAN,Yekan,sans-serif;font-size:10px;text-decoration:none;display:flex;align-items:center;justify-content:center}.mu136-actions .dl{background:#087cff;color:#fff}
+.mu136-empty{grid-column:1/-1;min-height:230px;border:1px dashed #bfd8ec;border-radius:16px;background:#ffffff9e;display:flex;align-items:center;justify-content:center;text-align:center;color:#7890a4;line-height:2}.mu136-loading{grid-column:1/-1;text-align:center;padding:60px;color:#46708f}
+@media(max-width:1180px){.mu136-cats{gap:8px}.mu136-results{gap:8px}}@media(max-width:900px){#mu136{right:0}.mu136-cats{grid-template-columns:repeat(3,1fr)}.mu136-results{grid-template-columns:repeat(2,1fr)}}
+</style>
+<style id="mu135-exact-category-images">
+.mu136-cat{background:transparent!important;padding:0!important;border:0!important}
+.mu136-cat img{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center!important;filter:none!important;display:block!important}
+.mu136-cat:after,.mu136-catText,.mu136-cat>i{display:none!important}
+</style>
+
+<style id="mu136-full-user-images-fix">
+/* V0136 — show the 12 supplied category artworks completely, without cropping or overlays */
+.mu136-cats{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:12px!important;align-items:start!important}
+.mu136-cat{height:auto!important;aspect-ratio:1/1!important;border-radius:15px!important;overflow:hidden!important;background:transparent!important;box-shadow:none!important}
+.mu136-cat img{width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important;filter:none!important;transform:none!important}
+.mu136-cat:after,.mu136-catText,.mu136-cat>i{display:none!important}
+@media(max-width:900px){.mu136-cats{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+</style>
+
+
+<style id="v0137-category-panel">
+#mu136 .mu136-cats{
+position:relative!important;display:grid!important;
+grid-template-columns:repeat(6,minmax(0,1fr))!important;
+gap:9px!important;width:100%!important;max-width:1080px!important;
+margin:12px auto 16px!important;padding:43px 12px 12px!important;
+border:1px solid #c9dcef!important;border-radius:20px!important;
+background:rgba(255,255,255,.82)!important;
+box-shadow:0 10px 28px rgba(28,83,145,.07)!important;
+box-sizing:border-box!important}
+#mu136 .mu136-cats:before{
+content:"دسته‌بندی موزیک";position:absolute;right:16px;top:12px;
+font-family:Yekan,sans-serif!important;font-weight:400!important;
+font-size:14px;color:#0b2b55;direction:rtl}
+#mu136 .mu136-cat{
+width:100%!important;height:auto!important;aspect-ratio:1/1!important;
+padding:0!important;margin:0!important;border-radius:13px!important;
+overflow:hidden!important;background:#fff!important;
+border:1px solid #e0e9f4!important;box-shadow:0 4px 11px rgba(20,65,115,.07)!important}
+#mu136 .mu136-cat img{
+width:100%!important;height:100%!important;object-fit:contain!important;
+object-position:center!important;display:block!important;filter:none!important}
+#mu136 .mu136-cat:after,#mu136 .mu136-catText,#mu136 .mu136-cat>i{display:none!important}
+@media(max-width:900px){#mu136 .mu136-cats{grid-template-columns:repeat(3,1fr)!important}}
+@media(max-width:560px){#mu136 .mu136-cats{grid-template-columns:repeat(2,1fr)!important}}
+</style>
+
+
+<style id="v0139-one-row-categories">
+/* V0139: all 12 music categories in one single panel + one desktop row */
+#mu136 .mu136-cats{
+  grid-template-columns:repeat(12,minmax(0,1fr)) !important;
+  gap:7px !important;
+  width:100% !important;
+  max-width:1460px !important;
+  padding:42px 10px 10px !important;
+  margin:12px auto 14px !important;
+  border-radius:20px !important;
+  overflow:hidden !important;
+}
+#mu136 .mu136-cat{
+  min-width:0 !important;
+  width:100% !important;
+  aspect-ratio:1/1 !important;
+  border-radius:12px !important;
+}
+#mu136 .mu136-cat img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain !important;
+  object-position:center !important;
+  display:block !important;
+}
+@media (min-width:901px){
+  #mu136 .mu136-cats{
+    grid-template-columns:repeat(12,minmax(0,1fr)) !important;
+  }
+}
+@media (max-width:900px){
+  #mu136 .mu136-cats{
+    grid-template-columns:repeat(6,minmax(0,1fr)) !important;
+  }
+}
+@media (max-width:560px){
+  #mu136 .mu136-cats{
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  }
+}
+</style>
+
+
+<style id="v0141-free-to-use-music">
+#mu141Results{margin:18px auto 0;max-width:1460px;direction:rtl}
+.mu141-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px}
+.mu141-head h3{font-family:Yekan,Arial,sans-serif;font-weight:400;font-size:18px;margin:0;color:#14233b}
+.mu141-status{font-family:Yekan,Arial,sans-serif;font-size:12px;color:#6d7b90}
+.mu141-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.mu141-card{background:#fff;border:1px solid #dce7f3;border-radius:16px;padding:12px;box-shadow:0 6px 18px rgba(32,71,115,.06);min-width:0}
+.mu141-cover{height:104px;border-radius:12px;background:linear-gradient(135deg,#eef6ff,#f7f3ff);display:flex;align-items:center;justify-content:center;margin-bottom:10px;overflow:hidden;position:relative}
+.mu141-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.mu141-note{font-size:30px;opacity:.65}
+.mu141-title{font-family:Yekan,Arial,sans-serif;font-weight:400;font-size:14px;color:#15243b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px}
+.mu141-artist{font-family:Yekan,Arial,sans-serif;font-size:11px;color:#7a8799;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:9px}
+.mu141-actions{display:flex;gap:7px}
+.mu141-btn{font-family:Yekan,Arial,sans-serif;font-weight:400;border:0;border-radius:9px;padding:7px 9px;cursor:pointer;font-size:11px;flex:1}
+.mu141-play{background:#1677ff;color:#fff}.mu141-download{background:#eef5ff;color:#1768c5}
+.mu141-empty{grid-column:1/-1;text-align:center;padding:35px 10px;font-family:Yekan,Arial,sans-serif;color:#7c899b}
+@media(max-width:1100px){.mu141-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:650px){.mu141-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+<script id="v0141-free-to-use-music-js">
+(()=>{
+ const API='https://api.freetouse.com/v3';
+ const MAP={
+  'خبری':'news documentary corporate',
+  'سیاسی':'political documentary serious',
+  'ورزشی':'sport energetic action',
+  'حماسی':'epic heroic cinematic',
+  'سینمایی':'cinematic soundtrack',
+  'هیجانی':'action exciting energetic',
+  'آرام':'calm ambient relaxing',
+  'غمگین':'sad emotional piano',
+  'انرژی':'energetic upbeat',
+  'دراماتیک':'dramatic emotional cinematic',
+  'تکنولوژی':'technology electronic futuristic',
+  'مستند':'documentary ambient'
+ };
+ let audio=null;
+
+ function musicRoot(){ return document.querySelector('#mu136'); }
+ function ensureResults(){
+   const r=musicRoot(); if(!r) return null;
+   let box=document.querySelector('#mu141Results');
+   if(!box){
+     box=document.createElement('section'); box.id='mu141Results';
+     box.innerHTML='<div class="mu141-head"><h3>نتایج موزیک</h3><span class="mu141-status">Free To Use</span></div><div class="mu141-grid"><div class="mu141-empty">یک دسته‌بندی را انتخاب کنید یا موزیک را جستجو کنید.</div></div>';
+     r.appendChild(box);
+   }
+   return box;
+ }
+ const val=(o,ks)=>{for(const k of ks){if(o&&o[k]!=null&&o[k]!=='')return o[k]}return ''};
+ function itemsOf(j){ return Array.isArray(j)?j:(j?.data||j?.tracks||j?.results||j?.items||[]); }
+ function artistOf(t){
+   let a=val(t,['artist_name','artist','author','creator']);
+   if(typeof a==='object') a=val(a,['name','title']);
+   if(!a && Array.isArray(t?.artists)) a=t.artists.map(x=>typeof x==='string'?x:(x.name||'')).filter(Boolean).join(', ');
+   return a||'Free To Use';
+ }
+ function audioOf(t){ return val(t,['audio_url','audio','stream_url','stream','preview_url','preview','url']); }
+ function downloadOf(t){ return val(t,['download_url','download','audio_download_url','file_url']) || audioOf(t); }
+ function imageOf(t){ return val(t,['image_url','image','cover_url','cover','thumbnail_url','thumbnail','artwork_url']); }
+ function render(list,q){
+   const box=ensureResults(); if(!box)return;
+   box.querySelector('.mu141-status').textContent=`Free To Use • ${list.length} نتیجه`;
+   const grid=box.querySelector('.mu141-grid');
+   if(!list.length){grid.innerHTML='<div class="mu141-empty">برای این عبارت موزیکی پیدا نشد.</div>';return}
+   grid.innerHTML=list.map((t,i)=>{
+     const title=val(t,['title','name'])||`Music ${i+1}`;
+     const img=imageOf(t);
+     return `<article class="mu141-card">
+       <div class="mu141-cover">${img?`<img src="${String(img).replace(/"/g,'&quot;')}" alt="">`:'<span class="mu141-note">♫</span>'}</div>
+       <div class="mu141-title" title="${String(title).replace(/"/g,'&quot;')}">${title}</div>
+       <div class="mu141-artist">${artistOf(t)}</div>
+       <div class="mu141-actions">
+        <button class="mu141-btn mu141-play" data-i="${i}">پخش</button>
+        <button class="mu141-btn mu141-download" data-i="${i}">دانلود</button>
+       </div>
+     </article>`;
+   }).join('');
+   grid.querySelectorAll('.mu141-play').forEach(b=>b.onclick=()=>{
+     const t=list[+b.dataset.i], u=audioOf(t); if(!u)return alert('لینک پخش برای این ترک در API موجود نیست.');
+     if(audio){audio.pause();audio=null}
+     audio=new Audio(u); audio.play().catch(()=>window.open(u,'_blank'));
+   });
+   grid.querySelectorAll('.mu141-download').forEach(b=>b.onclick=()=>{
+     const t=list[+b.dataset.i], u=downloadOf(t); if(!u)return alert('دانلود این ترک از طرف منبع ارائه نشده است.');
+     window.open(u,'_blank','noopener');
+   });
+ }
+ async function search(q){
+   const box=ensureResults(); if(!box)return;
+   box.querySelector('.mu141-status').textContent='در حال جستجو…';
+   box.querySelector('.mu141-grid').innerHTML='<div class="mu141-empty">در حال دریافت موزیک‌های واقعی…</div>';
+   try{
+     const u=`${API}/music/tracks/search?query=${encodeURIComponent(q)}&limit=20&order=downloads&sort=desc`;
+     const res=await fetch(u,{headers:{'Accept':'application/json'}});
+     if(!res.ok) throw new Error('HTTP '+res.status);
+     const j=await res.json(); render(itemsOf(j),q);
+   }catch(e){
+     box.querySelector('.mu141-status').textContent='خطا در اتصال';
+     box.querySelector('.mu141-grid').innerHTML='<div class="mu141-empty">اتصال مستقیم مرورگر به API انجام نشد. روی نسخه Vercel دوباره امتحان کنید.</div>';
+   }
+ }
+ function bind(){
+   const r=musicRoot(); if(!r)return;
+   ensureResults();
+   r.querySelectorAll('.mu136-cat').forEach(c=>{
+     if(c.dataset.mu141)return; c.dataset.mu141='1';
+     c.addEventListener('click',()=>{
+       const fa=c.dataset.q || c.getAttribute('data-category') || c.getAttribute('aria-label') || '';
+       const key=Object.keys(MAP).find(k=>fa.includes(k)) || fa.trim();
+       search(MAP[key]||key||'cinematic');
+     });
+   });
+   // Hook the most likely music search inputs/buttons without touching global video search.
+   const inp=r.querySelector('input[type="search"], input[placeholder*="موزیک"], input[placeholder*="جستجو"]');
+   if(inp && !inp.dataset.mu141){
+     inp.dataset.mu141='1';
+     inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&inp.value.trim()){e.preventDefault();search(inp.value.trim())}});
+     const btn=inp.parentElement?.querySelector('button') || r.querySelector('button[type="submit"]');
+     if(btn) btn.addEventListener('click',e=>{if(inp.value.trim()){e.preventDefault();search(inp.value.trim())}});
+   }
+ }
+ document.addEventListener('DOMContentLoaded',()=>{bind();setTimeout(bind,700)});
+ new MutationObserver(()=>bind()).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
+
 </head>
 <body>
 <aside class="sidebar">
@@ -3449,5 +3673,122 @@ document.addEventListener("DOMContentLoaded",()=>{
  document.addEventListener('click',e=>{const c=e.target.closest('.rf-rush-chip,.rf-rush-preview');if(!c)return;const q=c.dataset.q||c.textContent.trim();closeAll();activeNav('داشبورد');const input=document.getElementById('query');if(input)input.value=q;if(typeof search==='function')search(q);});
 })();
 </script>
+<section id="mu136"><div class="mu136-wrap">
+<div class="mu136-search"><div class="mu136-searchBox"><input id="mu136q" placeholder="موزیک موردنظر را جستجو کنید..."></div><button id="mu136search">جستجو</button></div>
+<div class="mu136-cats"><button class="mu136-cat" data-q="خبری" data-key="news" aria-label="موزیک خبری"><img src="assets/music-v0135/cat1.png" alt="خبری"></button><button class="mu136-cat" data-q="سیاسی" data-key="political" aria-label="موزیک سیاسی"><img src="assets/music-v0135/cat2.png" alt="سیاسی"></button><button class="mu136-cat" data-q="ورزشی" data-key="sport" aria-label="موزیک ورزشی"><img src="assets/music-v0135/cat3.png" alt="ورزشی"></button><button class="mu136-cat" data-q="حماسی" data-key="epic" aria-label="موزیک حماسی"><img src="assets/music-v0135/cat4.png" alt="حماسی"></button><button class="mu136-cat" data-q="سینمایی" data-key="cinematic" aria-label="موزیک سینمایی"><img src="assets/music-v0135/cat5.png" alt="سینمایی"></button><button class="mu136-cat" data-q="هیجانی" data-key="exciting" aria-label="موزیک هیجانی"><img src="assets/music-v0135/cat6.png" alt="هیجانی"></button><button class="mu136-cat" data-q="مستند" data-key="documentary" aria-label="موزیک مستند"><img src="assets/music-v0135/cat7.png" alt="مستند"></button><button class="mu136-cat" data-q="تکنولوژی" data-key="technology" aria-label="موزیک تکنولوژی"><img src="assets/music-v0135/cat8.png" alt="تکنولوژی"></button><button class="mu136-cat" data-q="دراماتیک" data-key="dramatic" aria-label="موزیک دراماتیک"><img src="assets/music-v0135/cat9.png" alt="دراماتیک"></button><button class="mu136-cat" data-q="انرژی" data-key="energy" aria-label="موزیک انرژی"><img src="assets/music-v0135/cat10.png" alt="انرژی"></button><button class="mu136-cat" data-q="غمگین" data-key="sad" aria-label="موزیک غمگین"><img src="assets/music-v0135/cat11.png" alt="غمگین"></button><button class="mu136-cat" data-q="آرام" data-key="calm" aria-label="موزیک آرام"><img src="assets/music-v0135/cat12.png" alt="آرام"></button></div>
+<div class="mu136-tools"><button class="primary" id="mu136all">نمایش همه</button><select id="mu136source"><option value="">همه منابع</option><option value="pixabay">Pixabay</option><option value="youtube">YouTube</option></select><select><option>مدت زمان</option></select><select><option>نوع مجوز</option></select><select><option>تعداد در صفحه ۲۴</option></select><button id="mu136clear">پاک کردن فیلترها</button><span class="mu136-status" id="mu136status">برای شروع یک موزیک جستجو کنید</span></div>
+<div class="mu136-results" id="mu136results"><div class="mu136-empty">نام موزیک یا یکی از ۱۲ دسته بالا را انتخاب کنید.<br>نتایج واقعی پس از جستجو نمایش داده می‌شوند.</div></div>
+</div></section><script id="mu136-js">
+(function(){
+const bars='<i></i>'.repeat(28);
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function fmt(sec){sec=Number(sec||0);if(!sec)return '--:--';return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0')}
+function norm(raw){
+ const arr=raw?.results||raw?.items||raw?.videos||raw?.data||[];
+ return Array.isArray(arr)?arr.map(x=>({
+  title:x.title||x.name||'Music',
+  source:x.source||x.provider||'',
+  duration:x.duration||x.duration_seconds||0,
+  thumb:x.thumbnail||x.thumb||x.image||x.picture||'',
+  page:x.pageURL||x.page_url||x.url||x.link||'',
+  download:x.downloadURL||x.download_url||x.download||x.audio||x.audio_url||'',
+  preview:x.previewURL||x.preview_url||x.audio||x.audio_url||''
+ })):[]}
+async function searchMusic(q){
+ const box=document.getElementById('mu136results'),st=document.getElementById('mu136status');
+ box.innerHTML='<div class="mu136-loading">در حال جستجوی موزیک…</div>'; st.textContent='در حال جستجو…';
+ try{
+   /* Reuse the V0104 server-side search route. The music mode is explicit;
+      if the deployed backend does not support music yet, no fake cards are shown. */
+   const r=await fetch('/api/search?'+new URLSearchParams({q:q,type:'music',media:'audio',per_page:'24'}));
+   if(!r.ok) throw new Error('HTTP '+r.status);
+   const data=await r.json(),items=norm(data);
+   if(!items.length) throw new Error('NO_MUSIC_RESULTS');
+   box.innerHTML=items.slice(0,24).map(x=>`<article class="mu136-card"><div class="mu136-art ${x.thumb?'':'noimg'}">${x.thumb?`<img src="${esc(x.thumb)}" loading="lazy">`:''}<div class="mu136-player"><button class="mu136-play" data-audio="${esc(x.preview)}">▶</button><div class="mu136-wave">${bars}</div><span class="mu136-dur">${fmt(x.duration)}</span></div></div><div class="mu136-body"><strong class="mu136-title">${esc(x.title)}</strong><div class="mu136-meta"><span>${esc(x.source||'Music')}</span><span>موزیک</span></div><div class="mu136-actions">${x.download?`<a class="dl" href="${esc(x.download)}" download>↓ دانلود</a>`:`<button class="dl" disabled>دانلود موجود نیست</button>`}${x.page?`<a href="${esc(x.page)}" target="_blank" rel="noopener">نمایش منبع</a>`:'<button disabled>نمایش منبع</button>'}</div></div></article>`).join('');
+   st.textContent=items.length.toLocaleString('fa-IR')+' نتیجه';
+   wirePlayers();
+ }catch(e){
+   box.innerHTML='<div class="mu136-empty">بخش رابط کاربری موزیک آماده است، اما API فعلی V0104 نتیجه صوتی برنگرداند.<br>هیچ موزیک یا لینک دانلود ساختگی نمایش داده نشده است.</div>';
+   st.textContent='API موزیک نیاز به اتصال دارد';
+ }
+}
+let currentAudio=null,currentBtn=null;
+function wirePlayers(){document.querySelectorAll('.mu136-play').forEach(b=>b.onclick=()=>{const u=b.dataset.audio;if(!u)return;if(currentAudio){currentAudio.pause();if(currentBtn)currentBtn.textContent='▶'}if(currentBtn===b){currentAudio=null;currentBtn=null;return}currentAudio=new Audio(u);currentBtn=b;b.textContent='❚❚';currentAudio.play().catch(()=>b.textContent='▶');currentAudio.onended=()=>{b.textContent='▶';currentAudio=null;currentBtn=null}})}
+function init(){
+ const p=document.getElementById('mu136'),nav=document.querySelector('.nav'); if(!p||!nav)return;
+ let b=[...nav.querySelectorAll('button')].find(x=>(x.textContent||'').includes('موزیک'));
+ if(!b){b=document.createElement('button');b.type='button';b.innerHTML='<i>♫</i><span>موزیک</span>';const s=[...nav.querySelectorAll('button')].find(x=>(x.textContent||'').includes('تنظیمات'));nav.insertBefore(b,s||null)}
+ b.onclick=e=>{e.preventDefault();e.stopPropagation();p.classList.add('active');nav.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b))};
+ nav.addEventListener('click',e=>{const x=e.target.closest('button');if(x&&x!==b&&!x.closest('#mu136'))p.classList.remove('active')});
+ const q=document.getElementById('mu136q');
+ document.getElementById('mu136search').onclick=()=>q.value.trim()&&searchMusic(q.value.trim());
+ q.addEventListener('keydown',e=>{if(e.key==='Enter'&&q.value.trim())searchMusic(q.value.trim())});
+ document.querySelectorAll('.mu136-cat').forEach(c=>c.onclick=()=>{document.querySelectorAll('.mu136-cat').forEach(x=>x.classList.remove('active'));c.classList.add('active');q.value='موزیک '+c.dataset.q;searchMusic(q.value)});
+ document.getElementById('mu136clear').onclick=()=>{q.value='';document.querySelectorAll('.mu136-cat').forEach(x=>x.classList.remove('active'));document.getElementById('mu136results').innerHTML='<div class="mu136-empty">نام موزیک یا یکی از ۱۲ دسته بالا را انتخاب کنید.<br>نتایج واقعی پس از جستجو نمایش داده می‌شوند.</div>';document.getElementById('mu136status').textContent='برای شروع یک موزیک جستجو کنید'};
+ document.getElementById('mu136all').onclick=()=>{q.value='موزیک';searchMusic('موزیک')};
+}
+document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
+})();
+</script>
+
+<style id="mu137-sidebar-boundary-fix">
+/* V0137: keep the entire Music surface strictly outside the V0104 navy sidebar */
+#mu136{
+  right: var(--rf-sidebar-width, 230px) !important;
+  width: auto !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+}
+#mu136 .mu136-wrap{
+  width: calc(100% - 40px) !important;
+  max-width: 1420px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  box-sizing: border-box !important;
+}
+@media (min-width:901px){
+  body:has(#mu136.active) .sidebar,
+  body:has(#mu136.active) aside{
+    z-index: 60;
+  }
+}
+@media (max-width:900px){
+  #mu136{right:0 !important;}
+}
+</style>
+<script id="mu137-sidebar-boundary-js">
+(function(){
+  function syncSidebarWidth(){
+    var page=document.getElementById('mu136');
+    if(!page) return;
+    var nav=document.querySelector('.nav');
+    var sidebar=nav && (nav.closest('aside') || nav.parentElement);
+    if(!sidebar) return;
+    var r=sidebar.getBoundingClientRect();
+    if(r.width>120 && r.width<500){
+      document.documentElement.style.setProperty('--rf-sidebar-width', Math.round(r.width)+'px');
+    }
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',syncSidebarWidth);
+  } else syncSidebarWidth();
+  window.addEventListener('resize',syncSidebarWidth);
+})();
+</script>
+
+
+<style id="v0140-category-heading">
+/* V0140 — music icon beside category title + a little more breathing room */
+#mu136 .mu136-cats{padding-top:52px!important;margin-top:20px!important;}
+#mu136 .mu136-cats:before{
+  content:"♫  دسته‌بندی موزیک"!important;
+  right:18px!important;top:15px!important;
+  display:flex!important;align-items:center!important;gap:8px!important;
+  font-family:Yekan,sans-serif!important;font-size:15px!important;
+  color:#0b2b55!important;line-height:28px!important;
+}
+</style>
+
 </body>
 </html>
