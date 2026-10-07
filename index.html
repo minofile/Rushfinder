@@ -2987,6 +2987,44 @@ document.addEventListener("DOMContentLoaded",()=>{
 .rf-music-cat:nth-child(12){background-image:url("assets/music-v0117/documentary.webp")!important;}
 </style>
 
+
+<style id="rush-v0118-exact-approved-categories">
+/* V0118: only replace category artwork with the exact approved 3D cards. */
+.rf-music-cat{
+  background-size:cover!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+}
+.rf-music-cat:nth-child(1){background-image:url("assets/music-v0118/news.webp")!important;}
+.rf-music-cat:nth-child(2){background-image:url("assets/music-v0118/political.webp")!important;}
+.rf-music-cat:nth-child(3){background-image:url("assets/music-v0118/sport.webp")!important;}
+.rf-music-cat:nth-child(4){background-image:url("assets/music-v0118/epic.webp")!important;}
+.rf-music-cat:nth-child(5){background-image:url("assets/music-v0118/cinematic.webp")!important;}
+.rf-music-cat:nth-child(6){background-image:url("assets/music-v0118/exciting.webp")!important;}
+.rf-music-cat:nth-child(7){background-image:url("assets/music-v0118/documentary.webp")!important;}
+.rf-music-cat:nth-child(8){background-image:url("assets/music-v0118/technology.webp")!important;}
+.rf-music-cat:nth-child(9){background-image:url("assets/music-v0118/dramatic.webp")!important;}
+.rf-music-cat:nth-child(10){background-image:url("assets/music-v0118/energy.webp")!important;}
+.rf-music-cat:nth-child(11){background-image:url("assets/music-v0118/sad.webp")!important;}
+.rf-music-cat:nth-child(12){background-image:url("assets/music-v0118/calm.webp")!important;}
+/* The approved artwork already contains its own footer/title; hide duplicate overlays only. */
+.rf-music-cat:after{display:none!important;content:none!important;}
+.rf-music-cat > span,.rf-music-cat > i,.rf-music-cat .rf-cat-overlay{display:none!important;}
+</style>
+
+
+<style id="rush-v0119-category-fit-fix">
+/* Show the complete approved 3D artwork with zero cropping. */
+.rf-music-cat{
+  aspect-ratio: 302 / 319 !important;
+  height:auto !important;
+  min-height:0 !important;
+  background-size:100% 100% !important;
+  background-position:center center !important;
+  background-repeat:no-repeat !important;
+}
+</style>
+
 </head>
 <body>
 <aside class="sidebar">

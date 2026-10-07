@@ -1,2 +1,4 @@
-RushFinder V0117
-12 lightweight local WebP category images, edge-to-edge cover, full-width dark title strip.
+RushFinder V0119
+Fix: Music category artwork now displays completely with no cover-cropping.
+Approved V0118 3D artwork is unchanged.
+No other UI or functionality changed.
