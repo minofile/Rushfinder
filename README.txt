@@ -1,5 +1,8 @@
-RushFinder V0114
-- Keeps the exact 12 category images from the approved user reference.
-- Adds clean Persian category titles and small white graphic icons as HTML overlays inside each card.
-- Adds a dark bottom gradient for readability; no title/icon can fall below the card.
-- Music result grid remains 4 per desktop row; on-card play/pause and download-only action retained.
+RushFinder V0116
+- Rebuilt all 12 category images as local high-resolution 720x405 assets.
+- Images are relevant to each category and fill the entire card cleanly.
+- Removed all category-side icons/elements.
+- Added a full-width dark title bar across the bottom of every category card.
+- Persian titles are HTML overlays, centered and never cropped.
+- Desktop categories: 6 x 2.
+- Music results: 4 per row, in-card Play/Pause, Download only.
