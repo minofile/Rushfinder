@@ -1,1 +1,1 @@
-Rush-V0147 — music category panel aligned to music search; blue results header and live result count. Existing API, audio, download and category assets retained.
+Rush-V0149: category-specific English music queries; play/pause and waveform overlay on artwork; download below card. API availability and licensing depend on upstream provider.
