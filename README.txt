@@ -1,1 +1,2 @@
-RushFinder V0170: Jamendo official music search and permitted direct download added alongside Freesound. Set JAMENDO_CLIENT_ID in Vercel Production. Commercial usage still requires proper licensing.
+RushFinder V0171
+Iranian queries avoid unrelated foreign music; source search links provided, without scraping or redistributing third-party files. Count fix.

@@ -15,6 +15,21 @@ const CATEGORIES={
  'police chase music':['police chase music','crime thriller soundtrack'],
  'crime thriller soundtrack':['crime thriller soundtrack','detective suspense music']
 };
+
+const IRANIAN=/[؀-ۿ]|\b(persian|iranian|bandari|bandari|iran|farsi|kurdi|kurdish|lori|luri)\b/i;
+const IRANIAN_INTENT=/شاد\s*(بندری|ایرانی|جنوبی)|بندری|ایرانی|فارسی|جنوبی|کردی|لری|خواننده|پاپ\s*ایرانی|رقص\s*ایرانی/i;
+const iranianTerms=q=>{
+ const t=String(q).trim();
+ if(/بندری|جنوبی/.test(t))return ['bandari persian dance','iranian bandari','persian southern music'];
+ if(/کردی/.test(t))return ['kurdish dance music','kurdish traditional music'];
+ if(/لری/.test(t))return ['luri iranian dance','lori persian folk music'];
+ if(/شاد|رقص|عروسی/.test(t))return ['persian dance music','iranian party music','persian wedding music'];
+ return ['persian music','iranian music',t];
+};
+const relevantIranian=t=>{
+ const hay=[t.name,t.artist,t.description,(t.tags||[]).join(' ')].join(' ');
+ return IRANIAN.test(hay);
+};
 const timeoutFetch=async(url,options={})=>{const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),10000);try{return await fetch(url,{...options,signal:controller.signal})}finally{clearTimeout(timer)}};
 const normalize=s=>String(s||'').toLowerCase().replace(/[^a-z0-9 ]/g,' ');
 const isMusic=t=>{const s=normalize([t.name,t.description,(t.tags||[]).join(' ')].join(' '));return !/\b(footsteps|gunshot|gun fire|door slam|siren only|beep|alarm only|voiceover|spoken|speech|sound effect|sfx|one shot|one shot sample|field recording)\b/.test(s)};
@@ -83,15 +98,15 @@ async function existingMusic(terms,page,limit){
 }
 module.exports=async(req,res)=>{
  res.setHeader('Cache-Control','s-maxage=120, stale-while-revalidate=240');
- const q=String(req.query.q||'cinematic soundtrack').slice(0,100),terms=CATEGORIES[q]||[q, q+' music', 'instrumental background music'];
+ const q=String(req.query.q||'cinematic soundtrack').slice(0,100),iranian=IRANIAN_INTENT.test(q),terms=iranian?iranianTerms(q):(CATEGORIES[q]||[q, q+' music']);
  const page=Math.max(1,Math.min(200,parseInt(req.query.page,10)||1));
  const limit=[12,16,24].includes(Number(req.query.limit))?Number(req.query.limit):12;
  const [fs,jm,legacy]=await Promise.allSettled([freesound(terms,page,limit),jamendo(terms,page,limit),existingMusic(terms,page,limit)]);
  const main=fs.status==='fulfilled'?fs.value:{data:[],total:0,available:false};
  const jam=jm.status==='fulfilled'?jm.value:{data:[],total:0,available:false};
- const data=[...jam.data,...main.data].slice(0,limit);const ids=new Set(data.map(x=>x.id));
- if(data.length<limit&&legacy.status==='fulfilled')for(const t of legacy.value){const id=t.id||t.files?.mp3;if(!ids.has(id)){ids.add(id);data.push(t)}if(data.length>=limit)break}
+ const selected=iranian?[...jam.data,...main.data].filter(relevantIranian):[...jam.data,...main.data];const data=selected.slice(0,limit);const ids=new Set(data.map(x=>x.id));
+ if(!iranian&&data.length<limit&&legacy.status==='fulfilled')for(const t of legacy.value){const id=t.id||t.files?.mp3;if(!ids.has(id)){ids.add(id);data.push(t)}if(data.length>=limit)break}
  if(fs.status==='rejected'&&jm.status==='rejected'&&legacy.status==='rejected')return res.status(502).json({error:'ارتباط با منابع موزیک برقرار نشد'});
  // Freesound count is a search-match estimate; some tracks may be filtered out.
- res.status(200).json({data:data.slice(0,limit),total:jam.available?jam.total:(main.available?main.total:data.length),page,limit,hasNext:jam.available?page*limit<jam.total:(main.available?page*limit<main.total:data.length>=limit),sources:{jamendo:jam.available,freesound:main.available,existing:legacy.status==='fulfilled'}});
+ res.status(200).json({data:data.slice(0,limit),total:iranian?data.length:Math.max(data.length,jam.available?jam.total:(main.available?main.total:data.length)),page,limit,hasNext:iranian?false:(jam.available?page*limit<jam.total:(main.available?page*limit<main.total:data.length>=limit)),iranianSearch:iranian,sources:{jamendo:jam.available,freesound:main.available,existing:legacy.status==='fulfilled'}});
 };
