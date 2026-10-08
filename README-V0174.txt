@@ -1,0 +1,1 @@
+RushFinder V0174: Iranian music playback resolves MP3 URLs directly through Cloudflare Worker. Public downloads remain disabled pending permissions.
