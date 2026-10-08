@@ -1,2 +1,4 @@
-RushFinder V0162 — فقط کاهش فاصله عمودی بین دسته‌بندی موزیک و نتایج.
-Commit: Rush-V0162
+RushFinder V0163 — Freesound music API integration.
+Vercel variable: FREESOUND_API_KEY (Production).
+Freesound preview playback; downloads through original Freesound page for license compliance.
+GitHub commit: Rush-V0163
