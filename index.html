@@ -2667,134 +2667,25 @@ object-position:center!important;display:block!important;filter:none!important}
 </style>
 
 
-<style id="v0141-free-to-use-music">
-#mu141Results{margin:18px auto 0;max-width:1460px;direction:rtl}
-.mu141-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px}
-.mu141-head h3{font-family:Yekan,Arial,sans-serif;font-weight:400;font-size:18px;margin:0;color:#14233b}
-.mu141-status{font-family:Yekan,Arial,sans-serif;font-size:12px;color:#6d7b90}
-.mu141-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
-.mu141-card{background:#fff;border:1px solid #dce7f3;border-radius:16px;padding:12px;box-shadow:0 6px 18px rgba(32,71,115,.06);min-width:0}
-.mu141-cover{height:104px;border-radius:12px;background:linear-gradient(135deg,#eef6ff,#f7f3ff);display:flex;align-items:center;justify-content:center;margin-bottom:10px;overflow:hidden;position:relative}
-.mu141-cover img{width:100%;height:100%;object-fit:cover;display:block}
-.mu141-note{font-size:30px;opacity:.65}
-.mu141-title{font-family:Yekan,Arial,sans-serif;font-weight:400;font-size:14px;color:#15243b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px}
-.mu141-artist{font-family:Yekan,Arial,sans-serif;font-size:11px;color:#7a8799;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:9px}
-.mu141-actions{display:flex;gap:7px}
-.mu141-btn{font-family:Yekan,Arial,sans-serif;font-weight:400;border:0;border-radius:9px;padding:7px 9px;cursor:pointer;font-size:11px;flex:1}
-.mu141-play{background:#1677ff;color:#fff}.mu141-download{background:#eef5ff;color:#1768c5}
-.mu141-empty{grid-column:1/-1;text-align:center;padding:35px 10px;font-family:Yekan,Arial,sans-serif;color:#7c899b}
-@media(max-width:1100px){.mu141-grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:650px){.mu141-grid{grid-template-columns:repeat(2,1fr)}}
+
+
+<style id="v0142-music-fix">
+#mu136 .mu136-results,#mu136 .mu136-grid,#mu136 #mu136results,#mu136 #mu136Results{display:none!important}
+#rf142{direction:rtl;margin:14px 0 28px}.rf142-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}.rf142-card{min-width:0;border:1px solid #dce8f4;border-radius:14px;background:white;padding:10px;box-shadow:0 3px 12px #183f6910}.rf142-cover{height:105px;border-radius:10px;background:#eaf2ff;overflow:hidden}.rf142-cover img{width:100%;height:100%;object-fit:cover}.rf142-title{font-size:13px;color:#17304f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:8px}.rf142-meta{font-size:11px;color:#789;margin:5px 0 9px}.rf142-actions{display:flex;gap:6px}.rf142-actions button,.rf142-actions a{flex:1;border:0;border-radius:8px;padding:8px 3px;text-align:center;font:inherit;font-size:12px;cursor:pointer;text-decoration:none;background:#147cff;color:white}.rf142-actions a{background:#eaf3ff;color:#176acb}.rf142-msg{padding:30px;text-align:center;color:#69809b;border:1px dashed #cadcec;border-radius:13px}.rf142-top{display:flex;justify-content:space-between;margin-bottom:12px;color:#31506e;font-size:13px}.rf142-license{font-size:11px;color:#789;margin-top:12px}#rf142 audio{width:100%;margin-top:12px}@media(max-width:1000px){.rf142-grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:600px){.rf142-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
-<script id="v0141-free-to-use-music-js">
+<script id="v0142-music-fix-js">
 (()=>{
- const API='https://api.freetouse.com/v3';
- const MAP={
-  'خبری':'news documentary corporate',
-  'سیاسی':'political documentary serious',
-  'ورزشی':'sport energetic action',
-  'حماسی':'epic heroic cinematic',
-  'سینمایی':'cinematic soundtrack',
-  'هیجانی':'action exciting energetic',
-  'آرام':'calm ambient relaxing',
-  'غمگین':'sad emotional piano',
-  'انرژی':'energetic upbeat',
-  'دراماتیک':'dramatic emotional cinematic',
-  'تکنولوژی':'technology electronic futuristic',
-  'مستند':'documentary ambient'
- };
- let audio=null;
-
- function musicRoot(){ return document.querySelector('#mu136'); }
- function ensureResults(){
-   const r=musicRoot(); if(!r) return null;
-   let box=document.querySelector('#mu141Results');
-   if(!box){
-     box=document.createElement('section'); box.id='mu141Results';
-     box.innerHTML='<div class="mu141-head"><h3>نتایج موزیک</h3><span class="mu141-status">Free To Use</span></div><div class="mu141-grid"><div class="mu141-empty">یک دسته‌بندی را انتخاب کنید یا موزیک را جستجو کنید.</div></div>';
-     r.appendChild(box);
-   }
-   return box;
- }
- const val=(o,ks)=>{for(const k of ks){if(o&&o[k]!=null&&o[k]!=='')return o[k]}return ''};
- function itemsOf(j){ return Array.isArray(j)?j:(j?.data||j?.tracks||j?.results||j?.items||[]); }
- function artistOf(t){
-   let a=val(t,['artist_name','artist','author','creator']);
-   if(typeof a==='object') a=val(a,['name','title']);
-   if(!a && Array.isArray(t?.artists)) a=t.artists.map(x=>typeof x==='string'?x:(x.name||'')).filter(Boolean).join(', ');
-   return a||'Free To Use';
- }
- function audioOf(t){ return val(t,['audio_url','audio','stream_url','stream','preview_url','preview','url']); }
- function downloadOf(t){ return val(t,['download_url','download','audio_download_url','file_url']) || audioOf(t); }
- function imageOf(t){ return val(t,['image_url','image','cover_url','cover','thumbnail_url','thumbnail','artwork_url']); }
- function render(list,q){
-   const box=ensureResults(); if(!box)return;
-   box.querySelector('.mu141-status').textContent=`Free To Use • ${list.length} نتیجه`;
-   const grid=box.querySelector('.mu141-grid');
-   if(!list.length){grid.innerHTML='<div class="mu141-empty">برای این عبارت موزیکی پیدا نشد.</div>';return}
-   grid.innerHTML=list.map((t,i)=>{
-     const title=val(t,['title','name'])||`Music ${i+1}`;
-     const img=imageOf(t);
-     return `<article class="mu141-card">
-       <div class="mu141-cover">${img?`<img src="${String(img).replace(/"/g,'&quot;')}" alt="">`:'<span class="mu141-note">♫</span>'}</div>
-       <div class="mu141-title" title="${String(title).replace(/"/g,'&quot;')}">${title}</div>
-       <div class="mu141-artist">${artistOf(t)}</div>
-       <div class="mu141-actions">
-        <button class="mu141-btn mu141-play" data-i="${i}">پخش</button>
-        <button class="mu141-btn mu141-download" data-i="${i}">دانلود</button>
-       </div>
-     </article>`;
-   }).join('');
-   grid.querySelectorAll('.mu141-play').forEach(b=>b.onclick=()=>{
-     const t=list[+b.dataset.i], u=audioOf(t); if(!u)return alert('لینک پخش برای این ترک در API موجود نیست.');
-     if(audio){audio.pause();audio=null}
-     audio=new Audio(u); audio.play().catch(()=>window.open(u,'_blank'));
-   });
-   grid.querySelectorAll('.mu141-download').forEach(b=>b.onclick=()=>{
-     const t=list[+b.dataset.i], u=downloadOf(t); if(!u)return alert('دانلود این ترک از طرف منبع ارائه نشده است.');
-     window.open(u,'_blank','noopener');
-   });
- }
- async function search(q){
-   const box=ensureResults(); if(!box)return;
-   box.querySelector('.mu141-status').textContent='در حال جستجو…';
-   box.querySelector('.mu141-grid').innerHTML='<div class="mu141-empty">در حال دریافت موزیک‌های واقعی…</div>';
-   try{
-     const u=`${API}/music/tracks/search?query=${encodeURIComponent(q)}&limit=20&order=downloads&sort=desc`;
-     const res=await fetch(u,{headers:{'Accept':'application/json'}});
-     if(!res.ok) throw new Error('HTTP '+res.status);
-     const j=await res.json(); render(itemsOf(j),q);
-   }catch(e){
-     box.querySelector('.mu141-status').textContent='خطا در اتصال';
-     box.querySelector('.mu141-grid').innerHTML='<div class="mu141-empty">اتصال مستقیم مرورگر به API انجام نشد. روی نسخه Vercel دوباره امتحان کنید.</div>';
-   }
- }
- function bind(){
-   const r=musicRoot(); if(!r)return;
-   ensureResults();
-   r.querySelectorAll('.mu136-cat').forEach(c=>{
-     if(c.dataset.mu141)return; c.dataset.mu141='1';
-     c.addEventListener('click',()=>{
-       const fa=c.dataset.q || c.getAttribute('data-category') || c.getAttribute('aria-label') || '';
-       const key=Object.keys(MAP).find(k=>fa.includes(k)) || fa.trim();
-       search(MAP[key]||key||'cinematic');
-     });
-   });
-   // Hook the most likely music search inputs/buttons without touching global video search.
-   const inp=r.querySelector('input[type="search"], input[placeholder*="موزیک"], input[placeholder*="جستجو"]');
-   if(inp && !inp.dataset.mu141){
-     inp.dataset.mu141='1';
-     inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&inp.value.trim()){e.preventDefault();search(inp.value.trim())}});
-     const btn=inp.parentElement?.querySelector('button') || r.querySelector('button[type="submit"]');
-     if(btn) btn.addEventListener('click',e=>{if(inp.value.trim()){e.preventDefault();search(inp.value.trim())}});
-   }
- }
- document.addEventListener('DOMContentLoaded',()=>{bind();setTimeout(bind,700)});
- new MutationObserver(()=>bind()).observe(document.documentElement,{childList:true,subtree:true});
+const words={'خبری':'corporate','سیاسی':'documentary','ورزشی':'sport','حماسی':'epic','سینمایی':'cinematic','هیجانی':'action','آرام':'calm','غمگین':'sad','انرژی':'upbeat','دراماتیک':'dramatic','تکنولوژی':'electronic','مستند':'documentary'};
+let tracks=[],playing=-1,request=0;
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const root=()=>document.getElementById('mu136');
+function area(){let r=root();if(!r)return null;let a=document.getElementById('rf142');if(!a){a=document.createElement('section');a.id='rf142';a.innerHTML='<div class="rf142-top"><span>نتایج موزیک واقعی</span><span id="rf142count">Free To Use</span></div><div id="rf142body" class="rf142-msg">یک دسته‌بندی موزیک انتخاب کنید.</div><audio id="rf142audio" controls preload="none" style="display:none"></audio><div class="rf142-license">استفاده از موزیک‌ها تابع مجوز Free To Use است. برای محتوای تجاری ممکن است مجوز پولی لازم باشد. <a href="https://freetouse.com/license" target="_blank" rel="noopener">شرایط مجوز</a></div>';r.appendChild(a)}return a}
+function show(q){let a=area();if(!a)return;let n=++request;document.getElementById('rf142body').className='rf142-msg';document.getElementById('rf142body').textContent='در حال دریافت موزیک‌های صوتی…';document.getElementById('rf142count').textContent=q;
+fetch('/api/music?q='+encodeURIComponent(q)).then(async r=>{let j=await r.json();if(!r.ok)throw Error(j.error||'خطا در API');return j}).then(j=>{if(n!==request)return;tracks=(j.data||[]).filter(t=>t&&!t.is_premium&&t.files?.mp3);let body=document.getElementById('rf142body');document.getElementById('rf142count').textContent=tracks.length+' موزیک';if(!tracks.length){body.className='rf142-msg';body.textContent='موزیک مناسبی پیدا نشد. دسته دیگری انتخاب کنید.';return}body.className='rf142-grid';body.innerHTML=tracks.map((t,i)=>`<article class="rf142-card"><div class="rf142-cover">${t.thumbnails?.md?`<img loading="lazy" src="${esc(t.thumbnails.md)}" alt="">`:''}</div><div class="rf142-title" title="${esc(t.title)}">${esc(t.title)}</div><div class="rf142-meta">${esc((t.artists||[]).map(a=>Array.isArray(a)?a[1]?.name:a.name).filter(Boolean).join('، '))} · ${Math.floor((t.duration||0)/60)}:${String(Math.floor((t.duration||0)%60)).padStart(2,'0')}</div><div class="rf142-actions"><button data-play="${i}">پخش</button><a href="${esc(t.files.mp3)}" target="_blank" rel="noopener" download>دریافت MP3</a></div></article>`).join('');body.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>{let i=+b.dataset.play,a=document.getElementById('rf142audio');if(playing===i&&!a.paused){a.pause();b.textContent='پخش';return}playing=i;a.src=tracks[i].files.mp3;a.style.display='block';a.play().catch(()=>alert('مرورگر پخش این فایل را مسدود کرده است.'));body.querySelectorAll('[data-play]').forEach(x=>x.textContent='پخش');b.textContent='توقف'});}).catch(e=>{if(n!==request)return;let b=document.getElementById('rf142body');b.className='rf142-msg';b.textContent='دریافت موزیک ناموفق بود: '+e.message})}
+function init(){let r=root();if(!r)return;area();r.querySelectorAll('.mu136-cat').forEach(b=>{if(b.dataset.rf142)return;b.dataset.rf142='1';b.addEventListener('click',e=>{e.stopImmediatePropagation();e.preventDefault();show(words[b.dataset.q]||b.dataset.q||'cinematic')},true)});let all=document.getElementById('mu136all');if(all&&!all.dataset.rf142){all.dataset.rf142='1';all.addEventListener('click',e=>{e.stopImmediatePropagation();e.preventDefault();show('music')},true)}let inp=r.querySelector('input');if(inp&&!inp.dataset.rf142){inp.dataset.rf142='1';inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();show(inp.value.trim()||'music')}},true)} }
+document.addEventListener('DOMContentLoaded',()=>{init();setTimeout(init,500)});
 })();
-</script>
-
-</head>
+</script></head>
 <body>
 <aside class="sidebar">
 <div class="sidebrand sidebrand-final"><img src="assets/logos/rushfinder-sidebar-white.png" alt="RushFinder"></div><nav class="nav"><button class="active"><i>▦</i><span>داشبورد</span></button>
