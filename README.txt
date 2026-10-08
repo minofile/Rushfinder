@@ -1,3 +1,1 @@
-RushFinder V0165
-Fix: Freesound downloads validate HTTP/audio before saving, show errors in page instead of downloading music-download.json.
-Upload files to GitHub repository root. Configure FREESOUND_API_KEY in Vercel Production.
+RushFinder V0166 — music relevance, 30–600 second duration filter, original track names and API pagination. Freesound results may still include mislabeled uploads.
