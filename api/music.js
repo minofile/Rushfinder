@@ -1,7 +1,7 @@
 // V0166: relevant, duration-filtered Freesound music with real API pagination.
 const CATEGORIES={
  'news broadcast intro':['news broadcast music','news intro instrumental'],
- 'political documentary':['political documentary music','serious documentary soundtrack'],
+ 'political documentary':['political documentary music','political tension music','news background music','documentary cinematic','suspense instrumental'],
  'sports energetic':['sports energetic music','sport instrumental'],
  'epic orchestral':['epic orchestral music','heroic cinematic soundtrack'],
  'cinematic soundtrack':['cinematic soundtrack music','film score instrumental'],
@@ -20,12 +20,33 @@ const normalize=s=>String(s||'').toLowerCase().replace(/[^a-z0-9 ]/g,' ');
 const isMusic=t=>{const s=normalize([t.name,t.description,(t.tags||[]).join(' ')].join(' '));return !/\b(footsteps|gunshot|gun fire|door slam|siren only|beep|alarm only|voiceover|spoken|speech|sound effect|sfx|one shot|one shot sample|field recording)\b/.test(s)};
 async function freesound(terms,page,limit){
  const key=process.env.FREESOUND_API_KEY;if(!key)return {data:[],total:0,available:false};
- const url=new URL('https://freesound.org/apiv2/search/text/');
- url.searchParams.set('query',terms[0]);url.searchParams.set('fields','id,name,duration,previews,license,url,description,tags');
- url.searchParams.set('filter','duration:[30 TO 600]');url.searchParams.set('page_size',String(limit));url.searchParams.set('page',String(page));
- const r=await timeoutFetch(url.toString(),{headers:{Authorization:'Token '+key,Accept:'application/json'}});if(!r.ok)throw Error('Freesound HTTP '+r.status);
- const json=await r.json();const data=(json.results||[]).filter(isMusic).map(t=>{const mp3=t.previews?.['preview-hq-mp3']||t.previews?.['preview-lq-mp3'];if(!mp3||!/^https:\/\//.test(mp3))return null;return {id:'freesound-'+t.id,name:t.name||'بدون عنوان',duration:Number(t.duration)||0,source:'Freesound',license:t.license||'',source_url:t.url||'https://freesound.org/s/'+t.id+'/',files:{mp3},is_premium:false}}).filter(Boolean);
- return {data,total:Number(json.count)||data.length,available:true};
+ const queries=[...new Set(terms.filter(Boolean))];
+ const candidates=[];const seen=new Set();let count=0;let successful=0;
+ // Use several related phrases when a narrow category returns no usable music.
+ // Keep pagination at the provider level and never fabricate tracks.
+ for(let i=0;i<Math.min(queries.length,5);i++){
+  const url=new URL('https://freesound.org/apiv2/search/text/');
+  url.searchParams.set('query',queries[i]);
+  url.searchParams.set('fields','id,name,duration,previews,license,url,description,tags');
+  url.searchParams.set('filter','duration:[20 TO 900]');
+  url.searchParams.set('page_size',String(Math.min(150,Math.max(limit*2,48))));
+  url.searchParams.set('page',String(page));
+  try{
+   const r=await timeoutFetch(url.toString(),{headers:{Authorization:'Token '+key,Accept:'application/json'}});
+   if(!r.ok)continue;
+   const json=await r.json();successful++;
+   count=Math.max(count,Number(json.count)||0);
+   for(const t of json.results||[]){
+    if(!isMusic(t)||seen.has(t.id))continue;
+    const mp3=t.previews?.['preview-hq-mp3']||t.previews?.['preview-lq-mp3'];
+    if(!mp3||!/^https:\/\//.test(mp3))continue;
+    seen.add(t.id);
+    candidates.push({id:'freesound-'+t.id,name:t.name||'بدون عنوان',duration:Number(t.duration)||0,source:'Freesound',license:t.license||'',source_url:t.url||'https://freesound.org/s/'+t.id+'/',files:{mp3},is_premium:false});
+   }
+   if(candidates.length>=limit)break;
+  }catch(e){/* Try the next related phrase instead of returning zero. */}
+ }
+ return {data:candidates.slice(0,limit),total:Math.max(count,candidates.length),available:successful>0};
 }
 async function existingMusic(terms,page,limit){
  const url=new URL('https://api.freetouse.com/v3/music/tracks/search');url.searchParams.set('query',terms[0]);url.searchParams.set('limit',String(limit));url.searchParams.set('page',String(page));
@@ -33,7 +54,7 @@ async function existingMusic(terms,page,limit){
 }
 module.exports=async(req,res)=>{
  res.setHeader('Cache-Control','s-maxage=120, stale-while-revalidate=240');
- const q=String(req.query.q||'cinematic soundtrack').slice(0,100),terms=CATEGORIES[q]||[q];
+ const q=String(req.query.q||'cinematic soundtrack').slice(0,100),terms=CATEGORIES[q]||[q, q+' music', 'instrumental background music'];
  const page=Math.max(1,Math.min(200,parseInt(req.query.page,10)||1));
  const limit=[12,16,24].includes(Number(req.query.limit))?Number(req.query.limit):12;
  const [fs,legacy]=await Promise.allSettled([freesound(terms,page,limit),existingMusic(terms,page,limit)]);
