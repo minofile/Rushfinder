@@ -1,1 +1,1 @@
-RushFinder V0154 - 5 music cards per desktop row, news art matches the approved screenshot, dark gradient controls and download button. Existing API preserved.
+RushFinder V0155: Persian RTL compact waveform music list, real audio playback and seeking, download, expandable skip controls. Existing music API and categories retained.
