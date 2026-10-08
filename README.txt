@@ -1,2 +1,1 @@
-RushFinder V0160 — minimal music player design only.
-Based on V0159. No changes to search, APIs, categories, or other pages.
+RushFinder V0161 — fixes only the music play button to be perfectly circular, centered and minimal. Other components unchanged.

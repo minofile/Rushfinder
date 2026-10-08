@@ -2896,6 +2896,18 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 #mu136.active #rf142 .rf155-playcell .rf149-play{background:#eff5ff!important;color:#2f76e4!important;border:1px solid #d8e6fa!important;box-shadow:none!important;border-radius:50%!important}
 #mu136.active #rf142 .rf155-row{background:#fff!important;box-shadow:0 4px 15px #214b8210!important;border:1px solid #e1eaf6!important}
 #mu136.active #rf142 .rf155-row.rf149-playing{background:#fff!important}
+</style><style id="v0161-round-play-fix">
+/* Only correct the music play button's geometry. */
+#mu136.active #rf142 .rf155-playcell{min-width:0!important;display:flex!important;align-items:center!important;justify-content:center!important}
+#mu136.active #rf142 .rf155-playcell .rf149-play{
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  box-sizing:border-box!important;width:44px!important;height:44px!important;
+  min-width:44px!important;min-height:44px!important;max-width:44px!important;max-height:44px!important;
+  flex:0 0 44px!important;aspect-ratio:1/1!important;padding:0!important;margin:0 auto!important;
+  border-radius:50%!important;line-height:1!important;font-size:18px!important;
+  background:#eff5ff!important;color:#2f76e4!important;border:1px solid #d8e6fa!important;
+  box-shadow:none!important;transform:none!important;
+}
 </style></head>
 <body>
 <aside class="sidebar">
