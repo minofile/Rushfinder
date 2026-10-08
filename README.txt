@@ -1,1 +1,1 @@
-RushFinder V0152 - Neon music cards, on-image waveform and seek, Persian download, existing real music API preserved.
+RushFinder V0153 — approved music visuals, dark-gradient player, seek, skip and Persian download. API unchanged.
