@@ -1,1 +1,1 @@
-RushFinder V0157: Fix fatal music JavaScript syntax error, restore search button, categories, player and error handling.
+RushFinder V0158 — compact music results aligned with music search, redesigned neon graphic waveform, seek control preserved.
