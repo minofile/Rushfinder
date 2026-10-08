@@ -1,1 +1,1 @@
-RushFinder V0155: Persian RTL compact waveform music list, real audio playback and seeking, download, expandable skip controls. Existing music API and categories retained.
+RushFinder V0157: Fix fatal music JavaScript syntax error, restore search button, categories, player and error handling.
