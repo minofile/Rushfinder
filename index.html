@@ -333,7 +333,7 @@ body,button,input,select,option,
   display:block;
   width:170px;
   height:55px;
-  background:url("assets/rushfinder-logo.png") center/contain no-repeat;
+  background:url("assets/rushfinder-logo.webp") center/contain no-repeat;
 }
 .nav{gap:10px}
 .nav button{font-weight:400 !important}
@@ -1925,7 +1925,7 @@ body, body.rf-dark{
 /* dedicated mountain layer from reference image */
 .side{
   background-color:#041e35!important;
-  background-image:url("assets/sidebar-mountain.png")!important;
+  background-image:url("assets/sidebar-mountain.webp")!important;
   background-repeat:no-repeat!important;
   background-position:center 68%!important;
   background-size:100% auto!important;
@@ -2681,14 +2681,23 @@ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const root=()=>document.getElementById('mu136');
 function area(){let r=root();if(!r)return null;let a=document.getElementById('rf142');if(!a){a=document.createElement('section');a.id='rf142';a.innerHTML='<div class="rf142-top"><span>نتایج موزیک واقعی</span><span id="rf142count">Free To Use</span></div><div id="rf142body" class="rf142-msg">یک دسته‌بندی موزیک انتخاب کنید.</div><audio id="rf142audio" controls preload="none" style="display:none"></audio><div class="rf142-license">استفاده از موزیک‌ها تابع مجوز Free To Use است. برای محتوای تجاری ممکن است مجوز پولی لازم باشد. <a href="https://freetouse.com/license" target="_blank" rel="noopener">شرایط مجوز</a></div>';r.appendChild(a)}return a}
 function show(q){let a=area();if(!a)return;let n=++request;document.getElementById('rf142body').className='rf142-msg';document.getElementById('rf142body').textContent='در حال دریافت موزیک‌های صوتی…';document.getElementById('rf142count').textContent=q;
-fetch('/api/music?q='+encodeURIComponent(q)).then(async r=>{let j=await r.json();if(!r.ok)throw Error(j.error||'خطا در API');return j}).then(j=>{if(n!==request)return;tracks=(j.data||[]).filter(t=>t&&!t.is_premium&&t.files?.mp3);let body=document.getElementById('rf142body');document.getElementById('rf142count').textContent=tracks.length+' موزیک';if(!tracks.length){body.className='rf142-msg';body.textContent='موزیک مناسبی پیدا نشد. دسته دیگری انتخاب کنید.';return}body.className='rf142-grid';body.innerHTML=tracks.map((t,i)=>`<article class="rf142-card"><div class="rf142-cover">${t.thumbnails?.md?`<img loading="lazy" src="${esc(t.thumbnails.md)}" alt="">`:''}</div><div class="rf142-title" title="${esc(t.title)}">${esc(t.title)}</div><div class="rf142-meta">${esc((t.artists||[]).map(a=>Array.isArray(a)?a[1]?.name:a.name).filter(Boolean).join('، '))} · ${Math.floor((t.duration||0)/60)}:${String(Math.floor((t.duration||0)%60)).padStart(2,'0')}</div><div class="rf142-actions"><button data-play="${i}">پخش</button><a href="${esc(t.files.mp3)}" target="_blank" rel="noopener" download>دریافت MP3</a></div></article>`).join('');body.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>{let i=+b.dataset.play,a=document.getElementById('rf142audio');if(playing===i&&!a.paused){a.pause();b.textContent='پخش';return}playing=i;a.src=tracks[i].files.mp3;a.style.display='block';a.play().catch(()=>alert('مرورگر پخش این فایل را مسدود کرده است.'));body.querySelectorAll('[data-play]').forEach(x=>x.textContent='پخش');b.textContent='توقف'});}).catch(e=>{if(n!==request)return;let b=document.getElementById('rf142body');b.className='rf142-msg';b.textContent='دریافت موزیک ناموفق بود: '+e.message})}
+fetch('/api/music?q='+encodeURIComponent(q)).then(async r=>{let j=await r.json();if(!r.ok)throw Error(j.error||'خطا در API');return j}).then(j=>{if(n!==request)return;tracks=(j.data||[]).filter(t=>t&&!t.is_premium&&t.files?.mp3);let body=document.getElementById('rf142body');document.getElementById('rf142count').textContent=tracks.length+' موزیک';if(!tracks.length){body.className='rf142-msg';body.textContent='موزیک مناسبی پیدا نشد. دسته دیگری انتخاب کنید.';return}body.className='rf142-grid';body.innerHTML=tracks.map((t,i)=>`<article class="rf142-card"><div class="rf142-cover">${t.thumbnails?.md?`<img loading="lazy" src="${esc(t.thumbnails.md)}" alt="">`:''}</div><div class="rf142-title" title="${esc(t.title)}">${esc(t.title)}</div><div class="rf142-meta">${esc((t.artists||[]).map(a=>Array.isArray(a)?a[1]?.name:a.name).filter(Boolean).join('، '))} · ${Math.floor((t.duration||0)/60)}:${String(Math.floor((t.duration||0)%60)).padStart(2,'0')}</div><div class="rf142-actions"><button data-play="${i}">پخش</button><a href="${esc(t.files.mp3)}" target="_blank" rel="noopener" download>دریافت MP3</a></div></article>`).join('');body.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>{let i=+b.dataset.play,a=document.getElementById('rf142audio');if(playing===i&&!a.paused){a.pause();b.textContent='پخش';return}playing=i;a.src=tracks[i].files.mp3;a.style.display='block';a.play().catch(()=>alert('مرورگر پخش این فایل را مسدود کرده است.'));body.querySelectorAll('[data-play]').forEach(x=>x.textContent='پخش');b.textContent='توقف'});}).catch(e=>{if(n!==request)return;let b=document.getElementById('rf142body');b.className='rf142-msg';b.textContent='سرویس موزیک در دسترس نیست. اتصال API باید بررسی شود. ('+e.message+')'})}
 function init(){let r=root();if(!r)return;area();r.querySelectorAll('.mu136-cat').forEach(b=>{if(b.dataset.rf142)return;b.dataset.rf142='1';b.addEventListener('click',e=>{e.stopImmediatePropagation();e.preventDefault();show(words[b.dataset.q]||b.dataset.q||'cinematic')},true)});let all=document.getElementById('mu136all');if(all&&!all.dataset.rf142){all.dataset.rf142='1';all.addEventListener('click',e=>{e.stopImmediatePropagation();e.preventDefault();show('music')},true)}let inp=r.querySelector('input');if(inp&&!inp.dataset.rf142){inp.dataset.rf142='1';inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();show(inp.value.trim()||'music')}},true)} }
 document.addEventListener('DOMContentLoaded',()=>{init();setTimeout(init,500)});
 })();
-</script></head>
+</script><style id="v0144-layout-fix">
+#mu136 .mu136-wrap{width:calc(100% - 34px)!important;max-width:1420px!important;margin:0 auto!important}
+#mu136 #rf142{box-sizing:border-box!important;width:100%!important;max-width:100%!important;margin:12px auto 20px!important;overflow:hidden!important}
+#mu136 #rf142body{box-sizing:border-box!important;max-width:100%!important;min-width:0!important}
+#mu136 .rf142-grid{width:100%!important;box-sizing:border-box!important}
+#mu136 .rf142-msg{padding:18px 12px!important;min-height:58px!important}
+#mu136 .rf142-top{padding:0 2px!important}
+#mu136 .rf142-card{min-width:0!important}
+#mu136 .rf142-license{line-height:1.8}
+</style></head>
 <body>
 <aside class="sidebar">
-<div class="sidebrand sidebrand-final"><img src="assets/logos/rushfinder-sidebar-white.png" alt="RushFinder"></div><nav class="nav"><button class="active"><i>▦</i><span>داشبورد</span></button>
+<div class="sidebrand sidebrand-final"><img src="assets/logos/rushfinder-sidebar-white.webp" alt="RushFinder"></div><nav class="nav"><button class="active"><i>▦</i><span>داشبورد</span></button>
 <button><i>⚙</i><span>تنظیمات</span></button></nav>
 
 
@@ -2708,7 +2717,7 @@ document.addEventListener('DOMContentLoaded',()=>{init();setTimeout(init,500)});
 </aside>
 <div class="app">
 <header class="top">
-<div class="header-brand"><img src="assets/logos/rushfinder-color.png" alt="RushFinder"></div>
+<div class="header-brand"><img src="assets/logos/rushfinder-color.webp" alt="RushFinder"></div>
 <div class="search"><input id="query" value="" placeholder="راش موردنظرت را جستجو کن..."><button onclick="search()">جستجو</button></div>
 <div class="rf-toolbar">
 <button class="rf-tool" id="rfRefresh" title="بارگذاری مجدد"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
@@ -2756,10 +2765,10 @@ document.addEventListener('DOMContentLoaded',()=>{init();setTimeout(init,500)});
     <strong id="count">۲۴۰</strong>
     <div class="rf86-totaltext"><b>نتیجه پیدا شد</b><small>برای جستجوی فعلی</small></div>
   </div>
-  <div class="rf86-source"><span class="rf86-badge yt"><img src="assets/logos/sources/youtube.png" alt="YouTube"></span><div><b>YouTube</b><small>منبع ویدیو</small></div></div>
-  <div class="rf86-source"><span class="rf86-badge ap"><img src="assets/logos/sources/aparat.png" alt="Aparat"></span><div><b>Aparat</b><small>منبع ویدیو</small></div></div>
-  <div class="rf86-source"><span class="rf86-badge ve"><img src="assets/logos/sources/vecteezy.png" alt="Vecteezy"></span><div><b>Vecteezy</b><small>استوک ویدیو</small></div></div>
-  <div class="rf86-source"><span class="rf86-badge px"><img src="assets/logos/sources/pixabay.png" alt="Pixabay"></span><div><b>Pixabay</b><small>استوک ویدیو</small></div></div>
+  <div class="rf86-source"><span class="rf86-badge yt"><img src="assets/logos/sources/youtube.webp" alt="YouTube"></span><div><b>YouTube</b><small>منبع ویدیو</small></div></div>
+  <div class="rf86-source"><span class="rf86-badge ap"><img src="assets/logos/sources/aparat.webp" alt="Aparat"></span><div><b>Aparat</b><small>منبع ویدیو</small></div></div>
+  <div class="rf86-source"><span class="rf86-badge ve"><img src="assets/logos/sources/vecteezy.webp" alt="Vecteezy"></span><div><b>Vecteezy</b><small>استوک ویدیو</small></div></div>
+  <div class="rf86-source"><span class="rf86-badge px"><img src="assets/logos/sources/pixabay.webp" alt="Pixabay"></span><div><b>Pixabay</b><small>استوک ویدیو</small></div></div>
 </section>
 <section class="categories" id="resultCategories">
 <div class="cat" data-q="طلا و سکه" style="background-image:url('https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&w=500&q=80')"><span>طلا و سکه</span></div>
@@ -2776,10 +2785,10 @@ document.addEventListener('DOMContentLoaded',()=>{init();setTimeout(init,500)});
 <div class="fg" id="sourceFilters">
 <b class="rf-filter-title"><span class="rf-fi"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></svg></span>منبع ویدیو</b>
 <label><input id="allSources" type="checkbox" checked> همه منابع <span class="rf-real-icon all">▰</span></label>
-<label><input class="source-filter" type="checkbox" value="youtube"> YouTube <span class="rf-real-icon yt"><img src="assets/logos/sources/youtube.png" alt="youtube" class="rf-source-logo-img"></span></label>
-<label><input class="source-filter" type="checkbox" value="aparat"> Aparat <span class="rf-real-icon ap"><img src="assets/logos/sources/aparat.png" alt="aparat" class="rf-source-logo-img"></span></label>
-<label><input class="source-filter" type="checkbox" value="vecteezy"> Vecteezy <span class="rf-real-icon vz"><img src="assets/logos/sources/vecteezy.png" alt="vecteezy" class="rf-source-logo-img"></span></label>
-<label><input class="source-filter" type="checkbox" value="pixabay"> Pixabay <span class="rf-real-icon px"><img src="assets/logos/sources/pixabay.png" alt="pixabay" class="rf-source-logo-img"></span></label>
+<label><input class="source-filter" type="checkbox" value="youtube"> YouTube <span class="rf-real-icon yt"><img src="assets/logos/sources/youtube.webp" alt="youtube" class="rf-source-logo-img"></span></label>
+<label><input class="source-filter" type="checkbox" value="aparat"> Aparat <span class="rf-real-icon ap"><img src="assets/logos/sources/aparat.webp" alt="aparat" class="rf-source-logo-img"></span></label>
+<label><input class="source-filter" type="checkbox" value="vecteezy"> Vecteezy <span class="rf-real-icon vz"><img src="assets/logos/sources/vecteezy.webp" alt="vecteezy" class="rf-source-logo-img"></span></label>
+<label><input class="source-filter" type="checkbox" value="pixabay"> Pixabay <span class="rf-real-icon px"><img src="assets/logos/sources/pixabay.webp" alt="pixabay" class="rf-source-logo-img"></span></label>
 </div>
 <div class="fg" id="qualityFilters">
 <b class="rf-filter-title"><span class="rf-fi"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg></span>کیفیت ویدیو</b>
@@ -3566,7 +3575,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 </script>
 <section id="mu136"><div class="mu136-wrap">
 <div class="mu136-search"><div class="mu136-searchBox"><input id="mu136q" placeholder="موزیک موردنظر را جستجو کنید..."></div><button id="mu136search">جستجو</button></div>
-<div class="mu136-cats"><button class="mu136-cat" data-q="خبری" data-key="news" aria-label="موزیک خبری"><img src="assets/music-v0135/cat1.png" alt="خبری"></button><button class="mu136-cat" data-q="سیاسی" data-key="political" aria-label="موزیک سیاسی"><img src="assets/music-v0135/cat2.png" alt="سیاسی"></button><button class="mu136-cat" data-q="ورزشی" data-key="sport" aria-label="موزیک ورزشی"><img src="assets/music-v0135/cat3.png" alt="ورزشی"></button><button class="mu136-cat" data-q="حماسی" data-key="epic" aria-label="موزیک حماسی"><img src="assets/music-v0135/cat4.png" alt="حماسی"></button><button class="mu136-cat" data-q="سینمایی" data-key="cinematic" aria-label="موزیک سینمایی"><img src="assets/music-v0135/cat5.png" alt="سینمایی"></button><button class="mu136-cat" data-q="هیجانی" data-key="exciting" aria-label="موزیک هیجانی"><img src="assets/music-v0135/cat6.png" alt="هیجانی"></button><button class="mu136-cat" data-q="مستند" data-key="documentary" aria-label="موزیک مستند"><img src="assets/music-v0135/cat7.png" alt="مستند"></button><button class="mu136-cat" data-q="تکنولوژی" data-key="technology" aria-label="موزیک تکنولوژی"><img src="assets/music-v0135/cat8.png" alt="تکنولوژی"></button><button class="mu136-cat" data-q="دراماتیک" data-key="dramatic" aria-label="موزیک دراماتیک"><img src="assets/music-v0135/cat9.png" alt="دراماتیک"></button><button class="mu136-cat" data-q="انرژی" data-key="energy" aria-label="موزیک انرژی"><img src="assets/music-v0135/cat10.png" alt="انرژی"></button><button class="mu136-cat" data-q="غمگین" data-key="sad" aria-label="موزیک غمگین"><img src="assets/music-v0135/cat11.png" alt="غمگین"></button><button class="mu136-cat" data-q="آرام" data-key="calm" aria-label="موزیک آرام"><img src="assets/music-v0135/cat12.png" alt="آرام"></button></div>
+<div class="mu136-cats"><button class="mu136-cat" data-q="خبری" data-key="news" aria-label="موزیک خبری"><img src="assets/music-v0136/cat1.webp" alt="خبری"></button><button class="mu136-cat" data-q="سیاسی" data-key="political" aria-label="موزیک سیاسی"><img src="assets/music-v0136/cat2.webp" alt="سیاسی"></button><button class="mu136-cat" data-q="ورزشی" data-key="sport" aria-label="موزیک ورزشی"><img src="assets/music-v0136/cat3.webp" alt="ورزشی"></button><button class="mu136-cat" data-q="حماسی" data-key="epic" aria-label="موزیک حماسی"><img src="assets/music-v0136/cat4.webp" alt="حماسی"></button><button class="mu136-cat" data-q="سینمایی" data-key="cinematic" aria-label="موزیک سینمایی"><img src="assets/music-v0136/cat5.webp" alt="سینمایی"></button><button class="mu136-cat" data-q="هیجانی" data-key="exciting" aria-label="موزیک هیجانی"><img src="assets/music-v0136/cat6.webp" alt="هیجانی"></button><button class="mu136-cat" data-q="مستند" data-key="documentary" aria-label="موزیک مستند"><img src="assets/music-v0136/cat7.webp" alt="مستند"></button><button class="mu136-cat" data-q="تکنولوژی" data-key="technology" aria-label="موزیک تکنولوژی"><img src="assets/music-v0136/cat8.webp" alt="تکنولوژی"></button><button class="mu136-cat" data-q="دراماتیک" data-key="dramatic" aria-label="موزیک دراماتیک"><img src="assets/music-v0136/cat9.webp" alt="دراماتیک"></button><button class="mu136-cat" data-q="انرژی" data-key="energy" aria-label="موزیک انرژی"><img src="assets/music-v0136/cat10.webp" alt="انرژی"></button><button class="mu136-cat" data-q="غمگین" data-key="sad" aria-label="موزیک غمگین"><img src="assets/music-v0136/cat11.webp" alt="غمگین"></button><button class="mu136-cat" data-q="آرام" data-key="calm" aria-label="موزیک آرام"><img src="assets/music-v0136/cat12.webp" alt="آرام"></button></div>
 <div class="mu136-tools"><button class="primary" id="mu136all">نمایش همه</button><select id="mu136source"><option value="">همه منابع</option><option value="pixabay">Pixabay</option><option value="youtube">YouTube</option></select><select><option>مدت زمان</option></select><select><option>نوع مجوز</option></select><select><option>تعداد در صفحه ۲۴</option></select><button id="mu136clear">پاک کردن فیلترها</button><span class="mu136-status" id="mu136status">برای شروع یک موزیک جستجو کنید</span></div>
 <div class="mu136-results" id="mu136results"><div class="mu136-empty">نام موزیک یا یکی از ۱۲ دسته بالا را انتخاب کنید.<br>نتایج واقعی پس از جستجو نمایش داده می‌شوند.</div></div>
 </div></section><script id="mu136-js">
