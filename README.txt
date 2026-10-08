@@ -1,1 +1,1 @@
-RushFinder V0158 — compact music results aligned with music search, redesigned neon graphic waveform, seek control preserved.
+RushFinder V0159 - Music row redesigned to match approved Persian neon player mockup. Download left, clean waveform center, Persian title and play right. Existing audio API retained.

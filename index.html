@@ -2688,7 +2688,7 @@ try{const r=await fetch('/api/music?q='+encodeURIComponent(map[q]||q));const j=a
 tracks=(j.data||[]).filter(t=>t?.files?.mp3&&!t.is_premium);el('rf142count').textContent=fa(tracks.length)+' موزیک';
 if(!tracks.length){body.textContent='موزیک مرتبط پیدا نشد.';return}
 body.className='rf142-grid';
-body.innerHTML=tracks.map((t,i)=>'<article class="rf142-card rf155-row"><div class="rf155-playcell"><button class="rf149-play" data-play="'+i+'">▶</button></div><div class="rf155-info"><div class="rf142-title">'+safe(t.title||'موسیقی '+q)+'</div><div class="rf142-meta">'+clock(t.duration)+' | <span data-time="'+i+'">۰:۰۰</span></div></div><div class="rf155-wavearea"><input class="rf155-seek" data-seek="'+i+'" type="range" min="0" max="1000" value="0"><div class="rf155-bars">'+Array.from({length:80},(_,k)=>'<i style="height:'+(3+Math.round(24*Math.max(0,1-Math.abs(k-35)/42)*Math.abs(Math.sin(k*1.7+i))))+'px"></i>').join('')+'</div></div><div class="rf155-actions"><button class="rf155-expand" data-expand="'+i+'">⌄</button><a class="rf155-download" href="'+safe(t.files.mp3)+'" target="_blank" rel="noopener" download>↓</a></div><div class="rf155-details" hidden><button data-skip="-10">۱۰ ثانیه عقب</button><button data-skip="10">۱۰ ثانیه جلو</button></div></article>').join('');
+body.innerHTML=tracks.map((t,i)=>'<article class="rf142-card rf155-row"><div class="rf155-playcell"><button class="rf149-play" data-play="'+i+'">▶</button></div><div class="rf155-info"><div class="rf142-title">'+safe('موسیقی '+(q||'بی‌کلام')+' '+fa(i+1))+'</div><div class="rf142-meta">'+clock(t.duration)+' | <span data-time="'+i+'">۰:۰۰</span></div></div><div class="rf155-wavearea"><input class="rf155-seek" data-seek="'+i+'" type="range" min="0" max="1000" value="0"><div class="rf155-bars">'+Array.from({length:80},(_,k)=>'<i style="height:'+(3+Math.round(24*Math.max(0,1-Math.abs(k-35)/42)*Math.abs(Math.sin(k*1.7+i))))+'px"></i>').join('')+'</div></div><div class="rf155-actions"><a class="rf155-download" href="'+safe(t.files.mp3)+'" target="_blank" rel="noopener" download aria-label="دانلود"> <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></svg></a></div><div class="rf155-details" hidden><button data-skip="-10">۱۰ ثانیه عقب</button><button data-skip="10">۱۰ ثانیه جلو</button></div></article>').join('');
 function update(){body.querySelectorAll('[data-play]').forEach(b=>{const on=+b.dataset.play===playing&&!audio.paused;b.textContent=on?'❚❚':'▶';b.closest('.rf155-row').classList.toggle('rf149-playing',on)})}
 body.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>{const i=+b.dataset.play;if(playing===i){audio.paused?audio.play().catch(()=>{}):audio.pause()}else{audio.pause();audio.src=tracks[i].files.mp3;playing=i;audio.play().catch(()=>{alert('پخش از منبع امکان‌پذیر نیست')})}update()});
 audio.onplay=update;audio.onpause=update;audio.onended=()=>{playing=-1;update()};
@@ -2841,7 +2841,51 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 #mu136 #rf142 .rf142-title{font-weight:400!important}
 @media(max-width:700px){#mu136 #rf142{width:calc(100% - 20px)!important}}
 </style>
-</head>
+<style id="v0159-reference-player">
+#mu136 #rf142 .rf155-row{
+  grid-template-columns:64px minmax(0,1fr) minmax(140px,220px) 55px!important;
+  gap:16px!important;min-height:92px!important;padding:12px 17px!important;
+  background:#fff!important;border:1px solid #dceafa!important;
+  border-radius:20px!important;box-shadow:0 7px 20px #1a67bb0c!important;
+}
+#mu136 #rf142 .rf155-playcell{grid-column:4;grid-row:1}
+#mu136 #rf142 .rf155-info{grid-column:3;grid-row:1;text-align:right}
+#mu136 #rf142 .rf155-wavearea{grid-column:2;grid-row:1;
+  background:transparent!important;border:0!important;padding:0!important;height:62px!important;
+}
+#mu136 #rf142 .rf155-bars{height:58px!important;gap:3px!important;background:none!important;mask-image:none!important}
+#mu136 #rf142 .rf155-bars i{
+  max-width:none!important;min-width:2px!important;
+  border-radius:9px!important;background:linear-gradient(180deg,#45caff,#217cff 55%,#6750f8)!important;
+  box-shadow:0 0 5px #3aaaff40!important;
+}
+#mu136 #rf142 .rf155-seek{opacity:0!important;z-index:5!important}
+#mu136 #rf142 .rf155-actions{grid-column:1;grid-row:1;justify-content:center!important}
+#mu136 #rf142 .rf155-expand{display:none!important}
+#mu136 #rf142 .rf155-download{
+  width:54px!important;height:54px!important;border-radius:15px!important;
+  background:linear-gradient(135deg,#5c51e8,#137fff 55%,#00d4fa)!important;
+  box-shadow:0 4px 15px #138aff66,inset 0 1px 5px #ffffff77!important;
+  border:1px solid #64eaff!important;color:white!important;
+}
+#mu136 #rf142 .rf155-playcell .rf149-play{
+  width:51px!important;height:51px!important;color:white!important;
+  background:linear-gradient(135deg,#7750ed,#118cfa 65%,#00d7e8)!important;
+  box-shadow:0 3px 13px #16b5ff66!important;border:2px solid #a4f7ff!important;
+}
+#mu136 #rf142 .rf155-info .rf142-title{font-size:16px!important;font-weight:400!important}
+#mu136 #rf142 .rf155-info .rf142-meta{font-size:12px!important;justify-content:flex-start}
+#mu136 #rf142 .rf155-details{grid-row:2}
+@media(max-width:760px){
+ #mu136 #rf142 .rf155-row{grid-template-columns:48px minmax(0,1fr) 50px!important;gap:8px!important}
+ #mu136 #rf142 .rf155-playcell{grid-column:3;grid-row:1}
+ #mu136 #rf142 .rf155-info{grid-column:2;grid-row:1}
+ #mu136 #rf142 .rf155-actions{grid-column:1;grid-row:1}
+ #mu136 #rf142 .rf155-download{width:42px!important;height:42px!important}
+ #mu136 #rf142 .rf155-wavearea{grid-column:1/-1!important;grid-row:2!important}
+ #mu136 #rf142 .rf155-details{grid-row:3}
+}
+</style></head>
 <body>
 <aside class="sidebar">
 <div class="sidebrand sidebrand-final"><img src="assets/logos/rushfinder-sidebar-white.webp" alt="RushFinder"></div><nav class="nav"><button class="active"><i>▦</i><span>داشبورد</span></button>
