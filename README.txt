@@ -1,1 +1,1 @@
-RushFinder V0150: broader category music searches, inline playback seek bar, Yekan regular, neon covers and download label. Music service availability and licensing depend on source.
+RushFinder V0152 - Neon music cards, on-image waveform and seek, Persian download, existing real music API preserved.
