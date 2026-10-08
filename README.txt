@@ -1,1 +1,1 @@
-RushFinder V0153 — approved music visuals, dark-gradient player, seek, skip and Persian download. API unchanged.
+RushFinder V0154 - 5 music cards per desktop row, news art matches the approved screenshot, dark gradient controls and download button. Existing API preserved.
