@@ -18,7 +18,7 @@ export default async function handler(req,res){
   try{
     const response=await fetch(upstream,{signal:AbortSignal.timeout(13000)});
     const data=await response.json();
-    if(!response.ok||!data.success||data.data?.ok===false)return res.status(502).json({error:'سرویس موسیقی پاسخ معتبر نداد'});
+    if(!response.ok||data?.success!==true||data?.data?.ok===false){return res.status(502).json({error:'سرویس موسیقی پاسخ معتبر نداد',detail:String(data?.error||data?.data?.error||''),upstreamStatus:response.status});}
     if(action==='resolve'){
       const link=data.data?.result;
       if(typeof link!=='string'||!/^https:\/\//.test(link))return res.status(502).json({error:'آدرس پخش موجود نیست'});
