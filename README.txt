@@ -1,1 +1,1 @@
-RushFinder V0168\nImproved Freesound category searches with multiple fallback queries, including political music. No visual changes.\n
+RushFinder V0170: Jamendo official music search and permitted direct download added alongside Freesound. Set JAMENDO_CLIENT_ID in Vercel Production. Commercial usage still requires proper licensing.

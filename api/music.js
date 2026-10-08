@@ -48,6 +48,35 @@ async function freesound(terms,page,limit){
  }
  return {data:candidates.slice(0,limit),total:Math.max(count,candidates.length),available:successful>0};
 }
+
+// Jamendo official public tracks API. Only advertise download for tracks allowed by provider.
+async function jamendo(terms,page,limit){
+ const id=process.env.JAMENDO_CLIENT_ID;
+ if(!id)return {data:[],total:0,available:false};
+ const q=terms[0]||'instrumental';
+ const url=new URL('https://api.jamendo.com/v3.0/tracks/');
+ url.searchParams.set('client_id',id);
+ url.searchParams.set('format','json');
+ url.searchParams.set('limit',String(limit));
+ url.searchParams.set('offset',String((page-1)*limit));
+ url.searchParams.set('search',q);
+ url.searchParams.set('include','musicinfo');
+ url.searchParams.set('audioformat','mp32');
+ try{
+  const r=await timeoutFetch(url.toString(),{headers:{Accept:'application/json'}});
+  if(!r.ok)return {data:[],total:0,available:false};
+  const j=await r.json();
+  if(j.headers?.status!=='success')return {data:[],total:0,available:false};
+  const data=(j.results||[]).filter(t=>t.audio&&Number(t.duration)>=20).map(t=>({
+   id:'jamendo-'+t.id,name:t.name||'موسیقی',duration:Number(t.duration)||0,source:'Jamendo',
+   artist:t.artist_name||'',license:t.license_ccurl||'',source_url:t.shareurl||'',
+   download_allowed:t.audiodownload_allowed===true||t.audiodownload_allowed==='true',
+   files:{mp3:t.audio,download:t.audiodownload||''},is_premium:false
+  }));
+  return {data,total:Number(j.headers?.results_fullcount)||data.length,available:true};
+ }catch{return {data:[],total:0,available:false}}
+}
+
 async function existingMusic(terms,page,limit){
  const url=new URL('https://api.freetouse.com/v3/music/tracks/search');url.searchParams.set('query',terms[0]);url.searchParams.set('limit',String(limit));url.searchParams.set('page',String(page));
  try{const r=await timeoutFetch(url.toString(),{headers:{Accept:'application/json'}});if(!r.ok)return [];const j=await r.json();return (Array.isArray(j.data)?j.data:[]).filter(t=>t&&!t.is_premium&&t.files?.mp3&&Number(t.duration)>=30&&Number(t.duration)<=600)}catch{return []}
@@ -57,11 +86,12 @@ module.exports=async(req,res)=>{
  const q=String(req.query.q||'cinematic soundtrack').slice(0,100),terms=CATEGORIES[q]||[q, q+' music', 'instrumental background music'];
  const page=Math.max(1,Math.min(200,parseInt(req.query.page,10)||1));
  const limit=[12,16,24].includes(Number(req.query.limit))?Number(req.query.limit):12;
- const [fs,legacy]=await Promise.allSettled([freesound(terms,page,limit),existingMusic(terms,page,limit)]);
+ const [fs,jm,legacy]=await Promise.allSettled([freesound(terms,page,limit),jamendo(terms,page,limit),existingMusic(terms,page,limit)]);
  const main=fs.status==='fulfilled'?fs.value:{data:[],total:0,available:false};
- const data=[...main.data];const ids=new Set(data.map(x=>x.id));
+ const jam=jm.status==='fulfilled'?jm.value:{data:[],total:0,available:false};
+ const data=[...jam.data,...main.data].slice(0,limit);const ids=new Set(data.map(x=>x.id));
  if(data.length<limit&&legacy.status==='fulfilled')for(const t of legacy.value){const id=t.id||t.files?.mp3;if(!ids.has(id)){ids.add(id);data.push(t)}if(data.length>=limit)break}
- if(fs.status==='rejected'&&legacy.status==='rejected')return res.status(502).json({error:'ارتباط با منابع موزیک برقرار نشد'});
+ if(fs.status==='rejected'&&jm.status==='rejected'&&legacy.status==='rejected')return res.status(502).json({error:'ارتباط با منابع موزیک برقرار نشد'});
  // Freesound count is a search-match estimate; some tracks may be filtered out.
- res.status(200).json({data:data.slice(0,limit),total:main.available?main.total:data.length,page,limit,hasNext:main.available?page*limit<main.total:data.length>=limit,sources:{freesound:main.available,existing:legacy.status==='fulfilled'}});
+ res.status(200).json({data:data.slice(0,limit),total:jam.available?jam.total:(main.available?main.total:data.length),page,limit,hasNext:jam.available?page*limit<jam.total:(main.available?page*limit<main.total:data.length>=limit),sources:{jamendo:jam.available,freesound:main.available,existing:legacy.status==='fulfilled'}});
 };
