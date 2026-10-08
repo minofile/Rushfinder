@@ -1,1 +1,2 @@
-RushFinder V0161 — fixes only the music play button to be perfectly circular, centered and minimal. Other components unchanged.
+RushFinder V0162 — فقط کاهش فاصله عمودی بین دسته‌بندی موزیک و نتایج.
+Commit: Rush-V0162
