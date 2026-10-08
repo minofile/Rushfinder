@@ -1,1 +1,1 @@
-Rush-V0149: category-specific English music queries; play/pause and waveform overlay on artwork; download below card. API availability and licensing depend on upstream provider.
+RushFinder V0150: broader category music searches, inline playback seek bar, Yekan regular, neon covers and download label. Music service availability and licensing depend on source.
