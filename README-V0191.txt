@@ -1,0 +1,1 @@
+V0191: Added keyless Audius music search to /api/music, preserving YouTube video APIs. Audius playback uses provided stream URLs; downloads are disabled by default. Search remains paginated 12/24/36. No API keys required for Audius.\n

@@ -106,7 +106,7 @@ async function audius(terms,page,limit){
    const id=String(t.id||'');const stream=t.stream?.url;
    if(!id||seen.has(id)||!t.access?.stream||!t.is_streamable||!/^https:\/\//.test(stream||'')||Number(t.duration)<20||Number(t.duration)>900)continue;
    seen.add(id);
-   data.push({id:'audius-'+id,name:t.title||'موسیقی',artist:t.user?.name||'',duration:Number(t.duration)||0,source:'Audius',license:t.license||'',source_url:'https://audius.co'+(t.permalink||''),download_allowed:false,files:{mp3:stream},is_premium:false});
+   data.push({id:'audius-'+id,name:t.title||'موسیقی',artist:t.user?.name||'',duration:Number(t.duration)||0,source:'Audius',license:t.license||'',source_url:'https://audius.co'+(t.permalink||''),download_allowed:t.access?.download===true && t.is_downloadable===true && !t.is_download_gated,files:{mp3:stream,download:t.access?.download===true && t.is_downloadable===true && !t.is_download_gated ? 'https://api.audius.co/v1/tracks/'+encodeURIComponent(id)+'/download' : ''},is_premium:false});
   }
  }
  return {data,available,hasNext:more};
