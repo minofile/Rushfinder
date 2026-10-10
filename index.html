@@ -2698,17 +2698,11 @@ if(!r.ok){
  throw Error((j.error||'خطای API')+(j.upstreamStatus?' (کد '+j.upstreamStatus+')':'')+(j.detail?' — '+j.detail:''));
 }
 if(n!==seq)return;
-// V0182: When no licensed audio RSS result exists, show genuine YouTube results
-// through its official embed. Do not present YouTube videos as downloadable MP3.
+// V0184: Music searches use audio providers only. No YouTube fallback.
 if(iranian&&!(j.data||[]).length){
- const yt=await fetch('/api/youtube-music?q='+encodeURIComponent(q));
- const y=await yt.json();if(n!==seq)return;
- const items=(y.data||[]).filter(x=>x.id&&x.title);
- el('rf142count').textContent=fa(items.length)+' نتیجه یوتیوب';
- if(!items.length){body.className='rf142-msg';body.textContent=y.message||y.error||j.message||'آهنگ مرتبطی پیدا نشد.';return;}
- body.className='rf142-grid';
- body.innerHTML=items.map((t,i)=>'<article class="rf142-card" style="display:flex;flex-direction:column;gap:8px"><img loading="lazy" src="'+safe(t.thumbnail)+'" alt="" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px"><div class="rf142-title" title="'+safe(t.title)+'">'+safe(t.title)+'</div><div class="rf142-meta">'+safe(t.artist)+' | YouTube</div><div class="rf142-actions"><button type="button" data-yt="'+i+'">▶ پخش در یوتیوب</button></div></article>').join('');
- body.querySelectorAll('[data-yt]').forEach(b=>b.onclick=()=>{const t=items[Number(b.dataset.yt)];if(typeof openYouTubeViewer==='function')openYouTubeViewer({id:t.id,title:t.title,pageURL:t.url,source:'YouTube'});else window.open(t.url,'_blank','noopener');});
+ body.className='rf142-msg';
+ body.textContent=j.message||'در منابع RSS متصل، آهنگ صوتی مرتبطی پیدا نشد.';
+ el('rf142count').textContent='۰ نتیجه';
  return;
 }
 // Preserve genuine titles and rank only supported metadata; never invent a matching title.
