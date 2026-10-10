@@ -1,0 +1,1 @@
+V0194: download-only catalog; Audius download endpoint checked upstream; Jamendo explicit download permission; Freesound previews excluded; no fabricated total count. Exact global count unavailable without exhaustive scan. YouTube video untouched. Live end-to-end downloads not verified.

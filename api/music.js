@@ -56,12 +56,12 @@ async function freesound(terms,page,limit){
     const mp3=t.previews?.['preview-hq-mp3']||t.previews?.['preview-lq-mp3'];
     if(!mp3||!/^https:\/\//.test(mp3))continue;
     seen.add(t.id);
-    candidates.push({id:'freesound-'+t.id,name:t.name||'بدون عنوان',duration:Number(t.duration)||0,source:'Freesound',license:t.license||'',source_url:t.url||'https://freesound.org/s/'+t.id+'/',files:{mp3},is_premium:false});
+    candidates.push({id:'freesound-'+t.id,name:t.name||'بدون عنوان',duration:Number(t.duration)||0,source:'Freesound',download_allowed:false,license:t.license||'',source_url:t.url||'https://freesound.org/s/'+t.id+'/',files:{mp3},is_premium:false});
    }
    // Collect across related searches to improve diversity; do not stop after the first full source.
   }catch(e){/* Try the next related phrase instead of returning zero. */}
  }
- return {data:candidates,total:Math.max(count,candidates.length),available:successful>0};
+ return {data:candidates,total:null,available:successful>0,hasNext:candidates.length>=limit};
 }
 
 // Jamendo official public tracks API. Only advertise download for tracks allowed by provider.
@@ -82,7 +82,7 @@ async function jamendo(terms,page,limit){
  const good=results.filter(r=>r.status==='fulfilled').map(r=>r.value);
  const seen=new Set(),data=[];
  for(const result of good)for(const track of result.tracks)if(!seen.has(track.id)){seen.add(track.id);data.push(track)}
- return {data,total:Math.max(data.length,...good.map(r=>r.total),0),available:good.length>0};
+ return {data,total:null,available:good.length>0,hasNext:good.some(r=>r.tracks.length>=Math.min(100,Math.max(limit*2,36)))};
 }
 
 // Verify that the official Audius download endpoint actually serves audio.
@@ -100,7 +100,7 @@ async function audiusDownloadVerified(id){
 }
 // Audius public read-only search; no key needed for the initial integration.
 async function audius(terms,page,limit){
- const queries=[...new Set(terms.filter(Boolean))].slice(0,3);
+ const queries=[...new Set(terms.filter(Boolean))].slice(0,5);
  const batch=Math.min(50,Math.max(limit,24));
  const settled=await Promise.allSettled(queries.map(async term=>{
   const url=new URL('https://api.audius.co/v1/tracks/search');
@@ -137,13 +137,23 @@ module.exports=async(req,res)=>{
  const q=String(req.query.q||'cinematic soundtrack').slice(0,100),iranian=IRANIAN_INTENT.test(q),terms=iranian?iranianTerms(q):(CATEGORIES[q]||[q, q+' music']);
  const page=Math.max(1,Math.min(200,parseInt(req.query.page,10)||1));
  const limit=[12,24,36].includes(Number(req.query.limit))?Number(req.query.limit):12;
- const [fs,jm,au,legacy]=await Promise.allSettled([freesound(terms,page,limit),jamendo(terms,page,limit),audius(terms,page,limit),existingMusic(terms,page,limit)]);
- const main=fs.status==='fulfilled'?fs.value:{data:[],total:0,available:false};
+ const [jm,au]=await Promise.allSettled([jamendo(terms,page,limit),audius(terms,page,limit)]);
  const jam=jm.status==='fulfilled'?jm.value:{data:[],total:0,available:false};
  const aud=au.status==='fulfilled'?au.value:{data:[],available:false,hasNext:false};
- const selected=iranian?[...jam.data,...aud.data,...main.data].filter(relevantIranian):[...aud.data,...jam.data,...main.data];const data=[];const ids=new Set();for(const t of selected){const key=String(t.source||'')+'|'+String(t.id||t.files?.mp3);if(!ids.has(key)){ids.add(key);data.push(t)}if(data.length>=limit)break}
- if(!iranian&&data.length<limit&&legacy.status==='fulfilled')for(const t of legacy.value){const id=t.id||t.files?.mp3;if(!ids.has(id)){ids.add(id);data.push(t)}if(data.length>=limit)break}
- if(fs.status==='rejected'&&jm.status==='rejected'&&au.status==='rejected'&&legacy.status==='rejected')return res.status(502).json({error:'ارتباط با منابع موزیک برقرار نشد'});
- // Freesound count is a search-match estimate; some tracks may be filtered out.
- res.status(200).json({data:data.slice(0,limit),total:iranian?data.length:Math.max(data.length,jam.total||0,main.total||0, aud.hasNext?page*limit+1:0),page,limit,hasNext:iranian?false:(aud.hasNext|| (jam.available&&page*limit<jam.total) || (main.available&&page*limit<main.total)),iranianSearch:iranian,sources:{audius:aud.available,jamendo:jam.available,freesound:main.available,existing:legacy.status==='fulfilled'}});
+ // Download-only catalog: do not show tracks that cannot be downloaded legally.
+ // Audius entries have already passed a real upstream audio-response check.
+ // Jamendo is included only when its official metadata explicitly permits downloading.
+ // Freesound previews and legacy streams are excluded: they do not establish full-track download rights.
+ const selected=(iranian?[...jam.data,...aud.data]:[...aud.data,...jam.data])
+   .filter(t=>t.download_allowed===true && /^https:\/\//.test(t.files?.download||''))
+   .filter(t=>!iranian||relevantIranian(t));
+ const data=[];const ids=new Set();
+ for(const t of selected){const key=String(t.source)+'|'+String(t.id);if(ids.has(key))continue;ids.add(key);data.push(t);if(data.length>=limit)break}
+ if(jm.status==='rejected'&&au.status==='rejected')return res.status(502).json({error:'ارتباط با منابع موزیک برقرار نشد'});
+ // No source provides an exact, de-duplicated, download-verified total for this combined search.
+ // Never report page size or unfiltered provider estimates as the total.
+ // Provider pages may contain fewer eligible downloads; even a lower-bound count
+ // across prior pages cannot be inferred without storing the actual prior results.
+ const hasNext=Boolean(aud.hasNext||jam.hasNext);
+ res.status(200).json({data,total:null,verifiedOnPage:data.length,minimumTotal:null,totalIsExact:false,page,limit,hasNext,iranianSearch:iranian,sources:{audius:aud.available,jamendo:jam.available,freesound:false}});
 };
