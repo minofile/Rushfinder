@@ -85,6 +85,19 @@ async function jamendo(terms,page,limit){
  return {data,total:Math.max(data.length,...good.map(r=>r.total),0),available:good.length>0};
 }
 
+// Verify that the official Audius download endpoint actually serves audio.
+// A metadata download flag alone is not sufficient. Fail closed on timeout/errors.
+async function audiusDownloadVerified(id){
+ const url='https://api.audius.co/v1/tracks/'+encodeURIComponent(id)+'/download';
+ const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),6500);
+ try{
+  const r=await fetch(url,{method:'GET',headers:{Range:'bytes=0-2047',Accept:'audio/*,application/octet-stream'},signal:controller.signal,redirect:'follow'});
+  const ct=(r.headers.get('content-type')||'').toLowerCase();
+  const ok=r.ok && (ct.startsWith('audio/')||ct.includes('octet-stream')) && !ct.includes('json') && !ct.includes('html');
+  if(r.body)await r.body.cancel().catch(()=>{});
+  return ok;
+ }catch{return false}finally{clearTimeout(timer)}
+}
 // Audius public read-only search; no key needed for the initial integration.
 async function audius(terms,page,limit){
  const queries=[...new Set(terms.filter(Boolean))].slice(0,3);
@@ -106,10 +119,13 @@ async function audius(terms,page,limit){
    const id=String(t.id||'');const stream=t.stream?.url;
    if(!id||seen.has(id)||!t.access?.stream||!t.is_streamable||!/^https:\/\//.test(stream||'')||Number(t.duration)<20||Number(t.duration)>900)continue;
    seen.add(id);
+   // Only offer Audius tracks whose actual download endpoint passed an audio response check.
+   if(!(t.access?.download===true && t.is_downloadable===true && !t.is_download_gated))continue;
    data.push({id:'audius-'+id,name:t.title||'موسیقی',artist:t.user?.name||'',duration:Number(t.duration)||0,source:'Audius',license:t.license||'',source_url:'https://audius.co'+(t.permalink||''),download_allowed:t.access?.download===true && t.is_downloadable===true && !t.is_download_gated,files:{mp3:stream,download:t.access?.download===true && t.is_downloadable===true && !t.is_download_gated ? 'https://api.audius.co/v1/tracks/'+encodeURIComponent(id)+'/download' : ''},is_premium:false});
   }
  }
- return {data,available,hasNext:more};
+ const checked=await Promise.all(data.map(async t=>({t,ok:await audiusDownloadVerified(t.id.slice(7))})));
+ return {data:checked.filter(x=>x.ok).map(x=>x.t),available,hasNext:more};
 }
 
 async function existingMusic(terms,page,limit){

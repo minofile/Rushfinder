@@ -1,0 +1,1 @@
+V0193: Audius tracks are listed only after official download URL returns an audio content-type in a live request. Server download proxy revalidates metadata and streams audio; failed checks are excluded. No changes to video APIs. Note that tests against external Audius service must be repeated after Vercel deployment.
