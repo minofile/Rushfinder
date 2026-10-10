@@ -2689,7 +2689,16 @@ function panel(){const root=el('mu136');if(!root)return;let p=el('rf142');if(!p)
 async function search(q,page=1){
 q=q.trim();if(!q)return;currentQuery=q;currentPage=page;const n=++seq,body=el('rf142body'),audio=el('rf142audio');if(!body)return;
 audio.pause();audio.removeAttribute('src');playing=-1;const oldPager=el('rf166pagination');if(oldPager)oldPager.innerHTML='';body.className='rf142-msg';body.textContent='در حال جستجوی موزیک...';
-try{const iranian=/[\u0600-\u06ff]/.test(q)&&!Object.prototype.hasOwnProperty.call(map,q);const r=await fetch(iranian?'/api/iranian-music?q='+encodeURIComponent(q):'/api/music?q='+encodeURIComponent(map[q]||q)+'&page='+page+'&limit='+pageLimit());const j=await r.json();if(!r.ok)throw Error((j.error||'خطای API')+(j.upstreamStatus?' (کد '+j.upstreamStatus+')':'')+(j.detail?' — '+j.detail:''));if(n!==seq)return;
+try{const iranian=/[\u0600-\u06ff]/.test(q)&&!Object.prototype.hasOwnProperty.call(map,q);const r=await fetch(iranian?'/api/iranian-music?q='+encodeURIComponent(q):'/api/music?q='+encodeURIComponent(map[q]||q)+'&page='+page+'&limit='+pageLimit());let j=await r.json();
+// V0177: If the Iranian provider is rate-limited, use the existing licensed/free-music search instead of showing a 502 error.
+if(iranian&&!r.ok&&(/rate limit|سقف|محدودیت|توکن/i.test([j.error,j.detail].join(' '))||[429,502].includes(Number(j.upstreamStatus)))){
+ const fallbackQuery=/بندری|جنوبی/.test(q)?'bandari persian dance':/کردی/.test(q)?'kurdish traditional music':/لری/.test(q)?'luri iranian music':'persian music';
+ const fallback=await fetch('/api/music?q='+encodeURIComponent(fallbackQuery)+'&page='+page+'&limit='+pageLimit());
+ const fj=await fallback.json();
+ if(fallback.ok){j=fj;el('rf142count').textContent='نتایج جایگزین از منابع رایگان';}
+ else throw Error('سرویس آهنگ‌های ایرانی موقتاً محدود شده و جستجوی جایگزین هم در دسترس نیست.');
+}else if(!r.ok)throw Error((j.error||'خطای API')+(j.upstreamStatus?' (کد '+j.upstreamStatus+')':'')+(j.detail?' — '+j.detail:''));
+if(n!==seq)return;
 tracks=(j.data||[]).filter(t=>t?.files?.mp3&&!t.is_premium);el('rf142count').textContent=fa(Math.max(tracks.length,Number(j.total)||0))+' نتیجه';
 if(!tracks.length){body.textContent='آهنگی مطابق جستجوی شما پیدا نشد. لطفاً عبارت دیگری جستجو کنید.';el('rf142count').textContent='۰ نتیجه';return}
 body.className='rf142-grid';
