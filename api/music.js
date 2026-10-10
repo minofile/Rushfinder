@@ -1,8 +1,8 @@
 // V0166: relevant, duration-filtered Freesound music with real API pagination.
 const CATEGORIES={
- 'news broadcast intro':['news broadcast music','news intro instrumental'],
+ 'news broadcast intro':['news broadcast music','news intro instrumental','breaking news theme','broadcast background instrumental','television news music'],
  'political documentary':['political documentary music','political tension music','news background music','documentary cinematic','suspense instrumental'],
- 'sports energetic':['sports energetic music','sport instrumental'],
+ 'sports energetic':['sports energetic music','sport instrumental','sports action background','sports highlights music','stadium energetic instrumental'],
  'epic orchestral':['epic orchestral music','heroic cinematic soundtrack'],
  'cinematic soundtrack':['cinematic soundtrack music','film score instrumental'],
  'action suspense':['action suspense music','thriller soundtrack'],
@@ -58,38 +58,31 @@ async function freesound(terms,page,limit){
     seen.add(t.id);
     candidates.push({id:'freesound-'+t.id,name:t.name||'بدون عنوان',duration:Number(t.duration)||0,source:'Freesound',license:t.license||'',source_url:t.url||'https://freesound.org/s/'+t.id+'/',files:{mp3},is_premium:false});
    }
-   if(candidates.length>=limit)break;
+   // Collect across related searches to improve diversity; do not stop after the first full source.
   }catch(e){/* Try the next related phrase instead of returning zero. */}
  }
- return {data:candidates.slice(0,limit),total:Math.max(count,candidates.length),available:successful>0};
+ return {data:candidates,total:Math.max(count,candidates.length),available:successful>0};
 }
 
 // Jamendo official public tracks API. Only advertise download for tracks allowed by provider.
 async function jamendo(terms,page,limit){
  const id=process.env.JAMENDO_CLIENT_ID;
  if(!id)return {data:[],total:0,available:false};
- const q=terms[0]||'instrumental';
- const url=new URL('https://api.jamendo.com/v3.0/tracks/');
- url.searchParams.set('client_id',id);
- url.searchParams.set('format','json');
- url.searchParams.set('limit',String(limit));
- url.searchParams.set('offset',String((page-1)*limit));
- url.searchParams.set('search',q);
- url.searchParams.set('include','musicinfo');
- url.searchParams.set('audioformat','mp32');
- try{
+ const queries=[...new Set(terms.filter(Boolean))].slice(0,5);
+ const results=await Promise.allSettled(queries.map(async q=>{
+  const url=new URL('https://api.jamendo.com/v3.0/tracks/');
+  for(const [k,v] of Object.entries({client_id:id,format:'json',limit:String(Math.min(100,Math.max(limit*2,36))),offset:String((page-1)*Math.min(100,Math.max(limit*2,36))),search:q,audioformat:'mp32'}))url.searchParams.set(k,v);
   const r=await timeoutFetch(url.toString(),{headers:{Accept:'application/json'}});
-  if(!r.ok)return {data:[],total:0,available:false};
-  const j=await r.json();
-  if(j.headers?.status!=='success')return {data:[],total:0,available:false};
-  const data=(j.results||[]).filter(t=>t.audio&&Number(t.duration)>=20).map(t=>({
-   id:'jamendo-'+t.id,name:t.name||'موسیقی',duration:Number(t.duration)||0,source:'Jamendo',
-   artist:t.artist_name||'',license:t.license_ccurl||'',source_url:t.shareurl||'',
-   download_allowed:t.audiodownload_allowed===true||t.audiodownload_allowed==='true',
-   files:{mp3:t.audio,download:t.audiodownload||''},is_premium:false
-  }));
-  return {data,total:Number(j.headers?.results_fullcount)||data.length,available:true};
- }catch{return {data:[],total:0,available:false}}
+  if(!r.ok)throw Error('Jamendo HTTP '+r.status);
+  const j=await r.json();if(j.headers?.status!=='success')throw Error('Jamendo API error');
+  return {total:Number(j.headers?.results_fullcount)||0,tracks:(j.results||[]).filter(t=>t.audio&&Number(t.duration)>=20).map(t=>({
+   id:'jamendo-'+t.id,name:t.name||'موسیقی',duration:Number(t.duration)||0,source:'Jamendo',artist:t.artist_name||'',license:t.license_ccurl||'',source_url:t.shareurl||'',download_allowed:t.audiodownload_allowed===true||t.audiodownload_allowed==='true',files:{mp3:t.audio,download:t.audiodownload||''},is_premium:false
+  }))};
+ }));
+ const good=results.filter(r=>r.status==='fulfilled').map(r=>r.value);
+ const seen=new Set(),data=[];
+ for(const result of good)for(const track of result.tracks)if(!seen.has(track.id)){seen.add(track.id);data.push(track)}
+ return {data,total:Math.max(data.length,...good.map(r=>r.total),0),available:good.length>0};
 }
 
 async function existingMusic(terms,page,limit){
