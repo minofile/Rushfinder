@@ -2707,7 +2707,7 @@ if(iranian&&!(j.data||[]).length){
  el('rf142count').textContent=fa(items.length)+' نتیجه یوتیوب';
  if(!items.length){body.className='rf142-msg';body.textContent=y.message||y.error||j.message||'آهنگ مرتبطی پیدا نشد.';return;}
  body.className='rf142-grid';
- body.innerHTML=items.map((t,i)=>'<article class="rf142-card" style="display:flex;flex-direction:column;gap:8px"><img loading="lazy" src="'+safe(t.thumbnail)+'" alt="" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px"><div class="rf142-title" title="'+safe(t.title)+'">'+safe(t.title)+'</div><div class="rf142-meta">'+safe(t.artist)+' | YouTube</div><div class="rf142-actions"><button type="button" data-yt="'+i+'">▶ پخش در یوتیوب</button><button disabled title="یوتیوب لینک MP3 مجاز ارائه نمی‌کند">دانلود MP3 ندارد</button></div></article>').join('');
+ body.innerHTML=items.map((t,i)=>'<article class="rf142-card" style="display:flex;flex-direction:column;gap:8px"><img loading="lazy" src="'+safe(t.thumbnail)+'" alt="" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px"><div class="rf142-title" title="'+safe(t.title)+'">'+safe(t.title)+'</div><div class="rf142-meta">'+safe(t.artist)+' | YouTube</div><div class="rf142-actions"><button type="button" data-yt="'+i+'">▶ پخش در یوتیوب</button></div></article>').join('');
  body.querySelectorAll('[data-yt]').forEach(b=>b.onclick=()=>{const t=items[Number(b.dataset.yt)];if(typeof openYouTubeViewer==='function')openYouTubeViewer({id:t.id,title:t.title,pageURL:t.url,source:'YouTube'});else window.open(t.url,'_blank','noopener');});
  return;
 }
