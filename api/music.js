@@ -85,6 +85,33 @@ async function jamendo(terms,page,limit){
  return {data,total:Math.max(data.length,...good.map(r=>r.total),0),available:good.length>0};
 }
 
+// Audius public read-only search; no key needed for the initial integration.
+async function audius(terms,page,limit){
+ const queries=[...new Set(terms.filter(Boolean))].slice(0,3);
+ const batch=Math.min(50,Math.max(limit,24));
+ const settled=await Promise.allSettled(queries.map(async term=>{
+  const url=new URL('https://api.audius.co/v1/tracks/search');
+  url.searchParams.set('query',term);url.searchParams.set('limit',String(batch));
+  url.searchParams.set('offset',String((page-1)*batch));
+  const response=await timeoutFetch(url.toString(),{headers:{Accept:'application/json'}});
+  if(!response.ok)throw Error('Audius HTTP '+response.status);
+  const json=await response.json();
+  if(!Array.isArray(json.data))throw Error('Invalid Audius response');
+  return json.data;
+ }));
+ const data=[],seen=new Set();let available=false,more=false;
+ for(const result of settled){if(result.status!=='fulfilled')continue;available=true;
+  if(result.value.length===batch)more=true;
+  for(const t of result.value){
+   const id=String(t.id||'');const stream=t.stream?.url;
+   if(!id||seen.has(id)||!t.access?.stream||!t.is_streamable||!/^https:\/\//.test(stream||'')||Number(t.duration)<20||Number(t.duration)>900)continue;
+   seen.add(id);
+   data.push({id:'audius-'+id,name:t.title||'موسیقی',artist:t.user?.name||'',duration:Number(t.duration)||0,source:'Audius',license:t.license||'',source_url:'https://audius.co'+(t.permalink||''),download_allowed:false,files:{mp3:stream},is_premium:false});
+  }
+ }
+ return {data,available,hasNext:more};
+}
+
 async function existingMusic(terms,page,limit){
  const url=new URL('https://api.freetouse.com/v3/music/tracks/search');url.searchParams.set('query',terms[0]);url.searchParams.set('limit',String(limit));url.searchParams.set('page',String(page));
  try{const r=await timeoutFetch(url.toString(),{headers:{Accept:'application/json'}});if(!r.ok)return [];const j=await r.json();return (Array.isArray(j.data)?j.data:[]).filter(t=>t&&!t.is_premium&&t.files?.mp3&&Number(t.duration)>=30&&Number(t.duration)<=600)}catch{return []}
@@ -94,12 +121,13 @@ module.exports=async(req,res)=>{
  const q=String(req.query.q||'cinematic soundtrack').slice(0,100),iranian=IRANIAN_INTENT.test(q),terms=iranian?iranianTerms(q):(CATEGORIES[q]||[q, q+' music']);
  const page=Math.max(1,Math.min(200,parseInt(req.query.page,10)||1));
  const limit=[12,24,36].includes(Number(req.query.limit))?Number(req.query.limit):12;
- const [fs,jm,legacy]=await Promise.allSettled([freesound(terms,page,limit),jamendo(terms,page,limit),existingMusic(terms,page,limit)]);
+ const [fs,jm,au,legacy]=await Promise.allSettled([freesound(terms,page,limit),jamendo(terms,page,limit),audius(terms,page,limit),existingMusic(terms,page,limit)]);
  const main=fs.status==='fulfilled'?fs.value:{data:[],total:0,available:false};
  const jam=jm.status==='fulfilled'?jm.value:{data:[],total:0,available:false};
- const selected=iranian?[...jam.data,...main.data].filter(relevantIranian):[...jam.data,...main.data];const data=[];const ids=new Set();for(const t of selected){const key=String(t.source||'')+'|'+String(t.id||t.files?.mp3);if(!ids.has(key)){ids.add(key);data.push(t)}if(data.length>=limit)break}
+ const aud=au.status==='fulfilled'?au.value:{data:[],available:false,hasNext:false};
+ const selected=iranian?[...jam.data,...aud.data,...main.data].filter(relevantIranian):[...aud.data,...jam.data,...main.data];const data=[];const ids=new Set();for(const t of selected){const key=String(t.source||'')+'|'+String(t.id||t.files?.mp3);if(!ids.has(key)){ids.add(key);data.push(t)}if(data.length>=limit)break}
  if(!iranian&&data.length<limit&&legacy.status==='fulfilled')for(const t of legacy.value){const id=t.id||t.files?.mp3;if(!ids.has(id)){ids.add(id);data.push(t)}if(data.length>=limit)break}
- if(fs.status==='rejected'&&jm.status==='rejected'&&legacy.status==='rejected')return res.status(502).json({error:'ارتباط با منابع موزیک برقرار نشد'});
+ if(fs.status==='rejected'&&jm.status==='rejected'&&au.status==='rejected'&&legacy.status==='rejected')return res.status(502).json({error:'ارتباط با منابع موزیک برقرار نشد'});
  // Freesound count is a search-match estimate; some tracks may be filtered out.
- res.status(200).json({data:data.slice(0,limit),total:iranian?data.length:Math.max(data.length,jam.available?jam.total:(main.available?main.total:data.length)),page,limit,hasNext:iranian?false:(jam.available?page*limit<jam.total:(main.available?page*limit<main.total:data.length>=limit)),iranianSearch:iranian,sources:{jamendo:jam.available,freesound:main.available,existing:legacy.status==='fulfilled'}});
+ res.status(200).json({data:data.slice(0,limit),total:iranian?data.length:Math.max(data.length,jam.total||0,main.total||0, aud.hasNext?page*limit+1:0),page,limit,hasNext:iranian?false:(aud.hasNext|| (jam.available&&page*limit<jam.total) || (main.available&&page*limit<main.total)),iranianSearch:iranian,sources:{audius:aud.available,jamendo:jam.available,freesound:main.available,existing:legacy.status==='fulfilled'}});
 };
