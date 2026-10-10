@@ -104,7 +104,7 @@ module.exports=async(req,res)=>{
  const [fs,jm,legacy]=await Promise.allSettled([freesound(terms,page,limit),jamendo(terms,page,limit),existingMusic(terms,page,limit)]);
  const main=fs.status==='fulfilled'?fs.value:{data:[],total:0,available:false};
  const jam=jm.status==='fulfilled'?jm.value:{data:[],total:0,available:false};
- const selected=iranian?[...jam.data,...main.data].filter(relevantIranian):[...jam.data,...main.data];const data=selected.slice(0,limit);const ids=new Set(data.map(x=>x.id));
+ const selected=iranian?[...jam.data,...main.data].filter(relevantIranian):[...jam.data,...main.data];const data=[];const ids=new Set();for(const t of selected){const key=String(t.source||'')+'|'+String(t.id||t.files?.mp3);if(!ids.has(key)){ids.add(key);data.push(t)}if(data.length>=limit)break}
  if(!iranian&&data.length<limit&&legacy.status==='fulfilled')for(const t of legacy.value){const id=t.id||t.files?.mp3;if(!ids.has(id)){ids.add(id);data.push(t)}if(data.length>=limit)break}
  if(fs.status==='rejected'&&jm.status==='rejected'&&legacy.status==='rejected')return res.status(502).json({error:'ارتباط با منابع موزیک برقرار نشد'});
  // Freesound count is a search-match estimate; some tracks may be filtered out.
