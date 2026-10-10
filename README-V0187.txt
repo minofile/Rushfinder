@@ -1,1 +1,0 @@
-RushFinder V0187: category music requests up to 100 genuine unique audio tracks per page from available Freesound/Jamendo sources. Actual count depends on source coverage and API credentials. No YouTube music. Other searches retain settings.
