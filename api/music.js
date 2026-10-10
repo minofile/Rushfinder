@@ -100,7 +100,7 @@ module.exports=async(req,res)=>{
  res.setHeader('Cache-Control','s-maxage=120, stale-while-revalidate=240');
  const q=String(req.query.q||'cinematic soundtrack').slice(0,100),iranian=IRANIAN_INTENT.test(q),terms=iranian?iranianTerms(q):(CATEGORIES[q]||[q, q+' music']);
  const page=Math.max(1,Math.min(200,parseInt(req.query.page,10)||1));
- const limit=[12,16,24].includes(Number(req.query.limit))?Number(req.query.limit):12;
+ const limit=[12,24,36].includes(Number(req.query.limit))?Number(req.query.limit):12;
  const [fs,jm,legacy]=await Promise.allSettled([freesound(terms,page,limit),jamendo(terms,page,limit),existingMusic(terms,page,limit)]);
  const main=fs.status==='fulfilled'?fs.value:{data:[],total:0,available:false};
  const jam=jm.status==='fulfilled'?jm.value:{data:[],total:0,available:false};
