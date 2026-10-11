@@ -2675,7 +2675,7 @@ object-position:center!important;display:block!important;filter:none!important}
 </style>
 <script id="v0157-music-functional">
 (()=>{'use strict';
-const map={'خبری':'news broadcast intro','سیاسی':'political documentary','ورزشی':'sports energetic','حماسی':'epic orchestral','سینمایی':'cinematic soundtrack','هیجانی':'action suspense','آرام':'calm ambient','غمگین':'sad emotional','انرژی':'upbeat energetic','دراماتیک':'dramatic tension','تکنولوژی':'technology futuristic','مستند':'documentary background'};
+const map={'بندری':'bandari','جنوبی':'southern iranian music','خبری':'news broadcast intro','سیاسی':'political documentary','ورزشی':'sports energetic','حماسی':'epic orchestral','سینمایی':'cinematic soundtrack','هیجانی':'action suspense','آرام':'calm ambient','غمگین':'sad emotional','انرژی':'upbeat energetic','دراماتیک':'dramatic tension','تکنولوژی':'technology futuristic','مستند':'documentary background'};
 let tracks=[],playing=-1,seq=0,currentQuery="",currentPage=1;
 let musicPerPage=Number(localStorage.getItem('rfMusicPerPage')||12);if(![12,24,36].includes(musicPerPage))musicPerPage=12;
 const el=id=>document.getElementById(id), safe=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
