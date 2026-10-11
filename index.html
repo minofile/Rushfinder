@@ -2691,9 +2691,11 @@ function panel(){const root=el('mu136');if(!root)return;let p=el('rf142');if(!p)
 async function search(q,page=1){
 q=q.trim();if(!q)return;currentQuery=q;currentPage=page;const n=++seq,body=el('rf142body'),audio=el('rf142audio');if(!body)return;
 audio.pause();audio.removeAttribute('src');playing=-1;const oldPager=el('rf166pagination');if(oldPager)oldPager.innerHTML='';body.className='rf142-msg';body.textContent='در حال جستجوی موزیک...';
-try{const iranian=/[\u0600-\u06ff]/.test(q);const categoryClick=Object.prototype.hasOwnProperty.call(map,q);const musicLimit=musicPerPage;let r=await fetch('/api/appwrite-music?q='+encodeURIComponent(q)+'&page='+page+'&limit='+musicLimit);let j=await r.json();
+try{const iranian=/[\u0600-\u06ff]/.test(q);const categoryClick=Object.prototype.hasOwnProperty.call(map,q);const musicLimit=musicPerPage;let r=await fetch('/api/appwrite-music?q='+encodeURIComponent(q)+'&page='+page+'&limit='+musicLimit,{cache:'no-store'});let j=await r.json();
+// An archive API error must not be disguised as an empty catalog or unrelated provider results.
+if(!r.ok){throw Error('خطا در خواندن آرشیو Appwrite: '+(j.detail||j.error||('HTTP '+r.status)));}
 // Prefer real, publicly readable tracks in the user's own archive; fall back to existing licensed providers.
-if(!r.ok||!(j.data||[]).length){
+if(!(j.data||[]).length){
  // Regional music uses the licensed provider; RSS is disabled entirely.
  const localRegion=/بندری|جنوبی|کردی|شمالی|گیلکی|مازندرانی|لری|ایرانی|فارسی/.test(q);
  const provider=localRegion?'/api/iranian-music':'/api/music';
