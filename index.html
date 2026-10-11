@@ -4145,5 +4145,56 @@ document.querySelectorAll('.nav button').forEach(btn=>{if(btn!==companyNav){btn.
 #rfCompanyPanel .rf222-inputs input{min-width:210px;flex:1;direction:ltr;text-align:left;border:1px solid #d5e3f3;border-radius:10px;padding:10px;font:14px Arial}
 #rfCompanyPanel .rf222-inputs button{background:#eaf3ff;color:#124f95;border:1px solid #d5e3f3;border-radius:10px;padding:9px 13px;cursor:pointer;font-family:Yekan,sans-serif}
 </style>
+
+<!-- V0223: independent company navigation recovery; does not modify music -->
+<style id="rf223-nav-fix">
+body.rf-company-view #rfCompanyPanel.rf-company-on {
+ display:block!important; visibility:visible!important; opacity:1!important;
+ position:fixed!important; top:0!important; bottom:0!important; left:0!important;
+ right:var(--rf223-sidebar-width,250px)!important; overflow-y:auto!important;
+ z-index:9990!important; background:#f5f9ff!important; padding-top:30px!important;
+}
+@media(max-width:800px){body.rf-company-view #rfCompanyPanel.rf-company-on{right:0!important;top:62px!important;z-index:9000!important}}
+</style>
+<script id="rf223-company-navigation">
+(function(){
+ function syncSidebarWidth(){
+   const side=document.querySelector('.sidebar');
+   if(side){const r=side.getBoundingClientRect();document.documentElement.style.setProperty('--rf223-sidebar-width',Math.max(0,window.innerWidth-r.left)+'px')}
+ }
+ function showCompany(){
+  try{
+   syncSidebarWidth();
+   if(typeof window.rfShowCompanyRush==='function')window.rfShowCompanyRush();
+   else{
+    document.body.classList.add('rf-company-view');
+    let p=document.getElementById('rfCompanyPanel');
+    if(!p){p=document.createElement('section');p.id='rfCompanyPanel';document.body.appendChild(p)}
+    p.innerHTML='<h2>راش‌های شرکت</h2><p>آرشیو شرکت آماده تنظیم اتصال است.</p>';
+    p.classList.add('rf-company-on');
+   }
+   const p=document.getElementById('rfCompanyPanel');
+   if(p){p.classList.add('rf-company-on');p.style.setProperty('display','block','important')}
+   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.id==='rfCompanyNav'));
+  }catch(err){
+   console.error('RushFinder company page error:',err);
+   let p=document.getElementById('rfCompanyPanel');
+   if(!p){p=document.createElement('section');p.id='rfCompanyPanel';document.body.appendChild(p)}
+   document.body.classList.add('rf-company-view');p.classList.add('rf-company-on');
+   p.innerHTML='<h2>راش‌های شرکت</h2><p>صفحه باز شد اما خطایی در بارگذاری رخ داد. لطفاً کنسول مرورگر را بررسی کنید.</p>';
+  }
+ }
+ // Capture on document before legacy menu listeners can redirect to dashboard.
+ document.addEventListener('click',function(ev){
+  const target=ev.target instanceof Element?ev.target:null;
+  const btn=target&&target.closest('#rfCompanyNav');
+  if(btn){ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();showCompany();return}
+  const other=target&&target.closest('.nav button:not(#rfCompanyNav)');
+  if(other){document.body.classList.remove('rf-company-view');const p=document.getElementById('rfCompanyPanel');if(p){p.classList.remove('rf-company-on');p.style.removeProperty('display')}}
+ },true);
+ window.addEventListener('resize',syncSidebarWidth);
+ window.rf223OpenCompany=showCompany;
+})();
+</script>
 </body>
 </html>
