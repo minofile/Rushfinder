@@ -2773,7 +2773,10 @@ body.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>{
  if(playing===i){if(audio.paused)audio.play().catch(()=>{playing=-1;update();alert('پخش از سایت مبدأ امکان‌پذیر نیست.');});else audio.pause();return;}
  // V0181: No MajidAPI/Melobit resolution or fallback. Play only genuine HTTPS audio URLs.
  let url;try{url=new URL(src);if(url.protocol!=='https:')throw Error('invalid')}catch{alert('این آهنگ لینک مستقیم و معتبر برای پخش ندارد.');return;}
- audio.pause();rfPendingSeek=null;rfSeekingByUser=false;audio.src=url.href;audio.preload='auto';audio.load();playing=i;update();
+ audio.pause();rfPendingSeek=null;rfSeekingByUser=false;
+ // V0211: reuse an already-warmed media resource and avoid an unnecessary explicit reload.
+ if(audio.src!==url.href){audio.preload='auto';audio.src=url.href;}
+ playing=i;update();
  audio.play().catch(()=>{if(playing===i){playing=-1;update();alert('پخش فایل صوتی از سایت مبدأ امکان‌پذیر نیست.')}});
 });
 
@@ -2793,7 +2796,12 @@ body.querySelectorAll('[data-expand]').forEach(x=>x.onclick=()=>{const d=x.close
 body.querySelectorAll('[data-skip]').forEach(x=>x.onclick=()=>{const i=+x.closest('.rf155-row').querySelector('[data-play]').dataset.play;if(playing!==i)body.querySelector('[data-play="'+i+'"]').click();if(audio.duration)audio.currentTime=Math.max(0,Math.min(audio.duration,audio.currentTime+(+x.dataset.skip)))});
 }catch(e){if(n!==seq)return;body.className='rf142-msg';body.textContent='خطا در دریافت موزیک: '+e.message;el('rf142count').textContent='خطای اتصال'}
 }
-function init(){const root=el('mu136');if(!root)return;panel();root.querySelectorAll('.mu136-cat').forEach(b=>b.addEventListener('click',e=>{e.stopImmediatePropagation();e.preventDefault();const q=b.dataset.q||b.textContent.trim();el('mu136q').value=q;search(q)},true));const input=el('mu136q'),btn=el('mu136search');btn?.addEventListener('click',e=>{e.stopImmediatePropagation();e.preventDefault();search(input.value)},true);input?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.stopImmediatePropagation();e.preventDefault();search(input.value)}},true)}
+function init(){const root=el('mu136');if(!root)return;
+ // Establish TLS connection early to the archive host (no audio file is downloaded).
+ if(!document.querySelector('link[data-rf-appwrite-preconnect]')){
+  const link=document.createElement('link');link.rel='preconnect';link.href='https://fra.cloud.appwrite.io';link.crossOrigin='anonymous';link.dataset.rfAppwritePreconnect='1';document.head.appendChild(link);
+ }
+ panel();root.querySelectorAll('.mu136-cat').forEach(b=>b.addEventListener('click',e=>{e.stopImmediatePropagation();e.preventDefault();const q=b.dataset.q||b.textContent.trim();el('mu136q').value=q;search(q)},true));const input=el('mu136q'),btn=el('mu136search');btn?.addEventListener('click',e=>{e.stopImmediatePropagation();e.preventDefault();search(input.value)},true);input?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.stopImmediatePropagation();e.preventDefault();search(input.value)}},true)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script><style id="v0144-layout-fix">
