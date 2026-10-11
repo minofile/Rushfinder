@@ -37,7 +37,8 @@ module.exports = async function handler(req,res){
    const explicit=normalized((f.region||f.category||'')+' '+(f.$permissions||[]).join(' '));
    return Object.keys(regionTerms).find(k=>regionTerms[k].test(name+' '+explicit))||'';
   };
-  const matches=(!q||/^(موزیک|موسیقی|music|all|همه)$/.test(q))?all:requested?all.filter(f=>fileRegion(f)===requested):all.filter(f=>normalized(f.name).includes(normalized(q)));
+  const meaningful=normalized(q).replace(/(?:^|\s)(موزیک|موسیقی|آهنگ)(?=\s|$)/g,' ').trim();
+  const matches=(!meaningful||/^(music|all|همه)$/.test(meaningful))?all:requested?all.filter(f=>fileRegion(f)===requested):all.filter(f=>normalized(f.name).includes(meaningful)||meaningful.split(/\s+/).every(w=>normalized(f.name).includes(w)));
   const sliced=matches.slice((page-1)*limit,page*limit);
   const data=sliced.map(f=>{const base=`${api}/storage/buckets/${encodeURIComponent(bucket)}/files/${encodeURIComponent(f.$id)}`;const suffix=`?project=${encodeURIComponent(project)}`;return {id:'appwrite-'+f.$id,name:f.name.replace(/\.(mp3|ogg|oga|wav|m4a|flac)$/i,''),artist:'',region:fileRegion(f),duration:0,source:'Appwrite',download_allowed:true,is_premium:false,files:{mp3:base+'/view'+suffix,download:base+'/download'+suffix}}});
   res.status(200).json({data,total:matches.length,totalIsExact:j.total<=collected.length,hasNext:page*limit<matches.length,page,source:'Appwrite'});
