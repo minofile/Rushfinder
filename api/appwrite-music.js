@@ -12,16 +12,17 @@ module.exports = async function handler(req,res){
  const headers={'X-Appwrite-Project':project,'Accept':'application/json'};
  if(key)headers['X-Appwrite-Key']=key;
  try{
-  const collected=[];let cursor='',lastTotal=0;
+  const collected=[];let lastTotal=0;
   for(let batch=0;batch<10;batch++){
-   const params=new URLSearchParams();params.append('queries[]','limit(100)');params.append('queries[]','orderDesc("$createdAt")');
-   if(cursor)params.append('queries[]','cursorAfter("'+cursor+'")');
+   // Appwrite REST expects JSON-serialized Query objects, not DSL strings.
+   const params=new URLSearchParams();
+   params.append('queries[]',JSON.stringify({method:'limit',values:[100]}));
+   params.append('queries[]',JSON.stringify({method:'offset',values:[batch*100]}));
    const r=await fetch(`${api}/storage/buckets/${encodeURIComponent(bucket)}/files?${params}`,{headers,signal:AbortSignal.timeout(9000)});
    const j=await r.json();
    if(!r.ok)return res.status(502).json({error:'دریافت فایل‌های آرشیو انجام نشد.',detail:j.message||String(r.status),status:r.status});
    const files=j.files||[];lastTotal=Number(j.total)||0;collected.push(...files);
    if(files.length<100||collected.length>=lastTotal)break;
-   cursor=files[files.length-1].$id;
   }
   const j={files:collected,total:lastTotal};
   const normalized=x=>String(x||'').toLowerCase().replace(/ي/g,'ی').replace(/ك/g,'ک');
