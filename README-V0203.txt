@@ -1,1 +1,0 @@
-RushFinder V0203: Uses V0202 source; exposes Appwrite archive errors instead of hiding them behind fallback provider results. No RSS. YouTube and admin unchanged. This is a diagnostic fix, not a verified resolution of Appwrite search.
