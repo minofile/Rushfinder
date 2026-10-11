@@ -2678,6 +2678,22 @@ object-position:center!important;display:block!important;filter:none!important}
 const map={'بندری':'bandari','جنوبی':'southern iranian music','خبری':'news broadcast intro','سیاسی':'political documentary','ورزشی':'sports energetic','حماسی':'epic orchestral','سینمایی':'cinematic soundtrack','هیجانی':'action suspense','آرام':'calm ambient','غمگین':'sad emotional','انرژی':'upbeat energetic','دراماتیک':'dramatic tension','تکنولوژی':'technology electronic','مستند':'documentary ambient','شمالی':'northern','کردی':'kurdish','لری':'luri','بی‌کلام':'instrumental','پلیسی':'police chase music','جنایی':'crime thriller soundtrack'};
 let tracks=[],playing=-1,seq=0,currentQuery="",currentPage=1;
 let rfPendingSeek=null,rfSeekingByUser=false;
+// V0212: bounded audio warm-up. Only warm the first two Appwrite files
+// after each page renders; warm a hovered/touched item on demand.
+const rfWarmCache=new Map();
+function rfWarm(src){
+ if(!src||!/^https:\/\//i.test(src)||rfWarmCache.has(src))return;
+ const media=new Audio();media.preload='metadata';media.src=src;
+ rfWarmCache.set(src,media);
+ media.load();
+ while(rfWarmCache.size>3){const [old,oldMedia]=rfWarmCache.entries().next().value;rfWarmCache.delete(old);oldMedia.removeAttribute('src');oldMedia.load();}
+}
+function rfWarmPage(list){
+ const connection=navigator.connection;
+ if(connection?.saveData||/2g/.test(connection?.effectiveType||''))return;
+ list.filter(t=>t.source==='Appwrite').slice(0,2).forEach((t,i)=>setTimeout(()=>rfWarm(t.files.mp3),i*350));
+}
+
 let musicPerPage=Number(localStorage.getItem('rfMusicPerPage')||12);if(![12,24,36].includes(musicPerPage))musicPerPage=12;
 const el=id=>document.getElementById(id), safe=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fa=x=>String(x).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[+d]);
@@ -2747,6 +2763,7 @@ tracks=(j.data||[]).filter(t=>t?.files?.mp3&&!t.is_premium&&String(t.name||'').t
 el('rf142count').textContent=(j.totalIsExact&&Number.isFinite(Number(j.total))?fa(j.total)+' نتیجه در کل':(j.hasNext?'بیش از '+fa((page-1)*musicLimit+tracks.length)+' نتیجه قابل دانلود':'تا این صفحه '+fa((page-1)*musicLimit+tracks.length)+' نتیجه قابل دانلود'));
 if(!tracks.length){body.textContent=iranian?(j.message||'در آرشیو موسیقی نتیجه‌ای پیدا نشد.'):'آهنگ واقعی و مرتبطی در منابع متصل پیدا نشد.';el('rf142count').textContent='۰ نتیجه';return}
 body.className='rf142-grid';
+rfWarmPage(tracks);
 // Persian descriptive labels: retain the original track name as a tooltip, never claim a literal translation.
 const rf192Category={'news broadcast intro':'خبری','political documentary':'سیاسی','sports energetic':'ورزشی','epic orchestral':'حماسی','cinematic soundtrack':'سینمایی','action suspense':'هیجانی','calm ambient':'آرام','sad emotional':'غمگین','upbeat energetic':'پرانرژی','dramatic tension':'دراماتیک','technology electronic':'فناوری','documentary ambient':'مستند'};
 const rf192PersianTitle=(title,index)=>{
@@ -2768,17 +2785,32 @@ body.innerHTML=tracks.map((t,i)=>'<article class="rf142-card rf155-row"><div cla
 function update(){body.querySelectorAll('[data-play]').forEach(b=>{const on=+b.dataset.play===playing&&!audio.paused;b.textContent=on?'❚❚':'▶';b.closest('.rf155-row').classList.toggle('rf149-playing',on)})}
 body.querySelectorAll('.rf155-download').forEach((link)=>{if(!/^\/api\/(music-download|audius-download)\?/.test(link.getAttribute('href')||''))return;link.addEventListener('click',async(e)=>{e.preventDefault();if(link.dataset.busy==='1')return;link.dataset.busy='1';link.style.opacity='.55';try{const response=await fetch(link.href,{cache:'no-store'});const type=(response.headers.get('content-type')||'').toLowerCase();if(!response.ok||(!type.includes('audio/')&&!type.includes('octet-stream'))){let detail='';try{const data=await response.json();detail=data.error||''}catch{}throw Error(detail||'فایل صوتی در حال حاضر قابل دانلود نیست.')}const blob=await response.blob();if(blob.size<1024||blob.type.includes('json'))throw Error('فایل صوتی معتبر دریافت نشد.');const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=(link.href.includes('audius-download')?'audius-':'freesound-')+new URL(link.href,location.href).searchParams.get('id')+'.mp3';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000)}catch(error){alert(error.message+'\nاین آهنگ فعلاً دانلود مستقیم ندارد. آهنگ دیگری را امتحان کنید.')}finally{link.dataset.busy='';link.style.opacity=''}})});
 const pagination=el('rf166pagination');if(pagination){const total=j.totalIsExact?Math.max(0,Number(j.total)||0):((page-1)*musicLimit+tracks.length+(j.hasNext?musicLimit:0)),max=Math.max(1,Math.ceil(total/musicLimit)),buttons=[];const add=(n,label,disabled=false,active=false)=>buttons.push('<button type="button" data-page="'+n+'" '+(disabled?'disabled':'')+' '+(active?'class="active"':'')+'>'+label+'</button>');add(page-1,'قبلی',page<=1);for(let k=Math.max(1,page-2);k<=Math.min(max,page+2);k++)add(k,fa(k),false,k===page);add(page+1,'بعدی',page>=max||j.hasNext===false);pagination.innerHTML=max>1?buttons.join(''):'';pagination.querySelectorAll('[data-page]').forEach(btn=>btn.onclick=()=>{const next=Number(btn.dataset.page);if(next>0&&next<=max){search(currentQuery,next);el('rf142')?.scrollIntoView({behavior:'smooth',block:'start'})}})}
-body.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>{
+body.querySelectorAll('[data-play]').forEach(b=>{
+ const idx=Number(b.dataset.play),track=tracks[idx];
+ if(track?.source==='Appwrite'){
+  b.addEventListener('pointerenter',()=>rfWarm(track.files.mp3),{once:true});
+  b.addEventListener('touchstart',()=>rfWarm(track.files.mp3),{once:true,passive:true});
+ }
+ b.onclick=()=>{
  const i=Number(b.dataset.play),src=String(tracks[i]?.files?.mp3||'');
  if(playing===i){if(audio.paused)audio.play().catch(()=>{playing=-1;update();alert('پخش از سایت مبدأ امکان‌پذیر نیست.');});else audio.pause();return;}
  // V0181: No MajidAPI/Melobit resolution or fallback. Play only genuine HTTPS audio URLs.
  let url;try{url=new URL(src);if(url.protocol!=='https:')throw Error('invalid')}catch{alert('این آهنگ لینک مستقیم و معتبر برای پخش ندارد.');return;}
  audio.pause();rfPendingSeek=null;rfSeekingByUser=false;
  // V0211: reuse an already-warmed media resource and avoid an unnecessary explicit reload.
- if(audio.src!==url.href){audio.preload='auto';audio.src=url.href;}
+ if(audio.src!==url.href){
+  // Reuse the warmed element's buffered media rather than starting a second fetch.
+  const warm=rfWarmCache.get(url.href);
+  if(warm){
+   const previous=audio;
+   // The main audio element is kept for seek and event listeners; browser cache
+   // can reuse the warmed request when the URL is assigned here.
+   audio.preload='auto';audio.src=url.href;
+  }else{audio.preload='auto';audio.src=url.href;}
+ }
  playing=i;update();
  audio.play().catch(()=>{if(playing===i){playing=-1;update();alert('پخش فایل صوتی از سایت مبدأ امکان‌پذیر نیست.')}});
-});
+};});
 
 audio.onerror=()=>{if(playing>=0){playing=-1;update();alert('لینک صوتی سایت مبدأ در دسترس نیست یا اجازه پخش مستقیم نمی‌دهد.')}};audio.onplay=update;audio.onpause=update;audio.onended=()=>{playing=-1;update()};
 // V0209: retain seek requests until media metadata/seekable ranges are available.
