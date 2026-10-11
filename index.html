@@ -2750,6 +2750,13 @@ body.className='rf142-grid';
 const rf192Category={'news broadcast intro':'خبری','political documentary':'سیاسی','sports energetic':'ورزشی','epic orchestral':'حماسی','cinematic soundtrack':'سینمایی','action suspense':'هیجانی','calm ambient':'آرام','sad emotional':'غمگین','upbeat energetic':'پرانرژی','dramatic tension':'دراماتیک','technology electronic':'فناوری','documentary ambient':'مستند'};
 const rf192PersianTitle=(title,index)=>{
  const raw=String(title||'').trim();if(!raw)return 'قطعه موسیقی '+fa(index+1);
+ // V0207: When a filename arrives as just (10), retain its category label in the UI.
+ // Do not change the original file, metadata, search, downloads, or video results.
+ const numericOnly=raw.match(/^\s*[（(]?\s*([0-9۰-۹٠-٩]+)\s*[）)]?\s*$/u);
+ if(numericOnly){
+  const label=({ 'news broadcast intro':'خبری','political documentary':'سیاسی','sports energetic':'ورزشی','epic orchestral':'حماسی','cinematic soundtrack':'سینمایی','action suspense':'هیجانی','calm ambient':'آرام','sad emotional':'غمگین','upbeat energetic':'پرانرژی','dramatic tension':'دراماتیک','technology electronic':'فناوری','documentary ambient':'مستند' })[currentQuery] || (/^[\u0600-\u06ff\s]+$/.test(String(currentQuery||''))?String(currentQuery).trim():'');
+  if(label)return label+' '+fa(numericOnly[1]);
+ }
  if(/[\u0600-\u06ff]/.test(raw)&&!/[a-z]{3,}/i.test(raw))return raw;
  const map=[[/news|broadcast/i,'خبری'],[/sport|stadium/i,'ورزشی'],[/epic|heroic|orchestral/i,'حماسی'],[/cinematic|soundtrack|trailer|film|movie/i,'سینمایی'],[/dramatic|tension|suspense/i,'دراماتیک'],[/electronic|technology|synth/i,'الکترونیک'],[/calm|peace|ambient|relax/i,'آرام'],[/sad|melanchol|emotional/i,'احساسی'],[/action|thriller/i,'هیجانی'],[/happy|upbeat|energy/i,'پرانرژی'],[/documentary/i,'مستند']];
  const kind=map.find(([re])=>re.test(raw))?.[1]||rf192Category[currentQuery]||'بی‌کلام';
