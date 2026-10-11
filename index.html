@@ -2677,23 +2677,6 @@ object-position:center!important;display:block!important;filter:none!important}
 (()=>{'use strict';
 const map={'بندری':'bandari','جنوبی':'southern iranian music','خبری':'news broadcast intro','سیاسی':'political documentary','ورزشی':'sports energetic','حماسی':'epic orchestral','سینمایی':'cinematic soundtrack','هیجانی':'action suspense','آرام':'calm ambient','غمگین':'sad emotional','انرژی':'upbeat energetic','دراماتیک':'dramatic tension','تکنولوژی':'technology electronic','مستند':'documentary ambient','شمالی':'northern','کردی':'kurdish','لری':'luri','بی‌کلام':'instrumental','پلیسی':'police chase music','جنایی':'crime thriller soundtrack'};
 let tracks=[],playing=-1,seq=0,currentQuery="",currentPage=1;
-let rfPendingSeek=null,rfSeekingByUser=false;
-// V0212: bounded audio warm-up. Only warm the first two Appwrite files
-// after each page renders; warm a hovered/touched item on demand.
-const rfWarmCache=new Map();
-function rfWarm(src){
- if(!src||!/^https:\/\//i.test(src)||rfWarmCache.has(src))return;
- const media=new Audio();media.preload='metadata';media.src=src;
- rfWarmCache.set(src,media);
- media.load();
- while(rfWarmCache.size>3){const [old,oldMedia]=rfWarmCache.entries().next().value;rfWarmCache.delete(old);oldMedia.removeAttribute('src');oldMedia.load();}
-}
-function rfWarmPage(list){
- const connection=navigator.connection;
- if(connection?.saveData||/2g/.test(connection?.effectiveType||''))return;
- list.filter(t=>t.source==='Appwrite').slice(0,2).forEach((t,i)=>setTimeout(()=>rfWarm(t.files.mp3),i*350));
-}
-
 let musicPerPage=Number(localStorage.getItem('rfMusicPerPage')||12);if(![12,24,36].includes(musicPerPage))musicPerPage=12;
 const el=id=>document.getElementById(id), safe=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fa=x=>String(x).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[+d]);
@@ -2707,7 +2690,7 @@ function pageLimit(){try{const v=Number(localStorage.getItem('resultsPerPage')||
 function panel(){const root=el('mu136');if(!root)return;let p=el('rf142');if(!p){p=document.createElement('section');p.id='rf142';root.append(p)}p.innerHTML='<div class="rf142-top"><span>نتایج موزیک واقعی</span><span id="rf142count">آماده جستجو</span><label style="margin-right:auto">تعداد در صفحه <select id="rfMusicPerPage"><option value="12">۱۲</option><option value="24">۲۴</option><option value="36">۳۶</option></select></label></div><div id="rf142body" class="rf142-msg">برای نمایش آهنگ‌ها یک دسته‌بندی انتخاب کنید.</div><audio id="rf142audio" hidden></audio><div id="rf166pagination" class="rf166-pagination"></div>';const picker=p.querySelector('#rfMusicPerPage');if(picker){picker.value=String(musicPerPage);picker.onchange=()=>{musicPerPage=Number(picker.value);localStorage.setItem('rfMusicPerPage',String(musicPerPage));if(currentQuery)search(currentQuery,1)}}return p}
 async function search(q,page=1){
 q=q.trim();if(!q)return;currentQuery=q;currentPage=page;const n=++seq,body=el('rf142body'),audio=el('rf142audio');if(!body)return;
-audio.pause();audio.removeAttribute('src');rfPendingSeek=null;rfSeekingByUser=false;playing=-1;const oldPager=el('rf166pagination');if(oldPager)oldPager.innerHTML='';body.className='rf142-msg';body.textContent='در حال جستجوی موزیک...';
+audio.pause();audio.removeAttribute('src');playing=-1;const oldPager=el('rf166pagination');if(oldPager)oldPager.innerHTML='';body.className='rf142-msg';body.textContent='در حال جستجوی موزیک...';
 try{const iranian=/[\u0600-\u06ff]/.test(q);const categoryClick=Object.prototype.hasOwnProperty.call(map,q);const musicLimit=musicPerPage;let r=await fetch('/api/appwrite-music?q='+encodeURIComponent(q)+'&page='+page+'&limit='+musicLimit,{cache:'no-store'});let j=await r.json();
 // An archive API error must not be disguised as an empty catalog or unrelated provider results.
 if(!r.ok){throw Error('خطا در خواندن آرشیو Appwrite: '+(j.detail||j.error||('HTTP '+r.status)));}
@@ -2738,8 +2721,6 @@ const norm=x=>String(x||'').toLowerCase().replace(/[ي]/g,'ی').replace(/[ك]/g,
 const words=norm(q).split(/\s+/).filter(Boolean);
 const relevance=t=>{
  const title=norm(t.name), artist=norm(t.artist), region=norm(t.region||t.category||''), meta=title+' '+artist+' '+region;
- // Appwrite API already filters by the full stored filename, including category and keywords.
- if(t.source==='Appwrite')return 100;
  const regions={
   northern:/شمالی|گیلکی|مازندرانی|گیلان|مازندران|تالشی|northern|gilaki|mazandarani|mazandaran|gilan|talysh/i,
   kurdish:/کردی|کردستان|کرمانشاه|سنندج|kurdish|kurdi|kurdistan|kermanshah/i,
@@ -2763,18 +2744,10 @@ tracks=(j.data||[]).filter(t=>t?.files?.mp3&&!t.is_premium&&String(t.name||'').t
 el('rf142count').textContent=(j.totalIsExact&&Number.isFinite(Number(j.total))?fa(j.total)+' نتیجه در کل':(j.hasNext?'بیش از '+fa((page-1)*musicLimit+tracks.length)+' نتیجه قابل دانلود':'تا این صفحه '+fa((page-1)*musicLimit+tracks.length)+' نتیجه قابل دانلود'));
 if(!tracks.length){body.textContent=iranian?(j.message||'در آرشیو موسیقی نتیجه‌ای پیدا نشد.'):'آهنگ واقعی و مرتبطی در منابع متصل پیدا نشد.';el('rf142count').textContent='۰ نتیجه';return}
 body.className='rf142-grid';
-rfWarmPage(tracks);
 // Persian descriptive labels: retain the original track name as a tooltip, never claim a literal translation.
 const rf192Category={'news broadcast intro':'خبری','political documentary':'سیاسی','sports energetic':'ورزشی','epic orchestral':'حماسی','cinematic soundtrack':'سینمایی','action suspense':'هیجانی','calm ambient':'آرام','sad emotional':'غمگین','upbeat energetic':'پرانرژی','dramatic tension':'دراماتیک','technology electronic':'فناوری','documentary ambient':'مستند'};
 const rf192PersianTitle=(title,index)=>{
  const raw=String(title||'').trim();if(!raw)return 'قطعه موسیقی '+fa(index+1);
- // V0207: When a filename arrives as just (10), retain its category label in the UI.
- // Do not change the original file, metadata, search, downloads, or video results.
- const numericOnly=raw.match(/^\s*[（(]?\s*([0-9۰-۹٠-٩]+)\s*[）)]?\s*$/u);
- if(numericOnly){
-  const label=({ 'news broadcast intro':'خبری','political documentary':'سیاسی','sports energetic':'ورزشی','epic orchestral':'حماسی','cinematic soundtrack':'سینمایی','action suspense':'هیجانی','calm ambient':'آرام','sad emotional':'غمگین','upbeat energetic':'پرانرژی','dramatic tension':'دراماتیک','technology electronic':'فناوری','documentary ambient':'مستند' })[currentQuery] || (/^[\u0600-\u06ff\s]+$/.test(String(currentQuery||''))?String(currentQuery).trim():'');
-  if(label)return label+' '+fa(numericOnly[1]);
- }
  if(/[\u0600-\u06ff]/.test(raw)&&!/[a-z]{3,}/i.test(raw))return raw;
  const map=[[/news|broadcast/i,'خبری'],[/sport|stadium/i,'ورزشی'],[/epic|heroic|orchestral/i,'حماسی'],[/cinematic|soundtrack|trailer|film|movie/i,'سینمایی'],[/dramatic|tension|suspense/i,'دراماتیک'],[/electronic|technology|synth/i,'الکترونیک'],[/calm|peace|ambient|relax/i,'آرام'],[/sad|melanchol|emotional/i,'احساسی'],[/action|thriller/i,'هیجانی'],[/happy|upbeat|energy/i,'پرانرژی'],[/documentary/i,'مستند']];
  const kind=map.find(([re])=>re.test(raw))?.[1]||rf192Category[currentQuery]||'بی‌کلام';
@@ -2785,80 +2758,23 @@ body.innerHTML=tracks.map((t,i)=>'<article class="rf142-card rf155-row"><div cla
 function update(){body.querySelectorAll('[data-play]').forEach(b=>{const on=+b.dataset.play===playing&&!audio.paused;b.textContent=on?'❚❚':'▶';b.closest('.rf155-row').classList.toggle('rf149-playing',on)})}
 body.querySelectorAll('.rf155-download').forEach((link)=>{if(!/^\/api\/(music-download|audius-download)\?/.test(link.getAttribute('href')||''))return;link.addEventListener('click',async(e)=>{e.preventDefault();if(link.dataset.busy==='1')return;link.dataset.busy='1';link.style.opacity='.55';try{const response=await fetch(link.href,{cache:'no-store'});const type=(response.headers.get('content-type')||'').toLowerCase();if(!response.ok||(!type.includes('audio/')&&!type.includes('octet-stream'))){let detail='';try{const data=await response.json();detail=data.error||''}catch{}throw Error(detail||'فایل صوتی در حال حاضر قابل دانلود نیست.')}const blob=await response.blob();if(blob.size<1024||blob.type.includes('json'))throw Error('فایل صوتی معتبر دریافت نشد.');const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=(link.href.includes('audius-download')?'audius-':'freesound-')+new URL(link.href,location.href).searchParams.get('id')+'.mp3';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000)}catch(error){alert(error.message+'\nاین آهنگ فعلاً دانلود مستقیم ندارد. آهنگ دیگری را امتحان کنید.')}finally{link.dataset.busy='';link.style.opacity=''}})});
 const pagination=el('rf166pagination');if(pagination){const total=j.totalIsExact?Math.max(0,Number(j.total)||0):((page-1)*musicLimit+tracks.length+(j.hasNext?musicLimit:0)),max=Math.max(1,Math.ceil(total/musicLimit)),buttons=[];const add=(n,label,disabled=false,active=false)=>buttons.push('<button type="button" data-page="'+n+'" '+(disabled?'disabled':'')+' '+(active?'class="active"':'')+'>'+label+'</button>');add(page-1,'قبلی',page<=1);for(let k=Math.max(1,page-2);k<=Math.min(max,page+2);k++)add(k,fa(k),false,k===page);add(page+1,'بعدی',page>=max||j.hasNext===false);pagination.innerHTML=max>1?buttons.join(''):'';pagination.querySelectorAll('[data-page]').forEach(btn=>btn.onclick=()=>{const next=Number(btn.dataset.page);if(next>0&&next<=max){search(currentQuery,next);el('rf142')?.scrollIntoView({behavior:'smooth',block:'start'})}})}
-body.querySelectorAll('[data-play]').forEach(b=>{
- const idx=Number(b.dataset.play),track=tracks[idx];
- if(track?.source==='Appwrite'){
-  b.addEventListener('pointerenter',()=>rfWarm(track.files.mp3),{once:true});
-  b.addEventListener('touchstart',()=>rfWarm(track.files.mp3),{once:true,passive:true});
- }
- b.onclick=()=>{
+body.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>{
  const i=Number(b.dataset.play),src=String(tracks[i]?.files?.mp3||'');
  if(playing===i){if(audio.paused)audio.play().catch(()=>{playing=-1;update();alert('پخش از سایت مبدأ امکان‌پذیر نیست.');});else audio.pause();return;}
  // V0181: No MajidAPI/Melobit resolution or fallback. Play only genuine HTTPS audio URLs.
  let url;try{url=new URL(src);if(url.protocol!=='https:')throw Error('invalid')}catch{alert('این آهنگ لینک مستقیم و معتبر برای پخش ندارد.');return;}
- audio.pause();rfPendingSeek=null;rfSeekingByUser=false;rfStopSeekTimer();rfSeekAttempts=0;
- // V0211: reuse an already-warmed media resource and avoid an unnecessary explicit reload.
- if(audio.src!==url.href){
-  // Reuse the warmed element's buffered media rather than starting a second fetch.
-  const warm=rfWarmCache.get(url.href);
-  if(warm){
-   const previous=audio;
-   // The main audio element is kept for seek and event listeners; browser cache
-   // can reuse the warmed request when the URL is assigned here.
-   audio.preload='auto';audio.src=url.href;
-  }else{audio.preload='auto';audio.src=url.href;}
- }
- playing=i;update();
+ audio.pause();audio.src=url.href;audio.load();playing=i;update();
  audio.play().catch(()=>{if(playing===i){playing=-1;update();alert('پخش فایل صوتی از سایت مبدأ امکان‌پذیر نیست.')}});
-};});
+});
 
 audio.onerror=()=>{if(playing>=0){playing=-1;update();alert('لینک صوتی سایت مبدأ در دسترس نیست یا اجازه پخش مستقیم نمی‌دهد.')}};audio.onplay=update;audio.onpause=update;audio.onended=()=>{playing=-1;update()};
-// V0214: Seek controls shared by every music category. Keep the request while
-// metadata/seekable data loads; never reload the audio URL on a seek.
-const rfDuration=()=>Number.isFinite(audio.duration)&&audio.duration>0?audio.duration:0;
-const rfRefreshDuration=()=>{if(playing<0)return;const meta=body.querySelector('[data-play="'+playing+'"]')?.closest('.rf155-row')?.querySelector('.rf142-meta');if(meta&&rfDuration()){const time=meta.querySelector('[data-time]');if(time){const total=meta.firstChild;if(total&&total.nodeType===3)total.textContent=clock(rfDuration())+' | ';}}};
-let rfSeekAttempts=0,rfSeekTimer=null;
-const rfStopSeekTimer=()=>{if(rfSeekTimer!==null){clearTimeout(rfSeekTimer);rfSeekTimer=null;}};
-const rfApplySeek=()=>{
- if(rfPendingSeek===null||!rfDuration()||audio.readyState<1)return;
- const target=Math.max(0,Math.min(rfDuration()-.05,rfPendingSeek*rfDuration()));
- try{
-  // Browsers may accept currentTime before the remote server has made a byte
-  // range seekable. Keep retrying briefly instead of silently losing the seek.
-  audio.currentTime=target;
-  if(Math.abs(audio.currentTime-target)<1){rfPendingSeek=null;rfSeekingByUser=false;rfStopSeekTimer();return;}
- }catch(e){}
- if(++rfSeekAttempts<18){rfStopSeekTimer();rfSeekTimer=setTimeout(rfApplySeek,350);}
- else{rfPendingSeek=null;rfSeekingByUser=false;rfStopSeekTimer();}
-};
-// Assignment, not addEventListener: search() rebuilds the list on every page
-// and must not accumulate stale seek handlers.
-audio.onloadedmetadata=()=>{rfRefreshDuration();rfApplySeek()};
-audio.ondurationchange=()=>{rfRefreshDuration();rfApplySeek()};
-audio.oncanplay=rfApplySeek;
-audio.onprogress=rfApplySeek;
-audio.onseeked=()=>{if(rfPendingSeek!==null)rfApplySeek();else rfSeekingByUser=false;};
-audio.ontimeupdate=()=>{if(playing<0)return;const range=body.querySelector('[data-seek="'+playing+'"]'),time=body.querySelector('[data-time="'+playing+'"]');if(range&&rfDuration()&&!rfSeekingByUser)range.value=Math.round(audio.currentTime/rfDuration()*1000);if(time)time.textContent=clock(audio.currentTime);rfRefreshDuration()};
-body.querySelectorAll('[data-seek]').forEach(x=>{
- const request=()=>{
-  const i=+x.dataset.seek;
-  if(playing!==i){body.querySelector('[data-play="'+i+'"]')?.click();}
-  rfPendingSeek=Math.max(0,Math.min(1,Number(x.value)/1000));
-  rfSeekingByUser=true;rfSeekAttempts=0;rfStopSeekTimer();rfApplySeek();
- };
- x.addEventListener('input',request);
- x.addEventListener('change',request);
-});
+audio.ontimeupdate=()=>{if(playing<0)return;const range=body.querySelector('[data-seek="'+playing+'"]'),time=body.querySelector('[data-time="'+playing+'"]');if(range&&audio.duration)range.value=Math.round(audio.currentTime/audio.duration*1000);if(time)time.textContent=clock(audio.currentTime)};
+body.querySelectorAll('[data-seek]').forEach(x=>x.oninput=()=>{const i=+x.dataset.seek;if(playing!==i)body.querySelector('[data-play="'+i+'"]').click();if(audio.duration)audio.currentTime=audio.duration*x.value/1000});
 body.querySelectorAll('[data-expand]').forEach(x=>x.onclick=()=>{const d=x.closest('.rf155-row').querySelector('.rf155-details');d.hidden=!d.hidden});
 body.querySelectorAll('[data-skip]').forEach(x=>x.onclick=()=>{const i=+x.closest('.rf155-row').querySelector('[data-play]').dataset.play;if(playing!==i)body.querySelector('[data-play="'+i+'"]').click();if(audio.duration)audio.currentTime=Math.max(0,Math.min(audio.duration,audio.currentTime+(+x.dataset.skip)))});
 }catch(e){if(n!==seq)return;body.className='rf142-msg';body.textContent='خطا در دریافت موزیک: '+e.message;el('rf142count').textContent='خطای اتصال'}
 }
-function init(){const root=el('mu136');if(!root)return;
- // Establish TLS connection early to the archive host (no audio file is downloaded).
- if(!document.querySelector('link[data-rf-appwrite-preconnect]')){
-  const link=document.createElement('link');link.rel='preconnect';link.href='https://fra.cloud.appwrite.io';link.crossOrigin='anonymous';link.dataset.rfAppwritePreconnect='1';document.head.appendChild(link);
- }
- panel();root.querySelectorAll('.mu136-cat').forEach(b=>b.addEventListener('click',e=>{e.stopImmediatePropagation();e.preventDefault();const q=b.dataset.q||b.textContent.trim();el('mu136q').value=q;search(q)},true));const input=el('mu136q'),btn=el('mu136search');btn?.addEventListener('click',e=>{e.stopImmediatePropagation();e.preventDefault();search(input.value)},true);input?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.stopImmediatePropagation();e.preventDefault();search(input.value)}},true)}
+function init(){const root=el('mu136');if(!root)return;panel();root.querySelectorAll('.mu136-cat').forEach(b=>b.addEventListener('click',e=>{e.stopImmediatePropagation();e.preventDefault();const q=b.dataset.q||b.textContent.trim();el('mu136q').value=q;search(q)},true));const input=el('mu136q'),btn=el('mu136search');btn?.addEventListener('click',e=>{e.stopImmediatePropagation();e.preventDefault();search(input.value)},true);input?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.stopImmediatePropagation();e.preventDefault();search(input.value)}},true)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script><style id="v0144-layout-fix">
@@ -3072,7 +2988,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <body>
 <aside class="sidebar">
 <div class="sidebrand sidebrand-final"><img src="assets/logos/rushfinder-sidebar-white.webp" alt="RushFinder"></div><nav class="nav"><button class="active"><i>▦</i><span>داشبورد</span></button>
-<button><i>⚙</i><span>تنظیمات</span></button></nav>
+<button><i>⚙</i><span>تنظیمات</span></button><button type="button" onclick="rfOpenLanRush(event)"><i>▣</i><span>راش شبکه شرکت</span></button></nav>
 
 
 </div>
@@ -4095,5 +4011,14 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 #mu136.active #rf142{margin-top:8px!important;}
 #mu136.active .mu136-tools,#mu136.active #mu136results{display:none!important;margin:0!important;padding:0!important;}
 </style>
-</body>
+<script>
+function rfOpenLanRush(event){
+  if(event)event.stopPropagation();
+  let addr=localStorage.getItem('rfLanRushAddress')||'';
+  if(!addr){addr=prompt('آدرس آرشیو داخلی راش را وارد کنید (مثلاً http://192.168.40.25:8787). این آدرس، IP کامپیوتری است که برنامه آرشیو روی آن اجرا می‌شود.','')||'';}
+  if(!addr)return;
+  try{const u=new URL(addr);if(u.protocol!=='http:'&&u.protocol!=='https:')throw Error();localStorage.setItem('rfLanRushAddress',u.origin);window.open(u.origin,'_blank','noopener');}
+  catch(_){alert('آدرس معتبر وارد کنید؛ مانند http://192.168.40.25:8787');}
+}
+</script></body>
 </html>
