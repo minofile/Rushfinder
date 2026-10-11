@@ -18,9 +18,20 @@ module.exports = async function handler(req,res){
   if(!r.ok)return res.status(502).json({error:'دریافت فایل‌های آرشیو انجام نشد.',detail:j.message||String(r.status),status:r.status});
   const normalized=x=>String(x||'').toLowerCase().replace(/ي/g,'ی').replace(/ك/g,'ک');
   const all=(j.files||[]).filter(f=>/\.(mp3|ogg|oga|wav|m4a|flac)$/i.test(f.name||''));
-  const matches=(!q||/^(موزیک|موسیقی|music|all|همه)$/.test(q))?all:all.filter(f=>normalized(f.name).includes(normalized(q)));
+  const regionTerms={
+   northern:/شمالی|گیلکی|مازندرانی|گیلان|مازندران|تالشی|northern|gilaki|mazandarani|mazandaran|gilan|talysh/i,
+   kurdish:/کردی|کردستان|کرمانشاه|سنندج|kurdish|kurdi|kurdistan|kermanshah/i,
+   bandari:/بندری|جنوبی|هرمزگان|بندرعباس|bandari|southern|hormozgan|bandarabbas/i
+  };
+  const requested=Object.keys(regionTerms).find(k=>regionTerms[k].test(q));
+  const fileRegion=f=>{
+   const name=normalized(f.name||'');
+   const explicit=normalized((f.region||f.category||'')+' '+(f.$permissions||[]).join(' '));
+   return Object.keys(regionTerms).find(k=>regionTerms[k].test(name+' '+explicit))||'';
+  };
+  const matches=(!q||/^(موزیک|موسیقی|music|all|همه)$/.test(q))?all:requested?all.filter(f=>fileRegion(f)===requested):all.filter(f=>normalized(f.name).includes(normalized(q)));
   const sliced=matches.slice((page-1)*limit,page*limit);
-  const data=sliced.map(f=>{const base=`${api}/storage/buckets/${encodeURIComponent(bucket)}/files/${encodeURIComponent(f.$id)}`;const suffix=`?project=${encodeURIComponent(project)}`;return {id:'appwrite-'+f.$id,name:f.name.replace(/\.(mp3|ogg|oga|wav|m4a|flac)$/i,''),artist:'',duration:0,source:'Appwrite',download_allowed:true,is_premium:false,files:{mp3:base+'/view'+suffix,download:base+'/download'+suffix}}});
+  const data=sliced.map(f=>{const base=`${api}/storage/buckets/${encodeURIComponent(bucket)}/files/${encodeURIComponent(f.$id)}`;const suffix=`?project=${encodeURIComponent(project)}`;return {id:'appwrite-'+f.$id,name:f.name.replace(/\.(mp3|ogg|oga|wav|m4a|flac)$/i,''),artist:'',region:fileRegion(f),duration:0,source:'Appwrite',download_allowed:true,is_premium:false,files:{mp3:base+'/view'+suffix,download:base+'/download'+suffix}}});
   res.status(200).json({data,total:matches.length,totalIsExact:j.total<=100,hasNext:page*limit<matches.length,page,source:'Appwrite'});
  }catch(e){res.status(502).json({error:'ارتباط با آرشیو موسیقی برقرار نشد.',detail:e.message})}
 };

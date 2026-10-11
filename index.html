@@ -2691,7 +2691,7 @@ function panel(){const root=el('mu136');if(!root)return;let p=el('rf142');if(!p)
 async function search(q,page=1){
 q=q.trim();if(!q)return;currentQuery=q;currentPage=page;const n=++seq,body=el('rf142body'),audio=el('rf142audio');if(!body)return;
 audio.pause();audio.removeAttribute('src');playing=-1;const oldPager=el('rf166pagination');if(oldPager)oldPager.innerHTML='';body.className='rf142-msg';body.textContent='در حال جستجوی موزیک...';
-try{const iranian=/[\u0600-\u06ff]/.test(q)&&!Object.prototype.hasOwnProperty.call(map,q);const categoryClick=Object.prototype.hasOwnProperty.call(map,q);const musicLimit=musicPerPage;let r=await fetch('/api/appwrite-music?q='+encodeURIComponent(q)+'&page='+page+'&limit='+musicLimit);let j=await r.json();
+try{const iranian=/[\u0600-\u06ff]/.test(q);const categoryClick=Object.prototype.hasOwnProperty.call(map,q);const musicLimit=musicPerPage;let r=await fetch('/api/appwrite-music?q='+encodeURIComponent(q)+'&page='+page+'&limit='+musicLimit);let j=await r.json();
 // Prefer real, publicly readable tracks in the user's own archive; fall back to existing licensed providers.
 if(!r.ok||!(j.data||[]).length){r=await fetch(iranian?'/api/iranian-music?q='+encodeURIComponent(q)+'&page='+page+'&limit='+musicLimit:'/api/music?q='+encodeURIComponent(map[q]||q)+'&page='+page+'&limit='+musicLimit);j=await r.json();}
 // V0178: Never replace a specific Persian music search with unrelated generic tracks.
@@ -2712,14 +2712,21 @@ if(iranian&&!(j.data||[]).length){
 const norm=x=>String(x||'').toLowerCase().replace(/[ي]/g,'ی').replace(/[ك]/g,'ک').replace(/[\u200c\u200f]/g,' ').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
 const words=norm(q).split(/\s+/).filter(Boolean);
 const relevance=t=>{
- const title=norm(t.name), artist=norm(t.artist), meta=title+' '+artist;
+ const title=norm(t.name), artist=norm(t.artist), region=norm(t.region||t.category||''), meta=title+' '+artist+' '+region;
+ const regions={
+  northern:/شمالی|گیلکی|مازندرانی|گیلان|مازندران|تالشی|northern|gilaki|mazandarani|mazandaran|gilan|talysh/i,
+  kurdish:/کردی|کردستان|کرمانشاه|سنندج|kurdish|kurdi|kurdistan|kermanshah/i,
+  bandari:/بندری|جنوبی|هرمزگان|بندرعباس|bandari|southern|hormozgan|bandarabbas/i
+ };
+ const requested=Object.keys(regions).find(k=>regions[k].test(q));
+ if(requested){
+  if(region===requested)return 200;
+  return regions[requested].test(meta)?100:-1;
+ }
+ const words=norm(q).split(/\s+/).filter(Boolean);
  if(!words.length)return 0;
  const hit=words.filter(w=>meta.includes(w)).length;
- const bandari=/بندری|جنوبی/.test(q), happy=/شاد|رقص/.test(q);
- if(bandari&&!/(بندر|جنوب|bandar|southern)/i.test(meta))return -1;
- if(happy&&!/(شاد|رقص|عروسی|مبارک|جشن|dance|party|upbeat|happy)/i.test(meta))return -1;
- if(hit===0)return -1;
- return (hit===words.length?100:0)+hit*10+(title===norm(q)?100:0);
+ return hit?hit*10+(hit===words.length?100:0):-1;
 };
 const seenTracks=new Set();
 tracks=(j.data||[]).filter(t=>t?.files?.mp3&&!t.is_premium&&String(t.name||'').trim()).map(t=>({t,score:iranian?relevance(t):0})).filter(x=>x.score>=0).sort((a,b)=>b.score-a.score).map(x=>x.t).filter(t=>t.download_allowed===true&&t.files?.download).filter(t=>{const key=norm(t.name)+'|'+norm(t.artist);if(seenTracks.has(key))return false;seenTracks.add(key);return true;});
