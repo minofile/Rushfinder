@@ -2675,7 +2675,7 @@ object-position:center!important;display:block!important;filter:none!important}
 </style>
 <script id="v0157-music-functional">
 (()=>{'use strict';
-const map={'بندری':'bandari','جنوبی':'southern iranian music','خبری':'news broadcast intro','سیاسی':'political documentary','ورزشی':'sports energetic','حماسی':'epic orchestral','سینمایی':'cinematic soundtrack','هیجانی':'action suspense','آرام':'calm ambient','غمگین':'sad emotional','انرژی':'upbeat energetic','دراماتیک':'dramatic tension','تکنولوژی':'technology futuristic','مستند':'documentary background'};
+const map={'بندری':'bandari','جنوبی':'southern iranian music','خبری':'news broadcast intro','سیاسی':'political documentary','ورزشی':'sports energetic','حماسی':'epic orchestral','سینمایی':'cinematic soundtrack','هیجانی':'action suspense','آرام':'calm ambient','غمگین':'sad emotional','انرژی':'upbeat energetic','دراماتیک':'dramatic tension','تکنولوژی':'technology electronic','مستند':'documentary ambient','شمالی':'northern','کردی':'kurdish','لری':'luri','بی‌کلام':'instrumental','پلیسی':'police chase music','جنایی':'crime thriller soundtrack'};
 let tracks=[],playing=-1,seq=0,currentQuery="",currentPage=1;
 let musicPerPage=Number(localStorage.getItem('rfMusicPerPage')||12);if(![12,24,36].includes(musicPerPage))musicPerPage=12;
 const el=id=>document.getElementById(id), safe=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -2693,7 +2693,13 @@ q=q.trim();if(!q)return;currentQuery=q;currentPage=page;const n=++seq,body=el('r
 audio.pause();audio.removeAttribute('src');playing=-1;const oldPager=el('rf166pagination');if(oldPager)oldPager.innerHTML='';body.className='rf142-msg';body.textContent='در حال جستجوی موزیک...';
 try{const iranian=/[\u0600-\u06ff]/.test(q);const categoryClick=Object.prototype.hasOwnProperty.call(map,q);const musicLimit=musicPerPage;let r=await fetch('/api/appwrite-music?q='+encodeURIComponent(q)+'&page='+page+'&limit='+musicLimit);let j=await r.json();
 // Prefer real, publicly readable tracks in the user's own archive; fall back to existing licensed providers.
-if(!r.ok||!(j.data||[]).length){r=await fetch(iranian?'/api/iranian-music?q='+encodeURIComponent(q)+'&page='+page+'&limit='+musicLimit:'/api/music?q='+encodeURIComponent(map[q]||q)+'&page='+page+'&limit='+musicLimit);j=await r.json();}
+if(!r.ok||!(j.data||[]).length){
+ // Persian editorial categories belong to the general licensed music search, not the Iranian RSS feed.
+ const localRegion=/بندری|جنوبی|کردی|شمالی|گیلکی|مازندرانی|لری|ایرانی|فارسی/.test(q);
+ const provider=localRegion?'/api/iranian-music':'/api/music';
+ r=await fetch(provider+'?q='+encodeURIComponent(localRegion?q:(map[q]||q))+'&page='+page+'&limit='+musicLimit);
+ j=await r.json();
+}
 // V0178: Never replace a specific Persian music search with unrelated generic tracks.
 if(!r.ok){
  const limited=/rate limit|سقف|محدودیت/i.test([j.error,j.detail].join(' '));
@@ -2723,10 +2729,13 @@ const relevance=t=>{
   if(region===requested)return 200;
   return regions[requested].test(meta)?100:-1;
  }
- const words=norm(q).split(/\s+/).filter(Boolean);
+ const searchTerm=map[q]||q;
+ const words=norm(searchTerm).split(/\s+/).filter(Boolean);
  if(!words.length)return 0;
+ // Provider already searched for the translated editorial category; use source metadata
+ // for a soft relevance rank instead of incorrectly rejecting every English title.
  const hit=words.filter(w=>meta.includes(w)).length;
- return hit?hit*10+(hit===words.length?100:0):-1;
+ return hit?hit*10+(hit===words.length?100:0):((categoryClick&&t.source!=='Appwrite')?0:-1);
 };
 const seenTracks=new Set();
 tracks=(j.data||[]).filter(t=>t?.files?.mp3&&!t.is_premium&&String(t.name||'').trim()).map(t=>({t,score:iranian?relevance(t):0})).filter(x=>x.score>=0).sort((a,b)=>b.score-a.score).map(x=>x.t).filter(t=>t.download_allowed===true&&t.files?.download).filter(t=>{const key=norm(t.name)+'|'+norm(t.artist);if(seenTracks.has(key))return false;seenTracks.add(key);return true;});

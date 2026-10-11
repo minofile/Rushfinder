@@ -12,10 +12,18 @@ module.exports = async function handler(req,res){
  const headers={'X-Appwrite-Project':project,'Accept':'application/json'};
  if(key)headers['X-Appwrite-Key']=key;
  try{
-  const params=new URLSearchParams();params.append('queries[]','limit(100)');params.append('queries[]','orderDesc("$createdAt")');
-  const r=await fetch(`${api}/storage/buckets/${encodeURIComponent(bucket)}/files?${params}`,{headers,signal:AbortSignal.timeout(9000)});
-  const j=await r.json();
-  if(!r.ok)return res.status(502).json({error:'دریافت فایل‌های آرشیو انجام نشد.',detail:j.message||String(r.status),status:r.status});
+  const collected=[];let cursor='',lastTotal=0;
+  for(let batch=0;batch<10;batch++){
+   const params=new URLSearchParams();params.append('queries[]','limit(100)');params.append('queries[]','orderDesc("$createdAt")');
+   if(cursor)params.append('queries[]','cursorAfter("'+cursor+'")');
+   const r=await fetch(`${api}/storage/buckets/${encodeURIComponent(bucket)}/files?${params}`,{headers,signal:AbortSignal.timeout(9000)});
+   const j=await r.json();
+   if(!r.ok)return res.status(502).json({error:'دریافت فایل‌های آرشیو انجام نشد.',detail:j.message||String(r.status),status:r.status});
+   const files=j.files||[];lastTotal=Number(j.total)||0;collected.push(...files);
+   if(files.length<100||collected.length>=lastTotal)break;
+   cursor=files[files.length-1].$id;
+  }
+  const j={files:collected,total:lastTotal};
   const normalized=x=>String(x||'').toLowerCase().replace(/ي/g,'ی').replace(/ك/g,'ک');
   const all=(j.files||[]).filter(f=>/\.(mp3|ogg|oga|wav|m4a|flac)$/i.test(f.name||''));
   const regionTerms={
@@ -32,6 +40,6 @@ module.exports = async function handler(req,res){
   const matches=(!q||/^(موزیک|موسیقی|music|all|همه)$/.test(q))?all:requested?all.filter(f=>fileRegion(f)===requested):all.filter(f=>normalized(f.name).includes(normalized(q)));
   const sliced=matches.slice((page-1)*limit,page*limit);
   const data=sliced.map(f=>{const base=`${api}/storage/buckets/${encodeURIComponent(bucket)}/files/${encodeURIComponent(f.$id)}`;const suffix=`?project=${encodeURIComponent(project)}`;return {id:'appwrite-'+f.$id,name:f.name.replace(/\.(mp3|ogg|oga|wav|m4a|flac)$/i,''),artist:'',region:fileRegion(f),duration:0,source:'Appwrite',download_allowed:true,is_premium:false,files:{mp3:base+'/view'+suffix,download:base+'/download'+suffix}}});
-  res.status(200).json({data,total:matches.length,totalIsExact:j.total<=100,hasNext:page*limit<matches.length,page,source:'Appwrite'});
+  res.status(200).json({data,total:matches.length,totalIsExact:j.total<=collected.length,hasNext:page*limit<matches.length,page,source:'Appwrite'});
  }catch(e){res.status(502).json({error:'ارتباط با آرشیو موسیقی برقرار نشد.',detail:e.message})}
 };
