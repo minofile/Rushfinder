@@ -2796,7 +2796,7 @@ body.querySelectorAll('[data-play]').forEach(b=>{
  if(playing===i){if(audio.paused)audio.play().catch(()=>{playing=-1;update();alert('پخش از سایت مبدأ امکان‌پذیر نیست.');});else audio.pause();return;}
  // V0181: No MajidAPI/Melobit resolution or fallback. Play only genuine HTTPS audio URLs.
  let url;try{url=new URL(src);if(url.protocol!=='https:')throw Error('invalid')}catch{alert('این آهنگ لینک مستقیم و معتبر برای پخش ندارد.');return;}
- audio.pause();rfPendingSeek=null;rfSeekingByUser=false;
+ audio.pause();rfPendingSeek=null;rfSeekingByUser=false;rfStopSeekTimer();rfSeekAttempts=0;
  // V0211: reuse an already-warmed media resource and avoid an unnecessary explicit reload.
  if(audio.src!==url.href){
   // Reuse the warmed element's buffered media rather than starting a second fetch.
@@ -2813,17 +2813,42 @@ body.querySelectorAll('[data-play]').forEach(b=>{
 };});
 
 audio.onerror=()=>{if(playing>=0){playing=-1;update();alert('لینک صوتی سایت مبدأ در دسترس نیست یا اجازه پخش مستقیم نمی‌دهد.')}};audio.onplay=update;audio.onpause=update;audio.onended=()=>{playing=-1;update()};
-// V0209: retain seek requests until media metadata/seekable ranges are available.
+// V0214: Seek controls shared by every music category. Keep the request while
+// metadata/seekable data loads; never reload the audio URL on a seek.
 const rfDuration=()=>Number.isFinite(audio.duration)&&audio.duration>0?audio.duration:0;
 const rfRefreshDuration=()=>{if(playing<0)return;const meta=body.querySelector('[data-play="'+playing+'"]')?.closest('.rf155-row')?.querySelector('.rf142-meta');if(meta&&rfDuration()){const time=meta.querySelector('[data-time]');if(time){const total=meta.firstChild;if(total&&total.nodeType===3)total.textContent=clock(rfDuration())+' | ';}}};
-const rfApplySeek=()=>{if(rfPendingSeek===null||!rfDuration())return;const target=Math.min(Math.max(0,rfPendingSeek*rfDuration()),Math.max(0,rfDuration()-.05));try{audio.currentTime=target;rfPendingSeek=null;rfSeekingByUser=false;}catch(e){/* Retry on canplay / progress */}};
-audio.addEventListener('loadedmetadata',()=>{rfRefreshDuration();rfApplySeek()});
-audio.addEventListener('durationchange',()=>{rfRefreshDuration();rfApplySeek()});
-audio.addEventListener('canplay',rfApplySeek);
-audio.addEventListener('progress',rfApplySeek);
-audio.addEventListener('seeked',()=>{rfSeekingByUser=false});
+let rfSeekAttempts=0,rfSeekTimer=null;
+const rfStopSeekTimer=()=>{if(rfSeekTimer!==null){clearTimeout(rfSeekTimer);rfSeekTimer=null;}};
+const rfApplySeek=()=>{
+ if(rfPendingSeek===null||!rfDuration()||audio.readyState<1)return;
+ const target=Math.max(0,Math.min(rfDuration()-.05,rfPendingSeek*rfDuration()));
+ try{
+  // Browsers may accept currentTime before the remote server has made a byte
+  // range seekable. Keep retrying briefly instead of silently losing the seek.
+  audio.currentTime=target;
+  if(Math.abs(audio.currentTime-target)<1){rfPendingSeek=null;rfSeekingByUser=false;rfStopSeekTimer();return;}
+ }catch(e){}
+ if(++rfSeekAttempts<18){rfStopSeekTimer();rfSeekTimer=setTimeout(rfApplySeek,350);}
+ else{rfPendingSeek=null;rfSeekingByUser=false;rfStopSeekTimer();}
+};
+// Assignment, not addEventListener: search() rebuilds the list on every page
+// and must not accumulate stale seek handlers.
+audio.onloadedmetadata=()=>{rfRefreshDuration();rfApplySeek()};
+audio.ondurationchange=()=>{rfRefreshDuration();rfApplySeek()};
+audio.oncanplay=rfApplySeek;
+audio.onprogress=rfApplySeek;
+audio.onseeked=()=>{if(rfPendingSeek!==null)rfApplySeek();else rfSeekingByUser=false;};
 audio.ontimeupdate=()=>{if(playing<0)return;const range=body.querySelector('[data-seek="'+playing+'"]'),time=body.querySelector('[data-time="'+playing+'"]');if(range&&rfDuration()&&!rfSeekingByUser)range.value=Math.round(audio.currentTime/rfDuration()*1000);if(time)time.textContent=clock(audio.currentTime);rfRefreshDuration()};
-body.querySelectorAll('[data-seek]').forEach(x=>{const request=()=>{const i=+x.dataset.seek;if(playing!==i)body.querySelector('[data-play="'+i+'"]').click();rfPendingSeek=Number(x.value)/1000;rfSeekingByUser=true;rfApplySeek()};x.addEventListener('input',request);x.addEventListener('change',request)});
+body.querySelectorAll('[data-seek]').forEach(x=>{
+ const request=()=>{
+  const i=+x.dataset.seek;
+  if(playing!==i){body.querySelector('[data-play="'+i+'"]')?.click();}
+  rfPendingSeek=Math.max(0,Math.min(1,Number(x.value)/1000));
+  rfSeekingByUser=true;rfSeekAttempts=0;rfStopSeekTimer();rfApplySeek();
+ };
+ x.addEventListener('input',request);
+ x.addEventListener('change',request);
+});
 body.querySelectorAll('[data-expand]').forEach(x=>x.onclick=()=>{const d=x.closest('.rf155-row').querySelector('.rf155-details');d.hidden=!d.hidden});
 body.querySelectorAll('[data-skip]').forEach(x=>x.onclick=()=>{const i=+x.closest('.rf155-row').querySelector('[data-play]').dataset.play;if(playing!==i)body.querySelector('[data-play="'+i+'"]').click();if(audio.duration)audio.currentTime=Math.max(0,Math.min(audio.duration,audio.currentTime+(+x.dataset.skip)))});
 }catch(e){if(n!==seq)return;body.className='rf142-msg';body.textContent='خطا در دریافت موزیک: '+e.message;el('rf142count').textContent='خطای اتصال'}
