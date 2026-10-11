@@ -2988,7 +2988,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <body>
 <aside class="sidebar">
 <div class="sidebrand sidebrand-final"><img src="assets/logos/rushfinder-sidebar-white.webp" alt="RushFinder"></div><nav class="nav"><button class="active"><i>▦</i><span>داشبورد</span></button>
-<button><i>⚙</i><span>تنظیمات</span></button><button type="button" onclick="rfOpenLanRush(event)"><i>▣</i><span>راش شبکه شرکت</span></button></nav>
+<button type="button" onclick="rfOpenLanRush(event)"><i>▣</i><span>راش‌های شرکت</span></button><button><i>⚙</i><span>تنظیمات</span></button></nav>
 
 
 </div>
@@ -4014,8 +4014,8 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script>
 function rfOpenLanRush(event){
   if(event)event.stopPropagation();
-  let addr=localStorage.getItem('rfLanRushAddress')||'';
-  if(!addr){addr=prompt('آدرس آرشیو داخلی راش را وارد کنید (مثلاً http://192.168.40.25:8787). این آدرس، IP کامپیوتری است که برنامه آرشیو روی آن اجرا می‌شود.','')||'';}
+  let addr=localStorage.getItem('rfLanRushAddress')||'http://192.168.43.69:8787';
+  if(!addr){addr=prompt('آدرس آرشیو داخلی راش را وارد کنید','http://192.168.43.69:8787')||'';}
   if(!addr)return;
   try{const u=new URL(addr);if(u.protocol!=='http:'&&u.protocol!=='https:')throw Error();localStorage.setItem('rfLanRushAddress',u.origin);window.open(u.origin,'_blank','noopener');}
   catch(_){alert('آدرس معتبر وارد کنید؛ مانند http://192.168.40.25:8787');}
