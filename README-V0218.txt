@@ -1,0 +1,1 @@
+V0218: Company rush sidebar navigation opens in-page, without a new tab. Secure HTTPS backend connection is not yet configured. Other sections unchanged.
