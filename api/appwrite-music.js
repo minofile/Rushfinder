@@ -54,8 +54,9 @@ module.exports = async function handler(req,res){
    }
    return stem;
   };
+  const categoryOf=f=>{const m=String(f.name||'').match(/^(خبری|سیاسی|ورزشی|حماسی|سینمایی|هیجانی|مستند|تکنولوژی|دراماتیک|انرژی|غمگین|آرام|کردی|بندری|شمالی|سایر)(?:\s*[-–—]\s*|\.)/);return m?m[1]:''};
   const sliced=matches.slice((page-1)*limit,page*limit);
-  const data=sliced.map(f=>{const base=`${api}/storage/buckets/${encodeURIComponent(bucket)}/files/${encodeURIComponent(f.$id)}`;const suffix=`?project=${encodeURIComponent(project)}`;return {id:'appwrite-'+f.$id,name:displayName(f.name),artist:'',region:fileRegion(f),duration:0,source:'Appwrite',download_allowed:true,is_premium:false,files:{mp3:base+'/view'+suffix,download:base+'/download'+suffix}}});
+  const data=sliced.map(f=>{const base=`${api}/storage/buckets/${encodeURIComponent(bucket)}/files/${encodeURIComponent(f.$id)}`;const suffix=`?project=${encodeURIComponent(project)}`;return {id:'appwrite-'+f.$id,name:displayName(f.name),artist:'',category:categoryOf(f),region:fileRegion(f),duration:0,source:'Appwrite',download_allowed:true,is_premium:false,files:{mp3:base+'/view'+suffix,download:base+'/download'+suffix}}});
   res.status(200).json({data,total:matches.length,totalIsExact:j.total<=collected.length,hasNext:page*limit<matches.length,page,source:'Appwrite'});
  }catch(e){res.status(502).json({error:'ارتباط با آرشیو موسیقی برقرار نشد.',detail:e.message})}
 };

@@ -2721,6 +2721,8 @@ const norm=x=>String(x||'').toLowerCase().replace(/[ي]/g,'ی').replace(/[ك]/g,
 const words=norm(q).split(/\s+/).filter(Boolean);
 const relevance=t=>{
  const title=norm(t.name), artist=norm(t.artist), region=norm(t.region||t.category||''), meta=title+' '+artist+' '+region;
+ // Appwrite API already filters by the full stored filename, including category and keywords.
+ if(t.source==='Appwrite')return 100;
  const regions={
   northern:/شمالی|گیلکی|مازندرانی|گیلان|مازندران|تالشی|northern|gilaki|mazandarani|mazandaran|gilan|talysh/i,
   kurdish:/کردی|کردستان|کرمانشاه|سنندج|kurdish|kurdi|kurdistan|kermanshah/i,
