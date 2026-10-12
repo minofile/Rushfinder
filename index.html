@@ -4115,7 +4115,7 @@ function base(){return (localStorage.getItem('rfCompanyHttpsApi')||'').replace(/
 function archiveKey(){return sessionStorage.getItem('rfCompanyAccessKey')||''}
 function icon(cat){const c=visuals[cat]||'other';return 'assets/company-categories/'+c+'.svg'}
 function panel(){let el=document.getElementById('rfCompanyPanel');if(!el){el=document.createElement('section');el.id='rfCompanyPanel';document.querySelector('main').append(el)}return el}
-function layout(){panel().innerHTML=`<div class="rf-company-hero"><div><h2>▣ راش‌های شرکت</h2><p>آرشیو تصویری شرکت · دسته‌بندی خودکار از پوشه‌های شبکه</p></div><span class="rf-company-pill" id="rfCompanyCount">آرشیو داخلی</span></div><div class="rf-company-tools"><input id="rfCompanySearch" placeholder="جست‌وجو در راش‌های شرکت..." value="${esc(q)}"><button id="rfCompanySearchBtn">جست‌وجو</button><button id="rfCompanyReload">به‌روزرسانی</button></div><div id="rfCompanyConnection" class="rf222-connection"></div><div id="rfCompanyContent"></div>`;document.getElementById('rfCompanySearchBtn').onclick=()=>{q=document.getElementById('rfCompanySearch').value.trim();selected='';page=1;load()};document.getElementById('rfCompanySearch').onkeydown=e=>{if(e.key==='Enter')document.getElementById('rfCompanySearchBtn').click()};document.getElementById('rfCompanyReload').onclick=load;connectionUI()}
+function layout(){panel().classList.remove('rf229-playing');panel().innerHTML=`<div class="rf-company-hero"><div><h2>▣ راش‌های شرکت</h2><p>آرشیو تصویری شرکت · دسته‌بندی خودکار از پوشه‌های شبکه</p></div><span class="rf-company-pill" id="rfCompanyCount">آرشیو داخلی</span></div><div class="rf-company-tools"><input id="rfCompanySearch" placeholder="جست‌وجو در راش‌های شرکت..." value="${esc(q)}"><button id="rfCompanySearchBtn">جست‌وجو</button><button id="rfCompanyReload">به‌روزرسانی</button></div><div id="rfCompanyConnection" class="rf222-connection"></div><div id="rfCompanyContent"></div>`;document.getElementById('rfCompanySearchBtn').onclick=()=>{q=document.getElementById('rfCompanySearch').value.trim();selected='';page=1;load()};document.getElementById('rfCompanySearch').onkeydown=e=>{if(e.key==='Enter')document.getElementById('rfCompanySearchBtn').click()};document.getElementById('rfCompanyReload').onclick=load;connectionUI()}
 function connectionUI(){
  const box=document.getElementById('rfCompanyConnection');if(!box)return;
  const current=base();
@@ -4129,10 +4129,12 @@ function render(){const area=document.getElementById('rfCompanyContent');if(!sel
 area.innerHTML=`<div style="display:flex;align-items:center;gap:14px;margin-bottom:18px"><button class="rf-company-back" id="rfCompanyBack">بازگشت به موضوعات</button><strong>${esc(selected||'نتایج جست‌وجو')}</strong></div>`+(items.length?'<div class="rf-company-files">'+items.map((f,i)=>`<div class="rf-company-file"><div class="rf-film-icon">▶</div><h4>${esc(f.title)}</h4><p>${esc(f.category)} · ${esc(f.extension)} · ${Number(f.size/1048576||0).toFixed(1)} MB</p><div class="rf-company-actions"><button data-play="${i}">نمایش</button><a data-download="${i}" href="#">دانلود</a></div></div>`).join('')+'</div>':'<div class="rf-company-msg">ویدئویی در این بخش پیدا نشد.</div>');document.getElementById('rfCompanyBack').onclick=()=>{selected='';q='';layout();render()};area.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>play(items[+b.dataset.play]));area.querySelectorAll('[data-download]').forEach(a=>{const f=items[+a.dataset.download];a.href=base()+f.downloadUrl;a.target='_blank';a.rel='noopener'})}
 async function load(){const endpoint=base();if(!endpoint){render();const area=document.getElementById('rfCompanyContent');area.insertAdjacentHTML('afterbegin','<p class="rf-company-msg">دسته‌بندی‌ها آماده‌اند؛ نمایش فایل‌های واقعی پس از اتصال HTTPS امن آرشیو شرکت فعال می‌شود.</p>');return}message('در حال دریافت آرشیو...');try{const u=new URL(endpoint+'/api/files');if(selected)u.searchParams.set('category',selected);if(q)u.searchParams.set('q',q);u.searchParams.set('page',page);const r=await fetch(u,{mode:'cors',cache:'no-store',headers:{'X-Rush-Key':archiveKey()}});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();if(data.error)throw Error(data.error);if(!Array.isArray(data.files))throw Error('پاسخ نامعتبر');items=data.files;categories=data.categories||[];document.getElementById('rfCompanyCount').textContent=(data.all||0).toLocaleString('fa-IR')+' فایل';render()}catch(e){message('اتصال به آرشیو امن شرکت برقرار نشد. وضعیت سرور، مجوز دسترسی، HTTPS و CORS را بررسی کنید. ('+esc(e.message)+')')}}
 function play(f){
+ const companyPanel=document.getElementById('rfCompanyPanel');
+ if(companyPanel)companyPanel.classList.add('rf229-playing');
  const area=document.getElementById('rfCompanyContent');
  area.innerHTML=`<div class="rf228-player-layout"><div class="rf228-player-heading"><h3 class="rf-company-player-title" title="${esc(f.title)}"><span class="rf228-file-icon">▶</span><span>${esc(f.title)}</span></h3><button class="rf-company-back" id="rfCompanyBackVideo">بازگشت</button></div><video class="rf-company-video" controls playsinline preload="metadata" src="${esc(base()+f.playUrl)}"></video></div>`;
- document.getElementById('rfCompanyBackVideo').onclick=()=>{const v=area.querySelector('video');if(v)v.pause();render()};
- const p=document.getElementById('rfCompanyPanel');if(p)p.scrollTo({top:0,behavior:'instant'});
+ document.getElementById('rfCompanyBackVideo').onclick=()=>{const v=area.querySelector('video');if(v)v.pause();if(companyPanel)companyPanel.classList.remove('rf229-playing');render()};
+ const p=document.getElementById('rfCompanyPanel');if(p){p.scrollTop=0;requestAnimationFrame(()=>{p.scrollTop=0})}
 }
 window.rfShowCompanyRush=function(e){e?.stopPropagation();document.body.classList.add('rf-company-view');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.textContent.includes('راش‌های شرکت')));layout();panel().classList.add('rf-company-on');load()};
 window.rfConfigureCompanyArchive=function(httpsUrl){const u=new URL(httpsUrl);if(u.protocol!=='https:')throw Error('HTTPS required');localStorage.setItem('rfCompanyHttpsApi',u.origin);if(document.body.classList.contains('rf-company-view')){layout();load()}};
@@ -4229,5 +4231,18 @@ body.rf-company-view #rfCompanyPanel.rf-company-on {
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateDate()});
 })();
 </script>
+
+<style id="rf229-player-viewport-fit">
+/* Keep the entire video and its controls visible on a typical laptop display. */
+#rfCompanyPanel.rf229-playing{padding-top:12px!important;padding-bottom:12px!important;}
+#rfCompanyPanel.rf229-playing>.rf-company-hero,
+#rfCompanyPanel.rf229-playing>.rf-company-tools,
+#rfCompanyPanel.rf229-playing>#rfCompanyConnection{display:none!important;}
+#rfCompanyPanel.rf229-playing #rfCompanyContent{min-height:0!important;}
+#rfCompanyPanel.rf229-playing .rf228-player-layout{width:min(100%,920px)!important;margin:0 auto!important;gap:10px!important;}
+#rfCompanyPanel.rf229-playing .rf-company-video{width:100%!important;max-width:920px!important;max-height:calc(100dvh - 180px)!important;height:auto!important;object-fit:contain!important;margin:0 auto!important;}
+#rfCompanyPanel.rf229-playing .rf228-player-heading{min-height:52px;}
+@media(max-width:700px){#rfCompanyPanel.rf229-playing .rf-company-video{max-height:calc(100dvh - 210px)!important;}}
+</style>
 </body>
 </html>
