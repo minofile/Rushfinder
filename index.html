@@ -3096,7 +3096,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <div class="rf-toolbar">
 <button class="rf-tool" id="rfRefresh" title="بارگذاری مجدد"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
 <div class="rf-tool rf-online" title="آنلاین"><i></i></div>
-<div class="rf-date"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>۱۵ مهر ۱۴۰۵</span></div>
+<div class="rf-date"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span id="rfLivePersianDate">در حال دریافت تاریخ…</span></div>
 <div class="rf-modes">
 <button class="rf-mode" data-theme="system" title="نمایش"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg></button>
 
@@ -4128,7 +4128,12 @@ function message(t){document.getElementById('rfCompanyContent').innerHTML='<div 
 function render(){const area=document.getElementById('rfCompanyContent');if(!selected&&!q){const cats=[...new Set([...defaultCats,...categories])];area.innerHTML='<div class="rf-company-cats">'+cats.map(cat=>`<button class="rf-company-cat" data-cat="${esc(cat)}"><img alt="" src="${icon(cat)}"><strong>${esc(cat)}</strong><small>مشاهده ویدئوها ←</small></button>`).join('')+'</div>';area.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{selected=b.dataset.cat;page=1;load()});return}
 area.innerHTML=`<div style="display:flex;align-items:center;gap:14px;margin-bottom:18px"><button class="rf-company-back" id="rfCompanyBack">بازگشت به موضوعات</button><strong>${esc(selected||'نتایج جست‌وجو')}</strong></div>`+(items.length?'<div class="rf-company-files">'+items.map((f,i)=>`<div class="rf-company-file"><div class="rf-film-icon">▶</div><h4>${esc(f.title)}</h4><p>${esc(f.category)} · ${esc(f.extension)} · ${Number(f.size/1048576||0).toFixed(1)} MB</p><div class="rf-company-actions"><button data-play="${i}">نمایش</button><a data-download="${i}" href="#">دانلود</a></div></div>`).join('')+'</div>':'<div class="rf-company-msg">ویدئویی در این بخش پیدا نشد.</div>');document.getElementById('rfCompanyBack').onclick=()=>{selected='';q='';layout();render()};area.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>play(items[+b.dataset.play]));area.querySelectorAll('[data-download]').forEach(a=>{const f=items[+a.dataset.download];a.href=base()+f.downloadUrl;a.target='_blank';a.rel='noopener'})}
 async function load(){const endpoint=base();if(!endpoint){render();const area=document.getElementById('rfCompanyContent');area.insertAdjacentHTML('afterbegin','<p class="rf-company-msg">دسته‌بندی‌ها آماده‌اند؛ نمایش فایل‌های واقعی پس از اتصال HTTPS امن آرشیو شرکت فعال می‌شود.</p>');return}message('در حال دریافت آرشیو...');try{const u=new URL(endpoint+'/api/files');if(selected)u.searchParams.set('category',selected);if(q)u.searchParams.set('q',q);u.searchParams.set('page',page);const r=await fetch(u,{mode:'cors',cache:'no-store',headers:{'X-Rush-Key':archiveKey()}});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();if(data.error)throw Error(data.error);if(!Array.isArray(data.files))throw Error('پاسخ نامعتبر');items=data.files;categories=data.categories||[];document.getElementById('rfCompanyCount').textContent=(data.all||0).toLocaleString('fa-IR')+' فایل';render()}catch(e){message('اتصال به آرشیو امن شرکت برقرار نشد. وضعیت سرور، مجوز دسترسی، HTTPS و CORS را بررسی کنید. ('+esc(e.message)+')')}}
-function play(f){const area=document.getElementById('rfCompanyContent');area.innerHTML=`<button class="rf-company-back" id="rfCompanyBackVideo">بازگشت</button><h3 class="rf-company-player-title">${esc(f.title)}</h3><video class="rf-company-video" controls playsinline src="${esc(base()+f.playUrl)}"></video>`;document.getElementById('rfCompanyBackVideo').onclick=render}
+function play(f){
+ const area=document.getElementById('rfCompanyContent');
+ area.innerHTML=`<div class="rf228-player-layout"><div class="rf228-player-heading"><h3 class="rf-company-player-title" title="${esc(f.title)}"><span class="rf228-file-icon">▶</span><span>${esc(f.title)}</span></h3><button class="rf-company-back" id="rfCompanyBackVideo">بازگشت</button></div><video class="rf-company-video" controls playsinline preload="metadata" src="${esc(base()+f.playUrl)}"></video></div>`;
+ document.getElementById('rfCompanyBackVideo').onclick=()=>{const v=area.querySelector('video');if(v)v.pause();render()};
+ const p=document.getElementById('rfCompanyPanel');if(p)p.scrollTo({top:0,behavior:'instant'});
+}
 window.rfShowCompanyRush=function(e){e?.stopPropagation();document.body.classList.add('rf-company-view');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.textContent.includes('راش‌های شرکت')));layout();panel().classList.add('rf-company-on');load()};
 window.rfConfigureCompanyArchive=function(httpsUrl){const u=new URL(httpsUrl);if(u.protocol!=='https:')throw Error('HTTPS required');localStorage.setItem('rfCompanyHttpsApi',u.origin);if(document.body.classList.contains('rf-company-view')){layout();load()}};
 const companyNav=document.getElementById('rfCompanyNav');
@@ -4198,6 +4203,17 @@ body.rf-company-view #rfCompanyPanel.rf-company-on {
 })();
 </script>
 
+<style id="rf228-player-and-header-fix">
+/* Player stays centered and fully visible within the content viewport. */
+#rfCompanyPanel .rf228-player-layout{width:min(100%,900px);margin:0 auto 22px;display:flex;flex-direction:column;align-items:stretch;gap:12px}
+#rfCompanyPanel .rf228-player-heading{display:flex;align-items:center;gap:12px;justify-content:space-between;direction:rtl}
+#rfCompanyPanel .rf-company-player-title{flex:1;display:flex;align-items:center;gap:11px;min-width:0;margin:0!important;padding:12px 16px;background:white;border:1px solid #d9e7f6;border-radius:14px;box-shadow:0 3px 12px #1747750b;text-align:right!important;color:#123966;font-size:16px;line-height:1.7}
+#rfCompanyPanel .rf-company-player-title span:last-child{overflow-wrap:anywhere}
+#rfCompanyPanel .rf228-file-icon{flex-shrink:0;display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:#e8f2ff;color:#176bd0;font-size:13px}
+#rfCompanyPanel #rfCompanyBackVideo{flex-shrink:0;margin:0!important}
+#rfCompanyPanel .rf-company-video{display:block;width:100%!important;max-width:900px!important;height:auto!important;max-height:min(49vh,440px)!important;object-fit:contain;margin:0 auto!important;background:#07172d;border-radius:14px}
+@media(max-width:700px){#rfCompanyPanel .rf228-player-heading{align-items:stretch;flex-direction:column-reverse}#rfCompanyPanel .rf-company-video{max-height:45vh!important}}
+</style>
 <script id="rf227-live-date">
 (function(){
   const node=document.getElementById('rfLivePersianDate');
