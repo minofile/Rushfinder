@@ -1,5 +1,6 @@
 'use strict';
 // RushFinder LAN archive: read-only, no dependencies, no external uploads.
+const {spawn}=require('node:child_process');
 const http=require('node:http'),fs=require('node:fs'),fsp=fs.promises,path=require('node:path'),os=require('node:os'),crypto=require('node:crypto');
 const ROOT=path.resolve(process.env.RUSH_ROOT || String.raw`\\192.168.40.13\Mashhad News\RushFinder`);
 const PORT=Number(process.env.RUSH_PORT||8787);
@@ -19,6 +20,18 @@ const safeEq=(a,b)=>{const x=Buffer.from(String(a)),y=Buffer.from(String(b));ret
 const authorized=req=>safeEq(req.headers['x-rush-key']||'',API_KEY);
 const sign=(id,exp,download)=>crypto.createHmac('sha256',API_KEY).update(id+'|'+exp+'|'+download).digest('hex');
 const allowedSigned=(u)=>{const id=u.searchParams.get('id')||'',exp=Number(u.searchParams.get('exp')),dl=u.searchParams.has('download')?'1':'0';return Number.isSafeInteger(exp)&&exp>=Math.floor(Date.now()/1000)&&exp<=Math.floor(Date.now()/1000)+3600&&safeEq(u.searchParams.get('sig')||'',sign(id,exp,dl))};
+const signedThumbUrl=id=>{const exp=Math.floor(Date.now()/1000)+900;return '/thumbnail?id='+encodeURIComponent(id)+'&exp='+exp+'&sig='+sign(id,exp,'thumb')};
+const thumbnailCache=new Map();
+const THUMB_FFMPEG=process.env.RUSH_FFMPEG||'ffmpeg';
+function makeThumb(file){return new Promise((resolve,reject)=>{
+ const args=['-hide_banner','-loglevel','error','-nostdin','-ss','1','-i',file,'-frames:v','1','-vf','scale=480:-2','-q:v','5','-f','image2pipe','-vcodec','mjpeg','pipe:1'];
+ const child=spawn(THUMB_FFMPEG,args,{windowsHide:true});const chunks=[];let size=0,stderr='';
+ const timer=setTimeout(()=>child.kill(),15000);
+ child.stdout.on('data',b=>{size+=b.length;if(size>2*1024*1024)child.kill();else chunks.push(b)});
+ child.stderr.on('data',b=>{stderr+=String(b).slice(0,200)});
+ child.on('error',e=>{clearTimeout(timer);reject(e)});
+ child.on('close',code=>{clearTimeout(timer);if(code===0&&size>100)resolve(Buffer.concat(chunks));else reject(Error(stderr||'FFmpeg failed'))});
+})}
 const signedUrl=(id,dl)=>{const exp=Math.floor(Date.now()/1000)+900;return '/video?id='+encodeURIComponent(id)+(dl?'&download=1':'')+'&exp='+exp+'&sig='+sign(id,exp,dl?'1':'0')};
 let files=[],lastScan=0,scanError='',scanning=null;
 const isSub=(p)=>p===ROOT||p.startsWith(ROOT+path.sep);
@@ -58,9 +71,19 @@ const srv=http.createServer(async(req,res)=>{
     const q=(u.searchParams.get('q')||'').trim().toLocaleLowerCase('fa');const cat=u.searchParams.get('category')||'';
     const selected=files.filter(x=>(!cat||x.category===cat)&&(!q||(x.title+' '+x.category).toLocaleLowerCase('fa').includes(q)));
     const page=Math.max(1,Math.min(9999,Number(u.searchParams.get('page'))||1));const limit=36;
-    return json(res,200,{files:selected.slice((page-1)*limit,page*limit).map(f=>({...f,playUrl:signedUrl(f.id,false),downloadUrl:signedUrl(f.id,true)})),total:selected.length,page,pages:Math.max(1,Math.ceil(selected.length/limit)),categories:[...new Set(files.map(x=>x.category))].sort((a,b)=>a.localeCompare(b,'fa')),all:files.length,error:scanError,lastScan});
+    return json(res,200,{files:selected.slice((page-1)*limit,page*limit).map(f=>({...f,playUrl:signedUrl(f.id,false),downloadUrl:signedUrl(f.id,true),thumbnailUrl:signedThumbUrl(f.id)})),total:selected.length,page,pages:Math.max(1,Math.ceil(selected.length/limit)),categories:[...new Set(files.map(x=>x.category))].sort((a,b)=>a.localeCompare(b,'fa')),all:files.length,error:scanError,lastScan});
   }
   if(u.pathname==='/api/rescan'){if(!authorized(req))return json(res,401,{error:'Unauthorized'});await scan();return json(res,200,{total:files.length,error:scanError})}
+  if(u.pathname==='/thumbnail'){
+    const id=safeDecode(u.searchParams.get('id')||'');const exp=Number(u.searchParams.get('exp'));
+    if(!Number.isSafeInteger(exp)||exp<Math.floor(Date.now()/1000)||exp>Math.floor(Date.now()/1000)+3600||!safeEq(u.searchParams.get('sig')||'',sign(id,exp,'thumb')))return json(res,403,{error:'Invalid thumbnail signature'});
+    const record=files.find(x=>x.id===id);if(!record)return json(res,404,{error:'File not indexed'});
+    const full=path.resolve(ROOT,...id.split('/'));if(!isSub(full))return json(res,403,{error:'Forbidden'});
+    const cacheKey=id+'|'+record.modified;let pic=thumbnailCache.get(cacheKey);
+    if(!pic){try{pic=await makeThumb(full);thumbnailCache.set(cacheKey,pic);if(thumbnailCache.size>150){thumbnailCache.delete(thumbnailCache.keys().next().value)}}catch(e){return json(res,503,{error:'Thumbnail unavailable; install FFmpeg',detail:e.message})}}
+    res.writeHead(200,{'Content-Type':'image/jpeg','Content-Length':pic.length,'Cache-Control':'private,max-age=600','Access-Control-Allow-Origin':CORS_ORIGIN,'Vary':'Origin','X-Content-Type-Options':'nosniff'});
+    return req.method==='HEAD'?res.end():res.end(pic);
+  }
   if(u.pathname==='/video'){if(!allowedSigned(u))return json(res,403,{error:'لینک منقضی یا نامعتبر است'});
     const id=safeDecode(u.searchParams.get('id')||'');
     const record=files.find(x=>x.id===id);if(!record)return json(res,404,{error:'File not indexed'});
