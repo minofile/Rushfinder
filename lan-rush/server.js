@@ -3,6 +3,10 @@
 const http=require('node:http'),fs=require('node:fs'),fsp=fs.promises,path=require('node:path'),os=require('node:os'),crypto=require('node:crypto');
 const ROOT=path.resolve(process.env.RUSH_ROOT || String.raw`\\192.168.40.13\Mashhad News\RushFinder`);
 const PORT=Number(process.env.RUSH_PORT||8787);
+// Default: only this computer (including its local Cloudflare connector) can reach the service.
+// Set RUSH_BIND=0.0.0.0 only if direct LAN access is intentionally required.
+const BIND=process.env.RUSH_BIND||'127.0.0.1';
+const ALLOWED_PUBLIC_IP=(process.env.RUSH_COMPANY_IP||'').trim();
 const EXT=new Set(['.mp4','.mov','.m4v','.webm','.avi','.mkv','.wmv','.mpeg','.mpg']);
 const MIME={'.mp4':'video/mp4','.m4v':'video/mp4','.mov':'video/quicktime','.webm':'video/webm','.avi':'video/x-msvideo','.mkv':'video/x-matroska','.wmv':'video/x-ms-wmv','.mpeg':'video/mpeg','.mpg':'video/mpeg'};
 // Private archive security. First launch creates a persistent random secret in this folder.
@@ -35,6 +39,17 @@ async function scan(){if(scanning)return scanning;scanning=(async()=>{
 const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Access-Control-Allow-Origin':CORS_ORIGIN,'Vary':'Origin'});res.end(JSON.stringify(data))};
 const safeDecode=s=>{try{return decodeURIComponent(s)}catch{return ''}};
 const srv=http.createServer(async(req,res)=>{
+  // When exposed via Cloudflare Tunnel, trust CF-Connecting-IP only because BIND defaults to loopback.
+  // A company-IP restriction is optional and fail-closed when enabled.
+  if(ALLOWED_PUBLIC_IP){
+    const peer=req.socket.remoteAddress||'';
+    const isLocal=peer==='127.0.0.1'||peer==='::1'||peer==='::ffff:127.0.0.1';
+    const cfip=String(req.headers['cf-connecting-ip']||'').trim();
+    if(!isLocal||cfip!==ALLOWED_PUBLIC_IP){
+      res.writeHead(403,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
+      return res.end(JSON.stringify({error:'دسترسی فقط از اینترنت شرکت مجاز است'}));
+    }
+  }
   const u=new URL(req.url,'http://localhost');
   if(req.method==='OPTIONS'){res.writeHead(204,{'Access-Control-Allow-Origin':CORS_ORIGIN,'Access-Control-Allow-Methods':'GET, HEAD, OPTIONS','Access-Control-Allow-Headers':'X-Rush-Key','Access-Control-Max-Age':'600','Vary':'Origin'});return res.end()}
   if(req.method!=='GET'&&req.method!=='HEAD')return json(res,405,{error:'Method not allowed'});
@@ -66,5 +81,5 @@ const srv=http.createServer(async(req,res)=>{
   }
   json(res,404,{error:'Not found'});
 });
-srv.listen(PORT,'0.0.0.0',()=>{console.log('RushFinder LAN: http://localhost:'+PORT);console.log('Folder:',ROOT);console.log('ARCHIVE ACCESS KEY (keep private):',API_KEY);for(const net of Object.values(os.networkInterfaces()).flat())if(net&&net.family==='IPv4'&&!net.internal)console.log('Other PCs: http://'+net.address+':'+PORT);scan()});
+srv.listen(PORT,BIND,()=>{console.log('RushFinder local: http://localhost:'+PORT);console.log('Bind:',BIND);console.log('Company IP filter:',ALLOWED_PUBLIC_IP?'ENABLED':'NOT ENABLED');console.log('Folder:',ROOT);console.log('ARCHIVE ACCESS KEY (keep private):',API_KEY);if(BIND==='0.0.0.0')for(const net of Object.values(os.networkInterfaces()).flat())if(net&&net.family==='IPv4'&&!net.internal)console.log('Other PCs: http://'+net.address+':'+PORT);scan()});
 setInterval(()=>scan(),30000).unref();
