@@ -4244,5 +4244,72 @@ body.rf-company-view #rfCompanyPanel.rf-company-on {
 #rfCompanyPanel.rf229-playing .rf228-player-heading{min-height:52px;}
 @media(max-width:700px){#rfCompanyPanel.rf229-playing .rf-company-video{max-height:calc(100dvh - 210px)!important;}}
 </style>
-</body>
+<style id="rf230-thumbnails-css">
+#rfCompanyPanel .rf-company-files{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;align-items:start}
+#rfCompanyPanel .rf-company-file{min-width:0;overflow:hidden}
+#rfCompanyPanel .rf230-thumb{position:relative;width:100%;aspect-ratio:16/9;border-radius:11px;overflow:hidden;background:linear-gradient(135deg,#d9ecff,#8bb8ef);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+#rfCompanyPanel .rf230-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+#rfCompanyPanel .rf230-thumb .rf230-fallback{color:white;font-size:28px}
+#rfCompanyPanel .rf230-thumb .rf230-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;background:#07172d99;color:#fff;width:44px;height:44px;display:grid;place-items:center;font-size:21px;pointer-events:none}
+#rfCompanyPanel .rf230-catbadge{display:inline-flex;align-items:center;background:#e5f1ff;color:#1263c0;border:1px solid #c9e2ff;padding:4px 11px;border-radius:99px;font-size:12px;font-weight:700;margin:2px 0 8px}
+#rfCompanyPanel .rf-company-file h4{overflow-wrap:anywhere;line-height:1.8;margin:3px 0 7px}
+#rfCompanyPanel .rf-company-file p{line-height:1.8}
+</style><script id="rf230-thumbnails-js">
+(()=>{
+ const root=document.getElementById('rfCompanyPanel');
+ const enc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const base=()=>String(localStorage.getItem('rfCompanyHttpsApi')||'').replace(/\/$/,'');
+ const key=()=>sessionStorage.getItem('rfCompanyAccessKey')||'';
+ let observer=null, generation=0;
+ function thumbnail(el, url, generationAtStart){
+   if(!url||!el.isConnected)return;
+   const v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='auto';v.crossOrigin='anonymous';
+   let ended=false;
+   const stop=()=>{if(ended)return;ended=true;v.pause();v.removeAttribute('src');v.load();};
+   const timer=setTimeout(stop,14000);
+   function capture(){if(ended||generationAtStart!==generation||!el.isConnected)return;try{
+     if(!v.videoWidth||!v.videoHeight)return;
+     const c=document.createElement('canvas');const w=480;c.width=w;c.height=Math.max(1,Math.round(w*v.videoHeight/v.videoWidth));
+     c.getContext('2d').drawImage(v,0,0,c.width,c.height);
+     const img=new Image();img.alt='پیش‌نمایش واقعی ویدئو';img.loading='lazy';img.src=c.toDataURL('image/jpeg',.76);
+     el.querySelector('.rf230-fallback')?.remove();el.prepend(img);
+   }catch(_){/* unsupported video/CORS: leave placeholder */}finally{clearTimeout(timer);stop()}}
+   v.addEventListener('loadedmetadata',()=>{if(ended)return;try{v.currentTime=Math.min(1,Math.max(0,(v.duration||1)/4))}catch(_){capture()}},{once:true});
+   v.addEventListener('seeked',capture,{once:true});
+   v.addEventListener('loadeddata',()=>{if(!ended&&v.currentTime===0)capture()},{once:true});
+   v.addEventListener('error',()=>{clearTimeout(timer);stop()},{once:true});
+   v.src=url;
+ }
+ function decorate(){
+  const cards=[...root.querySelectorAll('.rf-company-files .rf-company-file')];if(!cards.length)return;
+  const gen=++generation;
+  if(observer)observer.disconnect();
+  observer='IntersectionObserver' in window?new IntersectionObserver(entries=>{entries.forEach(e=>{if(!e.isIntersecting)return;observer.unobserve(e.target);thumbnail(e.target,e.target.dataset.previewUrl,gen)})},{rootMargin:'180px'}):null;
+  cards.forEach((card,i)=>{
+    if(card.querySelector('.rf230-thumb'))return;
+    const p=card.querySelector('p');const category=(p?.textContent||'').split(' · ')[0].trim();
+    if(p&&category){const badge=document.createElement('span');badge.className='rf230-catbadge';badge.textContent='▣ '+category;card.querySelector('h4')?.before(badge);p.textContent=p.textContent.replace(category+' · ','')}
+    const thumb=document.createElement('div');thumb.className='rf230-thumb';thumb.innerHTML='<span class="rf230-fallback">▣</span><span class="rf230-play">▶</span>';
+    const link=card.querySelector('[data-download]');
+    if(link){try{const u=new URL(link.href);u.searchParams.delete('download');const endpoint=base();thumb.dataset.previewUrl=endpoint+u.pathname+u.search;
+      // Video signatures depend on the download flag: request a separately signed play URL from the API instead.
+      thumb.dataset.previewUrl='';
+    }catch(_){}}
+    card.prepend(thumb);
+  });
+  // Obtain signed play URLs from the same protected listing endpoint. The cards' order matches its files array.
+  const endpoint=base();if(!endpoint)return;
+  const selected=root.querySelector('#rfCompanyBack')?.nextElementSibling?.textContent?.trim()||'';
+  const q=root.querySelector('#rfCompanySearch')?.value?.trim()||'';
+  const u=new URL(endpoint+'/api/files');if(selected&&selected!=='نتایج جست‌وجو')u.searchParams.set('category',selected);if(q)u.searchParams.set('q',q);
+  fetch(u,{headers:{'X-Rush-Key':key()},cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{
+   if(gen!==generation||!d||!Array.isArray(d.files))return;
+   cards.forEach((card,i)=>{const el=card.querySelector('.rf230-thumb');const f=d.files[i];if(!el||!f?.playUrl)return;el.dataset.previewUrl=endpoint+f.playUrl;if(observer)observer.observe(el);else thumbnail(el,el.dataset.previewUrl,gen)})
+  }).catch(()=>{});
+ }
+ let pending=false;
+ new MutationObserver(()=>{if(pending)return;pending=true;requestAnimationFrame(()=>{pending=false;if(root.querySelector('.rf-company-files .rf-company-file:not(:has(.rf230-thumb))'))decorate()})}).observe(root,{subtree:true,childList:true});
+ decorate();
+})();
+</script></body>
 </html>
