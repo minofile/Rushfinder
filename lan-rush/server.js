@@ -4,6 +4,9 @@ const {spawn}=require('node:child_process');
 const http=require('node:http'),fs=require('node:fs'),fsp=fs.promises,path=require('node:path'),os=require('node:os'),crypto=require('node:crypto');
 const ROOT=path.resolve(process.env.RUSH_ROOT || String.raw`\\192.168.40.13\Mashhad News\RushFinder`);
 const PORT=Number(process.env.RUSH_PORT||8787);
+const MUSIC_ROOT=path.join(ROOT,'Music');
+const AUDIO_EXT=new Set(['.mp3','.wav','.flac','.m4a','.aac','.ogg','.opus']);
+const AUDIO_MIME={'.mp3':'audio/mpeg','.wav':'audio/wav','.flac':'audio/flac','.m4a':'audio/mp4','.aac':'audio/aac','.ogg':'audio/ogg','.opus':'audio/ogg'};
 // Default: only this computer (including its local Cloudflare connector) can reach the service.
 // Set RUSH_BIND=0.0.0.0 only if direct LAN access is intentionally required.
 const BIND=process.env.RUSH_BIND||'127.0.0.1';
@@ -32,14 +35,15 @@ function makeThumb(file){return new Promise((resolve,reject)=>{
  child.on('error',e=>{clearTimeout(timer);reject(e)});
  child.on('close',code=>{clearTimeout(timer);if(code===0&&size>100)resolve(Buffer.concat(chunks));else reject(Error(stderr||'FFmpeg failed'))});
 })}
+const signedAudioUrl=(id,dl)=>{const exp=Math.floor(Date.now()/1000)+900;return '/audio?id='+encodeURIComponent(id)+(dl?'&download=1':'')+'&exp='+exp+'&sig='+sign('music:'+id,exp,dl?'1':'0')};
 const signedUrl=(id,dl)=>{const exp=Math.floor(Date.now()/1000)+900;return '/video?id='+encodeURIComponent(id)+(dl?'&download=1':'')+'&exp='+exp+'&sig='+sign(id,exp,dl?'1':'0')};
-let files=[],lastScan=0,scanError='',scanning=null;
+let files=[],musicFiles=[],lastScan=0,scanError='',musicError='',scanning=null;
 const isSub=(p)=>p===ROOT||p.startsWith(ROOT+path.sep);
 async function scan(){if(scanning)return scanning;scanning=(async()=>{
   const found=[]; const seen=new Set();
   async function walk(dir,depth){if(depth>7||found.length>=20000)return;let entries;try{entries=await fsp.readdir(dir,{withFileTypes:true})}catch(e){if(dir===ROOT)throw e;return}
     for(const e of entries){if(e.name.startsWith('.')||e.name.startsWith('~$'))continue;const full=path.join(dir,e.name);if(e.isSymbolicLink())continue;
-      if(e.isDirectory()){await walk(full,depth+1);continue}
+      if(e.isDirectory()){if(dir===ROOT&&e.name.toLowerCase()==='music')continue;await walk(full,depth+1);continue}
       if(!e.isFile()||!EXT.has(path.extname(e.name).toLowerCase()))continue;
       const rel=path.relative(ROOT,full);if(seen.has(rel))continue;seen.add(rel);
       try{const st=await fsp.stat(full);if(st.size<1024||Date.now()-st.mtimeMs<20000)continue; // avoid incomplete copies
@@ -48,6 +52,20 @@ async function scan(){if(scanning)return scanning;scanning=(async()=>{
   }
   try{await walk(ROOT,0);files=found.sort((a,b)=>b.modified.localeCompare(a.modified));scanError='';lastScan=Date.now()}
   catch(e){scanError=e.message;lastScan=Date.now()}
+  const audio=[];
+  async function walkMusic(dir,depth){if(depth>5||audio.length>=20000)return;
+    const entries=await fsp.readdir(dir,{withFileTypes:true});
+    for(const e of entries){if(e.name.startsWith('.')||e.name.startsWith('~$')||e.isSymbolicLink())continue;
+      const full=path.join(dir,e.name);
+      if(e.isDirectory()){try{await walkMusic(full,depth+1)}catch(_){};continue}
+      if(!e.isFile()||!AUDIO_EXT.has(path.extname(e.name).toLowerCase()))continue;
+      try{const st=await fsp.stat(full);if(st.size<1024||Date.now()-st.mtimeMs<20000)continue;
+        const rel=path.relative(MUSIC_ROOT,full),parts=rel.split(path.sep);
+        audio.push({id:rel.split(path.sep).join('/'),title:path.parse(e.name).name,category:parts.length>1?parts[0]:'سایر',size:st.size,modified:st.mtime.toISOString(),extension:path.extname(e.name).slice(1).toUpperCase()});
+      }catch(_){}}
+  }
+  try{await walkMusic(MUSIC_ROOT,0);musicFiles=audio.sort((a,b)=>b.modified.localeCompare(a.modified));musicError=''}
+  catch(e){musicError=e.code==='ENOENT'?'پوشه Music هنوز ساخته نشده است':e.message}
 })().finally(()=>scanning=null);return scanning}
 const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Access-Control-Allow-Origin':CORS_ORIGIN,'Vary':'Origin'});res.end(JSON.stringify(data))};
 const safeDecode=s=>{try{return decodeURIComponent(s)}catch{return ''}};
@@ -72,6 +90,32 @@ const srv=http.createServer(async(req,res)=>{
     const selected=files.filter(x=>(!cat||x.category===cat)&&(!q||(x.title+' '+x.category).toLocaleLowerCase('fa').includes(q)));
     const page=Math.max(1,Math.min(9999,Number(u.searchParams.get('page'))||1));const limit=36;
     return json(res,200,{files:selected.slice((page-1)*limit,page*limit).map(f=>({...f,playUrl:signedUrl(f.id,false),downloadUrl:signedUrl(f.id,true),thumbnailUrl:signedThumbUrl(f.id)})),total:selected.length,page,pages:Math.max(1,Math.ceil(selected.length/limit)),categories:[...new Set(files.map(x=>x.category))].sort((a,b)=>a.localeCompare(b,'fa')),all:files.length,error:scanError,lastScan});
+  }
+  if(u.pathname==='/api/music-files'){
+    if(!authorized(req))return json(res,401,{error:'کلید دسترسی آرشیو نامعتبر است'});
+    if(Date.now()-lastScan>15000)await scan();
+    const q=(u.searchParams.get('q')||'').trim().toLocaleLowerCase('fa');const cat=u.searchParams.get('category')||'';
+    const selected=musicFiles.filter(x=>(!cat||x.category===cat)&&(!q||(x.title+' '+x.category).toLocaleLowerCase('fa').includes(q)));
+    const page=Math.max(1,Math.min(9999,Number(u.searchParams.get('page'))||1));const limit=Math.max(1,Math.min(36,Number(u.searchParams.get('limit'))||12));
+    return json(res,200,{files:selected.slice((page-1)*limit,page*limit).map(f=>({...f,playUrl:signedAudioUrl(f.id,false),downloadUrl:signedAudioUrl(f.id,true)})),total:selected.length,page,pages:Math.max(1,Math.ceil(selected.length/limit)),categories:[...new Set(musicFiles.map(x=>x.category))].sort((a,b)=>a.localeCompare(b,'fa')),all:musicFiles.length,error:musicError,lastScan});
+  }
+  if(u.pathname==='/audio'){
+    const id=safeDecode(u.searchParams.get('id')||''),exp=Number(u.searchParams.get('exp'));
+    const dl=u.searchParams.has('download')?'1':'0';
+    if(!Number.isSafeInteger(exp)||exp<Math.floor(Date.now()/1000)||exp>Math.floor(Date.now()/1000)+3600||!safeEq(u.searchParams.get('sig')||'',sign('music:'+id,exp,dl)))return json(res,403,{error:'لینک منقضی یا نامعتبر است'});
+    if(!musicFiles.some(x=>x.id===id))return json(res,404,{error:'File not indexed'});
+    const full=path.resolve(MUSIC_ROOT,...id.split('/'));
+    if(!(full.startsWith(MUSIC_ROOT+path.sep))||!AUDIO_EXT.has(path.extname(full).toLowerCase()))return json(res,403,{error:'Forbidden'});
+    let st;try{st=await fsp.stat(full)}catch{return json(res,404,{error:'File unavailable'})}
+    const total=st.size,range=req.headers.range;let start=0,end=total-1,status=200;
+    if(range){const m=/^bytes=(\d*)-(\d*)$/.exec(range);if(!m)return json(res,416,{error:'Invalid range'});
+      if(m[1]===''&&m[2]!=='')start=Math.max(0,total-Number(m[2]));else{start=Number(m[1]);end=m[2]?Math.min(total-1,Number(m[2])):total-1}
+      if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start>end||start>=total){res.writeHead(416,{'Content-Range':`bytes */${total}`});return res.end()}status=206;
+    }
+    const headers={'Content-Type':AUDIO_MIME[path.extname(full).toLowerCase()],'Content-Length':end-start+1,'Accept-Ranges':'bytes','Cache-Control':'private,max-age=0','X-Content-Type-Options':'nosniff','Access-Control-Allow-Origin':CORS_ORIGIN,'Vary':'Origin'};
+    if(status===206)headers['Content-Range']=`bytes ${start}-${end}/${total}`;
+    if(dl==='1')headers['Content-Disposition']=`attachment; filename*=UTF-8''${encodeURIComponent(path.basename(full))}`;
+    res.writeHead(status,headers);if(req.method==='HEAD')return res.end();const stream=fs.createReadStream(full,{start,end});stream.on('error',()=>res.destroy());stream.pipe(res);return;
   }
   if(u.pathname==='/api/rescan'){if(!authorized(req))return json(res,401,{error:'Unauthorized'});await scan();return json(res,200,{total:files.length,error:scanError})}
   if(u.pathname==='/thumbnail'){

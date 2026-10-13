@@ -2708,11 +2708,32 @@ function panel(){const root=el('mu136');if(!root)return;let p=el('rf142');if(!p)
 async function search(q,page=1){
 q=q.trim();if(!q)return;currentQuery=q;currentPage=page;const n=++seq,body=el('rf142body'),audio=el('rf142audio');if(!body)return;
 audio.pause();audio.removeAttribute('src');rfPendingSeek=null;rfSeekingByUser=false;playing=-1;const oldPager=el('rf166pagination');if(oldPager)oldPager.innerHTML='';body.className='rf142-msg';body.textContent='در حال جستجوی موزیک...';
-try{const iranian=/[\u0600-\u06ff]/.test(q);const categoryClick=Object.prototype.hasOwnProperty.call(map,q);const musicLimit=musicPerPage;let r=await fetch('/api/appwrite-music?q='+encodeURIComponent(q)+'&page='+page+'&limit='+musicLimit,{cache:'no-store'});let j=await r.json();
+try{const iranian=/[\u0600-\u06ff]/.test(q);const categoryClick=Object.prototype.hasOwnProperty.call(map,q);const musicLimit=musicPerPage;const rfLanBase=(localStorage.getItem('rfCompanyHttpsApi')||'').replace(/\/$/,'');
+let rfLanKey=localStorage.getItem('rfCompanyAccessKeySaved')||sessionStorage.getItem('rfCompanyAccessKey')||'';
+if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && location.port==='8788' && !rfLanKey){
+ rfLanKey=(prompt('کلید دسترسی آرشیو آزمایشی را از پنجره مشکی سرور کپی و اینجا وارد کنید:')||'').trim();
+ if(rfLanKey)sessionStorage.setItem('rfCompanyAccessKey',rfLanKey);
+}
+if(!rfLanKey && /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && location.port==='8788')throw Error('برای نمایش موسیقی باید کلید دسترسی آرشیو را وارد کنید.');
+const rfLocalTest=/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && location.port==='8788';
+const rfMusicBase=rfLocalTest?location.origin:rfLanBase;
+const rfLanEnabled=rfLocalTest||Boolean(rfLanBase&&rfLanKey);
+let r,j;
+if(rfLanEnabled){
+ const requestUrl=new URL(rfMusicBase+'/api/music-files');
+ requestUrl.searchParams.set('page',page);requestUrl.searchParams.set('limit',musicLimit);
+ if(categoryClick)requestUrl.searchParams.set('category',q);else requestUrl.searchParams.set('q',q);
+ r=await fetch(requestUrl,{cache:'no-store',headers:{'X-Rush-Key':rfLanKey}});
+ const raw=await r.json();
+ if(!r.ok||raw.error)throw Error(raw.error||('خطا در دریافت موسیقی از شبکه شرکت (HTTP '+r.status+')'));
+ j={data:(raw.files||[]).map(f=>({id:f.id,name:f.title,artist:'آرشیو شرکت',category:f.category,source:'Appwrite',is_premium:false,download_allowed:true,files:{mp3:new URL(f.playUrl,rfMusicBase).href,download:new URL(f.downloadUrl,rfMusicBase).href}})),total:raw.total,totalIsExact:true,hasNext:page<raw.pages};
+}else{
+ r=await fetch('/api/appwrite-music?q='+encodeURIComponent(q)+'&page='+page+'&limit='+musicLimit,{cache:'no-store'});j=await r.json();
+}
 // An archive API error must not be disguised as an empty catalog or unrelated provider results.
 if(!r.ok){throw Error('خطا در خواندن آرشیو Appwrite: '+(j.detail||j.error||('HTTP '+r.status)));}
 // Prefer real, publicly readable tracks in the user's own archive; fall back to existing licensed providers.
-if(!(j.data||[]).length){
+if(!rfLanEnabled&&!(j.data||[]).length){
  // Regional music uses the licensed provider; RSS is disabled entirely.
  const localRegion=/بندری|جنوبی|کردی|شمالی|گیلکی|مازندرانی|لری|ایرانی|فارسی/.test(q);
  const provider=localRegion?'/api/iranian-music':'/api/music';
@@ -2795,7 +2816,7 @@ body.querySelectorAll('[data-play]').forEach(b=>{
  const i=Number(b.dataset.play),src=String(tracks[i]?.files?.mp3||'');
  if(playing===i){if(audio.paused)audio.play().catch(()=>{playing=-1;update();alert('پخش از سایت مبدأ امکان‌پذیر نیست.');});else audio.pause();return;}
  // V0181: No MajidAPI/Melobit resolution or fallback. Play only genuine HTTPS audio URLs.
- let url;try{url=new URL(src);if(url.protocol!=='https:')throw Error('invalid')}catch{alert('این آهنگ لینک مستقیم و معتبر برای پخش ندارد.');return;}
+ let url;try{url=new URL(src);if(url.protocol!=='https:' && !(rfLocalTest&&url.origin===location.origin&&url.protocol==='http:'))throw Error('invalid')}catch{alert('این آهنگ لینک مستقیم و معتبر برای پخش ندارد.');return;}
  audio.pause();rfPendingSeek=null;rfSeekingByUser=false;rfStopSeekTimer();rfSeekAttempts=0;
  // V0211: reuse an already-warmed media resource and avoid an unnecessary explicit reload.
  if(audio.src!==url.href){
@@ -4125,12 +4146,18 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script>
 (function(){
 const defaultCats=['طلا و سکه','سیاسی','اقتصادی','اجتماعی','ورزشی','بین‌الملل','فناوری','حوادث','سایر'];
+const rfLocalCompanyTest=/^(localhost|127\.0\.0\.1)$/.test(location.hostname)&&location.port==='8788';
 const visuals={'طلا و سکه':'gold','سیاسی':'politics','اقتصادی':'economy','اجتماعی':'social','ورزشی':'sport','بین‌الملل':'world','فناوری':'tech','حوادث':'events','سایر':'other'};
 let selected='',q='',items=[],categories=[],page=1;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function base(){return (localStorage.getItem('rfCompanyHttpsApi')||'').replace(/\/$/,'')}
-function archiveKey(){return localStorage.getItem('rfCompanyAccessKeySaved')||sessionStorage.getItem('rfCompanyAccessKey')||''}
-function icon(cat){const c=visuals[cat]||'other';return 'assets/company-categories/'+c+'.svg'}
+function base(){return (rfLocalCompanyTest?location.origin:(localStorage.getItem('rfCompanyHttpsApi')||'')).replace(/\/$/,'')}
+function archiveKey(){return (rfLocalCompanyTest?(sessionStorage.getItem('rfCompanyAccessKey')||localStorage.getItem('rfCompanyAccessKeySaved')):(localStorage.getItem('rfCompanyAccessKeySaved')||sessionStorage.getItem('rfCompanyAccessKey')))||''}
+// Dynamic visuals for new SMB folders. Existing category artwork is unchanged.
+const rfAutoPalettes=[['#f6bf51','#e78027'],['#6f9eea','#4569bd'],['#67cdb5','#22947e'],['#c69ce9','#875bc4'],['#ed8e96','#be506d'],['#7cc9e8','#258db6'],['#c3a1e6','#7361b4'],['#a2bf7d','#568447']];
+const rfAutoGlyphs=['⚡','✦','◈','◆','●','✿','★','⬡','☀','♫','✚','✈','☁','♟'];
+function rfAutoVisual(cat){let h=2166136261;for(const ch of cat){h=Math.imul(h^ch.codePointAt(0),16777619)>>>0}const palette=rfAutoPalettes[h%rfAutoPalettes.length];const glyph=/برق|الکتری|انرژی/.test(cat)?'⚡':rfAutoGlyphs[(h>>>8)%rfAutoGlyphs.length];return {palette,glyph}}
+function icon(cat){if(visuals[cat])return 'assets/company-categories/'+visuals[cat]+'.svg';const {glyph}=rfAutoVisual(cat);const svg='<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><text x="64" y="87" text-anchor="middle" font-family="Segoe UI Symbol,Arial,sans-serif" font-size="72" fill="white">'+glyph+'</text></svg>';return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)}
+function rfCategoryStyle(cat){if(visuals[cat])return '';const p=rfAutoVisual(cat).palette;return ' style="background:linear-gradient(125deg,'+p[0]+','+p[1]+')"'}
 function panel(){let el=document.getElementById('rfCompanyPanel');if(!el){el=document.createElement('section');el.id='rfCompanyPanel';document.querySelector('main').append(el)}return el}
 function layout(){panel().classList.remove('rf229-playing');panel().innerHTML=`<div class="rf-company-hero"><div><h2>▣ راش‌های شرکت</h2><p>آرشیو تصویری شرکت · دسته‌بندی خودکار از پوشه‌های شبکه</p></div><span class="rf-company-pill" id="rfCompanyCount">آرشیو داخلی</span></div><div class="rf-company-tools"><input id="rfCompanySearch" placeholder="جست‌وجو در راش‌های شرکت..." value="${esc(q)}"><button id="rfCompanySearchBtn">جست‌وجو</button><button id="rfCompanyReload">به‌روزرسانی</button><button id="rfCompanySettings" type="button" style="background:#eaf3ff;color:#176bd0">⚙ تنظیمات اتصال</button></div><div id="rfCompanyConnection" class="rf222-connection"></div><div id="rfCompanyContent"></div>`;document.getElementById('rfCompanySearchBtn').onclick=()=>{q=document.getElementById('rfCompanySearch').value.trim();selected='';page=1;load()};document.getElementById('rfCompanySearch').onkeydown=e=>{if(e.key==='Enter')document.getElementById('rfCompanySearchBtn').click()};document.getElementById('rfCompanyReload').onclick=load;document.getElementById('rfCompanySettings').onclick=()=>{const box=document.getElementById('rfCompanyConnection');box.hidden=!box.hidden;if(!box.hidden)box.querySelector('details').open=true};connectionUI()}
 function connectionUI(){
@@ -4139,11 +4166,11 @@ function connectionUI(){
  box.hidden=Boolean(current&&archiveKey());
  box.innerHTML=`<details ${current?'':'open'}><summary>⚙ اتصال آرشیو شرکت <span class="rf222-state">${current?'آدرس ذخیره شده':'نیازمند راه‌اندازی'}</span></summary><div class="rf222-config"><p>برای نمایش راش‌ها در سایت HTTPS، سرور مرکزی باید یک آدرس HTTPS قابل دسترسی از مرورگر کارکنان داشته باشد. آدرس HTTP یا IP داخلی بدون HTTPS در اینجا کار نمی‌کند.</p><label for="rf222Endpoint">آدرس HTTPS سرور آرشیو</label><p>کلید دسترسی را فقط از مدیر آرشیو دریافت کنید. کلید فقط روی همین مرورگر و دستگاه ذخیره می‌شود تا لازم نباشد هر بار آن را وارد کنید. روی رایانه‌های عمومی یا مشترک از این قابلیت استفاده نکنید.</p><input id="rf224Key" dir="ltr" type="password" autocomplete="off" placeholder="کلید دسترسی آرشیو" value="${esc(archiveKey())}"><div class="rf222-inputs"><input id="rf222Endpoint" dir="ltr" placeholder="https://archive.example.com" value="${esc(current)}"><button id="rf222Save">ذخیره و بررسی</button><button id="rf222Clear" type="button">پاک‌کردن</button></div><p id="rf222Feedback" role="status"></p></div></details>`;
  const feedback=()=>document.getElementById('rf222Feedback');
- document.getElementById('rf222Save').onclick=async()=>{try{const input=document.getElementById('rf222Endpoint').value.trim();const u=new URL(input);if(u.protocol!=='https:'||u.username||u.password||u.search||u.hash)throw Error('آدرس باید HTTPS معتبر و بدون نام کاربری باشد.');const accessKey=document.getElementById('rf224Key').value.trim();if(!accessKey)throw Error('کلید دسترسی را وارد کنید.');localStorage.setItem('rfCompanyAccessKeySaved',accessKey);sessionStorage.setItem('rfCompanyAccessKey',accessKey);localStorage.setItem('rfCompanyHttpsApi',u.origin);feedback().textContent='آدرس ذخیره شد؛ در حال بررسی اتصال...';await load();connectionUI()}catch(e){feedback().textContent=e.message}};
+ document.getElementById('rf222Save').onclick=async()=>{try{const input=document.getElementById('rf222Endpoint').value.trim();const u=new URL(input);if(!(u.protocol==='https:'||(rfLocalCompanyTest&&u.origin===location.origin&&u.protocol==='http:'))||u.username||u.password||u.search||u.hash)throw Error('آدرس باید HTTPS معتبر باشد؛ در تست محلی localhost:8788 هم مجاز است.');const accessKey=document.getElementById('rf224Key').value.trim();if(!accessKey)throw Error('کلید دسترسی را وارد کنید.');localStorage.setItem('rfCompanyAccessKeySaved',accessKey);sessionStorage.setItem('rfCompanyAccessKey',accessKey);localStorage.setItem('rfCompanyHttpsApi',u.origin);feedback().textContent='آدرس ذخیره شد؛ در حال بررسی اتصال...';await load();connectionUI()}catch(e){feedback().textContent=e.message}};
  document.getElementById('rf222Clear').onclick=()=>{localStorage.removeItem('rfCompanyHttpsApi');localStorage.removeItem('rfCompanyAccessKeySaved');sessionStorage.removeItem('rfCompanyAccessKey');items=[];categories=[];selected='';q='';layout();load()};
 }
 function message(t){document.getElementById('rfCompanyContent').innerHTML='<div class="rf-company-msg">'+t+'</div>'}
-function render(){const area=document.getElementById('rfCompanyContent');if(!selected&&!q){const cats=[...new Set([...defaultCats,...categories])];area.innerHTML='<div class="rf-company-cats">'+cats.map(cat=>`<button class="rf-company-cat" data-cat="${esc(cat)}"><img alt="" src="${icon(cat)}"><strong>${esc(cat)}</strong><small>مشاهده ویدئوها ←</small></button>`).join('')+'</div>';area.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{selected=b.dataset.cat;page=1;load()});return}
+function render(){const area=document.getElementById('rfCompanyContent');if(!selected&&!q){const cats=[...new Set([...defaultCats,...categories])];area.innerHTML='<div class="rf-company-cats">'+cats.map(cat=>`<button class="rf-company-cat" data-cat="${esc(cat)}"${rfCategoryStyle(cat)}><img alt="" src="${icon(cat)}"><strong>${esc(cat)}</strong><small>مشاهده ویدئوها ←</small></button>`).join('')+'</div>';area.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{selected=b.dataset.cat;page=1;load()});return}
 area.innerHTML=`<div style="display:flex;align-items:center;gap:14px;margin-bottom:18px"><button class="rf-company-back" id="rfCompanyBack">بازگشت به موضوعات</button><strong>${esc(selected||'نتایج جست‌وجو')}</strong></div>`+(items.length?'<div class="rf-company-files">'+items.map((f,i)=>`<div class="rf-company-file"><div class="rf230-thumb"><img loading="lazy" alt="تصویر واقعی ویدئو" src="${esc(base()+f.thumbnailUrl)}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span class="rf230-fallback" style="display:none">▶</span></div><h4 title="${esc(f.title)}">${esc(f.title)}</h4><span class="rf230-catbadge">${esc(f.category)}</span><p>${esc(f.extension)} · ${Number(f.size/1048576||0).toFixed(1)} MB</p><div class="rf-company-actions"><button data-play="${i}">نمایش</button><a data-download="${i}" href="#">دانلود</a></div></div>`).join('')+'</div>':'<div class="rf-company-msg">ویدئویی در این بخش پیدا نشد.</div>');document.getElementById('rfCompanyBack').onclick=()=>{selected='';q='';layout();render()};area.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>play(items[+b.dataset.play]));area.querySelectorAll('[data-download]').forEach(a=>{const f=items[+a.dataset.download];a.href=base()+f.downloadUrl;a.target='_blank';a.rel='noopener'})}
 async function load(){const endpoint=base();if(!endpoint){render();const area=document.getElementById('rfCompanyContent');area.insertAdjacentHTML('afterbegin','<p class="rf-company-msg">دسته‌بندی‌ها آماده‌اند؛ نمایش فایل‌های واقعی پس از اتصال HTTPS امن آرشیو شرکت فعال می‌شود.</p>');return}message('در حال دریافت آرشیو...');try{const u=new URL(endpoint+'/api/files');if(selected)u.searchParams.set('category',selected);if(q)u.searchParams.set('q',q);u.searchParams.set('page',page);const r=await fetch(u,{mode:'cors',cache:'no-store',headers:{'X-Rush-Key':archiveKey()}});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();if(data.error)throw Error(data.error);if(!Array.isArray(data.files))throw Error('پاسخ نامعتبر');items=data.files;categories=data.categories||[];document.getElementById('rfCompanyCount').textContent=(data.all||0).toLocaleString('fa-IR')+' فایل';render()}catch(e){message('اتصال به آرشیو امن شرکت برقرار نشد. وضعیت سرور، مجوز دسترسی، HTTPS و CORS را بررسی کنید. ('+esc(e.message)+')')}}
 function play(f){
@@ -4155,7 +4182,7 @@ function play(f){
  const p=document.getElementById('rfCompanyPanel');if(p){p.scrollTop=0;requestAnimationFrame(()=>{p.scrollTop=0})}
 }
 window.rfShowCompanyRush=function(e){e?.stopPropagation();document.body.classList.add('rf-company-view');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.textContent.includes('راش‌های شرکت')));layout();panel().classList.add('rf-company-on');load()};
-window.rfConfigureCompanyArchive=function(httpsUrl){const u=new URL(httpsUrl);if(u.protocol!=='https:')throw Error('HTTPS required');localStorage.setItem('rfCompanyHttpsApi',u.origin);if(document.body.classList.contains('rf-company-view')){layout();load()}};
+window.rfConfigureCompanyArchive=function(httpsUrl){const u=new URL(httpsUrl);if(u.protocol!=='https:'&&!(rfLocalCompanyTest&&u.origin===location.origin&&u.protocol==='http:'))throw Error('HTTPS required');localStorage.setItem('rfCompanyHttpsApi',u.origin);if(document.body.classList.contains('rf-company-view')){layout();load()}};
 const companyNav=document.getElementById('rfCompanyNav');
 if(companyNav){companyNav.addEventListener('click',function(e){e.preventDefault();e.stopImmediatePropagation();window.rfShowCompanyRush(e);panel().classList.add('rf-company-on')},true)}
 document.querySelectorAll('.nav button').forEach(btn=>{if(btn!==companyNav){btn.addEventListener('click',()=>{document.body.classList.remove('rf-company-view');panel().classList.remove('rf-company-on')})}});

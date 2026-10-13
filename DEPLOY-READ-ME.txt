@@ -1,0 +1,11 @@
+RushFinder — GitHub + Vercel + Company LAN
+
+1) Upload all files and folders in this package to the ROOT of your GitHub repository. Keep api/, assets/, fonts/, vercel.json, admin.html, and index.html.
+2) Commit. Vercel will deploy automatically only if GitHub integration is already connected.
+3) IMPORTANT: GitHub/Vercel cannot access the private SMB share directly. The PC serving port 8787 and the existing Tailscale Funnel must remain running.
+4) ONE-TIME SERVER UPDATE IS REQUIRED for Music if your current port 8787 server lacks /api/music-files. First back up the existing server.js and .rushfinder-secret. Stop the production Node process, replace ONLY server.js from lan-rush/, retain the existing .rushfinder-secret, and restart the existing scheduled task/service. Do not replace the .rushfinder-secret or change Tailscale configuration.
+5) On the live site, use the existing company HTTPS endpoint and the existing server access key in the Company Archive connection settings. The Music page shares that connection. Do not publish the access key in GitHub.
+6) External YouTube, Aparat, Pixabay, Vecteezy integrations retain their existing api/ code. They still require any previously configured Vercel environment variables, API credentials, quotas, and external service availability.
+7) Test the live company archive and music after deployment. If errors occur, restore backed-up files.
+
+Note: Local test on port 8788 was reported successful by the user; this package has not been live-deployed or independently end-to-end tested.
