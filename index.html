@@ -4012,10 +4012,10 @@ document.addEventListener("DOMContentLoaded",()=>{
 })();
 </script>
 <section id="mu136"><div class="mu136-wrap">
-<div class="mu136-search"><div class="mu136-searchBox"><input id="mu136q" placeholder="موزیک مورد نظر را جستجو کنید..."></div><button id="mu136search">جستجو</button></div>
+<div class="mu136-search"><div class="mu136-searchBox"><input id="mu136q" placeholder="موزیک مورد نظر را جستجو کنید…"></div><button id="mu136search">جستجو</button></div>
 <div class="mu136-cats"><button class="mu136-cat" data-q="خبری" data-key="news" aria-label="موزیک خبری"><img src="assets/music-v0136/cat1.webp" alt="خبری"></button><button class="mu136-cat" data-q="سیاسی" data-key="political" aria-label="موزیک سیاسی"><img src="assets/music-v0136/cat2.webp" alt="سیاسی"></button><button class="mu136-cat" data-q="ورزشی" data-key="sport" aria-label="موزیک ورزشی"><img src="assets/music-v0136/cat3.webp" alt="ورزشی"></button><button class="mu136-cat" data-q="حماسی" data-key="epic" aria-label="موزیک حماسی"><img src="assets/music-v0136/cat4.webp" alt="حماسی"></button><button class="mu136-cat" data-q="سینمایی" data-key="cinematic" aria-label="موزیک سینمایی"><img src="assets/music-v0136/cat5.webp" alt="سینمایی"></button><button class="mu136-cat" data-q="هیجانی" data-key="exciting" aria-label="موزیک هیجانی"><img src="assets/music-v0136/cat6.webp" alt="هیجانی"></button><button class="mu136-cat" data-q="مستند" data-key="documentary" aria-label="موزیک مستند"><img src="assets/music-v0136/cat7.webp" alt="مستند"></button><button class="mu136-cat" data-q="تکنولوژی" data-key="technology" aria-label="موزیک تکنولوژی"><img src="assets/music-v0136/cat8.webp" alt="تکنولوژی"></button><button class="mu136-cat" data-q="دراماتیک" data-key="dramatic" aria-label="موزیک دراماتیک"><img src="assets/music-v0136/cat9.webp" alt="دراماتیک"></button><button class="mu136-cat" data-q="انرژی" data-key="energy" aria-label="موزیک انرژی"><img src="assets/music-v0136/cat10.webp" alt="انرژی"></button><button class="mu136-cat" data-q="غمگین" data-key="sad" aria-label="موزیک غمگین"><img src="assets/music-v0136/cat11.webp" alt="غمگین"></button><button class="mu136-cat" data-q="آرام" data-key="calm" aria-label="موزیک آرام"><img src="assets/music-v0136/cat12.webp" alt="آرام"></button></div>
 <div class="mu136-tools"><button class="primary" id="mu136all">نمایش همه</button><select id="mu136source"><option value="">همه منابع</option><option value="pixabay">Pixabay</option><option value="youtube">YouTube</option></select><select><option>مدت زمان</option></select><select><option>نوع مجوز</option></select><select><option>تعداد در صفحه ۲۴</option></select><button id="mu136clear">پاک کردن فیلترها</button><span class="mu136-status" id="mu136status">برای شروع یک موزیک جستجو کنید</span></div>
-<div class="mu136-results" id="mu136results"><div class="mu136-empty">نام موزیک یا یکی از ۱۲ دسته بالا را انتخاب کنید.<br>نتایج واقعی پس از جستجو نمایش داده می‌شوند.</div></div>
+<div class="mu136-results" id="mu136results"><div class="mu136-empty">یکی از دسته‌های بالا را انتخاب کنید یا موزیک مورد نظر را جستجو کنید.</div></div>
 </div></section><script id="mu136-js">
 (function(){
 const bars='<i></i>'.repeat(28);
@@ -4062,7 +4062,7 @@ function init(){
  document.getElementById('mu136search').onclick=()=>q.value.trim()&&searchMusic(q.value.trim());
  q.addEventListener('keydown',e=>{if(e.key==='Enter'&&q.value.trim())searchMusic(q.value.trim())});
  document.querySelectorAll('.mu136-cat').forEach(c=>c.onclick=()=>{document.querySelectorAll('.mu136-cat').forEach(x=>x.classList.remove('active'));c.classList.add('active');q.value='موزیک '+c.dataset.q;searchMusic(q.value)});
- document.getElementById('mu136clear').onclick=()=>{q.value='';document.querySelectorAll('.mu136-cat').forEach(x=>x.classList.remove('active'));document.getElementById('mu136results').innerHTML='<div class="mu136-empty">نام موزیک یا یکی از ۱۲ دسته بالا را انتخاب کنید.<br>نتایج واقعی پس از جستجو نمایش داده می‌شوند.</div>';document.getElementById('mu136status').textContent='برای شروع یک موزیک جستجو کنید'};
+ document.getElementById('mu136clear').onclick=()=>{q.value='';document.querySelectorAll('.mu136-cat').forEach(x=>x.classList.remove('active'));document.getElementById('mu136results').innerHTML='<div class="mu136-empty">یکی از دسته‌های بالا را انتخاب کنید یا موزیک مورد نظر را جستجو کنید.</div>';document.getElementById('mu136status').textContent='برای شروع یک موزیک جستجو کنید'};
  document.getElementById('mu136all').onclick=()=>{q.value='موزیک';searchMusic('موزیک')};
 }
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
@@ -4383,5 +4383,6 @@ body.rf-company-view #rfCompanyPanel.rf-company-on {
  decorate();
 })();
 </script><script src="./narration-addon.js" defer></script>
+<style id="rf0318-music-polish">#mu136q{font-size:22px!important;font-weight:600!important}#mu136q::placeholder{font-size:22px!important;opacity:1!important;color:#526d88!important}#mu136 .mu136-cats{display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr))!important;gap:8px!important}#mu136 .mu136-cat img{display:block;width:100%;height:100%;object-fit:cover}@media(max-width:1100px){#mu136 .mu136-cats{grid-template-columns:repeat(6,minmax(0,1fr))!important}}@media(max-width:600px){#mu136 .mu136-cats{grid-template-columns:repeat(3,minmax(0,1fr))!important}}</style>
 </body>
 </html>
