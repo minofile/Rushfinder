@@ -51,7 +51,10 @@ const NR_PERSIAN_VOICES={
 };
 function persianVoiceLabel(v){
  const original=String(v.name||'').trim();
- const description=NR_PERSIAN_VOICES[original.toLowerCase()];
+ // ElevenLabs sometimes includes the English voice description in v.name.
+ // Match the voice's first name, not the entire descriptive label.
+ const baseName=original.split(/\s*[-–—|:]\s*/)[0].trim().toLowerCase();
+ const description=NR_PERSIAN_VOICES[baseName]||NR_PERSIAN_VOICES[original.toLowerCase()];
  const language=String(v.labels?.language||'').toLowerCase();
  const langLabel=language==='en'||language==='english'?'انگلیسی':language==='fa'||language==='persian'||language==='farsi'?'فارسی':language;
  return (description||original)+(langLabel?' — '+langLabel:'');
