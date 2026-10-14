@@ -101,30 +101,50 @@ function renderVoices(items){
  loaded=true;$('nrStatus').textContent=items.length?'صداها دریافت شدند. یک صدا را انتخاب و با متن کوتاه آزمایش کنید.':'هیچ صدایی در حساب ElevenLabs پیدا نشد.';
 }
 async function voices(){ $('nrVoice').innerHTML='<option>در حال دریافت...</option>';try{const r=await narrationFetch({action:'voices'});const j=await r.json();if(!r.ok)throw Error(typeof j.error==='string'?j.error:'خطا');renderVoices(j.voices||[])}catch(e){$('nrVoice').innerHTML='<option value="">خطا در دریافت صداها</option>';$('nrStatus').textContent=e.message}}
-// V0318: keep a fresh display snapshot for each navigation cycle.
-const narrationDisplaySnapshot=new Map();
+// V0319: Navigation is state-driven. Do not snapshot display values that
+// can already be "none" from another view; those stale snapshots caused
+// the narration panel to disappear on subsequent visits.
+const narrationStyle=document.createElement('style');
+narrationStyle.textContent='#rfNarrationPage{display:none!important}#rfNarrationPage.active{display:block!important}';
+document.head.appendChild(narrationStyle);
 function show(){
- // Close the music overlay before activating narration; its independent nav
- // handler must not leave the previous view covering the narration page.
- document.getElementById('mu136')?.classList.remove('active');
- narrationDisplaySnapshot.clear();
- main.querySelectorAll(':scope > *').forEach(el=>{
-  if(el===page)return;
-  narrationDisplaySnapshot.set(el,el.style.display);
-  el.style.display='none';
- });
- page.style.removeProperty('display');
- page.classList.add('active');
- document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x===b));
- window.scrollTo(0,0);
+  // Restore all previously hidden main children before choosing this view.
+  main.querySelectorAll(':scope > *').forEach(el=>{
+    if(el!==page){
+      if(el.hasAttribute('data-nr-display')){
+        el.style.display=el.dataset.nrDisplay==='__empty__'?'':el.dataset.nrDisplay;
+        delete el.dataset.nrDisplay;
+      }
+      // Snapshot only after stale narration state is removed.
+      el.dataset.nrDisplay=el.style.display||'__empty__';
+      el.style.display='none';
+    }
+  });
+  document.getElementById('mu136')?.classList.remove('active');
+  page.style.removeProperty('display');
+  page.classList.add('active');
+  nav.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));
+  window.scrollTo(0,0);
 }
 function hide(){
- page.classList.remove('active');
- page.style.removeProperty('display');
- narrationDisplaySnapshot.forEach((display,el)=>{el.style.display=display});
- narrationDisplaySnapshot.clear();
+  page.classList.remove('active');
+  page.style.removeProperty('display');
+  main.querySelectorAll(':scope > *').forEach(el=>{
+    if(el!==page&&el.hasAttribute('data-nr-display')){
+      el.style.display=el.dataset.nrDisplay==='__empty__'?'':el.dataset.nrDisplay;
+      delete el.dataset.nrDisplay;
+    }
+  });
 }
-b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();enterNarration()});document.addEventListener('click',e=>{const n=e.target.closest('.nav button');if(n&&n!==b)hide()},true);
+b.addEventListener('click',e=>{
+  e.preventDefault();e.stopImmediatePropagation();
+  enterNarration();
+});
+// Capture phase restores the main view before legacy navigation handlers run.
+nav.addEventListener('click',e=>{
+  const target=e.target.closest('button');
+  if(target&&target!==b)hide();
+},true);
 $('nrReload').onclick=voices;$('nrText').oninput=()=>{$('nrCount').textContent=$('nrText').value.length.toLocaleString('fa-IR')+' / ۳۵۰۰ نویسه'};
 $('nrGenerate').onclick=async()=>{const text=$('nrText').value.trim(),voice_id=$('nrVoice').value;if(!text||!voice_id){$('nrStatus').textContent='متن و صدا را انتخاب کنید.';return}const btn=$('nrGenerate');btn.disabled=true;$('nrStatus').textContent='در حال تولید نریشن...';$('nrDownload').replaceChildren();try{const r=await narrationFetch({action:'generate',text,voice_id,model_id:$('nrModel').value,stability:0.55,similarity:0.8});if(!r.ok){const j=await r.json().catch(()=>({}));throw Error(typeof j.error==='string'?j.error:'خطا در تولید صدا')}const blob=await r.blob();if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(blob);$('nrPlayer').src=objectUrl;$('nrPlayer').hidden=false;const a=document.createElement('a');a.href=objectUrl;a.download='RushFinder-Narration.mp3';a.textContent='↓ دانلود MP3';$('nrDownload').append(a);$('nrStatus').textContent='نریشن آماده است.'}catch(e){$('nrStatus').textContent=e.message}finally{btn.disabled=false}};
 }
