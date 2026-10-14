@@ -9,13 +9,33 @@ const page=document.createElement('section');page.id='rfNarrationPage';page.inne
 main.prepend(page);
 const $=id=>document.getElementById(id);let objectUrl=null,loaded=false;
 let narrationPin='';
-function getNarrationPin(){if(!narrationPin){narrationPin=window.prompt('رمز دسترسی نریشن را وارد کنید (رمزی که در Vercel تنظیم کرده‌اید):')||'';}return narrationPin;}
-async function narrationFetch(body){const pin=getNarrationPin();if(!pin)throw Error('برای استفاده از نریشن باید رمز دسترسی را وارد کنید.');const r=await fetch('/api/narration',{method:'POST',headers:{'Content-Type':'application/json','X-Narration-Pin':pin},body:JSON.stringify(body)});if(r.status===401)narrationPin='';return r;}
-
-async function voices(){ $('nrVoice').innerHTML='<option>در حال دریافت...</option>';try{const r=await narrationFetch({action:'voices'});const j=await r.json();if(!r.ok)throw Error(typeof j.error==='string'?j.error:'خطا');$('nrVoice').replaceChildren();for(const v of j.voices||[]){const opt=document.createElement('option');opt.value=v.id;opt.textContent=v.name+(v.labels?.language?' — '+v.labels.language:'');$('nrVoice').append(opt)}if(!$('nrVoice').options.length)$('nrVoice').innerHTML='<option value="">صدایی پیدا نشد</option>';loaded=true;$('nrStatus').textContent='صداها دریافت شدند. برای فارسی، صدایی را انتخاب و ابتدا با متن کوتاه آزمایش کنید.'}catch(e){$('nrVoice').innerHTML='<option value="">خطا در دریافت صداها</option>';$('nrStatus').textContent=e.message}}
+async function narrationFetch(body){
+ if(!narrationPin)throw Error('ابتدا با رمز وارد بخش نریشن شوید.');
+ const r=await fetch('/api/narration',{method:'POST',headers:{'Content-Type':'application/json','X-Narration-Pin':narrationPin},body:JSON.stringify(body)});
+ if(r.status===401)narrationPin='';
+ return r;
+}
+async function enterNarration(){
+ if(narrationPin){show();return;}
+ const pin=window.prompt('رمز ورود به بخش نریشن را وارد کنید:');
+ if(pin===null||!pin.trim())return;
+ try{
+  const r=await fetch('/api/narration',{method:'POST',headers:{'Content-Type':'application/json','X-Narration-Pin':pin.trim()},body:JSON.stringify({action:'voices'})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw Error(typeof j.error==='string'?j.error:'اتصال به سرویس نریشن برقرار نشد.');
+  narrationPin=pin.trim();show();renderVoices(j.voices||[]);
+ }catch(e){window.alert('ورود به نریشن انجام نشد: '+e.message+'\n\nاگر هنوز NARRATION_ACCESS_PIN را در Vercel تنظیم نکرده‌اید، ابتدا آن را تنظیم و سایت را دوباره Deploy کنید.');}
+}
+function renderVoices(items){
+ $('nrVoice').replaceChildren();
+ for(const v of items){const opt=document.createElement('option');opt.value=v.id;opt.textContent=v.name+(v.labels?.language?' — '+v.labels.language:'');$('nrVoice').append(opt)}
+ if(!$('nrVoice').options.length)$('nrVoice').innerHTML='<option value="">صدایی پیدا نشد</option>';
+ loaded=true;$('nrStatus').textContent=items.length?'صداها دریافت شدند. یک صدا را انتخاب و با متن کوتاه آزمایش کنید.':'هیچ صدایی در حساب ElevenLabs پیدا نشد.';
+}
+async function voices(){ $('nrVoice').innerHTML='<option>در حال دریافت...</option>';try{const r=await narrationFetch({action:'voices'});const j=await r.json();if(!r.ok)throw Error(typeof j.error==='string'?j.error:'خطا');renderVoices(j.voices||[])}catch(e){$('nrVoice').innerHTML='<option value="">خطا در دریافت صداها</option>';$('nrStatus').textContent=e.message}}
 function show(){page.classList.add('active');main.querySelectorAll(':scope > *').forEach(el=>{if(el!==page){if(!el.dataset.nrDisplay)el.dataset.nrDisplay=el.style.display||'__empty__';el.style.display='none'}});document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x===b));window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0;for(let a=main.parentElement;a&&a!==document.body;a=a.parentElement){if(a.scrollTop)a.scrollTop=0;}requestAnimationFrame(()=>{for(let a=main.parentElement;a&&a!==document.body;a=a.parentElement){if(a.scrollTop)a.scrollTop=0;}});}
 function hide(){if(!page.classList.contains('active'))return;page.classList.remove('active');main.querySelectorAll(':scope > *').forEach(el=>{if(el!==page&&el.dataset.nrDisplay){el.style.display=el.dataset.nrDisplay==='__empty__'?'':el.dataset.nrDisplay;delete el.dataset.nrDisplay}})}
-b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();show()});document.addEventListener('click',e=>{const n=e.target.closest('.nav button');if(n&&n!==b)hide()},true);
+b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();enterNarration()});document.addEventListener('click',e=>{const n=e.target.closest('.nav button');if(n&&n!==b)hide()},true);
 $('nrReload').onclick=voices;$('nrText').oninput=()=>{$('nrCount').textContent=$('nrText').value.length.toLocaleString('fa-IR')+' / ۳۵۰۰ نویسه'};
 $('nrGenerate').onclick=async()=>{const text=$('nrText').value.trim(),voice_id=$('nrVoice').value;if(!text||!voice_id){$('nrStatus').textContent='متن و صدا را انتخاب کنید.';return}const btn=$('nrGenerate');btn.disabled=true;$('nrStatus').textContent='در حال تولید نریشن...';$('nrDownload').replaceChildren();try{const r=await narrationFetch({action:'generate',text,voice_id,stability:0.55,similarity:0.8});if(!r.ok){const j=await r.json().catch(()=>({}));throw Error(typeof j.error==='string'?j.error:'خطا در تولید صدا')}const blob=await r.blob();if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(blob);$('nrPlayer').src=objectUrl;$('nrPlayer').hidden=false;const a=document.createElement('a');a.href=objectUrl;a.download='RushFinder-Narration.mp3';a.textContent='↓ دانلود MP3';$('nrDownload').append(a);$('nrStatus').textContent='نریشن آماده است.'}catch(e){$('nrStatus').textContent=e.message}finally{btn.disabled=false}};
 }
