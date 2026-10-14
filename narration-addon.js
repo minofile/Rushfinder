@@ -23,46 +23,59 @@ function rfNarrationPasswordDialog(){
   overlay.id='rfNarrationLoginOverlay';
   overlay.setAttribute('role','presentation');
   overlay.innerHTML=`<div class="rf-nr-login" role="dialog" aria-modal="true" aria-labelledby="rfNrLoginTitle" dir="rtl">
-    <div class="rf-nr-login-icon" aria-hidden="true">🎙️</div>
-    <h2 id="rfNrLoginTitle">ورود به بخش نریشن</h2>
+    <div class="rf-nr-login-heading"><div class="rf-nr-login-icon" aria-hidden="true">🎙️</div><h2 id="rfNrLoginTitle">ورود به بخش نریشن</h2></div>
     <p>برای ورود، رمز دسترسی نریشن را وارد کنید.</p>
     <form id="rfNrLoginForm"><label for="rfNrLoginPassword">رمز ورود</label>
-    <input id="rfNrLoginPassword" type="password" autocomplete="off" required placeholder="رمز ورود را وارد کنید" />
+    <input id="rfNrLoginPassword" type="password" autocomplete="off" required placeholder="رمز ورود را وارد کنید" aria-describedby="rfNrLoginError" />
+    <div id="rfNrLoginError" class="rf-nr-login-error" role="alert" aria-live="polite" hidden></div>
     <div class="rf-nr-login-actions"><button type="submit">تأیید</button><button type="button" id="rfNrLoginCancel">انصراف</button></div></form>
   </div>`;
   const style=document.createElement('style');
   style.id='rfNrLoginStyle';
   style.textContent=`#rfNarrationLoginOverlay{position:fixed;inset:0;z-index:2147483646;background:rgba(5,24,48,.55);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
-  #rfNarrationLoginOverlay *{box-sizing:border-box}#rfNarrationLoginOverlay .rf-nr-login{width:min(100%,410px);background:#fff;border:1px solid #dbe8f8;border-radius:22px;box-shadow:0 24px 70px #051e4666;padding:22px 26px 24px;font-family:inherit;text-align:right;color:#143455}
-  #rfNarrationLoginOverlay .rf-nr-login-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:#edf6ff;font-size:21px;margin:0 0 6px 12px;float:right}
-  #rfNarrationLoginOverlay h2{font-size:19px;margin:4px 0 9px;color:#102f54;min-height:32px;display:flex;align-items:center}#rfNarrationLoginOverlay p{font-size:13px;color:#637e99;line-height:1.9;margin:0 0 17px;clear:both}
-  #rfNarrationLoginOverlay label{display:block;font-size:13px;font-weight:700;margin-bottom:9px}#rfNarrationLoginOverlay input{width:100%;height:48px;padding:10px 14px;border:1px solid #cbdced;border-radius:12px;background:#f8fbff;outline:none;font:inherit;direction:ltr;text-align:left}
-  #rfNarrationLoginOverlay input:focus{border-color:#1681ed;box-shadow:0 0 0 3px #1681ed22}#rfNarrationLoginOverlay .rf-nr-login-actions{display:flex;gap:10px;margin-top:20px}
-  #rfNarrationLoginOverlay button{flex:1;border:0;border-radius:12px;padding:13px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}#rfNarrationLoginOverlay button[type=submit]{background:#0879ed;color:white}#rfNarrationLoginOverlay #rfNrLoginCancel{background:#edf3fa;color:#375a7b}`;
+  #rfNarrationLoginOverlay *{box-sizing:border-box}#rfNarrationLoginOverlay .rf-nr-login{width:min(100%,410px);background:#fff;border:1px solid #dbe8f8;border-radius:20px;box-shadow:0 24px 70px #051e4666;padding:21px 26px 24px;font-family:inherit;text-align:right;color:#143455}
+  #rfNarrationLoginOverlay .rf-nr-login-heading{display:flex;align-items:center;gap:10px;margin-bottom:8px}#rfNarrationLoginOverlay .rf-nr-login-icon{width:35px;height:35px;flex:none;display:grid;place-items:center;border-radius:11px;background:#edf6ff;font-size:19px}
+  #rfNarrationLoginOverlay h2{font-size:18px;margin:0;color:#102f54}#rfNarrationLoginOverlay p{font-size:13px;color:#637e99;line-height:1.9;margin:0 0 17px}
+  #rfNarrationLoginOverlay label{display:block;font-size:13px;font-weight:700;margin-bottom:9px}#rfNarrationLoginOverlay input{width:100%;height:44px;padding:10px 14px;border:1px solid #cbdced;border-radius:11px;background:#f8fbff;outline:none;font:inherit;direction:ltr;text-align:left}
+  #rfNarrationLoginOverlay input:focus{border-color:#1681ed;box-shadow:0 0 0 3px #1681ed22}#rfNarrationLoginOverlay input[aria-invalid=true]{border-color:#df3d52;background:#fff9fa;box-shadow:0 0 0 3px #df3d5214}
+  #rfNarrationLoginOverlay .rf-nr-login-error{margin-top:9px;padding:9px 11px;background:#fff0f2;border:1px solid #ffd0d7;border-radius:9px;color:#b8223b;font-size:12px;line-height:1.8}#rfNarrationLoginOverlay .rf-nr-login-error[hidden]{display:none}
+  #rfNarrationLoginOverlay .rf-nr-login-actions{display:flex;gap:10px;margin-top:17px}#rfNarrationLoginOverlay button{flex:1;border:0;border-radius:11px;padding:12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}#rfNarrationLoginOverlay button[type=submit]{background:#0879ed;color:white}#rfNarrationLoginOverlay #rfNrLoginCancel{background:#edf3fa;color:#375a7b}#rfNarrationLoginOverlay button:disabled{opacity:.65;cursor:wait}`;
   document.head.appendChild(style);document.body.appendChild(overlay);
   const input=overlay.querySelector('#rfNrLoginPassword');
+  const form=overlay.querySelector('#rfNrLoginForm');
+  const errorBox=overlay.querySelector('#rfNrLoginError');
+  const submit=overlay.querySelector('button[type=submit]');
+  const cancel=overlay.querySelector('#rfNrLoginCancel');
   const previousFocus=document.activeElement;
-  let closed=false;
+  let closed=false,busy=false;
+  const showError=message=>{errorBox.textContent=message;errorBox.hidden=false;input.setAttribute('aria-invalid','true');input.focus();input.select()};
   const close=value=>{if(closed)return;closed=true;document.removeEventListener('keydown',onKey,true);overlay.remove();style.remove();if(previousFocus&&previousFocus.isConnected)previousFocus.focus();resolve(value)};
-  const onKey=e=>{if(e.key==='Escape'){e.preventDefault();close(null)}else if(e.key==='Tab'){const btns=[input,overlay.querySelector('button[type=submit]'),overlay.querySelector('#rfNrLoginCancel')];const i=btns.indexOf(document.activeElement);if(e.shiftKey&&i===0){e.preventDefault();btns[2].focus()}else if(!e.shiftKey&&i===2){e.preventDefault();btns[0].focus()}}};
+  const onKey=e=>{if(e.key==='Escape'){e.preventDefault();if(!busy)close(false)}else if(e.key==='Tab'){const btns=[input,submit,cancel];const i=btns.indexOf(document.activeElement);if(e.shiftKey&&i===0){e.preventDefault();btns[2].focus()}else if(!e.shiftKey&&i===2){e.preventDefault();btns[0].focus()}}};
   document.addEventListener('keydown',onKey,true);
-  overlay.querySelector('#rfNrLoginForm').addEventListener('submit',e=>{e.preventDefault();const value=input.value.trim();if(value)close(value)});
-  overlay.querySelector('#rfNrLoginCancel').addEventListener('click',()=>close(null));
-  overlay.addEventListener('click',e=>{if(e.target===overlay)close(null)});
+  input.addEventListener('input',()=>{errorBox.hidden=true;input.removeAttribute('aria-invalid')});
+  form.addEventListener('submit',async e=>{
+   e.preventDefault();if(busy)return;
+   const pin=input.value.trim();if(!pin)return;
+   busy=true;submit.disabled=true;cancel.disabled=true;submit.textContent='در حال بررسی...';
+   try{
+    const r=await fetch('/api/narration',{method:'POST',headers:{'Content-Type':'application/json','X-Narration-Pin':pin},body:JSON.stringify({action:'voices'})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok){
+     if(r.status===401){showError('رمز ورود اشتباه است. دوباره تلاش کنید.');return}
+     showError(typeof j.error==='string'?j.error:'اتصال به سرویس نریشن برقرار نشد. دوباره تلاش کنید.');return;
+    }
+    narrationPin=pin;renderVoices(j.voices||[]);close(true);show();
+   }catch(err){showError('ارتباط با سرور برقرار نشد. اتصال اینترنت را بررسی کنید.');}
+   finally{busy=false;submit.disabled=false;cancel.disabled=false;submit.textContent='تأیید'}
+  });
+  cancel.addEventListener('click',()=>{if(!busy)close(false)});
+  overlay.addEventListener('click',e=>{if(e.target===overlay&&!busy)close(false)});
   input.focus();
  });
 }
-
 async function enterNarration(){
  if(narrationPin){show();return;}
- const pin=await rfNarrationPasswordDialog();
- if(pin===null||!pin.trim())return;
- try{
-  const r=await fetch('/api/narration',{method:'POST',headers:{'Content-Type':'application/json','X-Narration-Pin':pin.trim()},body:JSON.stringify({action:'voices'})});
-  const j=await r.json().catch(()=>({}));
-  if(!r.ok)throw Error(typeof j.error==='string'?j.error:'اتصال به سرویس نریشن برقرار نشد.');
-  narrationPin=pin.trim();show();renderVoices(j.voices||[]);
- }catch(e){window.alert('ورود به نریشن انجام نشد: '+e.message+'\n\nاگر هنوز NARRATION_ACCESS_PIN را در Vercel تنظیم نکرده‌اید، ابتدا آن را تنظیم و سایت را دوباره Deploy کنید.');}
+ await rfNarrationPasswordDialog();
 }
 // Persian display labels only; voice IDs and synthesis are unchanged.
 const NR_PERSIAN_VOICES={
