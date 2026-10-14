@@ -122,6 +122,7 @@ function show(){
   });
   // The Rush suggestion view is a fixed overlay outside <main>. Close it explicitly.
   document.getElementById('rfRushPage')?.classList.remove('active');
+  document.getElementById('rfSettingsPage')?.classList.remove('active');
   document.getElementById('mu136')?.classList.remove('active');
   page.style.removeProperty('display');
   page.classList.add('active');
@@ -143,9 +144,16 @@ b.addEventListener('click',e=>{
   enterNarration();
 });
 // Capture phase restores the main view before legacy navigation handlers run.
-nav.addEventListener('click',e=>{
-  const target=e.target.closest('button');
-  if(target&&target!==b)hide();
+// Close narration before any of the older dashboard/rush/settings/music handlers.
+// Using document capture also covers navigation handlers attached to document.
+document.addEventListener('click',e=>{
+  const target=e.target.closest('.nav button');
+  if(!target || target===b)return;
+  hide();
+  // Other views use independent fixed overlays; let their original handlers open them.
+  document.getElementById('rfRushPage')?.classList.remove('active');
+  document.getElementById('rfSettingsPage')?.classList.remove('active');
+  document.getElementById('mu136')?.classList.remove('active');
 },true);
 $('nrReload').onclick=voices;$('nrText').oninput=()=>{$('nrCount').textContent=$('nrText').value.length.toLocaleString('fa-IR')+' / ۳۵۰۰ نویسه'};
 $('nrGenerate').onclick=async()=>{const text=$('nrText').value.trim(),voice_id=$('nrVoice').value;if(!text||!voice_id){$('nrStatus').textContent='متن و صدا را انتخاب کنید.';return}const btn=$('nrGenerate');btn.disabled=true;$('nrStatus').textContent='در حال تولید نریشن...';$('nrDownload').replaceChildren();try{const r=await narrationFetch({action:'generate',text,voice_id,model_id:$('nrModel').value,stability:0.55,similarity:0.8});if(!r.ok){const j=await r.json().catch(()=>({}));throw Error(typeof j.error==='string'?j.error:'خطا در تولید صدا')}const blob=await r.blob();if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(blob);$('nrPlayer').src=objectUrl;$('nrPlayer').hidden=false;const a=document.createElement('a');a.href=objectUrl;a.download='RushFinder-Narration.mp3';a.textContent='↓ دانلود MP3';$('nrDownload').append(a);$('nrStatus').textContent='نریشن آماده است.'}catch(e){$('nrStatus').textContent=e.message}finally{btn.disabled=false}};
