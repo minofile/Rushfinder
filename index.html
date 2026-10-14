@@ -3109,6 +3109,29 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <style id="rf-V0315-music-fix">#mu136 .mu136-searchBox input{font-size:21px!important;font-weight:500!important;letter-spacing:0!important}#mu136 .mu136-searchBox input::placeholder{font-size:21px!important;color:#254f7c!important;opacity:1!important}#mu136 .mu136-searchBox{height:62px!important}#mu136 .mu136-search>button{height:62px!important}#mu136 .mu136-wrap>.mu136-intro,#mu136 .mu136-wrap>.mu136-subtitle{display:none!important}</style>
 <style id="rf-music-text-fix">#mu136 .mu136-searchBox input{font-size:18px!important;line-height:1.8!important;color:#183c60!important}#mu136 .mu136-searchBox input::placeholder{color:#55738e!important;opacity:1!important}#mu136 .mu136-searchBox{height:56px!important}#mu136 .mu136-search>button{height:56px!important}#mu136 .mu136-searchBox input{font-family:YEKAN,Yekan,sans-serif!important}</style>
 <script>document.addEventListener('DOMContentLoaded',()=>{const target='آهنگ، آهنگسازی، متن، افکت صوتی';document.querySelectorAll('#mu136 p,#mu136 small,#mu136 .subtitle,#mu136 .description').forEach(el=>{if((el.textContent||'').includes(target))el.remove()})});</script>
+<style id="rf0316-navigation-repair">
+/* Give narration its own visible layer, above legacy rush panels. */
+body.rf0316-narration #rfNarrationPage{display:block!important;visibility:visible!important;opacity:1!important;position:fixed!important;top:68px!important;left:0!important;right:var(--rf-sidebar-width,210px)!important;bottom:0!important;max-width:none!important;width:auto!important;overflow-y:auto!important;z-index:10020!important;background:#f4f9ff!important;padding:22px max(24px,calc((100vw - 1350px)/2)) 35px!important;margin:0!important}
+body.rf0316-narration #mu136,body.rf0316-narration #rfCompanyPanel{display:none!important}
+#mu136.active .mu136-cats{display:grid!important;visibility:visible!important;opacity:1!important;grid-template-columns:repeat(6,minmax(0,1fr))!important}
+#mu136.active .mu136-cat,#mu136.active .mu136-cat img{display:block!important;visibility:visible!important;opacity:1!important}
+#mu136 .mu136-searchBox input,#mu136 .mu136-searchBox input::placeholder{font-size:21px!important;line-height:1.7!important}
+@media(max-width:850px){body.rf0316-narration #rfNarrationPage{right:0!important;padding:16px!important}#mu136.active .mu136-cats{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+</style>
+<script id="rf0316-navigation-repair-js">
+document.addEventListener('DOMContentLoaded',function(){
+ const narr=document.getElementById('rfNarrationNav');
+ const music=[...document.querySelectorAll('.nav button')].find(b=>(b.textContent||'').includes('موزیک'));
+ const page=document.getElementById('rfNarrationPage');
+ if(!narr||!page)return;
+ narr.addEventListener('click',function(){
+  // Defer until the original PIN/voice handler has completed its synchronous navigation.
+  setTimeout(function(){if(page.classList.contains('active'))document.body.classList.add('rf0316-narration')},0);
+ });
+ document.querySelectorAll('.nav button').forEach(function(btn){if(btn!==narr)btn.addEventListener('click',function(){document.body.classList.remove('rf0316-narration')},true)});
+ if(music)music.addEventListener('click',function(){document.body.classList.remove('rf0316-narration');document.getElementById('mu136')?.classList.add('active')});
+});
+</script>
 </head>
 <body>
 <aside class="sidebar">
