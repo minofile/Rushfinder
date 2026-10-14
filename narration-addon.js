@@ -120,6 +120,8 @@ function show(){
       el.style.display='none';
     }
   });
+  // The Rush suggestion view is a fixed overlay outside <main>. Close it explicitly.
+  document.getElementById('rfRushPage')?.classList.remove('active');
   document.getElementById('mu136')?.classList.remove('active');
   page.style.removeProperty('display');
   page.classList.add('active');
