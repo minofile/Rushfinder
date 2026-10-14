@@ -23,11 +23,13 @@ export default async function handler(req,res){
   const voice=String(req.body?.voice_id||'');
   if(!text||text.length>3500)return res.status(400).json({error:'متن باید بین ۱ تا ۳۵۰۰ نویسه باشد.'});
   if(!/^[a-zA-Z0-9_-]{8,100}$/.test(voice))return res.status(400).json({error:'صدای انتخاب‌شده معتبر نیست.'});
+  const model=String(req.body?.model_id||'eleven_v4');
+  if(!['eleven_v4','eleven_multilingual_v2'].includes(model))return res.status(400).json({error:'مدل انتخاب‌شده معتبر نیست.'});
   const stability=Math.max(0,Math.min(1,Number(req.body?.stability??0.55)));
   const similarity=Math.max(0,Math.min(1,Number(req.body?.similarity??0.8)));
   const r=await fetch(BASE+'/text-to-speech/'+encodeURIComponent(voice)+'?output_format=mp3_44100_128',{
    method:'POST',headers:{'xi-api-key':key,'Content-Type':'application/json','Accept':'audio/mpeg'},
-   body:JSON.stringify({text,model_id:'eleven_multilingual_v2',voice_settings:{stability,similarity_boost:similarity}})
+   body:JSON.stringify({text,model_id:model,voice_settings:{stability,similarity_boost:similarity}})
   });
   if(!r.ok){const data=await r.json().catch(()=>({}));return res.status(r.status).json({error:typeof data.detail==='string'?data.detail:data.detail?.message||'تولید صدا ناموفق بود؛ اعتبار یا دسترسی حساب را بررسی کنید.'});}
   const bytes=Buffer.from(await r.arrayBuffer());
