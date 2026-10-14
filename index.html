@@ -2782,7 +2782,7 @@ const relevance=t=>{
 const seenTracks=new Set();
 tracks=(j.data||[]).filter(t=>t?.files?.mp3&&!t.is_premium&&String(t.name||'').trim()).map(t=>({t,score:iranian?relevance(t):0})).filter(x=>x.score>=0).sort((a,b)=>b.score-a.score).map(x=>x.t).filter(t=>t.download_allowed===true&&t.files?.download).filter(t=>{const key=norm(t.name)+'|'+norm(t.artist);if(seenTracks.has(key))return false;seenTracks.add(key);return true;});
 el('rf142count').textContent=(j.totalIsExact&&Number.isFinite(Number(j.total))?fa(j.total)+' نتیجه در کل':(j.hasNext?'بیش از '+fa((page-1)*musicLimit+tracks.length)+' نتیجه قابل دانلود':'تا این صفحه '+fa((page-1)*musicLimit+tracks.length)+' نتیجه قابل دانلود'));
-if(!tracks.length){body.textContent=iranian?(j.message||'در آرشیو موسیقی نتیجه‌ای پیدا نشد.'):'آهنگ واقعی و مرتبطی در منابع متصل پیدا نشد.';el('rf142count').textContent='۰ نتیجه';return}
+if(!tracks.length){body.textContent=iranian?(j.message||'در آرشیو موسیقی نتیجه‌ای پیدا نشد.'):'برای مشاهده موزیک، عبارت مورد نظر را جستجو کنید.';el('rf142count').textContent='۰ نتیجه';return}
 body.className='rf142-grid';
 rfWarmPage(tracks);
 // Persian descriptive labels: retain the original track name as a tooltip, never claim a literal translation.
@@ -4056,7 +4056,7 @@ function init(){
  const p=document.getElementById('mu136'),nav=document.querySelector('.nav'); if(!p||!nav)return;
  let b=[...nav.querySelectorAll('button')].find(x=>(x.textContent||'').includes('موزیک'));
  if(!b){b=document.createElement('button');b.type='button';b.innerHTML='<i>♫</i><span>موزیک</span>';const s=[...nav.querySelectorAll('button')].find(x=>(x.textContent||'').includes('تنظیمات'));nav.insertBefore(b,s||null)}
- b.onclick=e=>{e.preventDefault();e.stopPropagation();p.classList.add('active');nav.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b))};
+ b.onclick=e=>{e.preventDefault();e.stopPropagation();document.getElementById('rfRushPage')?.classList.remove('active');p.classList.add('active');nav.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b))};
  nav.addEventListener('click',e=>{const x=e.target.closest('button');if(x&&x!==b&&!x.closest('#mu136'))p.classList.remove('active')});
  const q=document.getElementById('mu136q');
  document.getElementById('mu136search').onclick=()=>q.value.trim()&&searchMusic(q.value.trim());
