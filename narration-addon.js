@@ -26,9 +26,39 @@ async function enterNarration(){
   narrationPin=pin.trim();show();renderVoices(j.voices||[]);
  }catch(e){window.alert('ورود به نریشن انجام نشد: '+e.message+'\n\nاگر هنوز NARRATION_ACCESS_PIN را در Vercel تنظیم نکرده‌اید، ابتدا آن را تنظیم و سایت را دوباره Deploy کنید.');}
 }
+// Persian display labels only; voice IDs and synthesis are unchanged.
+const NR_PERSIAN_VOICES={
+ 'roger':'راجر | آرام، خودمانی و گیرا',
+ 'sarah':'سارا | پخته، مطمئن و دلنشین',
+ 'laura':'لورا | پرانرژی و سرزنده',
+ 'charlie':'چارلی | صدای بم، مطمئن و پرانرژی',
+ 'george':'جورج | گرم و مناسب داستان‌گویی',
+ 'callum':'کالوم | بم و رازآلود',
+ 'river':'ریور | آرام، خنثی و مناسب اطلاع‌رسانی',
+ 'harry':'هری | پرانرژی و حماسی',
+ 'liam':'لیام | پرانرژی و اجتماعی',
+ 'alice':'آلیس | واضح و گیرا، مناسب آموزش',
+ 'matilda':'ماتیلدا | حرفه‌ای و آگاه',
+ 'will':'ویل | آرام و خوش‌بین',
+ 'jessica':'جسیکا | بازیگوش، شاد و گرم',
+ 'eric':'اریک | نرم و قابل‌اعتماد',
+ 'bella':'بلا | حرفه‌ای، روشن و گرم',
+ 'chris':'کریس | صمیمی و خودمانی',
+ 'brian':'برایان | بم، گیرا و آرامش‌بخش',
+ 'daniel':'دنیل | محکم و مناسب گویندگی',
+ 'lily':'لیلی | لطیف و نمایشی',
+ 'adam':'آدام | بم و قاطع'
+};
+function persianVoiceLabel(v){
+ const original=String(v.name||'').trim();
+ const description=NR_PERSIAN_VOICES[original.toLowerCase()];
+ const language=String(v.labels?.language||'').toLowerCase();
+ const langLabel=language==='en'||language==='english'?'انگلیسی':language==='fa'||language==='persian'||language==='farsi'?'فارسی':language;
+ return (description||original)+(langLabel?' — '+langLabel:'');
+}
 function renderVoices(items){
  $('nrVoice').replaceChildren();
- for(const v of items){const opt=document.createElement('option');opt.value=v.id;opt.textContent=v.name+(v.labels?.language?' — '+v.labels.language:'');$('nrVoice').append(opt)}
+ for(const v of items){const opt=document.createElement('option');opt.value=v.id;opt.textContent=persianVoiceLabel(v);$('nrVoice').append(opt)}
  if(!$('nrVoice').options.length)$('nrVoice').innerHTML='<option value="">صدایی پیدا نشد</option>';
  loaded=true;$('nrStatus').textContent=items.length?'صداها دریافت شدند. یک صدا را انتخاب و با متن کوتاه آزمایش کنید.':'هیچ صدایی در حساب ElevenLabs پیدا نشد.';
 }
