@@ -2782,7 +2782,7 @@ const relevance=t=>{
 const seenTracks=new Set();
 tracks=(j.data||[]).filter(t=>t?.files?.mp3&&!t.is_premium&&String(t.name||'').trim()).map(t=>({t,score:iranian?relevance(t):0})).filter(x=>x.score>=0).sort((a,b)=>b.score-a.score).map(x=>x.t).filter(t=>t.download_allowed===true&&t.files?.download).filter(t=>{const key=norm(t.name)+'|'+norm(t.artist);if(seenTracks.has(key))return false;seenTracks.add(key);return true;});
 el('rf142count').textContent=(j.totalIsExact&&Number.isFinite(Number(j.total))?fa(j.total)+' نتیجه در کل':(j.hasNext?'بیش از '+fa((page-1)*musicLimit+tracks.length)+' نتیجه قابل دانلود':'تا این صفحه '+fa((page-1)*musicLimit+tracks.length)+' نتیجه قابل دانلود'));
-if(!tracks.length){body.textContent=iranian?(j.message||'در آرشیو موسیقی نتیجه‌ای پیدا نشد.'):'برای مشاهده موزیک، عبارت مورد نظر را جستجو کنید.';el('rf142count').textContent='۰ نتیجه';return}
+if(!tracks.length){body.textContent=iranian?(j.message||'در آرشیو موسیقی نتیجه‌ای پیدا نشد.'):'آهنگ واقعی و مرتبطی در منابع متصل پیدا نشد.';el('rf142count').textContent='۰ نتیجه';return}
 body.className='rf142-grid';
 rfWarmPage(tracks);
 // Persian descriptive labels: retain the original track name as a tooltip, never claim a literal translation.
@@ -3106,32 +3106,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   margin-left:11px;box-shadow:0 0 0 4px rgba(37,134,245,.11);
 }
 </style>
-<style id="rf-V0315-music-fix">#mu136 .mu136-searchBox input{font-size:21px!important;font-weight:500!important;letter-spacing:0!important}#mu136 .mu136-searchBox input::placeholder{font-size:21px!important;color:#254f7c!important;opacity:1!important}#mu136 .mu136-searchBox{height:62px!important}#mu136 .mu136-search>button{height:62px!important}#mu136 .mu136-wrap>.mu136-intro,#mu136 .mu136-wrap>.mu136-subtitle{display:none!important}</style>
-<style id="rf-music-text-fix">#mu136 .mu136-searchBox input{font-size:18px!important;line-height:1.8!important;color:#183c60!important}#mu136 .mu136-searchBox input::placeholder{color:#55738e!important;opacity:1!important}#mu136 .mu136-searchBox{height:56px!important}#mu136 .mu136-search>button{height:56px!important}#mu136 .mu136-searchBox input{font-family:YEKAN,Yekan,sans-serif!important}</style>
-<script>document.addEventListener('DOMContentLoaded',()=>{const target='آهنگ، آهنگسازی، متن، افکت صوتی';document.querySelectorAll('#mu136 p,#mu136 small,#mu136 .subtitle,#mu136 .description').forEach(el=>{if((el.textContent||'').includes(target))el.remove()})});</script>
-<style id="rf0316-navigation-repair">
-/* Give narration its own visible layer, above legacy rush panels. */
-body.rf0316-narration #rfNarrationPage{display:block!important;visibility:visible!important;opacity:1!important;position:fixed!important;top:68px!important;left:0!important;right:var(--rf-sidebar-width,210px)!important;bottom:0!important;max-width:none!important;width:auto!important;overflow-y:auto!important;z-index:10020!important;background:#f4f9ff!important;padding:22px max(24px,calc((100vw - 1350px)/2)) 35px!important;margin:0!important}
-body.rf0316-narration #mu136,body.rf0316-narration #rfCompanyPanel{display:none!important}
-#mu136.active .mu136-cats{display:grid!important;visibility:visible!important;opacity:1!important;grid-template-columns:repeat(6,minmax(0,1fr))!important}
-#mu136.active .mu136-cat,#mu136.active .mu136-cat img{display:block!important;visibility:visible!important;opacity:1!important}
-#mu136 .mu136-searchBox input,#mu136 .mu136-searchBox input::placeholder{font-size:21px!important;line-height:1.7!important}
-@media(max-width:850px){body.rf0316-narration #rfNarrationPage{right:0!important;padding:16px!important}#mu136.active .mu136-cats{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
-</style>
-<script id="rf0316-navigation-repair-js">
-document.addEventListener('DOMContentLoaded',function(){
- const narr=document.getElementById('rfNarrationNav');
- const music=[...document.querySelectorAll('.nav button')].find(b=>(b.textContent||'').includes('موزیک'));
- const page=document.getElementById('rfNarrationPage');
- if(!narr||!page)return;
- narr.addEventListener('click',function(){
-  // Defer until the original PIN/voice handler has completed its synchronous navigation.
-  setTimeout(function(){if(page.classList.contains('active'))document.body.classList.add('rf0316-narration')},0);
- });
- document.querySelectorAll('.nav button').forEach(function(btn){if(btn!==narr)btn.addEventListener('click',function(){document.body.classList.remove('rf0316-narration')},true)});
- if(music)music.addEventListener('click',function(){document.body.classList.remove('rf0316-narration');document.getElementById('mu136')?.classList.add('active')});
-});
-</script>
 </head>
 <body>
 <aside class="sidebar">
@@ -4012,10 +3986,10 @@ document.addEventListener("DOMContentLoaded",()=>{
 })();
 </script>
 <section id="mu136"><div class="mu136-wrap">
-<div class="mu136-search"><div class="mu136-searchBox"><input id="mu136q" placeholder="موزیک مورد نظر را جستجو کنید…"></div><button id="mu136search">جستجو</button></div>
+<div class="mu136-search"><div class="mu136-searchBox"><input id="mu136q" placeholder="موزیک موردنظر را جستجو کنید..."></div><button id="mu136search">جستجو</button></div>
 <div class="mu136-cats"><button class="mu136-cat" data-q="خبری" data-key="news" aria-label="موزیک خبری"><img src="assets/music-v0136/cat1.webp" alt="خبری"></button><button class="mu136-cat" data-q="سیاسی" data-key="political" aria-label="موزیک سیاسی"><img src="assets/music-v0136/cat2.webp" alt="سیاسی"></button><button class="mu136-cat" data-q="ورزشی" data-key="sport" aria-label="موزیک ورزشی"><img src="assets/music-v0136/cat3.webp" alt="ورزشی"></button><button class="mu136-cat" data-q="حماسی" data-key="epic" aria-label="موزیک حماسی"><img src="assets/music-v0136/cat4.webp" alt="حماسی"></button><button class="mu136-cat" data-q="سینمایی" data-key="cinematic" aria-label="موزیک سینمایی"><img src="assets/music-v0136/cat5.webp" alt="سینمایی"></button><button class="mu136-cat" data-q="هیجانی" data-key="exciting" aria-label="موزیک هیجانی"><img src="assets/music-v0136/cat6.webp" alt="هیجانی"></button><button class="mu136-cat" data-q="مستند" data-key="documentary" aria-label="موزیک مستند"><img src="assets/music-v0136/cat7.webp" alt="مستند"></button><button class="mu136-cat" data-q="تکنولوژی" data-key="technology" aria-label="موزیک تکنولوژی"><img src="assets/music-v0136/cat8.webp" alt="تکنولوژی"></button><button class="mu136-cat" data-q="دراماتیک" data-key="dramatic" aria-label="موزیک دراماتیک"><img src="assets/music-v0136/cat9.webp" alt="دراماتیک"></button><button class="mu136-cat" data-q="انرژی" data-key="energy" aria-label="موزیک انرژی"><img src="assets/music-v0136/cat10.webp" alt="انرژی"></button><button class="mu136-cat" data-q="غمگین" data-key="sad" aria-label="موزیک غمگین"><img src="assets/music-v0136/cat11.webp" alt="غمگین"></button><button class="mu136-cat" data-q="آرام" data-key="calm" aria-label="موزیک آرام"><img src="assets/music-v0136/cat12.webp" alt="آرام"></button></div>
 <div class="mu136-tools"><button class="primary" id="mu136all">نمایش همه</button><select id="mu136source"><option value="">همه منابع</option><option value="pixabay">Pixabay</option><option value="youtube">YouTube</option></select><select><option>مدت زمان</option></select><select><option>نوع مجوز</option></select><select><option>تعداد در صفحه ۲۴</option></select><button id="mu136clear">پاک کردن فیلترها</button><span class="mu136-status" id="mu136status">برای شروع یک موزیک جستجو کنید</span></div>
-<div class="mu136-results" id="mu136results"><div class="mu136-empty">یکی از دسته‌های بالا را انتخاب کنید یا موزیک مورد نظر را جستجو کنید.</div></div>
+<div class="mu136-results" id="mu136results"><div class="mu136-empty">نام موزیک یا یکی از ۱۲ دسته بالا را انتخاب کنید.<br>نتایج واقعی پس از جستجو نمایش داده می‌شوند.</div></div>
 </div></section><script id="mu136-js">
 (function(){
 const bars='<i></i>'.repeat(28);
@@ -4056,13 +4030,13 @@ function init(){
  const p=document.getElementById('mu136'),nav=document.querySelector('.nav'); if(!p||!nav)return;
  let b=[...nav.querySelectorAll('button')].find(x=>(x.textContent||'').includes('موزیک'));
  if(!b){b=document.createElement('button');b.type='button';b.innerHTML='<i>♫</i><span>موزیک</span>';const s=[...nav.querySelectorAll('button')].find(x=>(x.textContent||'').includes('تنظیمات'));nav.insertBefore(b,s||null)}
- b.onclick=e=>{e.preventDefault();e.stopPropagation();document.getElementById('rfRushPage')?.classList.remove('active');p.classList.add('active');nav.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b))};
+ b.onclick=e=>{e.preventDefault();e.stopPropagation();p.classList.add('active');nav.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b))};
  nav.addEventListener('click',e=>{const x=e.target.closest('button');if(x&&x!==b&&!x.closest('#mu136'))p.classList.remove('active')});
  const q=document.getElementById('mu136q');
  document.getElementById('mu136search').onclick=()=>q.value.trim()&&searchMusic(q.value.trim());
  q.addEventListener('keydown',e=>{if(e.key==='Enter'&&q.value.trim())searchMusic(q.value.trim())});
  document.querySelectorAll('.mu136-cat').forEach(c=>c.onclick=()=>{document.querySelectorAll('.mu136-cat').forEach(x=>x.classList.remove('active'));c.classList.add('active');q.value='موزیک '+c.dataset.q;searchMusic(q.value)});
- document.getElementById('mu136clear').onclick=()=>{q.value='';document.querySelectorAll('.mu136-cat').forEach(x=>x.classList.remove('active'));document.getElementById('mu136results').innerHTML='<div class="mu136-empty">یکی از دسته‌های بالا را انتخاب کنید یا موزیک مورد نظر را جستجو کنید.</div>';document.getElementById('mu136status').textContent='برای شروع یک موزیک جستجو کنید'};
+ document.getElementById('mu136clear').onclick=()=>{q.value='';document.querySelectorAll('.mu136-cat').forEach(x=>x.classList.remove('active'));document.getElementById('mu136results').innerHTML='<div class="mu136-empty">نام موزیک یا یکی از ۱۲ دسته بالا را انتخاب کنید.<br>نتایج واقعی پس از جستجو نمایش داده می‌شوند.</div>';document.getElementById('mu136status').textContent='برای شروع یک موزیک جستجو کنید'};
  document.getElementById('mu136all').onclick=()=>{q.value='موزیک';searchMusic('موزیک')};
 }
 document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
@@ -4383,6 +4357,5 @@ body.rf-company-view #rfCompanyPanel.rf-company-on {
  decorate();
 })();
 </script><script src="./narration-addon.js" defer></script>
-<style id="rf0318-music-polish">#mu136q{font-size:22px!important;font-weight:600!important}#mu136q::placeholder{font-size:22px!important;opacity:1!important;color:#526d88!important}#mu136 .mu136-cats{display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr))!important;gap:8px!important}#mu136 .mu136-cat img{display:block;width:100%;height:100%;object-fit:cover}@media(max-width:1100px){#mu136 .mu136-cats{grid-template-columns:repeat(6,minmax(0,1fr))!important}}@media(max-width:600px){#mu136 .mu136-cats{grid-template-columns:repeat(3,minmax(0,1fr))!important}}</style>
 </body>
 </html>
