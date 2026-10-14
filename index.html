@@ -4357,5 +4357,52 @@ body.rf-company-view #rfCompanyPanel.rf-company-on {
  decorate();
 })();
 </script><!-- RushFinder V0319: narration navigation fix --><script src="./narration-addon.js?v=0321" defer></script>
+
+<!-- V0335: minimal 3D music illustration. Navigation and search logic unchanged. -->
+<style id="rf0322-music-welcome-style">
+#mu136 .rf0322-welcome{display:none;overflow:hidden;border-radius:19px;margin:12px auto 0;width:100%;max-width:100%;background:#eaf4ff;box-shadow:0 8px 26px #174d8416;border:1px solid #d8e8fa}
+#mu136.active.rf0322-idle .rf0322-welcome{display:block!important}
+#mu136 .rf0322-welcome img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 55%}
+#mu136.active.rf0322-idle #rf142{display:none!important}
+#mu136.active.rf0322-idle{overflow-y:hidden!important}
+#mu136.active.rf0322-idle .mu136-wrap{padding-bottom:8px!important}
+#mu136.active.rf0322-idle .rf0322-welcome{max-width:100%!important}
+#mu136.active.rf0322-idle .rf0322-welcome{width:100%!important;max-width:100%!important;height:auto!important;aspect-ratio:4.1 / 1!important;max-height:350px!important;margin:16px 0 0!important;box-sizing:border-box!important}
+#mu136.active.rf0322-idle .rf0322-welcome img{width:100%!important;height:100%!important;display:block!important;object-fit:cover!important;object-position:center!important;background:transparent!important}
+#mu136.active.rf0322-idle .mu136-wrap{max-width:1420px!important;width:calc(100% - 40px)!important;margin-inline:auto!important}
+#mu136.active.rf0322-idle{overflow-y:hidden!important}
+#mu136.active.rf0322-idle .mu136-tools,#mu136.active.rf0322-idle #mu136results{display:none!important}
+@media(max-width:650px){#mu136.active.rf0322-idle .rf0322-welcome{height:clamp(150px,26vh,220px)!important;border-radius:13px}}
+</style>
+<script id="rf0322-music-welcome-script">
+(function(){
+function init(){
+ const root=document.getElementById('mu136');if(!root||root.dataset.rf0322Init)return;
+ root.dataset.rf0322Init='1';
+ const welcome=document.createElement('div');welcome.className='rf0322-welcome';
+ welcome.innerHTML='<img src="assets/music-minimal-v0335.webp" alt="" aria-hidden="true">';
+ const results=document.getElementById('rf142');
+ const cats=root.querySelector('.mu136-cats');
+ if(cats)cats.after(welcome);else root.querySelector('.mu136-wrap')?.append(welcome);
+ const reset=()=>{root.classList.add('rf0322-idle')};
+ const searched=()=>{root.classList.remove('rf0322-idle')};
+ reset();
+ // Capture phase runs before the existing music search handlers, leaving API logic unchanged.
+ root.addEventListener('click',e=>{
+  const t=e.target.closest('#mu136search,.mu136-cat,#mu136all,#mu136clear');if(!t)return;
+  if(t.id==='mu136clear'){reset();return}
+  if(t.id==='mu136search'&&!document.getElementById('mu136q')?.value.trim())return;
+  searched();
+ },true);
+ root.querySelector('#mu136q')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.currentTarget.value.trim())searched()},true);
+ const nav=document.querySelector('.nav');
+ if(nav)nav.addEventListener('click',e=>{
+  const button=e.target.closest('button');if(!button)return;
+  if((button.textContent||'').includes('موزیک'))reset();
+ },true);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
 </body>
 </html>
