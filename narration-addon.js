@@ -101,8 +101,29 @@ function renderVoices(items){
  loaded=true;$('nrStatus').textContent=items.length?'صداها دریافت شدند. یک صدا را انتخاب و با متن کوتاه آزمایش کنید.':'هیچ صدایی در حساب ElevenLabs پیدا نشد.';
 }
 async function voices(){ $('nrVoice').innerHTML='<option>در حال دریافت...</option>';try{const r=await narrationFetch({action:'voices'});const j=await r.json();if(!r.ok)throw Error(typeof j.error==='string'?j.error:'خطا');renderVoices(j.voices||[])}catch(e){$('nrVoice').innerHTML='<option value="">خطا در دریافت صداها</option>';$('nrStatus').textContent=e.message}}
-function show(){page.classList.add('active');main.querySelectorAll(':scope > *').forEach(el=>{if(el!==page){if(!el.dataset.nrDisplay)el.dataset.nrDisplay=el.style.display||'__empty__';el.style.display='none'}});document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x===b));window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0;for(let a=main.parentElement;a&&a!==document.body;a=a.parentElement){if(a.scrollTop)a.scrollTop=0;}requestAnimationFrame(()=>{for(let a=main.parentElement;a&&a!==document.body;a=a.parentElement){if(a.scrollTop)a.scrollTop=0;}});}
-function hide(){if(!page.classList.contains('active'))return;page.classList.remove('active');main.querySelectorAll(':scope > *').forEach(el=>{if(el!==page&&el.dataset.nrDisplay){el.style.display=el.dataset.nrDisplay==='__empty__'?'':el.dataset.nrDisplay;delete el.dataset.nrDisplay}})}
+// V0318: keep a fresh display snapshot for each navigation cycle.
+const narrationDisplaySnapshot=new Map();
+function show(){
+ // Close the music overlay before activating narration; its independent nav
+ // handler must not leave the previous view covering the narration page.
+ document.getElementById('mu136')?.classList.remove('active');
+ narrationDisplaySnapshot.clear();
+ main.querySelectorAll(':scope > *').forEach(el=>{
+  if(el===page)return;
+  narrationDisplaySnapshot.set(el,el.style.display);
+  el.style.display='none';
+ });
+ page.style.removeProperty('display');
+ page.classList.add('active');
+ document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x===b));
+ window.scrollTo(0,0);
+}
+function hide(){
+ page.classList.remove('active');
+ page.style.removeProperty('display');
+ narrationDisplaySnapshot.forEach((display,el)=>{el.style.display=display});
+ narrationDisplaySnapshot.clear();
+}
 b.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();enterNarration()});document.addEventListener('click',e=>{const n=e.target.closest('.nav button');if(n&&n!==b)hide()},true);
 $('nrReload').onclick=voices;$('nrText').oninput=()=>{$('nrCount').textContent=$('nrText').value.length.toLocaleString('fa-IR')+' / ۳۵۰۰ نویسه'};
 $('nrGenerate').onclick=async()=>{const text=$('nrText').value.trim(),voice_id=$('nrVoice').value;if(!text||!voice_id){$('nrStatus').textContent='متن و صدا را انتخاب کنید.';return}const btn=$('nrGenerate');btn.disabled=true;$('nrStatus').textContent='در حال تولید نریشن...';$('nrDownload').replaceChildren();try{const r=await narrationFetch({action:'generate',text,voice_id,model_id:$('nrModel').value,stability:0.55,similarity:0.8});if(!r.ok){const j=await r.json().catch(()=>({}));throw Error(typeof j.error==='string'?j.error:'خطا در تولید صدا')}const blob=await r.blob();if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(blob);$('nrPlayer').src=objectUrl;$('nrPlayer').hidden=false;const a=document.createElement('a');a.href=objectUrl;a.download='RushFinder-Narration.mp3';a.textContent='↓ دانلود MP3';$('nrDownload').append(a);$('nrStatus').textContent='نریشن آماده است.'}catch(e){$('nrStatus').textContent=e.message}finally{btn.disabled=false}};
