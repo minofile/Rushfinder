@@ -2261,6 +2261,15 @@ body, body.rf-dark{
 .rf-rush-preview-title{font-size:10px;color:#17385f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px}
 .rf-rush-preview-query{font-size:9px;color:#7389a4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rf-rush-preview-query:before{content:'⌕';color:#1685ff;margin-left:5px}
+
+/* V0339: direct actions on suggested rush video cards */
+.rf-rush-preview{cursor:default}
+.rf-rush-preview-actions{display:flex;gap:6px;margin-top:9px;direction:rtl}
+.rf-rush-preview-actions button{flex:1;min-width:0;border:0;border-radius:7px;padding:7px 3px;font-family:inherit;font-size:10px;font-weight:700;cursor:pointer;background:#edf5ff;color:#0871e9}
+.rf-rush-preview-actions .rf-rush-direct-download{background:#087bff;color:white}
+.rf-rush-preview-actions button:hover{filter:brightness(.95)}
+.rf-rush-preview-actions button:disabled{opacity:.5;cursor:not-allowed}
+
 .rf-rush-preview-loading{aspect-ratio:16/9;border-radius:13px;background:linear-gradient(100deg,#edf4fb 30%,#f8fbff 45%,#edf4fb 60%);background-size:220% 100%;animation:rfRushShimmer 1.2s infinite}
 @keyframes rfRushShimmer{to{background-position:-220% 0}}
 @media(max-width:1200px){.rf-rush-preview-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
@@ -3962,17 +3971,36 @@ document.addEventListener("DOMContentLoaded",()=>{
      return best;
    }catch(_){return null}
  }
+ const rfRushItems=new Map();let rfRushSerial=0;
  function rfRushPreviewHTML(x,q){
-   if(!x) return `<div class="rf-rush-preview" data-q="${esc(q)}"><div class="rf-rush-preview-media"></div><div class="rf-rush-preview-body"><div class="rf-rush-preview-title">${esc(q)}</div><div class="rf-rush-preview-query">برای دیدن نتایج بیشتر کلیک کنید</div></div></div>`;
+   if(!x)return '';
+   const key='rush-'+(++rfRushSerial);rfRushItems.set(key,x);
    const thumb=x.thumbnail||x.thumbnailUrl||x.poster||x.image||'';
    const title=x.title||q;
    const source=x.source||'RushFinder';
-   return `<div class="rf-rush-preview" data-q="${esc(q)}"><div class="rf-rush-preview-media">${thumb?`<img src="${esc(thumb)}" alt="" loading="lazy">`:''}<span class="rf-rush-preview-source">${esc(source)}</span></div><div class="rf-rush-preview-body"><div class="rf-rush-preview-title">${esc(title)}</div><div class="rf-rush-preview-query">${esc(q)}</div></div></div>`;
+   const canDownload=!!(x.pageURL||x.url||x.video||x.download||x.uid||x.id);
+   return `<article class="rf-rush-preview" data-rush-id="${key}"><div class="rf-rush-preview-media">${thumb?`<img src="${esc(String(thumb))}" alt="" loading="lazy">`:''}<span class="rf-rush-preview-source">${esc(String(source))}</span></div><div class="rf-rush-preview-body"><div class="rf-rush-preview-title" title="${esc(String(title))}">${esc(String(title))}</div><div class="rf-rush-preview-query">${esc(q)}</div><div class="rf-rush-preview-actions"><button type="button" class="rf-rush-direct-download" ${canDownload?'':'disabled'}>↓ دانلود</button><button type="button" class="rf-rush-direct-view">◉ نمایش</button></div></div></article>`;
+ }
+ function rfRushDirectDownload(x){
+   // Reuse the same download dispatcher as the main results page without navigating away.
+   if(typeof downloadItem==='function' && typeof results!=='undefined' && Array.isArray(results)){
+     const idx=results.length;results.push(x);
+     try{downloadItem(idx)}finally{results.pop()}
+   }else{
+     const u=x.download||x.video||x.pageURL||x.url;
+     if(u)window.open(u,'_blank','noopener');
+   }
+ }
+ function rfRushDirectView(x){
+   const url=x.pageURL||x.url||x.link;
+   if(url){window.open(url,'_blank','noopener');return}
+   if(x.source==='YouTube'&&x.id){window.open('https://www.youtube.com/watch?v='+encodeURIComponent(x.id),'_blank','noopener');return}
+   if(x.video){window.open(x.video,'_blank','noopener')}
  }
  document.getElementById('rfRushAnalyze').onclick=async()=>{
    const txt=document.getElementById('rfRushText').value.trim(), box=document.getElementById('rfRushSections'), n=+document.getElementById('rfRushCount').value;
    if(!txt){box.innerHTML='<div class="rf-rush-empty">ابتدا متن یا سناریو را وارد کنید.</div>';return}
-   const parts=splitText(txt); rfRushUsed.clear();
+   const parts=splitText(txt); rfRushUsed.clear();rfRushItems.clear();rfRushSerial=0;
    box.innerHTML=parts.map((p,i)=>`<div class="rf-rush-section" id="rfRushPart${i}"><div class="rf-rush-section-title">بخش ${String(i+1).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d])}</div><div class="rf-rush-section-snippet">${esc(p)}</div><div class="rf-rush-preview-grid">${suggestions(p,n).map(()=>'<div class="rf-rush-preview-loading"></div>').join('')}</div></div>`).join('');
    await Promise.all(parts.map(async(p,i)=>{
      const qs=suggestions(p,n);
@@ -3982,7 +4010,12 @@ document.addEventListener("DOMContentLoaded",()=>{
      if(grid){const cards=rs.map((x,j)=>x?rfRushPreviewHTML(x,qs[j]):'').filter(Boolean);grid.innerHTML=cards.join('')||'<div class="rf-rush-empty">برای این بخش راش مرتبط مطمئن پیدا نشد.</div>';}
    }));
  };
- document.addEventListener('click',e=>{const c=e.target.closest('.rf-rush-chip,.rf-rush-preview');if(!c)return;const q=c.dataset.q||c.textContent.trim();closeAll();activeNav('داشبورد');const input=document.getElementById('query');if(input)input.value=q;if(typeof search==='function')search(q);});
+ document.addEventListener('click',e=>{
+   const btn=e.target.closest('.rf-rush-direct-download,.rf-rush-direct-view');
+   if(btn){const card=btn.closest('.rf-rush-preview');const x=rfRushItems.get(card?.dataset.rushId);if(!x)return;e.preventDefault();e.stopPropagation();if(btn.classList.contains('rf-rush-direct-download'))rfRushDirectDownload(x);else rfRushDirectView(x);return}
+   const chip=e.target.closest('.rf-rush-chip');if(!chip)return;
+   const q=chip.dataset.q||chip.textContent.trim();closeAll();activeNav('داشبورد');const input=document.getElementById('query');if(input)input.value=q;if(typeof search==='function')search(q);
+ });
 })();
 </script>
 <section id="mu136"><div class="mu136-wrap">
