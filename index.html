@@ -4462,27 +4462,27 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   <button class="rf-cal-choice" data-media="اخبار مشهد"><img src="assets/calendar/mashhad.webp" alt="اخبار مشهد"><span>مشاهده تقویم اخبار مشهد ←</span></button>
   <button class="rf-cal-choice" data-media="خبرفوری"><img src="assets/calendar/fori.webp" alt="خبرفوری"><span>مشاهده تقویم خبرفوری ←</span></button>
  </div>
- <div class="rf-cal-detail"><button class="rf-cal-back" id="rfCalBack">← بازگشت به رسانه‌ها</button><div class="rf-cal-nav"><button id="rfCalPrev">ماه قبل ‹</button><strong id="rfCalMonth"></strong><button id="rfCalNext">› ماه بعد</button></div><div class="rf-cal-grid" id="rfCalGrid"></div><p class="rf-cal-info" id="rfCalInfo"></p></div>
+ <div class="rf-cal-detail"><button class="rf-cal-back" id="rfCalBack">← بازگشت به رسانه‌ها</button><div class="rf-cal-nav"><button id="rfCalPrev">ماه قبل ‹</button><strong id="rfCalMonth"></strong><button id="rfCalNext">› ماه بعد</button></div><div class="rf-cal-grid" id="rfCalGrid"></div><div class="rf-cal-export-row"><button type="button" id="rfCalGenerate">تولید تقویم</button></div></div>
 </section>
 <script id="rf-calendar-clean-script">
 (function(){'use strict';
 const page=document.getElementById('rfCalendarPage'),nav=document.querySelector('.sidebar .nav');if(!page||!nav)return;
 const btn=document.createElement('button');btn.type='button';btn.id='rfCalNav';btn.innerHTML='<i>▦</i><span>تقویم</span>';const settings=[...nav.querySelectorAll('button')].find(x=>x.textContent.includes('تنظیمات'));nav.insertBefore(btn,settings||null);
 const monthNames=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];const week=['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];const pers=n=>String(n).replace(/\d/g,x=>'۰۱۲۳۴۵۶۷۸۹'[x]);
-let year=1405,month=7,media='خبرفوری';const fmt=new Intl.DateTimeFormat('en-US-u-ca-persian',{year:'numeric',month:'numeric',day:'numeric',timeZone:'Asia/Tehran'});
+let year=1405,month=7,media='خبرفوری',selectedDay=null;const fmt=new Intl.DateTimeFormat('en-US-u-ca-persian',{year:'numeric',month:'numeric',day:'numeric',timeZone:'Asia/Tehran'});
 function parts(date){let a=fmt.formatToParts(date),g=k=>+a.find(x=>x.type===k).value;return [g('year'),g('month'),g('day')]}
 function gregorian(y,m,d){let lo=Date.UTC(y+620,0,1),hi=Date.UTC(y+623,0,1);while(lo<hi){let mid=lo+Math.floor((hi-lo)/86400000/2)*86400000;let p=parts(new Date(mid));if(p[0]<y||(p[0]===y&&(p[1]<m||(p[1]===m&&p[2]<d))))lo=mid+86400000;else hi=mid;}return new Date(lo)}
 function daysIn(y,m){return m<=6?31:m<=11?30:Math.round((gregorian(y+1,1,1)-gregorian(y,12,1))/86400000)}
 // Holiday information for 1405 is intentionally limited to verified dates; Fridays are always marked.
 const holidays1405={'10-16':'مبعث پیامبر اکرم (ص)'};
 function render(){document.getElementById('rfCalMonth').textContent=pers(monthNames[month-1]+' '+year)+' ، '+media;const grid=document.getElementById('rfCalGrid');grid.replaceChildren();week.forEach((w,i)=>{const e=document.createElement('div');e.className='rf-cal-dayname'+(i===6?' friday':'');e.textContent=w;grid.appendChild(e)});
-const first=gregorian(year,month,1),start=(first.getUTCDay()+1)%7;for(let i=0;i<start;i++){const e=document.createElement('button');e.className='rf-cal-day';e.disabled=true;grid.appendChild(e)}const today=parts(new Date());for(let d=1;d<=daysIn(year,month);d++){const dt=gregorian(year,month,d),friday=dt.getUTCDay()===5,reason=year===1405?holidays1405[month+'-'+d]:null;const e=document.createElement('button');e.className='rf-cal-day'+(friday||reason?' holiday':'')+(today[0]===year&&today[1]===month&&today[2]===d?' today':'');e.textContent=pers(d);e.title=reason|| (friday?'جمعه':'');e.onclick=()=>{document.getElementById('rfCalInfo').textContent=pers(d)+' '+monthNames[month-1]+' '+pers(year)+(reason?' — '+reason:friday?' — جمعه':'')};grid.appendChild(e)}document.getElementById('rfCalInfo').textContent='روزهای جمعه و تعطیلات رسمی ثبت‌شده با رنگ قرمز مشخص شده‌اند.'}
+const first=gregorian(year,month,1),start=(first.getUTCDay()+1)%7;for(let i=0;i<start;i++){const e=document.createElement('button');e.className='rf-cal-day';e.disabled=true;grid.appendChild(e)}const today=parts(new Date());for(let d=1;d<=daysIn(year,month);d++){const dt=gregorian(year,month,d),friday=dt.getUTCDay()===5,reason=year===1405?holidays1405[month+'-'+d]:null;const e=document.createElement('button');e.className='rf-cal-day'+(friday||reason?' holiday':'')+(today[0]===year&&today[1]===month&&today[2]===d?' today':'');e.textContent=pers(d);e.title=reason|| (friday?'جمعه':'');e.dataset.day=String(d);if(d===selectedDay)e.classList.add('rf-cal-picked');e.onclick=()=>{selectedDay=d;grid.querySelectorAll('.rf-cal-picked').forEach(n=>n.classList.remove('rf-cal-picked'));e.classList.add('rf-cal-picked')};grid.appendChild(e)}}
 function syncWidth(){const side=document.querySelector('.sidebar');if(side){const r=side.getBoundingClientRect();page.style.right=Math.max(0,window.innerWidth-r.left)+'px'}const top=document.querySelector('.top');if(top)page.style.top=Math.round(top.getBoundingClientRect().bottom)+'px'}
 function open(){syncWidth();page.classList.add('rf-open');page.classList.remove('rf-selected');document.getElementById('rfSettingsPage')?.classList.remove('active');document.body.classList.remove('rf-company-view');document.getElementById('rfCompanyPanel')?.classList.remove('rf-company-on');document.querySelectorAll('.sidebar .nav button').forEach(b=>b.classList.toggle('active',b===btn));window.scrollTo(0,0)}
 function close(){page.classList.remove('rf-open','rf-selected')}
 btn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();open()},true);
 document.addEventListener('click',e=>{const other=e.target.closest('.sidebar .nav button');if(other&&other!==btn)close()},true);
-page.querySelectorAll('.rf-cal-choice').forEach(x=>x.addEventListener('click',()=>{media=x.dataset.media;page.classList.add('rf-selected');render()}));document.getElementById('rfCalBack').onclick=()=>page.classList.remove('rf-selected');document.getElementById('rfCalPrev').onclick=()=>{if(--month<1){month=12;year--}render()};document.getElementById('rfCalNext').onclick=()=>{if(++month>12){month=1;year++}render()};window.addEventListener('resize',syncWidth);window.rfOpenCalendar=open;render();
+page.querySelectorAll('.rf-cal-choice').forEach(x=>x.addEventListener('click',()=>{media=x.dataset.media;selectedDay=null;page.classList.add('rf-selected');render()}));document.getElementById('rfCalBack').onclick=()=>page.classList.remove('rf-selected');document.getElementById('rfCalPrev').onclick=()=>{if(--month<1){month=12;year--}selectedDay=null;render()};document.getElementById('rfCalNext').onclick=()=>{if(++month>12){month=1;year++}selectedDay=null;render()};window.addEventListener('resize',syncWidth);window.rfOpenCalendar=open;render();
 })();
 </script>
 
@@ -4532,5 +4532,41 @@ html body .rf-ref-bottom-orb{display:none!important}
 html body .top{background:#fff!important;background-image:none!important}
 </style>
 
+
+<style id="rf0374-export-style">
+#rfCalendarPage .rf-cal-export-row{display:flex;justify-content:center;margin:22px auto 5px}
+#rfCalendarPage #rfCalGenerate{font-family:inherit;background:#1478f5;color:white;border:0;border-radius:13px;padding:14px 48px;cursor:pointer;font-size:16px;font-weight:700;box-shadow:0 7px 18px #1769d42b}
+#rfCalendarPage #rfCalGenerate:hover{background:#075fcf}
+#rfCalendarPage .rf-cal-day.rf-cal-picked{outline:3px solid #2689ff!important;outline-offset:-2px;background:#e4f0ff}
+#rfCalendarPage .rf-cal-day.rf-cal-picked.holiday{background:#ffeded}
+</style>
+<script id="rf0374-export-script">
+(function(){'use strict';
+const page=document.getElementById('rfCalendarPage');if(!page)return;
+const button=document.getElementById('rfCalGenerate');if(!button)return;
+const months=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+const pers=n=>String(n).replace(/[0-9]/g,x=>'۰۱۲۳۴۵۶۷۸۹'[x]);
+const logos={'اخبار استان‌ها':'assets/calendar/plain.webp','صدای خراسان':'assets/calendar/seda.webp','اخبار مشهد':'assets/calendar/mashhad.webp','خبرفوری':'assets/calendar/fori.webp'};
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r)}
+function imageOf(url){return new Promise((resolve,reject)=>{let img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=url})}
+button.addEventListener('click',async()=>{
+ const selected=page.querySelector('.rf-cal-day.rf-cal-picked');
+ if(!selected){alert('ابتدا روز موردنظر را از جدول تقویم انتخاب کنید.');return}
+ const d=Number(selected.dataset.day), title=document.getElementById('rfCalMonth').textContent;
+ const match=title.match(/([۰-۹0-9]+)\s*،\s*(.+)$/);if(!match)return;
+ const media=match[2].trim(), ym=title.split(' ، ')[0].trim();
+ const monthName=months.find(m=>ym.includes(m));const yearText=ym.replace(monthName||'','').trim();
+ const date=pers(d)+' '+monthName+' '+yearText;
+ const c=document.createElement('canvas');c.width=1080;c.height=1080;const ctx=c.getContext('2d');
+ const bg=ctx.createLinearGradient(0,0,1080,1080);bg.addColorStop(0,'#f5faff');bg.addColorStop(1,'#e2f0ff');ctx.fillStyle=bg;ctx.fillRect(0,0,1080,1080);
+ ctx.fillStyle='#fff';roundRect(ctx,64,62,952,956,40);ctx.fill();ctx.strokeStyle='#dceaff';ctx.lineWidth=3;ctx.stroke();
+ try{const img=await imageOf(logos[media]);ctx.save();roundRect(ctx,110,105,860,450,25);ctx.clip();const scale=Math.min(860/img.width,450/img.height);const w=img.width*scale,h=img.height*scale;ctx.fillStyle='#f5f9ff';ctx.fillRect(110,105,860,450);ctx.drawImage(img,110+(860-w)/2,105+(450-h)/2,w,h);ctx.restore()}catch(e){console.warn('Calendar logo unavailable',e)}
+ ctx.textAlign='center';ctx.direction='rtl';ctx.fillStyle='#123f79';ctx.font='bold 53px YEKAN, Tahoma, sans-serif';ctx.fillText(media,540,665);
+ ctx.fillStyle='#0965d8';ctx.font='bold 94px YEKAN, Tahoma, sans-serif';ctx.fillText(date,540,800);
+ ctx.fillStyle='#6a88ac';ctx.font='30px YEKAN, Tahoma, sans-serif';ctx.fillText('تقویم روزانه',540,890);
+ const filename=media+' - '+date+'.png';const a=document.createElement('a');a.download=filename;a.href=c.toDataURL('image/png');document.body.appendChild(a);a.click();a.remove();
+});
+})();
+</script>
 </body>
 </html>
