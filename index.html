@@ -4590,10 +4590,10 @@ button.addEventListener('click',async()=>{
    const d=chosen[i],date=dateFor(y,m,d),dow=date.getUTCDay();
    button.textContent='در حال تولید '+fa(i+1)+' از '+fa(chosen.length)+'…';
    ctx.clearRect(0,0,1080,1920);ctx.drawImage(template,0,0,1080,1920);
-   ctx.fillStyle=media==='اخبار مشهد'?'#ed174b':'#fff';line(ctx,week[dow],793,184,250,30);ctx.fillStyle=media==='اخبار مشهد'?'#173f91':'#fff';line(ctx,fa(d)+' '+months[m-1]+' '+fa(y),793,226,255,26);
-   ctx.fillStyle=media==='اخبار مشهد'?'#ed174b':'#fff';ctx.direction='ltr';ctx.textAlign='center';ctx.font='bold 25px Arial,sans-serif';ctx.fillText(gf.format(date),285,184,250);
-   ctx.fillStyle=media==='اخبار مشهد'?'#173f91':'#fff';line(ctx,fa(hf.formatToParts(date).filter(part=>part.type==='day'||part.type==='month'||part.type==='year').map(part=>part.value).join(' ').trim()),285,226,265,23);
-   ctx.fillStyle=media==='اخبار مشهد'?'#173f91':'#fff';line(ctx,'ذکر امروز «'+zikr[dow]+'»',541,1724,490,30);
+   ctx.fillStyle=media==='اخبار مشهد'?'#e50029':'#fff';line(ctx,week[dow],785,192,290,37);ctx.fillStyle=media==='اخبار مشهد'?'#173f91':'#fff';line(ctx,fa(d)+' '+months[m-1]+' '+fa(y),785,231,300,31);
+   ctx.fillStyle=media==='اخبار مشهد'?'#e50029':'#fff';ctx.direction='ltr';ctx.textAlign='center';ctx.font='bold 29px Arial,sans-serif';ctx.fillText(gf.format(date),285,193,285);
+   ctx.fillStyle=media==='اخبار مشهد'?'#173f91':'#fff';line(ctx,fa(hf.formatToParts(date).filter(part=>part.type==='day'||part.type==='month'||part.type==='year').map(part=>part.value).join(' ').trim()),285,230,310,28);
+   ctx.fillStyle=media==='اخبار مشهد'?'#173f91':'#fff';line(ctx,'ذکر امروز «'+zikr[dow]+'»',541,1707,600,32);
    const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('PNG encode failed')),'image/png'));
    const filename=media+' - '+fa(d)+' '+months[m-1]+' '+fa(y)+'.png';
    if(chosen.length===1){download(blob,filename);return}
