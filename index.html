@@ -4592,10 +4592,10 @@ button.addEventListener('click',async()=>{
    ctx.clearRect(0,0,1080,1920);ctx.drawImage(template,0,0,1080,1920);
    // Provinces use a standalone blank template; no shared layout changes.
    if(media==='اخبار استان‌ها'){
-    ctx.fillStyle='#e6002e';line(ctx,week[dow],788,166,290,37);
-    ctx.fillStyle='#143f94';line(ctx,fa(d)+' '+months[m-1]+' '+fa(y),788,201,310,31);
-    ctx.fillStyle='#e6002e';ctx.direction='ltr';ctx.textAlign='center';ctx.font='bold 30px Arial,sans-serif';ctx.fillText(gf.format(date),287,166,300);
-    ctx.fillStyle='#143f94';line(ctx,fa(hf.formatToParts(date).filter(part=>part.type==='day'||part.type==='month'||part.type==='year').map(part=>part.value).join(' ').trim()),287,201,315,29);
+    ctx.fillStyle='#e6002e';line(ctx,week[dow],788,181,290,37);
+    ctx.fillStyle='#143f94';line(ctx,fa(d)+' '+months[m-1]+' '+fa(y),788,216,310,31);
+    ctx.fillStyle='#e6002e';ctx.direction='ltr';ctx.textAlign='center';ctx.font='bold 30px Arial,sans-serif';ctx.fillText(gf.format(date),287,181,300);
+    ctx.fillStyle='#143f94';line(ctx,fa(hf.formatToParts(date).filter(part=>part.type==='day'||part.type==='month'||part.type==='year').map(part=>part.value).join(' ').trim()),287,216,315,29);
     ctx.fillStyle='#143f94';line(ctx,'ذکر امروز «'+zikr[dow]+'»',540,1726,650,34);
    }else{
 
@@ -4617,5 +4617,6 @@ button.addEventListener('click',async()=>{
 const style=document.createElement('style');style.textContent='#rfCalendarPage .rf-cal-day.today:not(.rf-cal-picked){outline:none!important}';document.head.appendChild(style);
 })();
 </script>
+<!-- RushFinder V0391 test -->
 </body>
 </html>
