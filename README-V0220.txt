@@ -1,0 +1,1 @@
+Company menu opens inside same site and shows categories before HTTPS connection. Music Appwrite connectivity is not confirmed; diagnose via /api/appwrite-music?q=all .

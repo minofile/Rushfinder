@@ -1,0 +1,1 @@
+RushFinder V0223: Company menu click interception and persistent company panel overlay. Music and other endpoints preserved. HTTPS connection to local company server still required for actual video playback.
