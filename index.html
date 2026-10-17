@@ -4540,31 +4540,76 @@ html body .top{background:#fff!important;background-image:none!important}
 #rfCalendarPage .rf-cal-day.rf-cal-picked{outline:3px solid #2689ff!important;outline-offset:-2px;background:#e4f0ff}
 #rfCalendarPage .rf-cal-day.rf-cal-picked.holiday{background:#ffeded}
 </style>
-<script id="rf0374-export-script">
+
+<script id="rf0375-daily-psd-template">
 (function(){'use strict';
-const page=document.getElementById('rfCalendarPage');if(!page)return;
-const button=document.getElementById('rfCalGenerate');if(!button)return;
+const page=document.getElementById('rfCalendarPage'),button=document.getElementById('rfCalGenerate');if(!page||!button)return;
 const months=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
-const pers=n=>String(n).replace(/[0-9]/g,x=>'۰۱۲۳۴۵۶۷۸۹'[x]);
-const logos={'اخبار استان‌ها':'assets/calendar/plain.webp','صدای خراسان':'assets/calendar/seda.webp','اخبار مشهد':'assets/calendar/mashhad.webp','خبرفوری':'assets/calendar/fori.webp'};
-function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r)}
-function imageOf(url){return new Promise((resolve,reject)=>{let img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=url})}
+const pers=s=>String(s).replace(/[0-9]/g,x=>'۰۱۲۳۴۵۶۷۸۹'[x]);
+const week=['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'];
+const zikr=['یا ذَالجَلالِ وَالاِکرام','یا قاضِیَ الحاجات','یا اَرحَمَ الرّاحِمین','یا حَیُّ یا قَیّوم','لا اِلهَ اِلَّا اللهُ المَلِکُ الحَقُّ المُبین','اللّهُمَّ صَلِّ عَلی مُحَمَّدٍ وَ آلِ مُحَمَّد','یا رَبَّ الْعالَمین'];
+const pf=new Intl.DateTimeFormat('en-US-u-ca-persian',{year:'numeric',month:'numeric',day:'numeric',timeZone:'UTC'});
+const gf=new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
+const hf=new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
+function parts(date){const a=pf.formatToParts(date);const get=k=>Number(a.find(x=>x.type===k).value);return [get('year'),get('month'),get('day')]}
+function dateFor(y,m,d){let lo=Date.UTC(y+620,0,1),hi=Date.UTC(y+623,0,1);while(lo<hi){const mid=lo+Math.floor((hi-lo)/86400000/2)*86400000;const p=parts(new Date(mid));if(p[0]<y||(p[0]===y&&(p[1]<m||(p[1]===m&&p[2]<d))))lo=mid+86400000;else hi=mid;}return new Date(lo)}
+function load(src){return new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src=src})}
+function line(ctx,text,x,y,maxWidth,size=33){ctx.font=`bold ${size}px YEKAN,Tahoma,sans-serif`;ctx.textAlign='center';ctx.direction='rtl';ctx.fillText(text,x,y,maxWidth)}
 button.addEventListener('click',async()=>{
- const selected=page.querySelector('.rf-cal-day.rf-cal-picked');
- if(!selected){alert('ابتدا روز موردنظر را از جدول تقویم انتخاب کنید.');return}
- const d=Number(selected.dataset.day), title=document.getElementById('rfCalMonth').textContent;
- const match=title.match(/([۰-۹0-9]+)\s*،\s*(.+)$/);if(!match)return;
- const media=match[2].trim(), ym=title.split(' ، ')[0].trim();
- const monthName=months.find(m=>ym.includes(m));const yearText=ym.replace(monthName||'','').trim();
- const date=pers(d)+' '+monthName+' '+yearText;
- const c=document.createElement('canvas');c.width=1080;c.height=1080;const ctx=c.getContext('2d');
- const bg=ctx.createLinearGradient(0,0,1080,1080);bg.addColorStop(0,'#f5faff');bg.addColorStop(1,'#e2f0ff');ctx.fillStyle=bg;ctx.fillRect(0,0,1080,1080);
- ctx.fillStyle='#fff';roundRect(ctx,64,62,952,956,40);ctx.fill();ctx.strokeStyle='#dceaff';ctx.lineWidth=3;ctx.stroke();
- try{const img=await imageOf(logos[media]);ctx.save();roundRect(ctx,110,105,860,450,25);ctx.clip();const scale=Math.min(860/img.width,450/img.height);const w=img.width*scale,h=img.height*scale;ctx.fillStyle='#f5f9ff';ctx.fillRect(110,105,860,450);ctx.drawImage(img,110+(860-w)/2,105+(450-h)/2,w,h);ctx.restore()}catch(e){console.warn('Calendar logo unavailable',e)}
- ctx.textAlign='center';ctx.direction='rtl';ctx.fillStyle='#123f79';ctx.font='bold 53px YEKAN, Tahoma, sans-serif';ctx.fillText(media,540,665);
- ctx.fillStyle='#0965d8';ctx.font='bold 94px YEKAN, Tahoma, sans-serif';ctx.fillText(date,540,800);
- ctx.fillStyle='#6a88ac';ctx.font='30px YEKAN, Tahoma, sans-serif';ctx.fillText('تقویم روزانه',540,890);
- const filename=media+' - '+date+'.png';const a=document.createElement('a');a.download=filename;a.href=c.toDataURL('image/png');document.body.appendChild(a);a.click();a.remove();
+ const chosen=page.querySelector('.rf-cal-day.rf-cal-picked');if(!chosen){alert('ابتدا یک روز را انتخاب کنید.');return}
+ const label=document.getElementById('rfCalMonth').textContent;
+ const match=label.match(/([۰-۹0-9]+)\s*،\s*(.+)$/);if(!match)return;
+ const media=match[2].trim(),monthIndex=months.findIndex(m=>label.includes(m));if(monthIndex<0)return;
+ if(media!=='صدای خراسان'){alert('قالب PSD روزانه فعلاً فقط برای صدای خراسان آماده است. برای رسانه‌های دیگر فایل قالب جداگانه لازم است.');return}
+ const y=Number(match[1].replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c))),m=monthIndex+1,d=Number(chosen.dataset.day);
+ const date=dateFor(y,m,d),dow=date.getUTCDay();
+ button.disabled=true;button.textContent='در حال تولید تصویر…';
+ try{
+ const template=await load('assets/calendar/seda-daily-template.png');const c=document.createElement('canvas');c.width=1080;c.height=1920;const ctx=c.getContext('2d');ctx.drawImage(template,0,0,1080,1920);
+ ctx.fillStyle='#fff';
+ line(ctx,week[dow],789,189,208,36);
+ line(ctx,pers(d)+' '+months[m-1]+' '+pers(y),789,232,230,30);
+ ctx.direction='ltr';ctx.textAlign='center';ctx.font='bold 27px Arial,sans-serif';ctx.fillText(gf.format(date),293,187,210);
+ ctx.direction='rtl';line(ctx,pers(hf.format(date)),292,232,215,26);
+ line(ctx,'ذکر امروز «'+zikr[dow]+'»',541,1724,490,30);
+ const a=document.createElement('a');a.download=media+' - '+pers(d)+' '+months[m-1]+' '+pers(y)+'.png';a.href=c.toDataURL('image/png');document.body.appendChild(a);a.click();a.remove();
+ }catch(e){console.error(e);alert('خطا در تولید تصویر؛ فایل قالب بارگذاری نشد.')}finally{button.disabled=false;button.textContent='تولید تقویم'}
+});
+})();
+</script>
+<script id="rf0375-daily-psd-template">
+(function(){'use strict';
+const page=document.getElementById('rfCalendarPage'),button=document.getElementById('rfCalGenerate');if(!page||!button)return;
+const months=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+const pers=s=>String(s).replace(/[0-9]/g,x=>'۰۱۲۳۴۵۶۷۸۹'[x]);
+const week=['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'];
+const zikr=['یا ذَالجَلالِ وَالاِکرام','یا قاضِیَ الحاجات','یا اَرحَمَ الرّاحِمین','یا حَیُّ یا قَیّوم','لا اِلهَ اِلَّا اللهُ المَلِکُ الحَقُّ المُبین','اللّهُمَّ صَلِّ عَلی مُحَمَّدٍ وَ آلِ مُحَمَّد','یا رَبَّ الْعالَمین'];
+const pf=new Intl.DateTimeFormat('en-US-u-ca-persian',{year:'numeric',month:'numeric',day:'numeric',timeZone:'UTC'});
+const gf=new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
+const hf=new Intl.DateTimeFormat('fa-IR-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
+function parts(date){const a=pf.formatToParts(date);const get=k=>Number(a.find(x=>x.type===k).value);return [get('year'),get('month'),get('day')]}
+function dateFor(y,m,d){let lo=Date.UTC(y+620,0,1),hi=Date.UTC(y+623,0,1);while(lo<hi){const mid=lo+Math.floor((hi-lo)/86400000/2)*86400000;const p=parts(new Date(mid));if(p[0]<y||(p[0]===y&&(p[1]<m||(p[1]===m&&p[2]<d))))lo=mid+86400000;else hi=mid;}return new Date(lo)}
+function load(src){return new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src=src})}
+function line(ctx,text,x,y,maxWidth,size=33){ctx.font=`bold ${size}px YEKAN,Tahoma,sans-serif`;ctx.textAlign='center';ctx.direction='rtl';ctx.fillText(text,x,y,maxWidth)}
+button.addEventListener('click',async()=>{
+ const chosen=page.querySelector('.rf-cal-day.rf-cal-picked');if(!chosen){alert('ابتدا یک روز را انتخاب کنید.');return}
+ const label=document.getElementById('rfCalMonth').textContent;
+ const match=label.match(/([۰-۹0-9]+)\s*،\s*(.+)$/);if(!match)return;
+ const media=match[2].trim(),monthIndex=months.findIndex(m=>label.includes(m));if(monthIndex<0)return;
+ if(media!=='صدای خراسان'){alert('قالب PSD روزانه فعلاً فقط برای صدای خراسان آماده است. برای رسانه‌های دیگر فایل قالب جداگانه لازم است.');return}
+ const y=Number(match[1].replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c))),m=monthIndex+1,d=Number(chosen.dataset.day);
+ const date=dateFor(y,m,d),dow=date.getUTCDay();
+ button.disabled=true;button.textContent='در حال تولید تصویر…';
+ try{
+ const template=await load('assets/calendar/seda-daily-template.png');const c=document.createElement('canvas');c.width=1080;c.height=1920;const ctx=c.getContext('2d');ctx.drawImage(template,0,0,1080,1920);
+ ctx.fillStyle='#fff';
+ line(ctx,week[dow],789,189,208,36);
+ line(ctx,pers(d)+' '+months[m-1]+' '+pers(y),789,232,230,30);
+ ctx.direction='ltr';ctx.textAlign='center';ctx.font='bold 27px Arial,sans-serif';ctx.fillText(gf.format(date),293,187,210);
+ ctx.direction='rtl';line(ctx,pers(hf.format(date)),292,232,215,26);
+ line(ctx,'ذکر امروز «'+zikr[dow]+'»',541,1724,490,30);
+ const a=document.createElement('a');a.download=media+' - '+pers(d)+' '+months[m-1]+' '+pers(y)+'.png';a.href=c.toDataURL('image/png');document.body.appendChild(a);a.click();a.remove();
+ }catch(e){console.error(e);alert('خطا در تولید تصویر؛ فایل قالب بارگذاری نشد.')}finally{button.disabled=false;button.textContent='تولید تقویم'}
 });
 })();
 </script>
