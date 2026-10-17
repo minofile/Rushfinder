@@ -4572,7 +4572,7 @@ button.addEventListener('click',async()=>{
  const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Canvas unavailable');ctx.drawImage(template,0,0,1080,1920);
  ctx.fillStyle='#fff';line(ctx,week[dow],789,189,208,36);line(ctx,fa(d)+' '+months[m-1]+' '+fa(y),789,232,230,30);
  ctx.direction='ltr';ctx.textAlign='center';ctx.font='bold 27px Arial,sans-serif';ctx.fillText(gf.format(date),293,187,210);
- line(ctx,fa(hf.format(date)),292,232,215,26);
+ line(ctx,fa(hf.format(date).replace(/\s*(?:ه[.‌ـ\s]*[شق]|هـ[.‌\s]*[شق]|AH)\s*$/iu,'').trim()),292,232,215,26);
  line(ctx,'ذکر امروز «'+zikr[dow]+'»',541,1724,490,30);
  const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('PNG encode failed')),'image/png'));
  const url=URL.createObjectURL(blob),a=document.createElement('a');a.download=media+' - '+fa(d)+' '+months[m-1]+' '+fa(y)+'.png';a.href=url;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
