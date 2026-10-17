@@ -4579,11 +4579,11 @@ button.addEventListener('click',async()=>{
  const label=document.getElementById('rfCalMonth')?.textContent||'';
  const match=label.match(/([۰-۹0-9]+)\s*،\s*(.+)$/),monthIndex=months.findIndex(m=>label.includes(m));
  if(!match||monthIndex<0){alert('تاریخ تقویم قابل تشخیص نیست.');return}
- const media=match[2].trim();if(media!=='صدای خراسان'&&media!=='اخبار مشهد'){alert('قالب روزانه برای این رسانه هنوز آماده نیست.');return}
+ const media=match[2].trim();if(media!=='صدای خراسان'&&media!=='اخبار مشهد'&&media!=='خبرفوری'){alert('قالب روزانه برای این رسانه هنوز آماده نیست.');return}
  const y=Number(en(match[1])),m=monthIndex+1;
  button.disabled=true;
  try{
-  const template=await load(media==='اخبار مشهد'?'assets/calendar/mashhad-daily-template.png':templateData),canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1920;
+  const template=await load(media==='اخبار مشهد'?'assets/calendar/mashhad-daily-template.png':media==='خبرفوری'?'assets/calendar/khabarfori-daily-template.png':templateData),canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1920;
   const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Canvas unavailable');
   const files=[];
   for(let i=0;i<chosen.length;i++){
@@ -4607,6 +4607,5 @@ button.addEventListener('click',async()=>{
 const style=document.createElement('style');style.textContent='#rfCalendarPage .rf-cal-day.today:not(.rf-cal-picked){outline:none!important}';document.head.appendChild(style);
 })();
 </script>
-<!-- RushFinder V0384 test -->
 </body>
 </html>
