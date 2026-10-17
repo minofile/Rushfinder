@@ -4587,12 +4587,12 @@ button.addEventListener('click',async()=>{
   const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Canvas unavailable');
   const files=[];
   for(let i=0;i<chosen.length;i++){
-   const d=chosen[i],date=dateFor(y,m,d),dow=date.getUTCDay();
+   const d=chosen[i],date=dateFor(y,m,d),dow=date.getUTCDay(),headerShift=media==='خبرفوری'?10:0;
    button.textContent='در حال تولید '+fa(i+1)+' از '+fa(chosen.length)+'…';
    ctx.clearRect(0,0,1080,1920);ctx.drawImage(template,0,0,1080,1920);
-   ctx.fillStyle=media==='اخبار مشهد'?'#e50029':'#fff';line(ctx,week[dow],785,155,290,37);ctx.fillStyle=media==='اخبار مشهد'?'#173f91':'#fff';line(ctx,fa(d)+' '+months[m-1]+' '+fa(y),785,191,300,31);
-   ctx.fillStyle=media==='اخبار مشهد'?'#e50029':'#fff';ctx.direction='ltr';ctx.textAlign='center';ctx.font='bold 29px Arial,sans-serif';ctx.fillText(gf.format(date),285,155,285);
-   ctx.fillStyle=media==='اخبار مشهد'?'#173f91':'#fff';line(ctx,fa(hf.formatToParts(date).filter(part=>part.type==='day'||part.type==='month'||part.type==='year').map(part=>part.value).join(' ').trim()),285,191,310,28);
+   ctx.fillStyle=media==='اخبار مشهد'?'#e50029':'#fff';line(ctx,week[dow],785,155+headerShift,290,37);ctx.fillStyle=media==='اخبار مشهد'?'#173f91':'#fff';line(ctx,fa(d)+' '+months[m-1]+' '+fa(y),785,191+headerShift,300,31);
+   ctx.fillStyle=media==='اخبار مشهد'?'#e50029':'#fff';ctx.direction='ltr';ctx.textAlign='center';ctx.font='bold 29px Arial,sans-serif';ctx.fillText(gf.format(date),285,155+headerShift,285);
+   ctx.fillStyle=media==='اخبار مشهد'?'#173f91':'#fff';line(ctx,fa(hf.formatToParts(date).filter(part=>part.type==='day'||part.type==='month'||part.type==='year').map(part=>part.value).join(' ').trim()),285,191+headerShift,310,28);
    ctx.fillStyle=media==='اخبار مشهد'?'#173f91':'#fff';line(ctx,'ذکر امروز «'+zikr[dow]+'»',541,media==='اخبار مشهد'?1717:1717,600,32);
    const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('PNG encode failed')),'image/png'));
    const filename=media+' - '+fa(d)+' '+months[m-1]+' '+fa(y)+'.png';
