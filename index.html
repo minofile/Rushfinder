@@ -4579,21 +4579,21 @@ button.addEventListener('click',async()=>{
  const label=document.getElementById('rfCalMonth')?.textContent||'';
  const match=label.match(/([۰-۹0-9]+)\s*،\s*(.+)$/),monthIndex=months.findIndex(m=>label.includes(m));
  if(!match||monthIndex<0){alert('تاریخ تقویم قابل تشخیص نیست.');return}
- const media=match[2].trim();if(media!=='صدای خراسان'){alert('قالب روزانه فعلاً فقط برای صدای خراسان آماده است.');return}
+ const media=match[2].trim();if(media!=='صدای خراسان'&&media!=='اخبار مشهد'){alert('قالب روزانه برای این رسانه هنوز آماده نیست.');return}
  const y=Number(en(match[1])),m=monthIndex+1;
  button.disabled=true;
  try{
-  const template=await load(templateData),canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1920;
+  const template=await load(media==='اخبار مشهد'?'assets/calendar/mashhad-daily-template.png':templateData),canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1920;
   const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Canvas unavailable');
   const files=[];
   for(let i=0;i<chosen.length;i++){
    const d=chosen[i],date=dateFor(y,m,d),dow=date.getUTCDay();
    button.textContent='در حال تولید '+fa(i+1)+' از '+fa(chosen.length)+'…';
    ctx.clearRect(0,0,1080,1920);ctx.drawImage(template,0,0,1080,1920);
-   ctx.fillStyle='#fff';line(ctx,week[dow],789,189,208,36);line(ctx,fa(d)+' '+months[m-1]+' '+fa(y),789,232,230,30);
-   ctx.direction='ltr';ctx.textAlign='center';ctx.font='bold 27px Arial,sans-serif';ctx.fillText(gf.format(date),293,187,210);
-   line(ctx,fa(hf.formatToParts(date).filter(part=>part.type==='day'||part.type==='month'||part.type==='year').map(part=>part.value).join(' ').trim()),292,232,215,26);
-   line(ctx,'ذکر امروز «'+zikr[dow]+'»',541,1724,490,30);
+   ctx.fillStyle=media==='اخبار مشهد'?'#ed174b':'#fff';line(ctx,week[dow],789,189,208,36);ctx.fillStyle=media==='اخبار مشهد'?'#173f91':'#fff';line(ctx,fa(d)+' '+months[m-1]+' '+fa(y),789,232,230,30);
+   ctx.fillStyle=media==='اخبار مشهد'?'#ed174b':'#fff';ctx.direction='ltr';ctx.textAlign='center';ctx.font='bold 27px Arial,sans-serif';ctx.fillText(gf.format(date),293,187,210);
+   ctx.fillStyle=media==='اخبار مشهد'?'#173f91':'#fff';line(ctx,fa(hf.formatToParts(date).filter(part=>part.type==='day'||part.type==='month'||part.type==='year').map(part=>part.value).join(' ').trim()),292,232,215,26);
+   ctx.fillStyle=media==='اخبار مشهد'?'#173f91':'#fff';line(ctx,'ذکر امروز «'+zikr[dow]+'»',541,1724,490,30);
    const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('PNG encode failed')),'image/png'));
    const filename=media+' - '+fa(d)+' '+months[m-1]+' '+fa(y)+'.png';
    if(chosen.length===1){download(blob,filename);return}
