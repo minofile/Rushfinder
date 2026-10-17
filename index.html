@@ -3115,6 +3115,17 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   margin-left:11px;box-shadow:0 0 0 4px rgba(37,134,245,.11);
 }
 </style>
+
+<style id="rf0379-calendar-subdates">
+#rfCalendarPage .rf-cal-day:not(:disabled){display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;min-height:75px;padding:7px 5px}
+#rfCalendarPage .rf379-solar{font-size:20px;font-weight:700;line-height:1.15}
+#rfCalendarPage .rf379-subdates{display:flex;width:100%;max-width:95px;justify-content:space-between;align-items:center;direction:ltr;line-height:1.2}
+#rfCalendarPage .rf379-subdates small{font-size:11px;font-weight:400}
+#rfCalendarPage .rf379-lunar{color:#db6262}
+#rfCalendarPage .rf379-gregorian{color:#7894b5}
+#rfCalendarPage .rf-cal-day.holiday .rf379-solar{color:#dc3232}
+@media(max-width:620px){#rfCalendarPage .rf-cal-day:not(:disabled){min-height:60px;gap:4px;padding:4px 2px}#rfCalendarPage .rf379-solar{font-size:16px}#rfCalendarPage .rf379-subdates small{font-size:9px}}
+</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -4476,7 +4487,7 @@ function daysIn(y,m){return m<=6?31:m<=11?30:Math.round((gregorian(y+1,1,1)-greg
 // Holiday information for 1405 is intentionally limited to verified dates; Fridays are always marked.
 const holidays1405={'10-16':'مبعث پیامبر اکرم (ص)'};
 function render(){document.getElementById('rfCalMonth').textContent=pers(monthNames[month-1]+' '+year)+' ، '+media;const grid=document.getElementById('rfCalGrid');grid.replaceChildren();week.forEach((w,i)=>{const e=document.createElement('div');e.className='rf-cal-dayname'+(i===6?' friday':'');e.textContent=w;grid.appendChild(e)});
-const first=gregorian(year,month,1),start=(first.getUTCDay()+1)%7;for(let i=0;i<start;i++){const e=document.createElement('button');e.className='rf-cal-day';e.disabled=true;grid.appendChild(e)}const today=parts(new Date());for(let d=1;d<=daysIn(year,month);d++){const dt=gregorian(year,month,d),friday=dt.getUTCDay()===5,reason=year===1405?holidays1405[month+'-'+d]:null;const e=document.createElement('button');e.className='rf-cal-day'+(friday||reason?' holiday':'')+(today[0]===year&&today[1]===month&&today[2]===d?' today':'');e.textContent=pers(d);e.title=reason|| (friday?'جمعه':'');e.dataset.day=String(d);if(d===selectedDay)e.classList.add('rf-cal-picked');e.onclick=()=>{selectedDay=d;grid.querySelectorAll('.rf-cal-picked').forEach(n=>n.classList.remove('rf-cal-picked'));e.classList.add('rf-cal-picked')};grid.appendChild(e)}}
+const first=gregorian(year,month,1),start=(first.getUTCDay()+1)%7;for(let i=0;i<start;i++){const e=document.createElement('button');e.className='rf-cal-day';e.disabled=true;grid.appendChild(e)}const today=parts(new Date());for(let d=1;d<=daysIn(year,month);d++){const dt=gregorian(year,month,d),friday=dt.getUTCDay()===5,reason=year===1405?holidays1405[month+'-'+d]:null;const e=document.createElement('button');e.className='rf-cal-day'+(friday||reason?' holiday':'')+(today[0]===year&&today[1]===month&&today[2]===d?' today':'');e.innerHTML='<span class="rf379-solar">'+pers(d)+'</span><span class="rf379-subdates"><small class="rf379-lunar">'+pers(new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura',{day:'numeric',timeZone:'UTC'}).format(dt))+'</small><small class="rf379-gregorian">'+pers(dt.getUTCDate())+'</small></span>';e.title=reason|| (friday?'جمعه':'');e.dataset.day=String(d);if(d===selectedDay)e.classList.add('rf-cal-picked');e.onclick=()=>{selectedDay=d;grid.querySelectorAll('.rf-cal-picked').forEach(n=>n.classList.remove('rf-cal-picked'));e.classList.add('rf-cal-picked')};grid.appendChild(e)}}
 function syncWidth(){const side=document.querySelector('.sidebar');if(side){const r=side.getBoundingClientRect();page.style.right=Math.max(0,window.innerWidth-r.left)+'px'}const top=document.querySelector('.top');if(top)page.style.top=Math.round(top.getBoundingClientRect().bottom)+'px'}
 function open(){syncWidth();page.classList.add('rf-open');page.classList.remove('rf-selected');document.getElementById('rfSettingsPage')?.classList.remove('active');document.body.classList.remove('rf-company-view');document.getElementById('rfCompanyPanel')?.classList.remove('rf-company-on');document.querySelectorAll('.sidebar .nav button').forEach(b=>b.classList.toggle('active',b===btn));window.scrollTo(0,0)}
 function close(){page.classList.remove('rf-open','rf-selected')}
@@ -4572,7 +4583,7 @@ button.addEventListener('click',async()=>{
  const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Canvas unavailable');ctx.drawImage(template,0,0,1080,1920);
  ctx.fillStyle='#fff';line(ctx,week[dow],789,189,208,36);line(ctx,fa(d)+' '+months[m-1]+' '+fa(y),789,232,230,30);
  ctx.direction='ltr';ctx.textAlign='center';ctx.font='bold 27px Arial,sans-serif';ctx.fillText(gf.format(date),293,187,210);
- line(ctx,fa(hf.format(date).replace(/\s*(?:ه[.‌ـ\s]*[شق]|هـ[.‌\s]*[شق]|AH)\s*$/iu,'').trim()),292,232,215,26);
+ line(ctx,fa(hf.formatToParts(date).filter(part=>part.type==='day'||part.type==='month'||part.type==='year').map(part=>part.value).join(' ').trim()),292,232,215,26);
  line(ctx,'ذکر امروز «'+zikr[dow]+'»',541,1724,490,30);
  const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('PNG encode failed')),'image/png'));
  const url=URL.createObjectURL(blob),a=document.createElement('a');a.download=media+' - '+fa(d)+' '+months[m-1]+' '+fa(y)+'.png';a.href=url;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
