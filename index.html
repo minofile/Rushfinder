@@ -4623,14 +4623,14 @@ line(ctx, fa(d) + ' ' + months[m-1] + ' ' + fa(y), 785, 191 + headerShift + date
 ctx.fillStyle = media === 'اخبار مشهد' ? '#e50029' : '#fff';
 ctx.direction = 'ltr';
 ctx.textAlign = 'center';
-ctx.font = 'bold 29px Arial,sans-serif';
-ctx.fillText(gf.format(date), 285, 155 + headerShift + dateShift, 285);
+ctx.font = media === 'خبرفوری' ? 'bold 29px Arial,sans-serif' : 'bold 26px Arial,sans-serif';
+ctx.fillText(gf.format(date), 285, 155 + headerShift + dateShift, media === 'خبرفوری' ? 285 : 260);
 
 ctx.fillStyle = media === 'اخبار مشهد' ? '#173f91' : '#fff';
 line(ctx, fa(hf.formatToParts(date)
   .filter(part => part.type === 'day' || part.type === 'month' || part.type === 'year')
   .map(part => part.value).join(' ').trim()),
-  285, 191 + headerShift + dateShift, 310, 28);
+  285, 191 + headerShift + dateShift, media === 'خبرفوری' ? 310 : 285, media === 'خبرفوری' ? 28 : 25);
 
 ctx.fillStyle = media === 'اخبار مشهد' ? '#173f91' : '#fff';
 line(ctx, 'ذکر امروز «' + zikr[dow] + '»', 541, media === 'خبرفوری' ? 1727 : 1717, 600, 32);
