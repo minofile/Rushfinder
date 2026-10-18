@@ -4604,17 +4604,37 @@ button.addEventListener('click',async()=>{
    ctx.clearRect(0,0,1080,1920);ctx.drawImage(template,0,0,1080,1920);
    // Provinces use a standalone blank template; no shared layout changes.
    if(media==='اخبار استان‌ها'){
-    ctx.fillStyle='#e6002e';line(ctx,week[dow],788,191,290,37);
-    ctx.fillStyle='#143f94';line(ctx,fa(d)+' '+months[m-1]+' '+fa(y),788,226,310,31);
-    ctx.fillStyle='#e6002e';ctx.direction='ltr';ctx.textAlign='center';ctx.font='bold 30px Arial,sans-serif';ctx.fillText(gf.format(date),287,191,300);
-    ctx.fillStyle='#143f94';line(ctx,fa(hf.formatToParts(date).filter(part=>part.type==='day'||part.type==='month'||part.type==='year').map(part=>part.value).join(' ').trim()),287,226,315,29);
+    ctx.fillStyle='#e6002e';line(ctx,week[dow],788,206,290,37);
+    ctx.fillStyle='#143f94';line(ctx,fa(d)+' '+months[m-1]+' '+fa(y),788,241,310,31);
+    ctx.fillStyle='#e6002e';ctx.direction='ltr';ctx.textAlign='center';ctx.font='bold 30px Arial,sans-serif';ctx.fillText(gf.format(date),287,206,300);
+    ctx.fillStyle='#143f94';line(ctx,fa(hf.formatToParts(date).filter(part=>part.type==='day'||part.type==='month'||part.type==='year').map(part=>part.value).join(' ').trim()),287,241,315,29);
     ctx.fillStyle='#143f94';line(ctx,'ذکر امروز «'+zikr[dow]+'»',540,1709,650,34);
    }else{
 
-   ctx.fillStyle=media==='اخبار مشهد'?'#e50029':'#fff';line(ctx,week[dow],785,155+headerShift,290,37);ctx.fillStyle=media==='اخبار مشهد'?'#173f91':'#fff';line(ctx,fa(d)+' '+months[m-1]+' '+fa(y),785,191+headerShift,300,31);
-   ctx.fillStyle=media==='اخبار مشهد'?'#e50029':'#fff';ctx.direction='ltr';ctx.textAlign='center';ctx.font='bold 29px Arial,sans-serif';ctx.fillText(gf.format(date),285,155+headerShift,285);
-   ctx.fillStyle=media==='اخبار مشهد'?'#173f91':'#fff';line(ctx,fa(hf.formatToParts(date).filter(part=>part.type==='day'||part.type==='month'||part.type==='year').map(part=>part.value).join(' ').trim()),285,191+headerShift,310,28);
-   ctx.fillStyle=media==='اخبار مشهد'?'#173f91':'#fff';line(ctx,'ذکر امروز «'+zikr[dow]+'»',541,media==='خبرفوری'?1727:1717,600,32);
+
+const dateShift = media === 'صدای خراسان' ? 15 : 0;
+
+ctx.fillStyle = media === 'اخبار مشهد' ? '#e50029' : '#fff';
+line(ctx, week[dow], 785, 155 + headerShift + dateShift, 290, 37);
+
+ctx.fillStyle = media === 'اخبار مشهد' ? '#173f91' : '#fff';
+line(ctx, fa(d) + ' ' + months[m-1] + ' ' + fa(y), 785, 191 + headerShift + dateShift, 300, 31);
+
+ctx.fillStyle = media === 'اخبار مشهد' ? '#e50029' : '#fff';
+ctx.direction = 'ltr';
+ctx.textAlign = 'center';
+ctx.font = 'bold 29px Arial,sans-serif';
+ctx.fillText(gf.format(date), 285, 155 + headerShift + dateShift, 285);
+
+ctx.fillStyle = media === 'اخبار مشهد' ? '#173f91' : '#fff';
+line(ctx, fa(hf.formatToParts(date)
+  .filter(part => part.type === 'day' || part.type === 'month' || part.type === 'year')
+  .map(part => part.value).join(' ').trim()),
+  285, 191 + headerShift + dateShift, 310, 28);
+
+ctx.fillStyle = media === 'اخبار مشهد' ? '#173f91' : '#fff';
+line(ctx, 'ذکر امروز «' + zikr[dow] + '»', 541, media === 'خبرفوری' ? 1727 : 1717, 600, 32);
+
    }
    const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('PNG encode failed')),'image/png'));
    const filename=media+' - '+fa(d)+' '+months[m-1]+' '+fa(y)+'.png';
