@@ -4599,16 +4599,16 @@ button.addEventListener('click',async()=>{
   const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Canvas unavailable');
   const files=[];
   for(let i=0;i<chosen.length;i++){
-   const d=chosen[i],date=dateFor(y,m,d),dow=date.getUTCDay(),headerShift=media==='خبرفوری'?10:40;
+   const d=chosen[i],date=dateFor(y,m,d),dow=date.getUTCDay(),headerShift=media==='خبرفوری'?10:media==='اخبار مشهد'?20:20;
    button.textContent='در حال تولید '+fa(i+1)+' از '+fa(chosen.length)+'…';
    ctx.clearRect(0,0,1080,1920);ctx.drawImage(template,0,0,1080,1920);
    // Provinces use a standalone blank template; no shared layout changes.
    if(media==='اخبار استان‌ها'){
-    ctx.fillStyle='#e6002e';line(ctx,week[dow],788,195,290,37);
-    ctx.fillStyle='#143f94';line(ctx,fa(d)+' '+months[m-1]+' '+fa(y),788,230,310,31);
-    ctx.fillStyle='#e6002e';ctx.direction='ltr';ctx.textAlign='center';ctx.font='bold 30px Arial,sans-serif';ctx.fillText(gf.format(date),287,195,300);
-    ctx.fillStyle='#143f94';line(ctx,fa(hf.formatToParts(date).filter(part=>part.type==='day'||part.type==='month'||part.type==='year').map(part=>part.value).join(' ').trim()),287,230,315,29);
-    ctx.fillStyle='#143f94';line(ctx,'ذکر امروز «'+zikr[dow]+'»',540,1726,650,34);
+    ctx.fillStyle='#e6002e';line(ctx,week[dow],788,175,290,37);
+    ctx.fillStyle='#143f94';line(ctx,fa(d)+' '+months[m-1]+' '+fa(y),788,210,310,31);
+    ctx.fillStyle='#e6002e';ctx.direction='ltr';ctx.textAlign='center';ctx.font='bold 30px Arial,sans-serif';ctx.fillText(gf.format(date),287,175,300);
+    ctx.fillStyle='#143f94';line(ctx,fa(hf.formatToParts(date).filter(part=>part.type==='day'||part.type==='month'||part.type==='year').map(part=>part.value).join(' ').trim()),287,210,315,29);
+    ctx.fillStyle='#143f94';line(ctx,'ذکر امروز «'+zikr[dow]+'»',540,1709,650,34);
    }else{
 
    ctx.fillStyle=media==='اخبار مشهد'?'#e50029':'#fff';line(ctx,week[dow],785,155+headerShift,290,37);ctx.fillStyle=media==='اخبار مشهد'?'#173f91':'#fff';line(ctx,fa(d)+' '+months[m-1]+' '+fa(y),785,191+headerShift,300,31);
