@@ -4599,7 +4599,7 @@ button.addEventListener('click',async()=>{
   const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Canvas unavailable');
   const files=[];
   for(let i=0;i<chosen.length;i++){
-   const d=chosen[i],date=dateFor(y,m,d),dow=date.getUTCDay(),headerShift=(media==='خبرفوری'||media==='صدای خراسان')?10:36;
+   const d=chosen[i],date=dateFor(y,m,d),dow=date.getUTCDay(),headerShift=media==='خبرفوری'?10:media==='صدای خراسان'?36:0;
    button.textContent='در حال تولید '+fa(i+1)+' از '+fa(chosen.length)+'…';
    ctx.clearRect(0,0,1080,1920);ctx.drawImage(template,0,0,1080,1920);
    // Provinces use a standalone blank template; no shared layout changes.
