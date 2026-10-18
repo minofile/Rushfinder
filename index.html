@@ -4479,6 +4479,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 (function(){'use strict';
 const page=document.getElementById('rfCalendarPage'),nav=document.querySelector('.sidebar .nav');if(!page||!nav)return;
 const btn=document.createElement('button');btn.type='button';btn.id='rfCalNav';btn.innerHTML='<i>▦</i><span>تقویم</span>';const settings=[...nav.querySelectorAll('button')].find(x=>x.textContent.includes('تنظیمات'));nav.insertBefore(btn,settings||null);
+const cutBtn=document.createElement('button');cutBtn.type='button';cutBtn.id='rfVideoCutNav';cutBtn.innerHTML='<i>✂</i><span>برش ویدیو</span>';cutBtn.addEventListener('click',()=>{window.location.href='video-cut.html'});nav.insertBefore(cutBtn,settings||null);
 const monthNames=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];const week=['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];const pers=n=>String(n).replace(/\d/g,x=>'۰۱۲۳۴۵۶۷۸۹'[x]);
 let year=1405,month=7,media='خبرفوری',selectedDay=null;const selectedDays=new Set();const fmt=new Intl.DateTimeFormat('en-US-u-ca-persian',{year:'numeric',month:'numeric',day:'numeric',timeZone:'Asia/Tehran'});
 function parts(date){let a=fmt.formatToParts(date),g=k=>+a.find(x=>x.type===k).value;return [g('year'),g('month'),g('day')]}
