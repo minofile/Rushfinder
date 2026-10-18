@@ -4465,6 +4465,12 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 #rfCalendarPage .rf-cal-day{min-height:68px;border:1px solid #e5effc;border-radius:11px;background:#f8fbff;padding:9px;color:#17558d;text-align:center;cursor:pointer;font-family:inherit;font-size:16px}#rfCalendarPage .rf-cal-day.holiday{background:#fff3f3;color:#dc3232;font-weight:bold}#rfCalendarPage .rf-cal-day.today{outline:2px solid #3d90ef}#rfCalendarPage .rf-cal-day:disabled{background:transparent;border:0;cursor:default}#rfCalendarPage .rf-cal-info{margin-top:15px;color:#476f9c;font-size:13px;min-height:25px}
 @media(max-width:850px){#rfCalendarPage{right:70px;padding:16px}#rfCalendarPage .rf-cal-choices{grid-template-columns:repeat(2,minmax(0,200px))}}@media(max-width:620px){#rfCalendarPage{right:0}#rfCalendarPage .rf-cal-day{min-height:48px;padding:5px}#rfCalendarPage .rf-cal-grid{padding:8px;gap:3px}}
 </style>
+<style id="rf-video-cut-integrated-v0398">
+#rfVideoCutPage{display:none;position:fixed;left:0;right:210px;top:68px;bottom:0;z-index:101;background:#f2f7ff;overflow:hidden}
+#rfVideoCutPage.rf-open{display:block}
+#rfVideoCutPage iframe{display:block;width:100%;height:100%;border:0;background:#f2f7ff}
+@media(max-width:620px){#rfVideoCutPage{right:0}}
+</style>
 <section id="rfCalendarPage" aria-label="تقویم رسانه‌ها" dir="rtl">
  <div class="rf-cal-banner"><div><h2>▦ تقویم</h2><p>انتخاب رسانه مورد نظر برای مشاهده و دریافت تقویم روزانه</p></div><div class="rf372-calendar-art" aria-hidden="true"><div class="rf372-calendar-top"><b></b><b></b></div><div class="rf372-calendar-face"><span>۱۶</span><i></i></div></div></div>
  <div class="rf-cal-choices">
@@ -4479,7 +4485,12 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 (function(){'use strict';
 const page=document.getElementById('rfCalendarPage'),nav=document.querySelector('.sidebar .nav');if(!page||!nav)return;
 const btn=document.createElement('button');btn.type='button';btn.id='rfCalNav';btn.innerHTML='<i>▦</i><span>تقویم</span>';const settings=[...nav.querySelectorAll('button')].find(x=>x.textContent.includes('تنظیمات'));nav.insertBefore(btn,settings||null);
-const cutBtn=document.createElement('button');cutBtn.type='button';cutBtn.id='rfVideoCutNav';cutBtn.innerHTML='<i>✂</i><span>برش ویدیو</span>';cutBtn.addEventListener('click',()=>{window.location.href='video-cut.html'});nav.insertBefore(cutBtn,settings||null);
+const cutBtn=document.createElement('button');cutBtn.type='button';cutBtn.id='rfVideoCutNav';cutBtn.innerHTML='<i>✂</i><span>برش ویدیو</span>';nav.insertBefore(cutBtn,settings||null);
+const cutPage=document.createElement('section');cutPage.id='rfVideoCutPage';cutPage.setAttribute('aria-label','برش ویدیو');cutPage.innerHTML='<iframe title="ابزار برش ویدیو" src="video-cut.html?embedded=1" loading="lazy" allow="fullscreen"></iframe>';document.body.appendChild(cutPage);
+function syncCutPage(){const side=document.querySelector('.sidebar'),top=document.querySelector('.top');cutPage.style.right=side?Math.max(0,window.innerWidth-side.getBoundingClientRect().left)+'px':'210px';cutPage.style.top=top?Math.round(top.getBoundingClientRect().bottom)+'px':'68px'}
+cutBtn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();syncCutPage();page.classList.remove('rf-open','rf-selected');document.getElementById('rfSettingsPage')?.classList.remove('active');document.body.classList.remove('rf-company-view');document.getElementById('rfCompanyPanel')?.classList.remove('rf-company-on');cutPage.classList.add('rf-open');nav.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===cutBtn));window.scrollTo(0,0)},true);
+nav.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b!==cutBtn)cutPage.classList.remove('rf-open')},true);
+window.addEventListener('resize',()=>{if(cutPage.classList.contains('rf-open'))syncCutPage()});
 const monthNames=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];const week=['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];const pers=n=>String(n).replace(/\d/g,x=>'۰۱۲۳۴۵۶۷۸۹'[x]);
 let year=1405,month=7,media='خبرفوری',selectedDay=null;const selectedDays=new Set();const fmt=new Intl.DateTimeFormat('en-US-u-ca-persian',{year:'numeric',month:'numeric',day:'numeric',timeZone:'Asia/Tehran'});
 function parts(date){let a=fmt.formatToParts(date),g=k=>+a.find(x=>x.type===k).value;return [g('year'),g('month'),g('day')]}
