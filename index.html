@@ -3126,6 +3126,46 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 #rfCalendarPage .rf-cal-day.holiday .rf379-solar{color:#dc3232}
 @media(max-width:620px){#rfCalendarPage .rf-cal-day:not(:disabled){min-height:60px;gap:4px;padding:4px 2px}#rfCalendarPage .rf379-solar{font-size:16px}#rfCalendarPage .rf379-subdates small{font-size:9px}}
 </style>
+
+<!-- RF original: fix shared-page bleed / overlapping category cards -->
+<style id="rf-original-page-isolation-fix">
+/* The underlying dashboard must not show between the common header and a separate page. */
+body:has(#rfCalendarPage.rf-open) .app main,
+body:has(#rfVideoCutPage.rf-open) .app main,
+body:has(#mu136.active) .app main,
+body:has(#rfRushPage.active) .app main,
+body:has(#rfSettingsPage.active) .app main {
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+/* Prevent cross-page content leaking over the header / into other full-screen views. */
+#rfCalendarPage.rf-open,
+#rfVideoCutPage.rf-open,
+#mu136.active,
+#rfRushPage.active,
+#rfSettingsPage.active {
+  isolation:isolate;
+  z-index:1000 !important;
+  box-sizing:border-box;
+}
+/* Main header is retained and must stay accessible when a module is open. */
+body:has(#rfCalendarPage.rf-open) .top,
+body:has(#rfVideoCutPage.rf-open) .top,
+body:has(#mu136.active) .top,
+body:has(#rfRushPage.active) .top {
+  z-index:1001 !important;
+}
+/* Respect the fixed full-screen pages' header offset. */
+#rfCalendarPage.rf-open,
+#rfVideoCutPage.rf-open,
+#mu136.active,
+#rfRushPage.active { top:66px !important; }
+/* Keep the sidebar visible and usable, including smaller laptop screens. */
+@media (max-width:620px){
+  #rfCalendarPage.rf-open,#rfVideoCutPage.rf-open,#mu136.active,#rfRushPage.active {right:0!important;top:66px!important}
+}
+</style>
+
 </head>
 <body>
 <aside class="sidebar">
