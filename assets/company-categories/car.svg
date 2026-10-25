@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 360" role="img" aria-label="خودرو">
 <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#81d5f0"/><stop offset="1" stop-color="#238db7"/></linearGradient></defs>
 <rect width="600" height="360" fill="url(#bg)"/><circle cx="520" cy="40" r="145" fill="#fff" opacity=".12"/><circle cx="45" cy="350" r="155" fill="#fff" opacity=".12"/>
-<g stroke="#fff" stroke-width="10" stroke-linejoin="round" stroke-linecap="round" fill="none">
+<g transform="translate(300 205) scale(.36) translate(-300 -205)" stroke="#fff" stroke-width="10" stroke-linejoin="round" stroke-linecap="round" fill="none">
 <path d="M119 211h363a25 25 0 0 1 25 25v43H95v-43a25 25 0 0 1 24-25Z" fill="#fff" opacity=".97" stroke="none"/>
 <path d="m164 209 47-80a25 25 0 0 1 22-13h136a27 27 0 0 1 22 13l48 80" fill="#fff" opacity=".97" stroke="none"/>
 <path d="m230 143-34 62h208l-35-62Z" fill="#17789f" stroke="none"/>
