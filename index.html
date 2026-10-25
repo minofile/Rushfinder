@@ -3135,6 +3135,18 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 #rfCompanyPanel .rf-company-pagebuttons button[aria-current="page"]{background:#1979e7;color:#fff;border-color:#1979e7}
 #rfCompanyPanel .rf-company-pagebuttons button:disabled{opacity:.4;cursor:not-allowed}
 </style>
+<style id="rf-archive-pagination-visible-v2">
+/* Scoped to company archive, without changing any other page or API. */
+body.rf-company-view #rfCompanyPanel {min-height:100vh!important;height:auto!important;max-height:none!important;overflow:visible!important;padding-bottom:100px!important}
+body.rf-company-view #rfCompanyPanel #rfCompanyContent {height:auto!important;max-height:none!important;overflow:visible!important}
+body.rf-company-view #rfCompanyPanel .rf-company-files {height:auto!important;max-height:none!important;overflow:visible!important;align-items:stretch}
+#rfCompanyPanel .rf-archive-pager-v2 {display:flex!important;position:relative;gap:10px;flex-direction:column;align-items:center;margin:12px 0 22px;padding:12px 15px;clear:both}
+#rfCompanyPanel .rf-archive-pager-v2 .rf-company-pagebuttons {display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+#rfCompanyPanel .rf-archive-pager-v2 button {font-family:inherit;border:1px solid #caddf6;background:#f0f7ff;color:#1768c7;border-radius:9px;padding:9px 13px;cursor:pointer}
+#rfCompanyPanel .rf-archive-pager-v2 button[aria-current="page"] {background:#1478ed;color:white}
+#rfCompanyPanel .rf-archive-pager-v2 button:disabled {opacity:.42;cursor:not-allowed}
+#rfCompanyPanel .rf-archive-hint {text-align:center;color:#6a819d;font-size:11px}
+</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -4233,24 +4245,34 @@ function connectionUI(){
  document.getElementById('rf222Clear').onclick=()=>{localStorage.removeItem('rfCompanyHttpsApi');localStorage.removeItem('rfCompanyAccessKeySaved');sessionStorage.removeItem('rfCompanyAccessKey');items=[];categories=[];selected='';q='';layout();load()};
 }
 function message(t){document.getElementById('rfCompanyContent').innerHTML='<div class="rf-company-msg">'+t+'</div>'}
-function render(){const area=document.getElementById('rfCompanyContent');if(!selected&&!q){const cats=[...new Set([...defaultCats,...categories])];area.innerHTML='<div class="rf-company-cats">'+cats.map(cat=>`<button class="rf-company-cat" data-cat="${esc(cat)}"><img alt="" src="${icon(cat)}"><strong>${esc(cat)}</strong><small>مشاهده ویدئوها ←</small></button>`).join('')+'</div>';area.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{selected=b.dataset.cat;page=1;load()});return}
-area.innerHTML=`<div style="display:flex;align-items:center;gap:14px;margin-bottom:18px"><button class="rf-company-back" id="rfCompanyBack">بازگشت به موضوعات</button><strong>${esc(selected||'نتایج جست‌وجو')}</strong></div>`+(items.length?'<div class="rf-company-files">'+items.map((f,i)=>`<div class="rf-company-file"><div class="rf230-thumb"><img loading="lazy" alt="تصویر واقعی ویدئو" src="${esc(base()+f.thumbnailUrl)}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span class="rf230-fallback" style="display:none">▶</span></div><h4 title="${esc(f.title)}">${esc(f.title)}</h4><span class="rf230-catbadge">${esc(f.category)}</span><p>${esc(f.extension)} · ${Number(f.size/1048576||0).toFixed(1)} MB</p><div class="rf-company-actions"><button data-play="${i}">نمایش</button><a data-download="${i}" href="#">دانلود</a></div></div>`).join('')+'</div>':'<div class="rf-company-msg">ویدئویی در این بخش پیدا نشد.</div>');// Pagination for the existing /api/files endpoint (server returns 36 files per page).
-if(totalPages>1){
- const nav=document.createElement('nav');nav.className='rf-company-pagination';nav.setAttribute('aria-label','صفحه‌بندی راش‌های شرکت');
- const start=Math.max(1,Math.min(page-2,totalPages-4));const end=Math.min(totalPages,start+4);
- const buttons=[];
- buttons.push(`<button type="button" data-page="${page-1}" ${page===1?'disabled':''}>صفحه قبل</button>`);
- for(let n=start;n<=end;n++)buttons.push(`<button type="button" data-page="${n}" ${n===page?'aria-current="page"':''}>${n.toLocaleString('fa-IR')}</button>`);
- buttons.push(`<button type="button" data-page="${page+1}" ${page===totalPages?'disabled':''}>صفحه بعد</button>`);
- nav.innerHTML=`<span class="rf-company-pageinfo">صفحه ${page.toLocaleString('fa-IR')} از ${totalPages.toLocaleString('fa-IR')} · ${totalMatched.toLocaleString('fa-IR')} راش</span><div class="rf-company-pagebuttons">${buttons.join('')}</div>`;
- area.appendChild(nav);
- nav.querySelectorAll('button[data-page]').forEach(button=>button.addEventListener('click',()=>{
-  if(button.disabled)return;const next=Number(button.dataset.page);
-  if(!Number.isInteger(next)||next<1||next>totalPages||next===page)return;
+function buildCompanyPager(){
+ const total=Math.max(totalMatched,items.length),perPage=36;
+ const max=Math.max(1,totalPages,Math.ceil(total/perPage));
+ const start=(page-1)*perPage+1,end=(page-1)*perPage+items.length;
+ const from=items.length?start:0;
+ const controls=[];
+ controls.push(`<button type="button" data-archive-page="${page-1}" ${page<=1?'disabled':''}>صفحه قبل</button>`);
+ for(let p=Math.max(1,page-2);p<=Math.min(max,page+2);p++)controls.push(`<button type="button" data-archive-page="${p}" ${p===page?'aria-current="page"':''}>${p.toLocaleString('fa-IR')}</button>`);
+ controls.push(`<button type="button" data-archive-page="${page+1}" ${page>=max?'disabled':''}>صفحه بعد</button>`);
+ const info=`نمایش ${from.toLocaleString('fa-IR')} تا ${end.toLocaleString('fa-IR')} از ${total.toLocaleString('fa-IR')} فایل ثبت‌شده در سرور`;
+ const hint=max===1?'اگر فایل‌های بیشتری در پوشه شبکه وجود دارد، باید اسکن سرور آرشیو بررسی شود.':'';
+ return `<nav class="rf-company-pagination rf-archive-pager-v2" aria-label="صفحه‌بندی آرشیو"><span class="rf-company-pageinfo">${info} · صفحه ${page.toLocaleString('fa-IR')} از ${max.toLocaleString('fa-IR')}</span><div class="rf-company-pagebuttons">${controls.join('')}</div>${hint?`<small class="rf-archive-hint">${hint}</small>`:''}</nav>`;
+}
+function wireCompanyPagers(area){
+ area.querySelectorAll('[data-archive-page]').forEach(button=>button.addEventListener('click',()=>{
+  const next=Number(button.dataset.archivePage);if(button.disabled||!Number.isInteger(next)||next<1||next===page)return;
   page=next;load();
-  const root=document.getElementById('rfCompanyPanel');if(root)root.scrollTop=0;
+  requestAnimationFrame(()=>document.getElementById('rfCompanyPanel')?.scrollIntoView({block:'start',behavior:'instant'}));
  }));
 }
+function render(){const area=document.getElementById('rfCompanyContent');if(!selected&&!q){const cats=[...new Set([...defaultCats,...categories])];area.innerHTML='<div class="rf-company-cats">'+cats.map(cat=>`<button class="rf-company-cat" data-cat="${esc(cat)}"><img alt="" src="${icon(cat)}"><strong>${esc(cat)}</strong><small>مشاهده ویدئوها ←</small></button>`).join('')+'</div>';area.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{selected=b.dataset.cat;page=1;load()});return}
+area.innerHTML=`<div style="display:flex;align-items:center;gap:14px;margin-bottom:18px"><button class="rf-company-back" id="rfCompanyBack">بازگشت به موضوعات</button><strong>${esc(selected||'نتایج جست‌وجو')}</strong></div>`+(items.length?'<div class="rf-company-files">'+items.map((f,i)=>`<div class="rf-company-file"><div class="rf230-thumb"><img loading="lazy" alt="تصویر واقعی ویدئو" src="${esc(base()+f.thumbnailUrl)}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span class="rf230-fallback" style="display:none">▶</span></div><h4 title="${esc(f.title)}">${esc(f.title)}</h4><span class="rf230-catbadge">${esc(f.category)}</span><p>${esc(f.extension)} · ${Number(f.size/1048576||0).toFixed(1)} MB</p><div class="rf-company-actions"><button data-play="${i}">نمایش</button><a data-download="${i}" href="#">دانلود</a></div></div>`).join('')+'</div>':'<div class="rf-company-msg">ویدئویی در این بخش پیدا نشد.</div>');// Pagination and diagnostics for the archive endpoint.
+const pagerHTML=buildCompanyPager();
+if(pagerHTML)area.insertAdjacentHTML('afterbegin',pagerHTML);
+wireCompanyPagers(area);
+// Pagination for the existing /api/files endpoint (server returns 36 files per page).
+if(pagerHTML)area.insertAdjacentHTML('beforeend',pagerHTML);
+wireCompanyPagers(area);
 document.getElementById('rfCompanyBack').onclick=()=>{selected='';q='';layout();render()};area.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>play(items[+b.dataset.play]));area.querySelectorAll('[data-download]').forEach(a=>{const f=items[+a.dataset.download];a.href=base()+f.downloadUrl;a.target='_blank';a.rel='noopener'})}
 async function load(){const endpoint=base();if(!endpoint){render();const area=document.getElementById('rfCompanyContent');area.insertAdjacentHTML('afterbegin','<p class="rf-company-msg">دسته‌بندی‌ها آماده‌اند؛ نمایش فایل‌های واقعی پس از اتصال HTTPS امن آرشیو شرکت فعال می‌شود.</p>');return}message('در حال دریافت آرشیو...');try{const u=new URL(endpoint+'/api/files');if(selected)u.searchParams.set('category',selected);if(q)u.searchParams.set('q',q);u.searchParams.set('page',page);const r=await fetch(u,{mode:'cors',cache:'no-store',headers:{'X-Rush-Key':archiveKey()}});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();if(data.error)throw Error(data.error);if(!Array.isArray(data.files))throw Error('پاسخ نامعتبر');items=data.files;categories=data.categories||[];totalPages=Math.max(1,Number(data.pages)||1);totalMatched=Math.max(0,Number(data.total)||0);page=Math.max(1,Math.min(page,totalPages));document.getElementById('rfCompanyCount').textContent=(data.all||0).toLocaleString('fa-IR')+' فایل';render()}catch(e){message('اتصال به آرشیو امن شرکت برقرار نشد. وضعیت سرور، مجوز دسترسی، HTTPS و CORS را بررسی کنید. ('+esc(e.message)+')')}}
 function play(f){
