@@ -3994,6 +3994,26 @@ document.addEventListener("DOMContentLoaded",()=>{
   ['تورم',['تورم','inflation']],['اقتصاد',['اقتصاد','economic','economy']],['صنعت',['صنعت','industry','industrial']]
  ];
  function rfHas(hay,word){const a=aliases.find(g=>g[0]===word);return (a?a[1]:[word]).some(v=>hay.includes(rfNorm(v)))}
+ const rfTopics=[
+  ['دانشگاه',['دانشگاه','دانشجو','دانشجویان','دانشگاهی','university','college','campus','students','student']],
+  ['پزشکی',['پزشکی','پزشک','پزشکان','طب','medical','medicine','doctor','hospital']],
+  ['آموزش',['آموزش','آموزشی','تحصیل','مدرسه','مدارس','education','school','classroom']],
+  ['مراسم',['مراسم','جشن','آیین','بزرگداشت','جشنواره','ceremony','celebration','event']],
+  ['سخنرانی',['سخنرانی','سخنران','سخن گفت','صحبت کرد','speech','speaking','address']],
+  ['پژوهش',['پژوهش','تحقیق','دانشمند','علمی','research','laboratory','scientist']],
+  ['کتاب',['کتاب','کتابخانه','مطالعه','book','library','reading']],
+  ['سلامت',['سلامت','بهداشت','درمان','health','healthcare','clinic']],
+  ['ورزش',['ورزش','ورزشی','بازیکن','sport','sports','athlete']],
+  ['رسانه',['رسانه','خبرنگار','تلویزیون','media','journalist','television']],
+  ['فرهنگ',['فرهنگ','فرهنگی','هنر','هنرمند','culture','cultural','art']],
+  ['کودک',['کودک','کودکان','نوجوان','بچه','children','child','kids']],
+  ['تکنولوژی',['فناوری','تکنولوژی','هوش مصنوعی','technology','tech','artificial intelligence']],
+  ['دولت',['دولت','وزیر','وزارت','government','minister']],
+  ['انتخابات',['انتخابات','رای گیری','رأی‌گیری','election','voting']],
+  ['محیط زیست',['محیط زیست','آلودگی','طبیعت','environment','nature','pollution']]
+ ];
+ function rfTopicList(s){const t=rfNorm(s);return rfTopics.filter(g=>g[1].some(a=>t.includes(rfNorm(a)))).map(g=>g[0]);}
+ function rfVideoText(x){return rfNorm([x?.title,x?.description,x?.tags].filter(Boolean).join(' '));}
  function rfTokens(s){return [...new Set(rfNorm(s).split(' ').filter(w=>w.length>2&&!rfStop.has(w)&&!/^\d+$/.test(w)))];}
  function rfAnchors(s){const clean=rfNorm(s);const found=aliases.filter(g=>g[1].some(a=>clean.includes(rfNorm(a)))).map(g=>g[0]);return [...new Set(found)];}
  function suggestions(s,n){
@@ -4020,33 +4040,50 @@ document.addEventListener("DOMContentLoaded",()=>{
      for(let i=0;i<Math.min(topicWords.length-1,5);i++)add(topicWords.slice(i,i+3).join(' '));
    }
    if(anchors.length&&topicWords.length)add(anchors[0]+' '+topicWords.slice(0,2).join(' '));
-   return out.slice(0,Math.max(8,n*4));
+   const themes=rfTopicList(s);
+   for(const theme of themes.slice(0,4)){
+     const en=rfTopics.find(g=>g[0]===theme)?.[1].filter(v=>/^[a-z ]+$/i.test(v))||[];
+     add(theme+' ایران');add(theme+' گزارش خبری');
+     if(en.length)add(en[0]+' documentary news footage');
+   }
+   for(let i=0;i<themes.length;i++)for(let j=i+1;j<themes.length;j++){
+     add(themes[i]+' '+themes[j]);
+     const a=rfTopics.find(g=>g[0]===themes[i])?.[1].find(v=>/^[a-z ]+$/i.test(v));
+     const b=rfTopics.find(g=>g[0]===themes[j])?.[1].find(v=>/^[a-z ]+$/i.test(v));
+     if(a&&b)add(a+' '+b+' footage');
+   }
+   if(!out.length){for(let i=0;i<Math.min(words.length-1,5);i++)add(words.slice(i,i+2).join(' '));}
+   return out.slice(0,Math.max(12,n*5));
  }
  function splitText(txt){let a=txt.split(/(?<=[.!؟\n])\s+/).map(x=>x.trim()).filter(x=>x.length>20);if(a.length>6){let g=[];for(let i=0;i<a.length;i+=2)g.push(a.slice(i,i+2).join(' '));a=g}return a.slice(0,8)}
  function esc(s){return String(s||'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
  const rfRushUsed=new Set();
  function rfRushKey(x){return String(x?.id||x?.uid||x?.pageURL||x?.url||x?.thumbnail||x?.thumbnailUrl||'')}
  function rfRushScore(x,q,context){
-   const title=rfNorm(x?.title||'');const desc=rfNorm([x?.description,x?.tags,x?.channel].filter(Boolean).join(' '));
+   const title=rfNorm(x?.title||''); const all=rfVideoText(x);
    if(!title)return -1000;
    if(/انیمیشن|کارتون|طنز|میم|انیمه|animation|cartoon|parody|meme|gaming|gameplay|satire|countryballs|countryball|trailer|فیلم سینمایی/.test(title))return -1000;
    const anchors=rfAnchors(q), contextAnchors=rfAnchors(context);
+   const contextTopics=rfTopicList(context); const queryTopics=rfTopicList(q);
+   const matchedTopics=contextTopics.filter(t=>rfTopics.find(g=>g[0]===t)?.[1].some(w=>all.includes(rfNorm(w))));
    const specific=contextAnchors.filter(a=>!['جنگ','ایران','آمریکا','اقتصاد','صنعت'].includes(a));
-   const matchedSpecific=specific.filter(a=>rfHas(title,a));
-   const queryMatches=anchors.filter(a=>rfHas(title,a));
-   const meaningful=rfTokens(q).filter(w=>w.length>3);
-   const matchedWords=meaningful.filter(w=>title.includes(w));
-   // Reject a lone broad term; preserve factual footage for more specific entities.
-   if(specific.length && !matchedSpecific.length)return -1000;
-   if(anchors.length>=2 && queryMatches.length<2 && matchedWords.length<2)return -1000;
-   if(!anchors.length && matchedWords.length<2)return -1000;
-   if(!specific.length && queryMatches.length<2 && matchedWords.length<2)return -1000;
-   let score=0;
-   for(const a of queryMatches)score+=24;
-   for(const a of matchedSpecific)score+=18;
-   for(const a of contextAnchors)if(rfHas(desc,a))score+=2;
-   score+=matchedWords.length*8;
-   if(title.includes(rfNorm(q)))score+=25;
+   const matchedSpecific=specific.filter(a=>rfHas(all,a));
+   const queryMatches=anchors.filter(a=>rfHas(all,a));
+   const words=rfTokens(q).filter(w=>w.length>3);
+   const matchedWords=words.filter(w=>all.includes(w));
+   const contextWords=rfTokens(context).filter(w=>w.length>4);
+   const contextHits=contextWords.filter(w=>all.includes(w));
+   // A candidate must agree with the paragraph, not merely with a broad unrelated query.
+   if(specific.length && !matchedSpecific.length && matchedTopics.length<2)return -1000;
+   if(contextTopics.length && !matchedTopics.length && !matchedSpecific.length)return -1000;
+   if(!queryMatches.length && !matchedWords.length && !matchedTopics.length)return -1000;
+   if(!contextTopics.length && !specific.length && contextHits.length<2 && queryMatches.length<2)return -1000;
+   const queryInTitle=words.filter(w=>title.includes(w)).length;
+   const topicInTitle=matchedTopics.filter(t=>rfTopics.find(g=>g[0]===t)?.[1].some(w=>title.includes(rfNorm(w)))).length;
+   let score=matchedSpecific.length*30+queryMatches.length*17+matchedTopics.length*24+topicInTitle*12+queryInTitle*12;
+   score+=Math.min(6,matchedWords.length)*5+Math.min(6,contextHits.length)*3;
+   if(title.includes(rfNorm(q)))score+=20;
+   if(contextTopics.length>=2 && matchedTopics.length>=2)score+=16;
    return score;
  }
  async function rfRushFetchOne(q,context,chosen){
@@ -4062,7 +4099,7 @@ document.addEventListener("DOMContentLoaded",()=>{
          .map(x=>({x,score:rfRushScore(x,q,context)}))
          .filter(o=>o.score>=38).sort((a,b)=>b.score-a.score);
        if(arr.length)return {item:arr[0].x,query:q};
-       if(!Array.isArray(d.results)||d.results.length<36)break;
+       if(!Array.isArray(d.results)||d.results.length===0)break;
      }catch(_){apiError=true;break}
    }
    return {item:null,query:q,error:apiError};
