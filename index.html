@@ -3147,6 +3147,37 @@ body.rf-company-view #rfCompanyPanel .rf-company-files {height:auto!important;ma
 #rfCompanyPanel .rf-archive-pager-v2 button:disabled {opacity:.42;cursor:not-allowed}
 #rfCompanyPanel .rf-archive-hint {text-align:center;color:#6a819d;font-size:11px}
 </style>
+
+<style id="rf-company-6by2-final-scroll-fix">
+/* Six videos per row, 12 per page; the company panel owns its scrollbar. */
+html body.rf-company-view #rfCompanyPanel.rf-company-on {
+  display:block!important; position:fixed!important; top:68px!important; bottom:0!important;
+  left:0!important; right:var(--rf223-sidebar-width,250px)!important;
+  width:auto!important; height:auto!important; min-height:0!important; max-height:none!important;
+  overflow-x:hidden!important; overflow-y:auto!important; overscroll-behavior:contain;
+  box-sizing:border-box!important; padding:22px 20px 75px!important;
+  scroll-behavior:auto!important;
+}
+html body.rf-company-view #rfCompanyPanel.rf-company-on #rfCompanyContent {
+  display:block!important; height:auto!important; max-height:none!important; overflow:visible!important;
+}
+html body.rf-company-view #rfCompanyPanel.rf-company-on .rf-company-files {
+  display:grid!important; grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  align-items:stretch!important; gap:14px!important; width:100%!important;
+  height:auto!important; max-height:none!important; overflow:visible!important;
+}
+html body.rf-company-view #rfCompanyPanel.rf-company-on .rf-company-file {
+  min-width:0!important; height:auto!important; box-sizing:border-box!important;
+}
+html body.rf-company-view #rfCompanyPanel.rf-company-on .rf-company-pagination {
+  display:flex!important; position:relative!important; margin:20px 0 0!important;
+  clear:both!important; width:100%!important; box-sizing:border-box!important;
+}
+@media(max-width:1300px){html body.rf-company-view #rfCompanyPanel.rf-company-on .rf-company-files{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+@media(max-width:850px){html body.rf-company-view #rfCompanyPanel.rf-company-on .rf-company-files{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:800px){html body.rf-company-view #rfCompanyPanel.rf-company-on{right:0!important;top:62px!important}}
+@media(max-width:580px){html body.rf-company-view #rfCompanyPanel.rf-company-on .rf-company-files{grid-template-columns:repeat(2,minmax(0,1fr))!important}html body.rf-company-view #rfCompanyPanel.rf-company-on{padding:12px 10px 50px!important}}
+</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -4257,8 +4288,7 @@ function buildCompanyPager(){
 function wireCompanyPagers(area){
  area.querySelectorAll('[data-archive-page]').forEach(button=>button.addEventListener('click',()=>{
   const next=Number(button.dataset.archivePage);if(button.disabled||!Number.isInteger(next)||next<1||next===page)return;
-  page=next;load();
-  requestAnimationFrame(()=>document.getElementById('rfCompanyPanel')?.scrollIntoView({block:'start',behavior:'instant'}));
+  page=next;const companyScroll=document.getElementById('rfCompanyPanel');if(companyScroll)companyScroll.scrollTop=0;load();
  }));
 }
 function render(){const area=document.getElementById('rfCompanyContent');if(!selected&&!q){const cats=[...new Set([...defaultCats,...categories])];area.innerHTML='<div class="rf-company-cats">'+cats.map(cat=>`<button class="rf-company-cat" data-cat="${esc(cat)}"><img alt="" src="${icon(cat)}"><strong>${esc(cat)}</strong><small>مشاهده ویدئوها ←</small></button>`).join('')+'</div>';area.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{selected=b.dataset.cat;page=1;load()});return}
