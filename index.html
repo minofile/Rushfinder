@@ -3999,15 +3999,28 @@ document.addEventListener("DOMContentLoaded",()=>{
  function suggestions(s,n){
    const anchors=rfAnchors(s), words=rfTokens(s).filter(w=>w.length>3);
    const out=[];const add=q=>{q=String(q||'').trim();if(q&&!out.includes(q))out.push(q)};
-   // Prioritize the actual entities and the event, not arbitrary consecutive words.
-   for(let i=0;i<anchors.length;i++)for(let j=i+1;j<anchors.length;j++){
-     add(anchors[i]+' '+anchors[j]);
-     const ai=aliases.find(a=>a[0]===anchors[i]);const aj=aliases.find(a=>a[0]===anchors[j]);
-     if(ai&&aj)add((ai[1].find(v=>/[a-z]/i.test(v))||anchors[i])+' '+(aj[1].find(v=>/[a-z]/i.test(v))||anchors[j])+' news footage');
+   const important=anchors.filter(a=>!['ایران','آمریکا','جنگ','اقتصاد','صنعت'].includes(a));
+   // Search named entities and their event context first; broad matches only as fallback.
+   for(const a of important){
+     const group=aliases.find(x=>x[0]===a);
+     const en=group?.[1].find(v=>/^[a-z ]+$/i.test(v));
+     for(const b of anchors.filter(b=>b!==a).slice(0,3)){
+       add(a+' '+b);const be=aliases.find(x=>x[0]===b)?.[1].find(v=>/^[a-z ]+$/i.test(v));
+       if(en&&be)add(en+' '+be+' news footage');
+     }
+     add(a+' گزارش خبری');if(en)add(en+' news footage');
    }
-   if(anchors.length===1){add(anchors[0]+' خبر');add((aliases.find(a=>a[0]===anchors[0])?.[1].find(v=>/[a-z]/i.test(v))||anchors[0])+' news footage')}
-   if(!anchors.length&&words.length>=2)add(words.slice(0,Math.min(4,words.length)).join(' '));
-   return out.slice(0,Math.max(5,n*2));
+   if(!important.length){
+     for(let i=0;i<anchors.length;i++)for(let j=i+1;j<anchors.length;j++)add(anchors[i]+' '+anchors[j]);
+     if(anchors.length===1)add(anchors[0]+' گزارش خبری');
+   }
+   // Meaningful nouns from the original paragraph, excluding generic story words.
+   const topicWords=words.filter(w=>!['درصد','درباره','موضوع','گزارش','امروز','اخبار','اقدام','همچنین','برابر','تغییرات','علیه','کشور','دولت','سالهای'].includes(w));
+   if(topicWords.length>=2){
+     for(let i=0;i<Math.min(topicWords.length-1,5);i++)add(topicWords.slice(i,i+3).join(' '));
+   }
+   if(anchors.length&&topicWords.length)add(anchors[0]+' '+topicWords.slice(0,2).join(' '));
+   return out.slice(0,Math.max(8,n*4));
  }
  function splitText(txt){let a=txt.split(/(?<=[.!؟\n])\s+/).map(x=>x.trim()).filter(x=>x.length>20);if(a.length>6){let g=[];for(let i=0;i<a.length;i+=2)g.push(a.slice(i,i+2).join(' '));a=g}return a.slice(0,8)}
  function esc(s){return String(s||'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
@@ -4015,34 +4028,44 @@ document.addEventListener("DOMContentLoaded",()=>{
  function rfRushKey(x){return String(x?.id||x?.uid||x?.pageURL||x?.url||x?.thumbnail||x?.thumbnailUrl||'')}
  function rfRushScore(x,q,context){
    const title=rfNorm(x?.title||'');const desc=rfNorm([x?.description,x?.tags,x?.channel].filter(Boolean).join(' '));
-   const anchors=rfAnchors(q), contextAnchors=rfAnchors(context);
    if(!title)return -1000;
-   // One generic match (e.g. war) is never enough to prove relevance.
-   const specific=anchors.filter(a=>!['جنگ','ایران','آمریکا','اقتصاد','صنعت'].includes(a));
-   if(specific.length && !specific.some(a=>rfHas(title,a)))return -1000;
-   if(anchors.length>=2 && anchors.filter(a=>rfHas(title,a)).length<2)return -1000;
-   if(!anchors.length){const matched=rfTokens(q).filter(w=>title.includes(w));if(matched.length<2)return -1000;}
+   if(/انیمیشن|کارتون|طنز|میم|انیمه|animation|cartoon|parody|meme|gaming|gameplay|satire|countryballs|countryball|trailer|فیلم سینمایی/.test(title))return -1000;
+   const anchors=rfAnchors(q), contextAnchors=rfAnchors(context);
+   const specific=contextAnchors.filter(a=>!['جنگ','ایران','آمریکا','اقتصاد','صنعت'].includes(a));
+   const matchedSpecific=specific.filter(a=>rfHas(title,a));
+   const queryMatches=anchors.filter(a=>rfHas(title,a));
+   const meaningful=rfTokens(q).filter(w=>w.length>3);
+   const matchedWords=meaningful.filter(w=>title.includes(w));
+   // Reject a lone broad term; preserve factual footage for more specific entities.
+   if(specific.length && !matchedSpecific.length)return -1000;
+   if(anchors.length>=2 && queryMatches.length<2 && matchedWords.length<2)return -1000;
+   if(!anchors.length && matchedWords.length<2)return -1000;
+   if(!specific.length && queryMatches.length<2 && matchedWords.length<2)return -1000;
    let score=0;
-   for(const a of anchors){if(rfHas(title,a))score+=30;else if(rfHas(desc,a))score+=3;}
-   for(const a of contextAnchors){if(rfHas(title,a))score+=7;}
-   for(const w of rfTokens(q)){if(title.includes(w))score+=4;}
-   if(title.includes(rfNorm(q)))score+=35;
-   // The user requests news footage, not cartoons, gaming or illustrative animations.
-   if(/انیمیشن|کارتون|طنز|میم|بازی|انیمه|animation|cartoon|parody|meme|gaming|gameplay|satire|countryballs|countryball/.test(title))score-=100;
+   for(const a of queryMatches)score+=24;
+   for(const a of matchedSpecific)score+=18;
+   for(const a of contextAnchors)if(rfHas(desc,a))score+=2;
+   score+=matchedWords.length*8;
+   if(title.includes(rfNorm(q)))score+=25;
    return score;
  }
- async function rfRushFetchOne(q,context){
-   try{
-     const params=new URLSearchParams({q,page:'1',per_page:'36',source:'all'});
-     const r=await fetch(`/api/search?${params}`);if(!r.ok)return null;
-     const d=await r.json();
-     const arr=(Array.isArray(d.results)?d.results:[])
-       .filter(x=>{const k=rfRushKey(x);return k&&!rfRushUsed.has(k)})
-       .sort((a,b)=>rfRushScore(b,q,context)-rfRushScore(a,q,context));
-     const best=arr.find(x=>rfRushScore(x,q,context)>=45)||null;
-     if(best)rfRushUsed.add(rfRushKey(best));
-     return best;
-   }catch(_){return null}
+ async function rfRushFetchOne(q,context,chosen){
+   let apiError=false;
+   for(const pageNum of [1,2]){
+     try{
+       const params=new URLSearchParams({q,page:String(pageNum),per_page:'36',source:'all'});
+       const r=await fetch(`/api/search?${params}`);
+       if(!r.ok){apiError=true;break}
+       const d=await r.json();
+       const arr=(Array.isArray(d.results)?d.results:[])
+         .filter(x=>{const k=rfRushKey(x);return k&&!rfRushUsed.has(k)&&!chosen.has(k)})
+         .map(x=>({x,score:rfRushScore(x,q,context)}))
+         .filter(o=>o.score>=38).sort((a,b)=>b.score-a.score);
+       if(arr.length)return {item:arr[0].x,query:q};
+       if(!Array.isArray(d.results)||d.results.length<36)break;
+     }catch(_){apiError=true;break}
+   }
+   return {item:null,query:q,error:apiError};
  }
  const rfRushItems=new Map();let rfRushSerial=0;
  function rfRushPreviewHTML(x,q){
@@ -4075,13 +4098,22 @@ document.addEventListener("DOMContentLoaded",()=>{
    if(!txt){box.innerHTML='<div class="rf-rush-empty">ابتدا متن یا سناریو را وارد کنید.</div>';return}
    const parts=splitText(txt); rfRushUsed.clear();rfRushItems.clear();rfRushSerial=0;
    box.innerHTML=parts.map((p,i)=>`<div class="rf-rush-section" id="rfRushPart${i}"><div class="rf-rush-section-title">بخش ${String(i+1).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d])}</div><div class="rf-rush-section-snippet">${esc(p)}</div><div class="rf-rush-preview-grid">${suggestions(p,n).map(()=>'<div class="rf-rush-preview-loading"></div>').join('')}</div></div>`).join('');
-   await Promise.all(parts.map(async(p,i)=>{
-     const qs=suggestions(p,n);
-     const rs=[];
-     for(const q of qs){if(rs.filter(Boolean).length>=n)break;rs.push(await rfRushFetchOne(q,p));}
+   // Sequential sections prevent the same video from being assigned to multiple paragraphs.
+   for(let i=0;i<parts.length;i++){
+     const p=parts[i],qs=suggestions(p,n),selected=[],localUsed=new Set();let errors=0;
      const grid=document.querySelector(`#rfRushPart${i} .rf-rush-preview-grid`);
-     if(grid){const cards=rs.map((x,j)=>x?rfRushPreviewHTML(x,qs[j]):'').filter(Boolean);grid.innerHTML=cards.join('')||'<div class="rf-rush-empty">برای این بخش راش مرتبط مطمئن پیدا نشد.</div>';}
-   }));
+     for(const q of qs){
+       if(selected.length>=n)break;
+       const result=await rfRushFetchOne(q,p,localUsed);
+       if(result.error)errors++;
+       if(result.item){const key=rfRushKey(result.item);localUsed.add(key);rfRushUsed.add(key);selected.push(result)}
+     }
+     if(grid){
+       const cards=selected.map(o=>rfRushPreviewHTML(o.item,o.query));
+       const notice=selected.length<n?`<div class="rf-rush-empty" style="grid-column:1/-1">${errors&&errors===qs.length?'اتصال به جست‌وجوی ویدئو برقرار نشد.':selected.length?'راش مرتبط بیشتری برای این بخش پیدا نشد.':'برای این بخش راش مرتبط مطمئن پیدا نشد؛ ویدئوی نامرتبط جایگزین نمی‌شود.'}</div>`:'';
+       grid.innerHTML=cards.join('')+notice;
+     }
+   }
  };
  document.addEventListener('click',e=>{
    const btn=e.target.closest('.rf-rush-direct-download,.rf-rush-direct-view');
