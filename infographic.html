@@ -781,8 +781,17 @@ function rf581Render(){
      // One independent raised panel per year, current year on the right.
      fillR(xx,startY,colW,bottom-startY,27,'#fffdf5',18);
      strokeR(xx,startY,colW,bottom-startY,27,'#eedba7',2);
-     fillR(xx+9,startY+9,colW-18,headH-15,22,g(xx,startY,xx,startY+headH,[[0,'#ffe86b'],[1,'#e6ab00']]),13);
-     ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#19190b';ctx.font='900 '+(story?55:48)+'px Yekan,Tahoma';ctx.fillText('سال '+rf584PersianDigits(col.year),xx+colW/2,startY+headH*.48,colW-30);ctx.restore();
+     // Raised gold header: distinct depth, top highlight and balanced title typography.
+     const hy=startY+10,hh=headH-20,hx=xx+12,hw=colW-24;
+     ctx.save();ctx.shadowColor='rgba(126,77,0,.26)';ctx.shadowBlur=18;ctx.shadowOffsetY=8;
+     fillR(hx,hy,hw,hh,22,g(hx,hy,hx,hy+hh,[[0,'#ffe875'],[.42,'#ffd83c'],[1,'#e1a600']]),0);ctx.restore();
+     strokeR(hx,hy,hw,hh,22,'#fdf1ab',2);
+     ctx.save();ctx.globalAlpha=.46;fillR(hx+9,hy+6,hw-18,Math.max(5,hh*.20),11,'#fff9d5',0);ctx.restore();
+     ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#2b220b';
+     ctx.shadowColor='rgba(255,255,255,.8)';ctx.shadowBlur=3;ctx.shadowOffsetY=2;
+     let yf=story?62:53;const yearText='سال '+rf584PersianDigits(col.year);
+     do{ctx.font='900 '+yf+'px '+(rf584FontMap[rf584FontSelector.value]||'Yekan,Tahoma');if(ctx.measureText(yearText).width<hw-48)break;yf--}while(yf>28);
+     ctx.fillText(yearText,xx+colW/2,hy+hh*.56,hw-40);ctx.restore();
      rows.forEach((item,i)=>{
        const yy=startY+headH+9+i*(rowH+gapY);
        if(yy+rowH>bottom-7)return;
@@ -859,7 +868,8 @@ function apply(data){
  }
 }
 btn.addEventListener('click',async event=>{
- if(localClick)return;
+ // Only a real user click may initiate the paid flow. Ignore startup/programmatic clicks.
+ if(localClick||!event.isTrusted)return;
  event.preventDefault();event.stopImmediatePropagation();
  if(running)return;
  const news=newsInput.value.trim();if(!news){message('ابتدا متن خبر را وارد کن.');return}
