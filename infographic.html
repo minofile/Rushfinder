@@ -979,6 +979,20 @@ btn.addEventListener('click',async event=>{
 @media (min-width:1180px){.shell{max-width:1460px!important}.main{grid-template-columns:minmax(370px,.88fr) minmax(0,1.12fr)!important}}
 @media (max-width:1100px){.main{grid-template-columns:1fr!important}}
 </style>
+<style id="rf603-visible-settings">
+/* RF603: original standalone controls, no collapsing and lighter headings */
+.controls > div.rf601-primary-input{order:0!important}
+.controls > div.rf601-size{order:1!important}
+.controls > div.rf601-brands{order:2!important}
+.controls > div.rf601-style{order:3!important}
+.controls > div.rf580-structure-section, .controls > div.rf603-title-controls{order:4!important}
+.controls > div.rf586-source-section{order:5!important}
+.controls > div.rf584-font-section{order:6!important}
+.controls > div.rf601-actions{order:7!important}
+.controls > div.rf601-status{order:8!important}
+.controls h2, .controls h2.rf550-heading{font-weight:500!important}
+.controls .secTitle, .rf601-advanced{font-weight:500!important}
+</style>
 <script id="rf601-functional-studio">
 (()=>{'use strict';
  const $=id=>document.getElementById(id);
@@ -986,16 +1000,13 @@ btn.addEventListener('click',async event=>{
  if(!controls||!news)return;
  const byChild=(id)=>{let node=$(id);while(node&&node.parentElement!==controls)node=node.parentElement;return node};
  const section={news:byChild('input'),size:byChild('brands')?.nextElementSibling,brands:byChild('brands'),style:byChild('rf580-graphic-style'),text:byChild('rf580-title-text'),source:byChild('rf586-source-on'),font:byChild('rf584-font-select'),buttons:byChild('generate'),status:byChild('rf594-status')};
- // Group editable controls; avoid hiding them permanently.
- const advanced=document.createElement('div');advanced.className='rf601-advanced';advanced.setAttribute('role','button');advanced.setAttribute('tabindex','0');advanced.setAttribute('aria-expanded','false');advanced.innerHTML='<span>⚙ تنظیمات پیشرفته (تیتر، فونت و منبع)</span><span aria-hidden="true">⌄</span>';
- const advancedContent=document.createElement('div');advancedContent.className='rf601-advanced-content';advancedContent.hidden=true;
- [section.text,section.source,section.font].filter(Boolean).forEach(n=>advancedContent.appendChild(n));
- controls.append(advanced,advancedContent);
- function toggleAdvanced(force){const open=typeof force==='boolean'?force:advancedContent.hidden;advancedContent.hidden=!open;advanced.setAttribute('aria-expanded',String(open));if(open){advancedContent.scrollIntoView({block:'nearest',behavior:'smooth'});}}
- advanced.addEventListener('click',()=>toggleAdvanced());advanced.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleAdvanced()}});
+ // RF603: Keep title, subtitle, source and font in the original always-visible sections.
+ section.text?.classList.add('rf603-title-controls');
+ [section.text,section.source,section.font].filter(Boolean).forEach(n=>controls.appendChild(n));
+ function toggleAdvanced(){ /* Settings are now permanently visible. */ }
  Object.entries({news:'rf601-primary-input',size:'rf601-size',brands:'rf601-brands',style:'rf601-style',buttons:'rf601-actions',status:'rf601-status'}).forEach(([key,klass])=>section[key]?.classList.add(klass));
  // Content first: then dimension, 4 brands, and full 10-option style selector.
- [section.news,section.size,section.brands,section.style,advanced,advancedContent,section.buttons,section.status].filter(Boolean).forEach(n=>controls.appendChild(n));
+ [section.news,section.size,section.brands,section.style,section.text,section.source,section.font,section.buttons,section.status].filter(Boolean).forEach(n=>controls.appendChild(n));
 
  const preview=$('rf601-preview-tab'), edit=$('rf601-edit-tab'), style=$('rf601-style-tab');
  function activeTab(el){[preview,edit,style].forEach(x=>x?.classList.toggle('active',x===el));}
