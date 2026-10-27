@@ -4975,5 +4975,39 @@ body.rf-info-is-open #rfInfoPage iframe{
  else fix();
 })();
 </script>
+<!-- RushFinder 606: sidebar ordering only; retain original buttons and event handlers -->
+<script id="rf606-sidebar-order">
+(function(){
+ const order=['داشبورد','پیشنهاد راش','برش ویدیو','اینفوگرافیک','موزیک','تقویم','نریشن','راش‌های شرکت','تنظیمات'];
+ function label(b){return (b.querySelector('span')?.textContent||b.textContent||'').replace(/\s+/g,' ').trim().replace(/\u200c/g,'');}
+ function sync(){
+  const nav=document.querySelector('.nav');if(!nav)return;
+  const buttons=Array.from(nav.children).filter(b=>b.tagName==='BUTTON');
+  const byName=new Map();
+  for(const b of buttons){
+   const name=label(b).replace(/\u200c/g,'');
+   if(name==='تریبون'){const span=b.querySelector('span');if(span)span.textContent='نریشن';}
+   const key=label(b).replace(/\u200c/g,'');
+   for(const wanted of order){if(key===wanted.replace(/\u200c/g,'')&&!byName.has(wanted))byName.set(wanted,b);}
+  }
+  const wantedButtons=order.map(name=>byName.get(name)).filter(Boolean);
+  const otherButtons=buttons.filter(b=>!wantedButtons.includes(b));
+  const finalOrder=[...wantedButtons,...otherButtons];
+  if(finalOrder.length===buttons.length && finalOrder.some((b,i)=>b!==buttons[i])){
+    const frag=document.createDocumentFragment();finalOrder.forEach(b=>frag.appendChild(b));nav.appendChild(frag);
+  }
+ }
+ function init(){
+  const nav=document.querySelector('.nav');if(!nav)return;
+  sync();
+  let scheduled=false;
+  new MutationObserver(()=>{
+   if(scheduled)return;scheduled=true;
+   queueMicrotask(()=>{scheduled=false;sync()});
+  }).observe(nav,{childList:true});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
 </body>
 </html>
