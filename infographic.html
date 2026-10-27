@@ -274,6 +274,13 @@ textarea{min-height:155px!important;max-height:320px!important;padding:13px!impo
 .rf586-source-section{display:flex;flex-direction:column;gap:9px}
 #rf586-source-text{width:100%;min-height:43px;border:1px solid #dce7f4;border-radius:12px;background:#fff;padding:10px 13px;direction:rtl;font-family:Yekan,Tahoma,sans-serif;color:#173962;font-size:13px}
 #rf586-source-text[hidden]{display:none!important}
+</style><style id="rf591-style">
+.rf591{margin-top:15px;padding:15px;border:1px solid #bcded8;border-radius:16px;background:linear-gradient(150deg,#f4fffc,#f6faff);display:grid;gap:9px}
+.rf591 h3{margin:0;color:#086c52;font-size:17px}.rf591 p,.rf591 small{font-size:12px;line-height:1.8;color:#546c79;margin:0}
+.rf591 .actions button{font-size:13px;flex:1;min-width:130px}.rf591 input{width:100%;border:1px solid #cadae5;border-radius:9px;padding:9px}
+#rf591-result{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;line-height:1.8;color:#194a55}
+#rf591-image{display:none;max-width:100%;max-height:360px;object-fit:contain;margin:auto;border-radius:12px;border:1px solid #dbe5ec}
+#rf591-save{display:none}.rf591 button:disabled{opacity:.5;cursor:not-allowed}
 </style></head><body>
 <div class="shell">
   <div class="top">
@@ -329,7 +336,18 @@ textarea{min-height:155px!important;max-height:320px!important;padding:13px!impo
         </select>
         <div id="rf584-font-help">پیش‌نمایش و فایل PNG با فونت انتخابی و اعداد فارسی ساخته می‌شوند.</div>
       </div>
-      <div class="actions"><button id="generate" class="primary">✦ ساخت اینفوگرافیک</button><button id="reroll" class="ghost">↻ طرح متفاوت</button></div>
+      <section class="rf591" aria-label="آزمایش API نت‌ارز">
+<h3>✦ آزمایش هوش مصنوعی نت‌ارز — نسخه ۵۹۱</h3>
+<p>ابتدا خبر را در کادر «متن اینفوگرافیک» وارد کن. هر درخواست از اعتبار نت‌ارز کم می‌کند. تولید تصویر اختیاری است و تصویر خام، بدون متن فارسی، جدا از قالب نمایش داده می‌شود.</p>
+<div class="actions"><button type="button" id="rf591-text" class="primary">۱. تحلیل با GPT-6</button><button type="button" id="rf591-art" class="ghost">۲. تولید تصویر با Recraft</button></div>
+<label for="rf591-prompt" style="font-size:12px">توضیح تصویر بدون نوشته (اختیاری)</label>
+<input id="rf591-prompt" maxlength="500" placeholder="مثلاً آیکون‌های سه‌بعدی خورشید، ابر و آلودگی هوا روی پس‌زمینه خلوت" />
+<div id="rf591-result" role="status" aria-live="polite">آماده تست — هنوز درخواست API ارسال نشده است.</div>
+<img id="rf591-image" alt="تصویر ساخته شده با Recraft (بدون متن)"/>
+<button id="rf591-save" class="ghost" type="button">↓ دانلود تصویر خام Recraft</button>
+<small>این مرحله برای آزمایش اتصال است؛ ادغام خودکار تصویر AI با قالب و متن فارسی در نسخه بعدی انجام می‌شود.</small>
+</section>
+<div class="actions"><button id="generate" class="primary">✦ ساخت اینفوگرافیک</button><button id="reroll" class="ghost">↻ طرح متفاوت</button></div>
     </section>
     <section class="panel">
       <div class="previewHead"><h2 class="rf550-heading"><span class="rf550-head-icon rf550-eye" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.4-6 10-6 10 6 10 6-3.4 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3.1"/></svg></span>پیش‌نمایش</h2><div><span id="metaLabel" class="previewMeta">۱۰۸۰ × ۱۰۸۰ | تشخیص خودکار چیدمان</span><span id="dimensions" hidden>۱۰۸۰ × ۱۰۸۰</span><span id="layoutName" hidden>تشخیص خودکار چیدمان</span></div></div>
@@ -740,4 +758,40 @@ const rf586OriginalRender=render;
 <style id="rf585-style-gap">
 .rf580-style-section .rf580-style-select{display:block!important;width:calc(100% - 10px)!important;margin-right:10px!important;margin-left:0!important}
 </style>
-</body></html>
+<script id="rf591-netarz-test">
+(()=>{'use strict';
+const $=id=>document.getElementById(id), txt=$('rf591-text'), art=$('rf591-art'), result=$('rf591-result'), image=$('rf591-image'), save=$('rf591-save');
+let generatedImage='';
+async function request(endpoint, payload){
+ const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+ let data;try{data=await response.json()}catch{throw new Error('پاسخ سرور قابل خواندن نبود. کد '+response.status)}
+ if(!response.ok)throw new Error(data.error||'خطای سرویس ('+response.status+')');
+ return data;
+}
+function busy(value){txt.disabled=value;art.disabled=value}
+function confirmSpend(action){return window.confirm('برای «'+action+'» درخواست پولی به نت‌ارز ارسال می‌شود و از اعتبارت کم خواهد شد. ادامه می‌دهی؟')}
+txt.addEventListener('click',async()=>{
+ const news=$('input').value.trim();if(news.length<15){result.textContent='ابتدا متن خبر را وارد کن.';return}
+ if(!confirmSpend('تحلیل GPT-6 Astra'))return;
+ busy(true);result.textContent='در حال تحلیل خبر...';
+ try{const data=await request('/api/netarz-analyze',{news});
+ if(data.title){$('rf580-title-on').checked=true;$('rf580-title-text').hidden=false;$('rf580-title-text').value=data.title}
+ if(data.subtitle){$('rf580-subtitle-on').checked=true;$('rf580-subtitle-text').hidden=false;$('rf580-subtitle-text').value=data.subtitle}
+ if(Array.isArray(data.points)&&data.points.length){$('input').value=data.points.join('\n')}
+ const generate=$('generate');if(generate)generate.click();
+ result.textContent='تحلیل انجام شد. عنوان و نکات روی فرم قرار گرفتند.\n'+(data.visual_prompt?'ایده تصویر: '+data.visual_prompt:'')+'\nمصرف توکن: '+(data.usage?.total_tokens??'نامشخص');
+ if(data.visual_prompt&&!$('rf591-prompt').value.trim())$('rf591-prompt').value=data.visual_prompt;
+ }catch(e){result.textContent='خطا: '+e.message}finally{busy(false)}
+});
+art.addEventListener('click',async()=>{
+ let prompt=$('rf591-prompt').value.trim();if(!prompt)prompt='Professional 3D editorial news infographic decorative icons, vivid colors, clean composition, isolated graphic elements, no words, no text, no letters, no typography, no logos';
+ if(!confirmSpend('تولید یک تصویر Recraft'))return;
+ busy(true);result.textContent='در حال ساخت تصویر خام...';image.style.display='none';save.style.display='none';
+ try{const data=await request('/api/netarz-image',{prompt});
+ generatedImage=data.image;image.src=generatedImage;image.style.display='block';save.style.display='block';
+ result.textContent='تصویر بدون نوشته دریافت شد. برای استفاده از آن می‌توانی فایل خام را دانلود کنی.';
+ }catch(e){result.textContent='خطا: '+e.message}finally{busy(false)}
+});
+save.addEventListener('click',()=>{if(!generatedImage)return;const a=document.createElement('a');a.href=generatedImage;a.download='RushFinder-Recraft-591.png';document.body.append(a);a.click();a.remove()});
+})();
+</script></body></html>
