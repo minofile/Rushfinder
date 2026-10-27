@@ -274,17 +274,24 @@ textarea{min-height:155px!important;max-height:320px!important;padding:13px!impo
 .rf586-source-section{display:flex;flex-direction:column;gap:9px}
 #rf586-source-text{width:100%;min-height:43px;border:1px solid #dce7f4;border-radius:12px;background:#fff;padding:10px 13px;direction:rtl;font-family:Yekan,Tahoma,sans-serif;color:#173962;font-size:13px}
 #rf586-source-text[hidden]{display:none!important}
-</style></head><body>
+</style>
+<style id="rf605-ui-final">
+/* Correct reading order and gently emphasize section numerals. */
+.controls .stepNumber{font-size:16.32px!important;font-weight:918!important}
+/* Same medium weight as the output-font heading. */
+.controls .rf603-title-controls .secTitle,.controls .rf580-check{font-weight:500!important}
+</style>
+</head><body>
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب ۶۰۱</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب ۶۰۵</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
       <h2 class="rf550-heading"><span class="rf550-head-icon rf550-gear" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1 2.2 2.5.6 1.9-1.2 2 2-1.2 1.9.6 2.5L21 12l-2.2 1-.6 2.5 1.2 1.9-2 2-1.9-1.2-2.5.6L12 21l-1-2.2-2.5-.6-1.9 1.2-2-2 1.2-1.9-.6-2.5L3 12l2.2-1 .6-2.5-1.2-1.9 2-2 1.9 1.2 2.5-.6L12 3Z"/><circle cx="12" cy="12" r="3"/></svg></span>استودیوی هوشمند اینفوگرافیک</h2>
       <div>
-        <div class="secTitle"><span class="stepNumber">۱</span><span>برند خبری (۴ برند)</span></div>
+        <div class="secTitle"><span class="stepNumber">۳</span><span>برند خبری</span></div>
         <div id="brands" class="brandGrid"></div>
       </div>
       <div>
@@ -292,7 +299,7 @@ textarea{min-height:155px!important;max-height:320px!important;padding:13px!impo
         <div class="sizeGrid"><button class="sizeBtn active" data-size="square"><span class="rf549-check"></span><span class="rf549-size-copy">مربع<small>۱۰۸۰ × ۱۰۸۰</small></span><span class="rf549-size-icon"><svg width="31" height="34" viewBox="0 0 31 34" fill="none" aria-hidden="true"><rect x="2.5" y="4" width="26" height="26" rx="5" stroke="currentColor" stroke-width="3"/></svg></span></button><button class="sizeBtn" data-size="story"><span class="rf549-check"></span><span class="rf549-size-copy">استوری<small>۱۰۸۰ × ۱۹۲۰</small></span><span class="rf549-size-icon"><svg width="30" height="38" viewBox="0 0 30 38" fill="none" aria-hidden="true"><rect x="6" y="1.5" width="18" height="35" rx="4" stroke="currentColor" stroke-width="3"/></svg></span></button></div>
       </div>
       <div>
-        <div class="secTitle"><span class="stepNumber">۳</span><span>ویرایش تیتر و زیرتیتر</span></div>
+        <div class="secTitle"><span class="stepNumber">۵</span><span>ویرایش تیتر و زیرتیتر</span></div>
         <div class="rf580-structure">
           <label class="rf580-check"><input type="checkbox" id="rf580-title-on" checked><span>تیتر</span></label>
           <textarea class="rf580-short" id="rf580-title-text" rows="2" placeholder="تیتر اصلی را وارد کنید..."></textarea>
@@ -301,7 +308,7 @@ textarea{min-height:155px!important;max-height:320px!important;padding:13px!impo
         </div>
       </div>
       <div class="rf580-style-section">
-        <div class="secTitle"><span class="stepNumber">۴</span><span>سبک گرافیکی (۱۰ گزینه)</span></div>
+        <div class="secTitle"><span class="stepNumber">۴</span><span>سبک گرافیکی</span></div>
         <select id="rf580-graphic-style" aria-label="سبک گرافیکی" class="rf580-style-select">
           <option value="auto">✦  خودکار (AUTO)</option><option value="2d">▧  دوبعدی (2D)</option><option value="3d">⬡  سه‌بعدی (3D)</option>
           <option value="table">▦  جدولی</option><option value="chart">▥  نموداری</option><option value="comparison">⇄  مقایسه‌ای</option>
@@ -311,16 +318,16 @@ textarea{min-height:155px!important;max-height:320px!important;padding:13px!impo
         <div id="rf580-other-wrap" hidden><label class="rf580-prompt-label" for="rf580-other-prompt">پرامپت طراحی دلخواه</label><textarea id="rf580-other-prompt" rows="3" placeholder="سبک، چیدمان، رنگ و جزئیات دلخواه را بنویسید..."></textarea><small>این نسخه آفلاین است؛ پرامپت به‌صورت راهنمای سبک ذخیره می‌شود و تولید آزاد تصاویر نیاز به موتور هوش مصنوعی دارد.</small></div>
       </div>
       <div>
-        <div class="secTitle"><span class="stepNumber">۷</span><span>متن اینفوگرافیک</span></div>
+        <div class="secTitle"><span class="stepNumber">۱</span><span>متن اینفوگرافیک</span></div>
         <textarea id="input" spellcheck="true" placeholder="سطر اول: تیتر اصلی\nسطرهای بعدی: نکات، آمار یا مقایسه\nمثال:\nمقایسه روزهای هوای پاک امسال و سال گذشته\nسال ۱۴۰۴: ۷ روز هوای پاک\nسال ۱۴۰۴: ۹۷ روز قابل قبول\nسال ۱۴۰۴: ۸۶ روز ناسالم برای گروه‌های حساس"></textarea>
       </div>
       <div class="rf586-source-section">
-        <div class="secTitle"><span class="stepNumber">۵</span><span>منبع</span></div>
-        <label class="rf580-check"><input type="checkbox" id="rf586-source-on"><span>نمایش منبع در اینفوگرافیک</span></label>
+        <div class="secTitle"><span class="stepNumber">۶</span><span>منبع</span></div>
+        <label class="rf580-check"><input type="checkbox" id="rf586-source-on"><span>منبع</span></label>
         <input type="text" id="rf586-source-text" placeholder="نام منبع را وارد کنید..." hidden aria-label="نام منبع">
       </div>
       <div class="rf584-font-section">
-        <div class="secTitle"><span class="stepNumber">۶</span><span>فونت خروجی</span></div>
+        <div class="secTitle"><span class="stepNumber">۷</span><span>فونت خروجی</span></div>
         <select id="rf584-font-select" aria-label="انتخاب فونت اینفوگرافیک">
           <option value="Doran">دوران</option>
           <option value="Modam">مودام</option>
