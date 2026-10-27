@@ -603,17 +603,24 @@ function rf581Render(){
  const img=isUrgent?(story?urgentStoryTemplate:urgentTemplate):isMashhad?(story?mashhadStoryTemplate:mashhadSquareTemplate):isJaryan?(story?jaryanStory:jaryanSquare):(story?fardaStory:fardaSquare);
  ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
  if(img.complete&&img.naturalWidth)drawOriginalTemplate(img,brand==='farda'&&story);
- const x=isUrgent?(story?45:38):isMashhad?54:49;
- const r=isUrgent?(story?Math.floor(W*.63)-28:W/2-31):isMashhad?W*.73:isJaryan?W*(story?.43:.46):W-66;
- const t=isUrgent?(story?110:95):isMashhad?(story?125:106):isJaryan?100:story?112:76;
+ // RF596: Full-width inner safe area for EVERY non-comparison layout.
+ // Start below the preserved brand logo so neither text nor table covers it.
+ const x=isUrgent?55:58;
+ const r=W-(isUrgent?65:68);
+ const t=story?255:235;
  const b=(isUrgent?H-(story?100:74):isMashhad?H-(story?115:90):isJaryan?H-94:H-(story?300:185))-(rf586SourceOn.checked&&rf586SourceText.value.trim()?85:0);
  const width=r-x, accent=isUrgent?'#079c57':isMashhad?'#dbab03':isJaryan?'#d7a900':'#e53a60';
  const ink='#18344a',rows=parsed.items.length?parsed.items:['متن خبر را وارد کنید'];
  ctx.save();ctx.beginPath();ctx.rect(x,t-5,width,b-t+8);ctx.clip();ctx.textAlign='right';ctx.direction='rtl';
  let y=t;
  if(parsed.title){
-   const end=drawBalancedHeadline(parsed.title,x+5,r-5,y,{start:story?49:42,min:23,maxLines:3,color:ink,drawSubtitle:false});
-   y=end+11;
+   const originalTitle=normalizeText(parsed.title);
+   const headingWidth=width-22;
+   ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=ink;
+   let headSize=story?48:43;
+   while(headSize>18){ctx.font='900 '+headSize+'px Yekan,Tahoma';if(ctx.measureText(originalTitle).width<=headingWidth)break;headSize--;}
+   ctx.font='900 '+headSize+'px Yekan,Tahoma';ctx.fillText(originalTitle,(x+r)/2,y+headSize*.63,headingWidth);
+   ctx.restore();y+=Math.max(49,headSize*1.65)+11;
  }
  if(parsed.subtitle){
    const f=fitText(parsed.subtitle,width-20,2,story?31:25,17,'400');
@@ -622,9 +629,10 @@ function rf581Render(){
    y+=lh*f.lines.length+18;
  }
  if(parsed.title||parsed.subtitle){ctx.fillStyle=accent;ctx.fillRect(x+9,y,width-18,3);y+=26;}
- const maxRows=story?9:7,shown=rows.slice(0,maxRows);
- const avail=Math.max(110,b-y-12),gap=st==='minimal'?23:st==='table'?1:st==='timeline'?15:13;
- const rowH=Math.max(38,Math.min(story?156:116,(avail-gap*(shown.length-1))/shown.length));
+ // Show all information within the safe area, reducing card height rather than dropping rows.
+ const shown=rows.slice(0,Math.min(rows.length,story?26:20));
+ const avail=Math.max(110,b-y-12),gap=st==='minimal'?10:st==='table'?1:st==='timeline'?9:8;
+ const rowH=Math.max(20,Math.min(story?156:116,(avail-gap*(shown.length-1))/Math.max(1,shown.length)));
  const radius=st==='minimal'||st==='table'?2:st==='2d'?8:16;
  const numerical=(v)=>{const converted=String(v).replace(/[۰-۹]/g,c=>String('۰۱۲۳۴۵۶۷۸۹'.indexOf(c))).replace(/[٠-٩]/g,c=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(c)));const m=converted.match(/[-+]?\d+(?:[.,]\d+)?/);return m?Number(m[0].replace(',','.')):null;};
  const nums=shown.map(x=>numerical(parseLine(x).value));
@@ -635,7 +643,7 @@ function rf581Render(){
    ctx.fillStyle=accent;ctx.fillRect(x+3,y,width-7,33);
    ctx.fillStyle='#fff';ctx.font='700 19px Yekan,Tahoma';ctx.fillText('شرح',r-22,y+24);ctx.fillText('مقدار',x+Math.round(width*.37),y+24);
    const yy0=y+35,h=Math.min(rowH,(b-yy0)/shown.length);
-   shown.forEach((item,i)=>{const p=parseLine(item),yy=yy0+i*h;ctx.fillStyle=i%2?'#f3f7fa':'#ffffff';ctx.fillRect(x+3,yy,width-7,h);ctx.strokeStyle='#d5e0e9';ctx.lineWidth=1;ctx.strokeRect(x+3,yy,width-7,h);ctx.beginPath();ctx.moveTo(x+width*.42,yy);ctx.lineTo(x+width*.42,yy+h);ctx.stroke();rowText(p.label||p.value,x+width*.42,yy,width*.58-9,h,24);if(p.label)rowText(p.value,x+5,yy,width*.42-9,h,23,accent);});
+   shown.forEach((item,i)=>{const p=parseLine(item),yy=yy0+i*h;ctx.fillStyle=i%2?'#f3f7fa':'#ffffff';ctx.fillRect(x+3,yy,width-7,h);ctx.strokeStyle='#d5e0e9';ctx.lineWidth=1;ctx.strokeRect(x+3,yy,width-7,h);ctx.beginPath();ctx.moveTo(x+width*.42,yy);ctx.lineTo(x+width*.42,yy+h);ctx.stroke();rowText(p.label||p.value,x+width*.42,yy,width*.58-9,h,Math.min(28,h*.40));if(p.label)rowText(p.value,x+5,yy,width*.42-9,h,Math.min(27,h*.40),accent);});
  }else if(st==='chart'){
    shown.forEach((item,i)=>{const yy=y+i*(rowH+gap);if(yy+rowH>b+2)return;const p=parseLine(item),val=nums[i];base(yy,rowH,i,8,i%2?'#f7fafd':'#fff');const boxW=width*.44;rowText(p.label||item,x+width*.40,yy,width*.58-12,rowH*.7,24);const q=val===null?(i+1)/(shown.length+1):Math.max(0,val)/peak;ctx.fillStyle='#e5edf4';ctx.fillRect(x+15,yy+rowH*.56,boxW,rowH*.23);ctx.fillStyle=accent;ctx.fillRect(x+15+boxW*(1-q),yy+rowH*.56,boxW*q,rowH*.23);if(val!==null){ctx.font='700 18px Yekan,Tahoma';ctx.fillStyle=ink;ctx.fillText(p.value,x+boxW+12,yy+rowH*.45,boxW-10);}});
  }else if(st==='comparison'){
@@ -803,7 +811,7 @@ function rf581Render(){
    layoutName.textContent='مقایسه‌ای دو ستونه حرفه‌ای | '+brands[brand].name;updateMeta();return true;
  }
 const rf586OriginalRender=render;
- render=function(){if(!rf595DrawComparison())rf586OriginalRender();rf586DrawSource();};
+ render=function(){if(!rf595DrawComparison()){if(rf580Style.value==='auto'){safeCanvas();rf581Render();}else rf586OriginalRender();}rf586DrawSource();};
  rf586SourceOn.addEventListener('change',()=>{rf586SourceText.hidden=!rf586SourceOn.checked;render();});
  rf586SourceText.addEventListener('input',render);
  document.getElementById('download').onclick=()=>{render(); cv.toBlob(blob=>{const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='RushFinder-Infographic-551-'+brand+'-'+size+'.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500);},'image/png')};
