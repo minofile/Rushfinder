@@ -1,4 +1,4 @@
-import {netarzPost} from './netarz-common.js';
+import {netarzPost} from '../lib/netarz-common.js';
 export default async function handler(req,res){
  try{
   const prompt=String(req.body?.prompt||'').trim();
