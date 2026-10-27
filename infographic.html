@@ -775,13 +775,13 @@ function rf581Render(){
 
    const gap=story?18:22,colW=(full-gap)/2,startY=contentTop;
    const colors=[['#108d42','#e7f8e9','✳'],['#dfac00','#fff5cc','✳'],['#ed7c19','#fff0df','☁'],['#df3d43','#fff0f0','!'],['#7e3fa9','#f5e8ff','!']];
-   const panelPad=story?10:13, headH=story?96:92, gapY=story?14:15;
+   const panelPad=story?12:13, headH=story?108:92, gapY=story?19:15;
 
    cols.forEach((col,index)=>{
      const xx=index===0?left+colW+gap:left;
      const rows=col.rows;const count=rows.length;
      const available=(bottom-startY-headH-24-gapY*Math.max(0,count-1));
-     const rowH=Math.min(story?180:146,available/Math.max(1,count));
+     const rowH=Math.min(story?340:170,available/Math.max(1,count));
      if(rowH<52)return;
 
      fillR(xx,startY,colW,bottom-startY,26,'#fffdf5',flatMode?0:16);
@@ -814,7 +814,7 @@ function rf581Render(){
        fillR(cardX,yy,cardW,rowH,17,tint,flatMode?0:10);
        strokeR(cardX,yy,cardW,rowH,17,flatMode?'#d9e3dc':'#ffffff',flatMode?2:3);
 
-       const metricW=Math.min(story?98:132,colW*(story?0.24:0.285));
+       const metricW=Math.min(story?120:132,colW*(story?0.265:0.285));
        const metricX=xx+colW-metricW-(story?12:22), metricY=yy+8, metricH=rowH-16;
        if(flatMode){
          fillR(metricX,metricY,metricW,metricH,14,base,0);
@@ -822,10 +822,10 @@ function rf581Render(){
          fillR(metricX,metricY,metricW,metricH,16,g(metricX,metricY,metricX,metricY+metricH,[[0,base],[1,category===1?'#b38200':base]]),5);
        }
        ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';ctx.direction='rtl';ctx.fillStyle='#ffffff';
-       ctx.font='900 '+Math.min(story?44:47,rowH*(story?0.34:0.47))+'px '+(rf584FontMap[rf584FontSelector.value]||'Yekan,Tahoma');ctx.fillText(rf584PersianDigits(item.value),metricX+metricW/2,yy+rowH*.43,metricW-8);
-       ctx.font='700 '+Math.min(story?18:23,rowH*(story?0.18:0.23))+'px '+(rf584FontMap[rf584FontSelector.value]||'Yekan,Tahoma');ctx.fillText('روز',metricX+metricW/2,yy+rowH*.77,metricW-8);ctx.restore();
+       ctx.font='900 '+Math.min(story?55:47,rowH*(story?0.34:0.47))+'px '+(rf584FontMap[rf584FontSelector.value]||'Yekan,Tahoma');ctx.fillText(rf584PersianDigits(item.value),metricX+metricW/2,yy+rowH*.43,metricW-8);
+       ctx.font='700 '+Math.min(story?24:23,rowH*(story?0.18:0.23))+'px '+(rf584FontMap[rf584FontSelector.value]||'Yekan,Tahoma');ctx.fillText('روز',metricX+metricW/2,yy+rowH*.77,metricW-8);ctx.restore();
 
-       const rad=Math.min(story?18:34,rowH*(story?0.18:0.24));
+       const rad=Math.min(story?31:34,rowH*(story?0.18:0.24));
        const iconX=cardX+rad+(story?10:14), iconY=yy+rowH/2;
        if(flatMode){
          ctx.save();ctx.beginPath();ctx.arc(iconX,iconY,rad,0,Math.PI*2);ctx.fillStyle=base;ctx.fill();ctx.restore();
@@ -836,7 +836,7 @@ function rf581Render(){
 
        const textLeft=iconX+rad+(story?10:14), textRight=metricX-(story?10:16), textW=Math.max(52,textRight-textLeft);
        const label=(/پاک/.test(desc)?'هوای پاک':/قابل/.test(desc)?'قابل قبول':/بسیار/.test(desc)?'بسیار ناسالم':/حساس/.test(desc)?'ناسالم برای گروه‌های حساس':/تمام|همه/.test(desc)?'ناسالم برای تمام افراد':desc||'ناسالم');
-       const fit=fitText(label,textW,story?4:3,story?20:23,story?11:14,'700');
+       const fit=fitText(label,textW,story?4:3,story?29:23,story?15:14,'700');
        const lh=fit.size*(story?1.18:1.28), totalH=fit.lines.length*lh;
        const top=yy+(rowH-totalH)/2+lh/2;
        ctx.save();ctx.fillStyle='#222735';ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=fit.font;
