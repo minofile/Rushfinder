@@ -1,1 +1,0 @@
-Music page now loads Appwrite catalog using q=all and searches all when input empty. Server and Appwrite configuration unchanged. Secure HTTPS company video access is still pending.

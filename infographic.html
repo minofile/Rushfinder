@@ -1,0 +1,743 @@
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>اینفوگرافیک هوشمند | RushFinder</title>
+<style>
+@font-face{font-family:Yekan;src:url('fonts/Yekan.woff2') format('woff2');font-display:swap}
+*{box-sizing:border-box}html,body{margin:0}body{font-family:Yekan,Tahoma,sans-serif;background:#edf3fa;color:#17314e;font-size:15px}
+button,input,textarea,select{font:inherit}button{cursor:pointer}
+.shell{max-width:1520px;margin:0 auto;padding:22px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:16px}
+.ttl-head{display:flex;align-items:center;gap:12px;justify-content:flex-start}
+.ttl h1{margin:0;font-size:30px;font-weight:800;color:#0e2f5b;letter-spacing:-.2px}.ttl p{margin:8px 0 0;color:#7187a1;font-size:13px}
+.ttl-mark{width:42px;height:42px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#2fc7df,#2e7cff);color:#fff;box-shadow:0 10px 22px rgba(46,124,255,.22);flex:0 0 42px}
+.ttl-mark svg{width:20px;height:20px;display:block}
+.badges{display:flex;gap:8px;flex-wrap:wrap}.badge{background:#f3f8fe;border:1px solid #dbe8f7;color:#2b6996;padding:7px 12px;border-radius:999px;font-size:12px}
+.main{display:grid;grid-template-columns:460px minmax(0,1fr);gap:18px;align-items:start}
+.panel{background:#fff;border:1px solid #e2ebf6;border-radius:22px;box-shadow:0 14px 34px rgba(16,45,79,.08);padding:18px;min-width:0}
+.panel h2{margin:0 0 14px;font-size:18px;color:#123663}.subtle{font-size:12px;color:#7287a0}
+.controls{display:grid;gap:12px}
+.secTitle{font-size:14px;font-weight:900;color:#123760;margin-bottom:8px}
+.brandGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.brandBtn,.sizeBtn{border:2px solid #e3ebf4;background:#fff;border-radius:16px;padding:12px 10px;color:#23435f;display:flex;align-items:center;justify-content:center;gap:8px;min-height:64px;transition:.15s}.brandBtn{flex-direction:column;min-height:86px}.brandBtn.active,.sizeBtn.active{border-color:#2b8dd1;background:#f4faff;box-shadow:0 0 0 2px #ddf0ff inset;color:#0a5e94}.brandSw{width:46px;height:12px;border-radius:999px}
+.sizeGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.modeBox{display:flex;align-items:center;justify-content:space-between;border:1px solid #dfe9f4;background:linear-gradient(180deg,#fcfeff,#f4f8fd);padding:14px 15px;border-radius:16px}.modeBox strong{display:block;color:#143c6d}.modeBox span{font-size:12px;color:#7389a3}
+textarea{width:100%;min-height:340px;border:1px solid #d7e2ee;border-radius:16px;padding:16px;resize:vertical;line-height:2;background:#fbfdff;outline:none}textarea:focus{border-color:#49a3de;box-shadow:0 0 0 3px #dff0fd}
+.actions{display:flex;gap:10px;flex-wrap:wrap}.primary,.ghost{border:0;border-radius:14px;padding:13px 16px;font-weight:900}.primary{background:#1779ba;color:#fff;flex:1}.ghost{background:#eef6fc;color:#176296;border:1px solid #d8e7f5}.helper{background:#f8fbff;border:1px solid #e5eef8;color:#6f839b;border-radius:16px;padding:12px 14px;font-size:13px;line-height:1.9}
+.previewHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.previewArea{background:linear-gradient(180deg,#f8fbff,#eef3f9);border:1px solid #e3ecf5;border-radius:18px;min-height:760px;display:grid;place-items:center;padding:18px;overflow:auto}.previewArea.story canvas{max-width:280px}.previewArea canvas{width:100%;max-width:440px;height:auto;display:block;border-radius:12px;box-shadow:0 18px 46px rgba(12,34,62,.18)}.footActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.status{margin-top:12px;color:#2f6f98;font-size:13px}.mini{font-size:12px;color:#71839c}
+@media (max-width:1200px){.main{grid-template-columns:1fr}.previewArea{min-height:420px}}@media (max-width:620px){.shell{padding:12px}.top{flex-direction:column;align-items:flex-start}.ttl h1{font-size:24px}.brandGrid,.sizeGrid{grid-template-columns:1fr}.previewArea{min-height:320px}}
+</style>
+<style id="rf533-polish">
+html,body{overflow-x:hidden!important}body{background:#edf4fc!important}
+.shell{max-width:1260px!important;padding:20px 20px 36px!important;margin:0 auto!important;min-height:100vh}
+.top{margin-bottom:18px!important}.ttl h1{font-size:24px!important;letter-spacing:-.4px}
+.main{display:grid!important;grid-template-columns:minmax(340px,.92fr) minmax(370px,1.08fr)!important;gap:18px!important;align-items:start!important}
+.panel{border-radius:20px!important;border:1px solid #e0eaf5!important;box-shadow:0 14px 38px rgba(20,53,94,.07)!important;background:#fff!important;min-width:0!important}
+.controls{display:flex!important;flex-direction:column!important;gap:15px!important}
+.controls>div:not(.actions):not(.helper):not(.kieControls){border:1px solid #e7eef7;border-radius:16px;padding:13px!important;background:#fcfdff}
+.controls h2{border-bottom:1px solid #e9eff7;padding-bottom:12px;margin-bottom:2px}
+.kieControls{background:linear-gradient(155deg,#f0f8ff,#fff)!important;border:1px solid #bcdaf4!important;border-radius:16px!important;padding:16px!important;box-shadow:none!important;display:flex!important;flex-direction:column!important;gap:8px!important}
+.kieControls strong{font-size:16px!important;color:#0c4875!important}.kieControls label{font-weight:800;color:#244768}
+.kieControls #kieCreate{margin-top:8px;min-height:46px}
+.brandBtn{position:relative;min-height:78px!important}.brandBtn .brandLogoMini{object-fit:contain;max-width:62px;max-height:40px;border-radius:6px;margin-left:6px}.brandBtn .brandSw{display:none}
+.brandBtn{flex-direction:row!important;gap:8px!important}
+.previewArea{min-height:650px!important;padding:18px!important;overflow:hidden!important;background:#f4f8fe!important}
+.previewArea canvas{max-width:490px!important;width:100%!important;box-shadow:0 16px 42px rgba(8,32,61,.17)!important}
+.previewArea.story canvas{max-width:315px!important}
+.helper{background:#f4f9ff;border:1px solid #e1edf8}
+@media(max-width:1100px){.main{grid-template-columns:1fr!important}.previewArea{min-height:450px!important}}
+@media(max-width:620px){.shell{padding:12px 9px!important}.previewArea{min-height:310px!important}.brandGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+</style>
+<style id="rf534-fixes">
+.shell{max-width:1320px!important}
+.ttl h1{font-size:28px!important}
+.controls>h2{display:inline-flex;align-self:flex-start;background:#f4f9ff;border:1px solid #d9e7f5;border-radius:18px;padding:10px 18px;box-shadow:0 6px 14px rgba(14,47,91,.05)}
+.controls>div{position:relative}
+.controls>div .secTitle{font-size:15px;font-weight:950;color:#123663;margin-bottom:12px}
+.brandGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important}
+.brandBtn{min-height:104px!important;padding:16px 18px!important;border-radius:20px!important;justify-content:space-between!important;align-items:center!important;background:linear-gradient(180deg,#ffffff,#fbfdff)!important;box-shadow:0 10px 24px rgba(20,53,94,.04);text-align:right}
+.brandBtn.active{box-shadow:0 0 0 2px #d5ebff inset,0 10px 28px rgba(43,141,209,.08)!important}
+.brandBtn .brandIconBox{width:76px;height:76px;min-width:76px;border-radius:18px;background:#fff;border:1px solid #e8eef6;box-shadow:0 10px 24px rgba(10,34,64,.10);display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px}
+.brandBtn .brandLogoMini{max-width:100%!important;max-height:100%!important;object-fit:contain!important;display:block;margin:0!important;border-radius:10px!important}
+.brandBtn .brandTxt{display:flex;flex-direction:column;gap:6px;align-items:flex-start;justify-content:center;min-width:0;flex:1}
+.brandBtn .brandTxt strong{font-size:18px;line-height:1.2;color:#173a63;white-space:nowrap}
+.brandBtn .brandTxt span{font-size:12px;color:#7a8da5}
+.brandBtn .brandSw{display:none!important}
+.modeBox{border-radius:18px!important;padding:16px 18px!important}
+textarea{border-radius:20px!important;background:#fdfefe!important}
+.previewHead h2,.controls h2{font-weight:950}
+.previewArea{background:linear-gradient(180deg,#f6fafe,#edf4fb)!important}
+.footActions .primary,.actions .primary{background:linear-gradient(180deg,#1b86cb,#1169a5)!important}
+.helper{border-radius:18px!important}
+@media(max-width:900px){.brandGrid{grid-template-columns:1fr!important}}
+</style><style id="rf536-layout">
+html,body{width:100%;max-width:100%;overflow-x:hidden!important}*,*:before,*:after{box-sizing:border-box!important}
+.shell{width:100%!important;max-width:1320px!important;margin:0 auto!important;padding:18px clamp(10px,2vw,22px) 32px!important;min-width:0!important;overflow-x:clip!important}
+.top{display:flex!important;gap:14px!important;align-items:flex-start!important;flex-wrap:wrap!important}.ttl{min-width:0;flex:1 1 350px}.ttl h1{font-size:clamp(18px,2vw,26px)!important}.badges{flex:0 1 auto;max-width:100%;flex-wrap:wrap}
+.main{width:100%!important;max-width:100%!important;min-width:0!important;display:grid!important;grid-template-columns:minmax(0,0.95fr) minmax(0,1.05fr)!important;gap:16px!important;align-items:start}
+.panel{min-width:0!important;width:100%!important;max-width:100%!important;overflow:hidden!important}.panel *{max-width:100%;min-width:0}.controls{gap:12px!important}
+.brandGrid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}.brandBtn{padding:10px!important;min-height:80px!important;gap:6px!important}.brandBtn .brandIconBox{width:54px!important;height:54px!important;min-width:54px!important;padding:4px!important}.brandBtn .brandTxt strong{font-size:14px!important;white-space:normal!important}.brandBtn .brandTxt span{font-size:10px!important;white-space:normal!important}
+.previewArea{width:100%!important;max-width:100%!important;min-width:0!important;min-height:clamp(340px,52vh,650px)!important;overflow:hidden!important;padding:12px!important;display:flex!important;justify-content:center!important;align-items:center!important}.previewArea canvas{display:block!important;width:auto!important;max-width:100%!important;max-height:590px!important;height:auto!important;aspect-ratio:1/1!important;object-fit:contain}.previewArea.story canvas{max-height:650px!important;aspect-ratio:9/16!important;max-width:100%!important}
+.sizeGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.sizeBtn{white-space:normal!important;overflow-wrap:anywhere!important}.actions,.footActions,.boxButtons{flex-wrap:wrap!important}textarea{max-width:100%!important;resize:vertical!important}
+.boxAi{display:grid;gap:11px;background:linear-gradient(145deg,#eff8ff,#fff);border:1px solid #b8d8ed;border-radius:16px;padding:16px;min-width:0;width:100%}.boxAi label{display:block;font-size:13px;font-weight:bold;color:#21466a}.boxAi input,.boxAi select{width:100%;min-width:0;padding:11px;border-radius:10px;border:1px solid #cadaed;background:#fff;color:#17314e}.boxAi .boxButtons{display:flex;gap:10px}.boxAi .boxButtons button{flex:1 1 160px}.boxAi .hint{color:#5b7188;font-size:12px;line-height:1.9}.boxAi #boxAiStatus{font-size:12px;line-height:2;padding:10px;background:#fff;border:1px dashed #c9dded;border-radius:10px;overflow-wrap:anywhere}
+@media(max-width:980px){.main{grid-template-columns:minmax(0,1fr)!important}.previewArea{min-height:350px!important}}@media(max-width:480px){.brandGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.brandBtn{flex-wrap:wrap!important;justify-content:center!important;text-align:center!important}.brandBtn .brandTxt{align-items:center!important}.brandBtn .brandTxt strong{font-size:12px!important}}
+</style><style id="rf538-ui">
+:root{--rfBlue:#1877f2;--rfNavy:#092d52;--rfLine:#e0e9f5;--rfBg:#f0f5fb}
+html,body{width:100%;max-width:100%;overflow-x:hidden!important}
+body{background:var(--rfBg)!important;color:#183c5d}
+.shell{max-width:1510px!important;margin:0 auto!important;width:100%!important;padding:24px clamp(12px,2.2vw,32px) 42px!important;overflow:visible!important}
+.top{margin-bottom:18px!important;padding:0!important;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+.ttl{min-width:0;flex:1}.ttl h1{font-size:26px!important;color:#09345e;line-height:1.6;margin:0!important}.ttl p{font-size:13px!important;line-height:2.0;max-width:780px}
+.badges{gap:7px!important;max-width:100%}.badge{background:#fff!important;border:1px solid #dae6f4!important;color:#47769e!important;padding:7px 12px!important;white-space:nowrap}
+.main{width:100%!important;max-width:100%!important;display:grid!important;grid-template-columns:minmax(0,1.08fr) minmax(0,0.92fr)!important;align-items:start!important;gap:20px!important;direction:rtl}
+.panel{min-width:0!important;width:100%!important;max-width:100%!important;box-sizing:border-box;overflow:hidden!important;padding:18px!important;border-radius:22px!important;border:1px solid #e1ebf6!important;box-shadow:0 8px 32px rgba(16,50,85,.055)!important}
+.controls{gap:13px!important;min-width:0!important}.controls h2{font-size:19px!important;border:0!important;margin:0!important;padding:0 0 12px!important;border-bottom:1px solid #e8eff8!important}
+.controls>div:not(.actions):not(.helper){width:100%;max-width:100%;min-width:0;overflow:hidden;border:1px solid #e7eef7;border-radius:17px;padding:15px!important;background:#fbfdff}
+.secTitle{font-size:14px!important;color:#18446b!important;margin-bottom:12px!important}
+.brandGrid{width:100%;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+.brandBtn{display:flex!important;flex-direction:row!important;justify-content:flex-start!important;align-items:center!important;gap:10px!important;min-width:0!important;width:100%;min-height:86px!important;padding:9px 11px!important;border-radius:16px!important;background:#fff!important;text-align:right!important}
+.brandBtn .brandIconBox{width:62px!important;height:62px!important;min-width:62px!important;padding:5px!important;border:1px solid #e7eef8;background:#fff;border-radius:13px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.brandBtn .brandLogoMini{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;margin:0!important;border-radius:8px!important}
+.brandBtn .brandTxt{flex:1;min-width:0;align-items:flex-start!important;gap:4px!important}.brandBtn .brandTxt strong{font-size:15px!important;white-space:normal!important;line-height:1.5!important}.brandBtn .brandTxt span{font-size:10px!important;color:#8da2b6!important;white-space:normal!important;line-height:1.3!important}
+.brandBtn.active{background:#f0f7ff!important;border-color:#2985d8!important;box-shadow:inset 0 0 0 1px #bee2ff!important}
+.sizeGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}.sizeBtn{min-width:0!important;min-height:58px!important;font-size:13px!important}
+.modeBox{gap:8px!important;width:100%;max-width:100%;min-width:0!important;overflow:hidden}.modeBox>div{min-width:0!important}.modeBox span{line-height:1.85!important;display:block}
+textarea{max-width:100%!important;width:100%!important;min-height:225px!important;max-height:440px!important;padding:14px!important;line-height:2.05!important;font-size:13px!important;border-radius:13px!important;overflow:auto!important}
+.actions{display:flex!important;gap:9px!important;flex-wrap:wrap!important}.actions button{min-width:0!important;min-height:46px!important}.actions .primary{flex:2!important}.actions .ghost{flex:1!important}
+.primary{background:linear-gradient(110deg,#086ac1,#1988d5)!important}.helper{font-size:12px!important;line-height:2.0!important;background:#f0f7ff!important;border:1px solid #dceafa!important}
+.previewHead{gap:12px!important;flex-wrap:wrap!important}.previewHead h2{margin:0!important;font-size:18px!important}.previewHead>div{font-size:12px}
+.previewArea{width:100%!important;min-width:0!important;min-height:525px!important;padding:clamp(10px,2vw,25px)!important;border-radius:18px!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;background:repeating-linear-gradient(45deg,#f4f8fc,#f4f8fc 15px,#edf3f9 15px,#edf3f9 30px)!important}
+.previewArea canvas{width:auto!important;max-width:100%!important;max-height:540px!important;height:auto!important;display:block!important;aspect-ratio:auto!important;object-fit:contain!important;border-radius:10px!important;box-shadow:0 17px 38px rgba(10,42,68,.16)!important}
+.previewArea.story canvas{max-width:min(100%,300px)!important;max-height:610px!important}
+.footActions{flex-wrap:wrap!important;gap:9px!important}.footActions button{min-height:45px!important}.status{line-height:1.9!important}.mini{line-height:1.8!important}
+.rf538ApiNote{margin-top:10px;display:flex;gap:10px;align-items:center;background:#f5f9fe;border:1px dashed #cbddec;border-radius:14px;padding:12px 14px;color:#597a9a;font-size:12px;line-height:1.9}
+.rf538ApiNote b{color:#124e78}
+@media(max-width:1150px){.main{grid-template-columns:minmax(0,1fr)!important}.shell{padding:14px!important}.previewArea{min-height:360px!important}.previewArea canvas{max-height:510px!important}}
+@media(max-width:620px){.brandGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}.brandBtn{padding:6px!important;min-height:69px!important;gap:6px!important}.brandBtn .brandIconBox{height:46px!important;width:46px!important;min-width:46px!important}.brandBtn .brandTxt strong{font-size:12px!important}.brandBtn .brandTxt span{display:none!important}.panel{padding:12px!important}.ttl h1{font-size:22px!important}.top{gap:8px}.sizeGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.previewArea canvas{max-height:420px!important}.previewArea.story canvas{max-height:520px!important}}
+</style><style id="rf540-studio">
+:root{--rf-border:#e5edf6;--rf-blue:#116fff}html,body{max-width:100%!important;overflow-x:hidden!important;background:#f2f6fc!important}
+.shell{max-width:1460px!important;padding:15px 22px 28px!important}
+.top{margin:0 0 12px!important;align-items:center!important}.ttl h1{font-size:19px!important}.ttl p{font-size:11px!important}.badges .badge{font-size:10px!important;padding:6px 9px!important}
+.main{width:100%!important;max-width:100%!important;grid-template-columns:minmax(310px,390px) minmax(0,1fr)!important;gap:14px!important;align-items:start!important}
+.panel{border-radius:19px!important;box-shadow:0 7px 24px #173e720c!important;border:1px solid var(--rf-border)!important;padding:15px!important;min-width:0!important;width:100%!important;max-width:100%!important;overflow:hidden!important}
+.controls{gap:10px!important}.controls>h2{font-size:16px!important;align-self:stretch!important;background:#f7faff!important;border:1px solid #e9eff7!important;padding:10px 14px!important;border-radius:13px!important;margin:0!important}
+.controls>div:not(.actions):not(.helper){padding:11px!important;border-radius:13px!important}.secTitle{font-size:12px!important;margin-bottom:9px!important}
+.brandGrid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:5px!important}
+.brandBtn{display:flex!important;flex-direction:column!important;justify-content:center!important;gap:5px!important;min-height:76px!important;padding:6px 1px!important;border-radius:11px!important}
+.brandBtn .brandIconBox{width:40px!important;height:40px!important;min-width:40px!important;padding:3px!important;border-radius:10px!important}
+.brandBtn .brandLogoMini{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important}
+.brandBtn .brandTxt{flex:none!important;align-items:center!important;text-align:center!important;gap:1px!important;max-width:100%!important}.brandBtn .brandTxt strong{font-size:10px!important}.brandBtn .brandTxt span{display:none!important}
+textarea{min-height:155px!important;max-height:320px!important;padding:13px!important;font-size:12px!important;line-height:1.85!important;border-radius:13px!important}
+.previewArea{width:100%!important;max-width:100%!important;min-width:0!important;min-height:470px!important;max-height:650px!important;padding:16px!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;background:repeating-linear-gradient(45deg,#f7faff 0,#f7faff 13px,#f0f5fc 13px,#f0f5fc 26px)!important}
+.previewArea canvas{width:auto!important;max-width:100%!important;max-height:530px!important;height:auto!important;object-fit:contain!important;border-radius:13px!important}
+.previewArea.story canvas{max-width:290px!important;max-height:550px!important}.previewHead{margin-bottom:10px!important}.previewHead h2{font-size:15px!important}
+.actions button,.footActions button{padding:10px 12px!important;font-size:12px!important}.helper{font-size:11px!important;padding:10px 12px!important;line-height:1.7!important}.status{font-size:11px!important}.modeBox{padding:10px!important}.modeBox strong{font-size:12px}.modeBox span{font-size:10px!important}
+@media(min-width:1320px){.main{grid-template-columns:minmax(355px,430px) minmax(0,1fr)!important}}
+@media(max-width:950px){.main{grid-template-columns:1fr!important}.previewArea{min-height:340px!important}}
+@media(max-width:590px){.shell{padding:10px 8px!important}.brandGrid{grid-template-columns:repeat(4,minmax(0,1fr))!important}.brandBtn .brandTxt strong{font-size:9px!important}.previewArea{min-height:300px!important}.top{flex-wrap:wrap!important}}
+</style><style id="rf541-finish">
+.top{background:linear-gradient(115deg,#fff,#f5f9ff)!important;border:1px solid #e2eaf6!important;border-radius:19px!important;padding:14px 19px!important;box-shadow:0 8px 27px rgba(15,50,94,.06)!important;margin-bottom:15px!important}
+.ttl h1{color:#0d3061!important;font-size:21px!important}
+.secTitle{display:flex!important;align-items:center!important;gap:9px!important;color:#173962!important;font-size:13px!important}
+.stepNumber{display:inline-grid;place-items:center;width:30px;height:30px;min-width:30px;border:1px solid #b9dafa;border-radius:11px;background:linear-gradient(145deg,#148cff,#0a62cd);color:white!important;box-shadow:0 5px 12px #116fff27;font-size:16px!important;font-weight:900;line-height:1}
+.controls>div:nth-of-type(2) .stepNumber{background:linear-gradient(145deg,#10bbac,#067f93);border-color:#a4ebe3}
+.controls>div:nth-of-type(3) .stepNumber{background:linear-gradient(145deg,#a878ff,#6945d8);border-color:#d7c8ff}
+.controls>div:nth-of-type(4) .stepNumber{background:linear-gradient(145deg,#ffba49,#e48225);border-color:#ffe0a5}
+.controls>div:not(.actions):not(.helper){border:1px solid #e4ebf5!important;background:linear-gradient(155deg,#ffffff,#fafcff)!important;box-shadow:0 5px 14px rgba(12,48,90,.035)}
+.brandGrid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:7px!important}
+.brandBtn{border-radius:12px!important}
+.previewArea.story canvas{max-height:500px!important;max-width:min(100%,300px)!important}
+@media(max-width:620px){.top{padding:12px!important}.brandGrid{grid-template-columns:repeat(4,minmax(0,1fr))!important}.brandBtn .brandTxt strong{font-size:9px!important}}
+</style><style id="rf542-status-clean">.status:empty{display:none!important}</style>
+<style id="rf542-final-tweak">
+.controls>h2,.previewHead h2{font-size:16px!important;font-weight:880!important;letter-spacing:-.15px}
+.brandBtn .brandIconBox{background:transparent!important;border:none!important;box-shadow:none!important;padding:0!important;border-radius:14px!important}
+.brandBtn .brandLogoMini{background:transparent!important;box-shadow:none!important;border:none!important}
+
+<style id="rf544-ui-polish">
+.controls>h2,.previewHead h2{font-size:15px!important;font-weight:760!important;letter-spacing:0!important;line-height:1.45!important}
+.controls>h2{padding:9px 16px!important;border-radius:16px!important;margin-bottom:6px!important}
+.previewHead{margin-bottom:16px!important;align-items:center!important;gap:14px!important}
+.previewHead h2{margin:0!important;color:#173a63!important;flex:0 0 auto!important}
+.previewMeta{display:inline-flex!important;align-items:center!important;gap:8px!important;padding:10px 14px!important;border-radius:14px!important;background:linear-gradient(180deg,#f7fbff,#eef5fd)!important;border:1px solid #dce8f5!important;box-shadow:0 8px 18px rgba(14,47,91,.06)!important;color:#4d6884!important;font-size:12.5px!important;font-weight:800!important;white-space:nowrap!important}
+.previewMeta::before{content:"◈";color:#0f9d68;font-size:13px;line-height:1}
+.brandBtn .brandIconBox{background:transparent!important;border:none!important;box-shadow:none!important;padding:0!important;border-radius:0!important;overflow:visible!important}
+.brandBtn .brandLogoMini{background:transparent!important;box-shadow:none!important;border:none!important;border-radius:10px!important;display:block!important}
+</style>
+<style id="rf545-heading-correction">
+/* Small and truly lighter section headings, with comfortable breathing room. */
+.controls>h2, .previewHead>h2 {
+ font-family:Yekan,Tahoma,sans-serif!important;
+ font-size:13px!important;
+ font-weight:400!important;
+ line-height:1.9!important;
+ letter-spacing:0!important;
+ text-shadow:none!important;
+}
+.controls>h2 {
+ display:inline-flex!important;align-items:center!important;
+ padding:8px 17px!important;
+ margin:0 0 16px!important;
+ min-height:42px!important;
+ border-radius:13px!important;
+ border:1px solid #e2ebf6!important;
+ background:#f7faff!important;
+ box-shadow:none!important;
+}
+.previewHead>h2 {
+ display:inline-flex!important;align-items:center!important;
+ min-height:42px!important;
+ padding:8px 17px!important;
+ margin:0!important;
+ border:1px solid #e2ebf6!important;
+ border-radius:13px!important;
+ background:#f7faff!important;
+ box-shadow:none!important;
+}
+.previewHead{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:22px!important;margin-bottom:20px!important;flex-wrap:wrap!important}
+.previewHead .previewMeta{font-size:12px!important;font-weight:400!important;min-height:42px!important;padding:9px 14px!important}
+@media(max-width:640px){.previewHead{gap:10px!important}.previewHead .previewMeta{font-size:11px!important}}
+</style><style id="rf546-title-match">
+/* Use exactly the same type specification as the numbered section labels. */
+.top .ttl h1{
+ font-family:Yekan,Tahoma,sans-serif!important;
+ font-size:13px!important;
+ font-weight:400!important;
+ line-height:1.9!important;
+ color:#173962!important;
+ background:none!important;
+ -webkit-text-fill-color:#173962!important;
+ -webkit-text-stroke:0!important;
+ text-shadow:none!important;
+ filter:none!important;
+ letter-spacing:0!important;
+}
+.top .ttl h1::before,.top .ttl h1::after{content:none!important;display:none!important}
+.top .ttl h1{margin:0 0 7px!important;display:block!important}
+.top .ttl{min-width:0!important}
+</style><style id="rf547-final-design">
+/* The title, settings and preview share the exact visual language of the Brand section. */
+.top .ttl h1,.controls>h2,.previewHead>h2{
+  font-family:Yekan,Tahoma,sans-serif!important;font-size:14px!important;font-weight:700!important;
+  line-height:1.75!important;color:#123760!important;-webkit-text-fill-color:#123760!important;
+  text-shadow:none!important;-webkit-text-stroke:0!important;filter:none!important;letter-spacing:0!important;
+}
+.top .ttl h1{display:block!important;margin:0 0 4px!important}
+.top .ttl h1::before,.top .ttl h1::after{content:none!important}
+.controls>h2,.previewHead>h2{padding:10px 16px!important;min-height:44px!important;border:1px solid #e3ebf6!important;
+  background:#f6f9ff!important;border-radius:14px!important;box-shadow:none!important;white-space:nowrap!important}
+.previewHead{gap:22px!important;align-items:center!important;flex-wrap:wrap!important}
+.previewHead .previewMeta{font-size:12px!important;font-weight:650!important}
+</style><style id="rf549-web-design">
+/* Final, shared heading typography: identical to section label */
+.top .ttl h1,.controls>h2,.previewHead>h2{font-family:Yekan,Tahoma,sans-serif!important;font-size:14px!important;font-weight:800!important;color:#123760!important;text-shadow:none!important;-webkit-text-stroke:0!important;background-image:none!important;letter-spacing:0!important;line-height:1.7!important}
+.controls>h2,.previewHead>h2{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:auto!important;min-height:36px!important;padding:7px 15px!important;border-radius:13px!important;border:1px solid #e2eaf5!important;background:#f7faff!important;box-shadow:none!important;margin:0!important}
+.previewHead{gap:16px!important;margin-bottom:16px!important}
+.previewMeta{direction:rtl!important;display:inline-flex!important;align-items:center!important;gap:10px!important;border:1px solid #dfebf9!important;border-radius:13px!important;padding:10px 14px!important;min-height:39px!important;background:#f6f9fe!important;box-shadow:0 5px 15px rgba(14,55,111,.04)!important;font-size:12px!important;font-weight:700!important}
+.previewMeta::before{content:''!important;display:inline-block!important;width:17px!important;height:17px!important;flex:none!important;background:linear-gradient(145deg,#257efc,#09b9a2)!important;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='3' y='3' width='18' height='18' rx='3' fill='none' stroke='black' stroke-width='2'/%3E%3Ccircle cx='8.3' cy='8.4' r='2' fill='black'/%3E%3Cpath d='m4 18 5-5 3 3 3-4 5 6' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") center/contain no-repeat!important}
+.sizeGrid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+.sizeBtn{position:relative!important;justify-content:flex-start!important;gap:12px!important;text-align:right!important;min-height:82px!important;padding:12px 15px!important;border:2px solid #dee8f5!important;border-radius:17px!important;background:#fff!important;box-shadow:none!important;color:#142f54!important}
+.sizeBtn.active{border-color:#1177ff!important;box-shadow:0 0 0 2px #d9eaff inset,0 6px 16px rgba(25,111,221,.08)!important;background:#f6faff!important}
+.sizeBtn .rf549-size-icon{width:30px;min-width:30px;height:35px;display:inline-flex;align-items:center;justify-content:center;order:3;color:#102952}
+.sizeBtn .rf549-size-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px;font-size:14px;font-weight:800;line-height:1.4}
+.sizeBtn .rf549-size-copy small{font-size:11px;font-weight:600;color:#687d98}
+.sizeBtn .rf549-check{position:absolute;top:8px;right:8px;width:21px;height:21px;border:2px solid #ccd8e8;border-radius:50%;background:white}
+.sizeBtn.active .rf549-check{background:#096fff;border-color:#096fff;color:#fff;display:grid;place-items:center}
+.sizeBtn.active .rf549-check::after{content:'✓';font-size:12px;font-weight:bold}
+.sizeBtn{padding-right:38px!important}
+@media(max-width:550px){.sizeBtn{gap:5px!important;padding:10px 8px 10px 5px!important;padding-right:30px!important}.sizeBtn .rf549-size-copy{font-size:12px}.sizeBtn .rf549-size-copy small{font-size:9px}.sizeBtn .rf549-size-icon{min-width:23px;width:23px}}
+</style><style id="rf550-title-style">
+/* Keep heading text exactly the same weight and size as «برند خبری». */
+.controls>h2.rf550-heading,.previewHead>h2.rf550-heading{display:inline-flex!important;align-items:center!important;justify-content:flex-start!important;gap:10px!important;font-size:13px!important;font-weight:900!important;color:#123663!important;line-height:1.55!important;padding:8px 12px!important;min-height:44px!important;text-shadow:none!important;-webkit-text-stroke:0!important;}
+.rf550-head-icon{width:29px;min-width:29px;height:29px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;color:#fff;box-shadow:0 5px 12px rgba(34,102,225,.18)}
+.rf550-head-icon svg{width:17px;height:17px;display:block}
+.rf550-gear{background:linear-gradient(145deg,#785bff,#3c8dff)}
+.rf550-eye{background:linear-gradient(145deg,#00cba8,#047fcd)}
+.previewHead{gap:16px!important}
+@media(max-width:640px){.rf550-heading{white-space:nowrap!important}.previewHead{align-items:flex-start!important}}
+</style><style id="rf579-header-only">
+.top .ttl .ttl-head{display:flex!important;direction:rtl!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;gap:11px!important}
+.top .ttl .ttl-head h1{font-family:Yekan,Tahoma,sans-serif!important;font-size:18px!important;font-weight:400!important;font-style:normal!important;letter-spacing:0!important;line-height:1.6!important;margin:0!important;white-space:nowrap!important}
+.top .ttl .ttl-head .ttl-mark{flex:0 0 36px!important;width:36px!important;height:36px!important;border-radius:11px!important}
+</style><style id="rf580-controls-only">
+.rf580-structure{display:grid;gap:8px!important}.rf580-check{display:flex;align-items:center;gap:9px;font-size:13px;color:#173962;cursor:pointer;font-weight:700}.rf580-check input{width:17px;height:17px;accent-color:#147ef5;cursor:pointer}.rf580-short{min-height:58px!important;max-height:130px!important;font-size:13px!important;padding:10px 12px!important;resize:vertical!important;line-height:1.8!important}.rf580-style-select{display:block;width:100%;padding:13px;border:1px solid #dce7f5;border-radius:12px;background:white;color:#173962;font-size:13px;direction:rtl}.rf580-prompt-label{display:block;margin:12px 0 7px;font-size:13px;color:#173962;font-weight:700}#rf580-other-wrap textarea{min-height:100px!important;max-height:240px!important;font-size:12px!important}#rf580-other-wrap small{color:#71839c;font-size:11px;display:block;line-height:1.8;margin-top:6px}#rf580-other-wrap[hidden], .rf580-short[hidden]{display:none!important}
+</style><style id="rf584-output-font-picker">
+@font-face{font-family:'RF584Doran';src:url('fonts/rf584-doran-400.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'RF584Doran';src:url('fonts/rf584-doran-700.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'RF584Modam';src:url('fonts/rf584-modam-400.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'RF584Modam';src:url('fonts/rf584-modam-700.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'RF584Ray';src:url('fonts/rf584-ray-400.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'RF584Ray';src:url('fonts/rf584-ray-700.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'RF584Kahroba';src:url('fonts/rf584-kahroba-400.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'RF584Kahroba';src:url('fonts/rf584-kahroba-700.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+
+#rf584-font-select{display:block;width:100%;max-width:100%;min-height:44px;background:#fff;border:1px solid #dce7f4;border-radius:12px;padding:9px 13px;color:#173962;direction:rtl;font-family:Yekan,Tahoma,sans-serif;font-size:13px}
+#rf584-font-select:focus{outline:2px solid #3898ef;outline-offset:1px}
+#rf584-font-help{font-size:11px;line-height:1.8;color:#7186a2;margin-top:7px}
+</style>
+<style id="rf586-source-only">
+.rf586-source-section{display:flex;flex-direction:column;gap:9px}
+#rf586-source-text{width:100%;min-height:43px;border:1px solid #dce7f4;border-radius:12px;background:#fff;padding:10px 13px;direction:rtl;font-family:Yekan,Tahoma,sans-serif;color:#173962;font-size:13px}
+#rf586-source-text[hidden]{display:none!important}
+</style></head><body>
+<div class="shell">
+  <div class="top">
+    <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
+    <div class="badges"><span class="badge">نسخه وب ۵۵۲</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">پیش‌نمایش آفلاین</span><span class="badge">خروجی PNG</span></div>
+  </div>
+  <div class="main">
+    <section class="panel controls">
+      <h2 class="rf550-heading"><span class="rf550-head-icon rf550-gear" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1 2.2 2.5.6 1.9-1.2 2 2-1.2 1.9.6 2.5L21 12l-2.2 1-.6 2.5 1.2 1.9-2 2-1.9-1.2-2.5.6L12 21l-1-2.2-2.5-.6-1.9 1.2-2-2 1.2-1.9-.6-2.5L3 12l2.2-1 .6-2.5-1.2-1.9 2-2 1.9 1.2 2.5-.6L12 3Z"/><circle cx="12" cy="12" r="3"/></svg></span>تنظیمات</h2>
+      <div>
+        <div class="secTitle"><span class="stepNumber">۱</span><span>برند خبری</span></div>
+        <div id="brands" class="brandGrid"></div>
+      </div>
+      <div>
+        <div class="secTitle"><span class="stepNumber">۲</span><span>اندازه خروجی</span></div>
+        <div class="sizeGrid"><button class="sizeBtn active" data-size="square"><span class="rf549-check"></span><span class="rf549-size-copy">مربع<small>۱۰۸۰ × ۱۰۸۰</small></span><span class="rf549-size-icon"><svg width="31" height="34" viewBox="0 0 31 34" fill="none" aria-hidden="true"><rect x="2.5" y="4" width="26" height="26" rx="5" stroke="currentColor" stroke-width="3"/></svg></span></button><button class="sizeBtn" data-size="story"><span class="rf549-check"></span><span class="rf549-size-copy">استوری<small>۱۰۸۰ × ۱۹۲۰</small></span><span class="rf549-size-icon"><svg width="30" height="38" viewBox="0 0 30 38" fill="none" aria-hidden="true"><rect x="6" y="1.5" width="18" height="35" rx="4" stroke="currentColor" stroke-width="3"/></svg></span></button></div>
+      </div>
+      <div>
+        <div class="secTitle"><span class="stepNumber">۳</span><span>ساختار متن</span></div>
+        <div class="rf580-structure">
+          <label class="rf580-check"><input type="checkbox" id="rf580-title-on" checked><span>تیتر</span></label>
+          <textarea class="rf580-short" id="rf580-title-text" rows="2" placeholder="تیتر اصلی را وارد کنید..."></textarea>
+          <label class="rf580-check"><input type="checkbox" id="rf580-subtitle-on"><span>زیرتیتر</span></label>
+          <textarea class="rf580-short" id="rf580-subtitle-text" rows="2" placeholder="زیرتیتر را وارد کنید..." hidden></textarea>
+        </div>
+      </div>
+      <div class="rf580-style-section">
+        <div class="secTitle"><span class="stepNumber">۴</span><span>سبک گرافیکی</span></div>
+        <select id="rf580-graphic-style" aria-label="سبک گرافیکی" class="rf580-style-select">
+          <option value="auto">✦  خودکار (AUTO)</option><option value="2d">▧  دوبعدی (2D)</option><option value="3d">⬡  سه‌بعدی (3D)</option>
+          <option value="table">▦  جدولی</option><option value="chart">▥  نموداری</option><option value="comparison">⇄  مقایسه‌ای</option>
+          <option value="timeline">◷  خط زمانی</option><option value="cards">▣  کارت‌های اطلاعاتی</option><option value="minimal">◌  مینیمال</option>
+          <option value="other">✎  سایر (پرامپت دلخواه)</option>
+        </select>
+        <div id="rf580-other-wrap" hidden><label class="rf580-prompt-label" for="rf580-other-prompt">پرامپت طراحی دلخواه</label><textarea id="rf580-other-prompt" rows="3" placeholder="سبک، چیدمان، رنگ و جزئیات دلخواه را بنویسید..."></textarea><small>این نسخه آفلاین است؛ پرامپت به‌صورت راهنمای سبک ذخیره می‌شود و تولید آزاد تصاویر نیاز به موتور هوش مصنوعی دارد.</small></div>
+      </div>
+      <div>
+        <div class="secTitle"><span class="stepNumber">۷</span><span>متن اینفوگرافیک</span></div>
+        <textarea id="input" spellcheck="true" placeholder="سطر اول: تیتر اصلی\nسطرهای بعدی: نکات، آمار یا مقایسه\nمثال:\nمقایسه روزهای هوای پاک امسال و سال گذشته\nسال ۱۴۰۴: ۷ روز هوای پاک\nسال ۱۴۰۴: ۹۷ روز قابل قبول\nسال ۱۴۰۴: ۸۶ روز ناسالم برای گروه‌های حساس"></textarea>
+      </div>
+      <div class="rf586-source-section">
+        <div class="secTitle"><span class="stepNumber">۵</span><span>منبع</span></div>
+        <label class="rf580-check"><input type="checkbox" id="rf586-source-on"><span>نمایش منبع در اینفوگرافیک</span></label>
+        <input type="text" id="rf586-source-text" placeholder="نام منبع را وارد کنید..." hidden aria-label="نام منبع">
+      </div>
+      <div class="rf584-font-section">
+        <div class="secTitle"><span class="stepNumber">۶</span><span>فونت خروجی</span></div>
+        <select id="rf584-font-select" aria-label="انتخاب فونت اینفوگرافیک">
+          <option value="Doran">دوران</option>
+          <option value="Modam">مودام</option>
+          <option value="Ray">ری</option>
+          <option value="Kahroba">کهربا</option>
+        </select>
+        <div id="rf584-font-help">پیش‌نمایش و فایل PNG با فونت انتخابی و اعداد فارسی ساخته می‌شوند.</div>
+      </div>
+      <div class="actions"><button id="generate" class="primary">✦ ساخت اینفوگرافیک</button><button id="reroll" class="ghost">↻ طرح متفاوت</button></div>
+    </section>
+    <section class="panel">
+      <div class="previewHead"><h2 class="rf550-heading"><span class="rf550-head-icon rf550-eye" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.4-6 10-6 10 6 10 6-3.4 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3.1"/></svg></span>پیش‌نمایش</h2><div><span id="metaLabel" class="previewMeta">۱۰۸۰ × ۱۰۸۰ | تشخیص خودکار چیدمان</span><span id="dimensions" hidden>۱۰۸۰ × ۱۰۸۰</span><span id="layoutName" hidden>تشخیص خودکار چیدمان</span></div></div>
+      <div id="previewArea" class="previewArea"><canvas id="cv" width="1080" height="1080"></canvas></div>
+      <div class="footActions"><button id="download" class="primary">↓ دانلود PNG</button><button id="copy" class="ghost">کپی متن</button></div>
+      <div id="status" class="status" aria-live="polite"></div>
+    </section>
+  </div>
+</div>
+<script>
+(()=>{'use strict';
+const brands={
+  urgent:{name:'خبر فوری',base:'#0fa868',accent:'#6cf0b1',light:'#eafff2',dark:'#0b2f25',bg2:'#0e8e59'},
+  mashhad:{name:'اخبار مشهد',base:'#f4c316',accent:'#ffe16f',light:'#fff8de',dark:'#48370a',bg2:'#cf9d00'},
+  jaryan:{name:'جریان',base:'#20222a',accent:'#f0cf2d',light:'#fff8d0',dark:'#0d1018',bg2:'#10131c'},
+  farda:{name:'خبرفردا',base:'#1e1f25',accent:'#ef4458',light:'#fff0f3',dark:'#101218',bg2:'#661824'}
+};
+let brand='urgent', size='square', variant=0;
+const urgentTemplate=new Image();urgentTemplate.src='assets/infographic-logos/urgent-exact-template.png';urgentTemplate.onload=()=>document.getElementById('generate')?.click();
+const urgentStoryTemplate=new Image();urgentStoryTemplate.src='assets/infographic-logos/urgent-story-original.png';urgentStoryTemplate.onload=()=>document.getElementById('generate')?.click();
+const mashhadSquareTemplate=new Image();mashhadSquareTemplate.src='assets/infographic-logos/mashhad-square-original.png';mashhadSquareTemplate.onload=()=>{if(brand==='mashhad')render()};
+const mashhadStoryTemplate=new Image();mashhadStoryTemplate.src='assets/infographic-logos/mashhad-story-original.png';mashhadStoryTemplate.onload=()=>{if(brand==='mashhad')render()};
+
+const jaryanSquare=new Image();jaryanSquare.src='assets/infographic-logos/jaryan-square-549.png';
+jaryanSquare.onload=()=>{if(brand==='jaryan')render()};
+const jaryanStory=new Image();jaryanStory.src='assets/infographic-logos/jaryan-story-549.png';
+jaryanStory.onload=()=>{if(brand==='jaryan')render()};
+const fardaSquare=new Image();fardaSquare.src='assets/infographic-logos/farda-square-549.png';
+fardaSquare.onload=()=>{if(brand==='farda')render()};
+const fardaStory=new Image();fardaStory.src='assets/infographic-logos/farda-story-549.png';
+fardaStory.onload=()=>{if(brand==='farda')render()};
+for(const img of [jaryanSquare,jaryanStory,fardaSquare,fardaStory])img.onload=()=>document.getElementById('generate')?.click();
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+
+// RF584: Font selection applies to canvas only; the website UI remains unchanged.
+const rf584FontSelector=document.getElementById('rf584-font-select');
+const rf584FontMap={Doran:'RF584Doran',Modam:'RF584Modam',Ray:'RF584Ray',Kahroba:'RF584Kahroba'};
+const rf584PersianDigits=s=>String(s).replace(/[0-9٠-٩۰-۹]/g,ch=>{
+ const code=ch.charCodeAt(0);
+ const n=code>=48&&code<=57?code-48:code>=0x660&&code<=0x669?code-0x660:code-0x6f0;
+ return String.fromCharCode(0x6f0+n);
+});
+// Use the exact font selected whenever existing infographic functions set a Yekan canvas font.
+const rf584Descriptor=Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype,'font');
+if(rf584Descriptor&&rf584Descriptor.get&&rf584Descriptor.set){
+ Object.defineProperty(ctx,'font',{
+  configurable:true,
+  get(){return rf584Descriptor.get.call(ctx)},
+  set(value){return rf584Descriptor.set.call(ctx,String(value).replace(/Yekan/g,rf584FontMap[rf584FontSelector.value]||'RF584Doran'))}
+ });
+}
+// Transliterate ALL text drawn to the PNG, and measure exactly what will be rendered.
+const rf584FillText=ctx.fillText.bind(ctx),rf584StrokeText=ctx.strokeText.bind(ctx),rf584MeasureText=ctx.measureText.bind(ctx);
+ctx.fillText=function(value,...args){return rf584FillText(rf584PersianDigits(value),...args)};
+ctx.strokeText=function(value,...args){return rf584StrokeText(rf584PersianDigits(value),...args)};
+ctx.measureText=function(value){return rf584MeasureText(rf584PersianDigits(value))};
+let rf584FontRequest=0;
+rf584FontSelector.addEventListener('change',async function(){
+ const request=++rf584FontRequest;
+ const family=rf584FontMap[this.value]||'RF584Doran';
+ try{await Promise.all([document.fonts.load('400 24px '+family),document.fonts.load('700 24px '+family)]);}catch(e){console.warn('Font loading:',e)}
+ if(request===rf584FontRequest)render();
+});
+Promise.all([document.fonts.load('400 24px RF584Doran'),document.fonts.load('700 24px RF584Doran')]).then(()=>render()).catch(()=>{});
+
+const input=document.getElementById('input');
+const area=document.getElementById('previewArea');
+const statusEl=document.getElementById('status');
+const metaEl=document.getElementById('metaLabel');
+const layoutName=document.getElementById('layoutName');
+const dimsEl=document.getElementById('dimensions');
+const brandsEl=document.getElementById('brands');
+function updateMeta(){const d=(dimsEl.textContent||'').trim();let l=(layoutName.textContent||'').trim()||'تشخیص خودکار چیدمان';l=l.replace(/^چیدمان:\s*/,'').replace(' • محتوای سمت سفید','');if(metaEl)metaEl.textContent=d+' | '+l;}
+Object.entries(brands).forEach(([k,v])=>{const b=document.createElement('button');b.className='brandBtn'+(k===brand?' active':'');b.innerHTML='<span class="brandTxt"><strong>'+v.name+'</strong><span>تم اختصاصی '+v.name+'</span></span><span class="brandIconBox"></span>';b.onclick=()=>{brand=k;brandsEl.querySelectorAll('.brandBtn').forEach(x=>x.classList.remove('active'));b.classList.add('active');render()};brandsEl.appendChild(b)});
+document.querySelectorAll('.sizeBtn').forEach(btn=>btn.onclick=()=>{size=btn.dataset.size;document.querySelectorAll('.sizeBtn').forEach(x=>x.classList.toggle('active',x===btn));render()});
+document.getElementById('generate').onclick=()=>{variant++;render()};
+document.getElementById('reroll').onclick=()=>{variant++;render();statusEl.textContent='طرح حرفه‌ای با چیدمان متفاوت ساخته شد.'};
+function normalizeText(t){return (t||'').replace(/\r/g,'').replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/ۀ/g,'ه').replace(/\s+:/g,':').replace(/:+/g,':').replace(/\u200c{2,}/g,'‌').replace(/می باشد/g,'می‌باشد').replace(/نمی باشد/g,'نمی‌باشد').replace(/[ \t]+$/gm,'').trim()}
+const rf580TitleOn=document.getElementById('rf580-title-on'),rf580SubOn=document.getElementById('rf580-subtitle-on');
+const rf580TitleText=document.getElementById('rf580-title-text'),rf580SubText=document.getElementById('rf580-subtitle-text');
+const rf580Style=document.getElementById('rf580-graphic-style'),rf580Other=document.getElementById('rf580-other-prompt');
+function rf580Sync(){rf580TitleText.hidden=!rf580TitleOn.checked;rf580SubText.hidden=!rf580SubOn.checked;document.getElementById('rf580-other-wrap').hidden=rf580Style.value!=='other';render();}
+[rf580TitleOn,rf580SubOn,rf580Style].forEach(x=>x.addEventListener('change',rf580Sync));
+[rf580TitleText,rf580SubText,rf580Other].forEach(x=>x.addEventListener('input',()=>render()));
+function rf580EffectiveStyle(){
+  if(rf580Style.value!=='other')return rf580Style.value;
+  const p=rf580Other.value;
+  if(/جدول|ستون|ردیف/.test(p))return 'table';
+  if(/نمودار|میله|دایره/.test(p))return 'chart';
+  if(/مقایسه/.test(p))return 'comparison';
+  if(/زمان|تاریخ/.test(p))return 'timeline';
+  if(/سه.?بعد|برجسته|سایه/.test(p))return '3d';
+  if(/مینیمال|ساده/.test(p))return 'minimal';
+  return '2d';
+}
+function splitText(raw){const lines=normalizeText(raw).split(/\n+/).map(s=>s.trim()).filter(Boolean);
+ const manualTitle=normalizeText(rf580TitleText.value), sub=normalizeText(rf580SubText.value);
+ const title=rf580TitleOn.checked?manualTitle:'';
+ const subtitle=rf580SubOn.checked?sub:'';
+ return {title,subtitle,items:lines};}
+
+function parseLine(line){const m=line.match(/^(.+?)\s*[:：]\s*(.+)$/); if(m) return {label:m[1].trim(),value:m[2].trim()}; return {label:'',value:line.trim()}}
+function detectLayout(title,items){const statCount=items.filter(x=>x.includes(':')).length; const yearish=items.filter(x=>/سال|ماه|هفته|روز|۱۴\d\d|13\d\d|20\d\d/.test(x)).length; if(items.length>=4 && statCount>=3 && yearish>=2) return 'comparison'; if(items.length>=4 && statCount>=3) return 'cards'; return 'list';}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r)}
+function fillR(x,y,w,h,r,f,blur=0){ctx.save(); if(blur){ctx.shadowColor='rgba(9,23,43,.15)';ctx.shadowBlur=blur;ctx.shadowOffsetY=blur*.45;} rr(x,y,w,h,r); ctx.fillStyle=f; ctx.fill(); ctx.restore()}
+function strokeR(x,y,w,h,r,c,wid=1){ctx.save();ctx.lineWidth=wid;ctx.strokeStyle=c;rr(x,y,w,h,r);ctx.stroke();ctx.restore()}
+function g(x0,y0,x1,y1,stops){const grd=ctx.createLinearGradient(x0,y0,x1,y1);stops.forEach(s=>grd.addColorStop(s[0],s[1]));return grd}
+function wrap(text,max,font,maxLines){ctx.font=font;const parts=(text||'').split(/\s+/).filter(Boolean);let lines=[],line='';for(const p of parts){const t=line?line+' '+p:p;if(ctx.measureText(t).width>max && line){lines.push(line);line=p}else line=t} if(line) lines.push(line); if(lines.length>maxLines){lines=lines.slice(0,maxLines); let last=maxLines-1; while(lines[last] && ctx.measureText(lines[last]+'…').width>max) lines[last]=lines[last].slice(0,-1); lines[last]=(lines[last]||'').trim()+'…';} return lines}
+function fitText(text,maxWidth,maxLines,start,min,weight){
+  const words=(text||'').trim().split(/\s+/).filter(Boolean);
+  let best=null;
+  for(let s=start;s>=min;s-=1){
+    const font=weight+' '+s+'px Yekan,Tahoma';ctx.font=font;
+    const lines=[];let line='';
+    for(const word of words){
+      const candidate=line?line+' '+word:word;
+      if(line&&ctx.measureText(candidate).width>maxWidth){lines.push(line);line=word;}else line=candidate;
+    }
+    if(line)lines.push(line);
+    const singleOver=lines.some(v=>ctx.measureText(v).width>maxWidth);
+    if(lines.length<=maxLines&&!singleOver){best={font,size:s,lines};break;}
+  }
+  if(best)return best;
+  const font=weight+' '+min+'px Yekan,Tahoma';
+  return {font,size:min,lines:wrap(text,maxWidth,font,maxLines)};
+}
+function drawBalancedHeadline(title,left,right,top,options={}){
+ const w=right-left,pad=options.pad??8,maxLines=options.maxLines??3;
+ const start=options.start??50,min=options.min??23;
+ let y=top;
+ if(title){const fit=fitText(title,w-pad*2,maxLines,start,min,'800');const lineHeight=fit.size*1.36;
+ ctx.save();ctx.fillStyle=options.color||'#172d40';ctx.textAlign='center';ctx.textBaseline='middle';ctx.direction='rtl';ctx.font=fit.font;
+ fit.lines.forEach((line,i)=>ctx.fillText(line,left+w/2,y+lineHeight*(i+.5),w-pad*2));
+ ctx.restore();y+=fit.lines.length*lineHeight;}
+ const subtitle=options.drawSubtitle===false?'':(rf580SubOn.checked?normalizeText(rf580SubText.value):'');
+ if(subtitle){const f=fitText(subtitle,w-pad*2,2,Math.min(29,start*.62),17,'400');const lh=f.size*1.45;
+ ctx.save();ctx.fillStyle=options.color||'#455a70';ctx.font=f.font;ctx.textAlign='center';ctx.textBaseline='middle';ctx.direction='rtl';
+ f.lines.forEach((line,i)=>ctx.fillText(line,left+w/2,y+10+lh*(i+.5),w-pad*2));ctx.restore();y+=10+f.lines.length*lh;}
+ return y;
+}
+function txt(str,x,y,font,color,align='right'){ctx.font=font;ctx.fillStyle=color;ctx.textAlign=align;ctx.direction='rtl';ctx.fillText(str,x,y)}
+function linesDraw(lines,x,y,w,font,color,lh,align='right'){ctx.font=font;ctx.fillStyle=color;ctx.textAlign=align;ctx.direction='rtl'; lines.forEach((ln,i)=>ctx.fillText(ln,x,y+i*lh,w)); return y+lines.length*lh;}
+function drawOrb(cx,cy,r,p,type=0){ctx.save();ctx.shadowColor='rgba(0,0,0,.20)';ctx.shadowBlur=26;ctx.shadowOffsetY=13; const grad=ctx.createRadialGradient(cx-r*.22,cy-r*.3,r*.1,cx,cy,r); grad.addColorStop(0,'#fff'); grad.addColorStop(.45,p.accent); grad.addColorStop(1,p.base); ctx.fillStyle=grad; if(type===0){ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill()} else if(type===1){rr(cx-r,cy-r,r*2,r*2,r*.35);ctx.fill()} else {ctx.beginPath();for(let k=0;k<6;k++){let a=Math.PI/6+k*Math.PI/3;let px=cx+Math.cos(a)*r, py=cy+Math.sin(a)*r; if(k===0) ctx.moveTo(px,py); else ctx.lineTo(px,py)}ctx.closePath();ctx.fill()} ctx.restore(); ctx.save(); ctx.globalAlpha=.2; ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(cx-r*.25,cy-r*.35,r*.35,0,Math.PI*2); ctx.fill(); ctx.restore();}
+
+// Fill output with original proportions intact; crop excess LEFT side in story format.
+function drawOriginalTemplate(image,anchorLeft=false){
+  if(!image.complete||!image.naturalWidth)return false;
+  const W=cv.width,H=cv.height, iw=image.naturalWidth, ih=image.naturalHeight;
+  const srcRatio=iw/ih, dstRatio=W/H;
+  if(srcRatio>dstRatio){
+    const sw=ih*dstRatio;
+    const sx=anchorLeft?0:iw-sw; // retain bottom-left logo on Khabar Farda; right-edge logos otherwise
+    ctx.drawImage(image,sx,0,sw,ih,0,0,W,H);
+  }else{
+    const sh=iw/dstRatio;
+    const sy=(ih-sh)/2;
+    ctx.drawImage(image,0,sy,iw,sh,0,0,W,H);
+  }
+  return true;
+}
+function safeCanvas(){if(size==='square'){cv.width=1080;cv.height=1080;dimsEl.textContent='۱۰۸۰ × ۱۰۸۰';area.classList.remove('story')}else{cv.width=1080;cv.height=1920;dimsEl.textContent='۱۰۸۰ × ۱۹۲۰';area.classList.add('story')}updateMeta()}
+function bg(p){ctx.clearRect(0,0,cv.width,cv.height); if(brand==='urgent'){ctx.fillStyle='#eceef1'; ctx.fillRect(0,0,cv.width,cv.height); const split=Math.round(cv.width*0.5); ctx.fillStyle='#07954f'; ctx.fillRect(split,0,cv.width-split,cv.height); ctx.save(); ctx.strokeStyle='rgba(255,255,255,.18)'; ctx.lineWidth=2; for(let i=0;i<10;i++){ctx.beginPath();ctx.arc(split+cv.width*.18,120+i*170,80+i*24,0,Math.PI*2);ctx.stroke();} ctx.restore(); return;} ctx.fillStyle=g(0,0,cv.width,cv.height,[[0,p.dark],[.55,p.base],[1,p.bg2]]); ctx.fillRect(0,0,cv.width,cv.height); for(let i=0;i<18;i++){ctx.save();ctx.globalAlpha=.07;ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cv.width*(.08+((i*19+variant*11)%100)/100),cv.height*(.09+((i*13+variant*7)%100)/100),50+i*18,0,Math.PI*2);ctx.stroke();ctx.restore();}}
+function shellCard(p){const urgent=brand==='urgent'; if(urgent){const split=Math.round(cv.width*0.5), pad=size==='square'?42:56; const x=split+pad, y=size==='square'?145:210, w=cv.width-split-pad*2, h=cv.height-y-(size==='square'?72:110); fillR(x,y,w,h,42,'rgba(255,255,255,.96)',22); strokeR(x,y,w,h,42,'rgba(255,255,255,.55)',1.2); return {x,y,w,h,urgent:true}; } const pad=size==='square'?56:68; const x=pad,y=pad,w=cv.width-pad*2,h=cv.height-pad*2; fillR(x,y,w,h,46,'rgba(255,255,255,.08)',12); const cx=x+34, cy=y+34, cw=w-68, ch=h-68; fillR(cx,cy,cw,ch,40,g(cx,cy,cx,cy+ch,[[0,'rgba(255,255,255,.99)'],[1,p.light]]),26); strokeR(cx,cy,cw,ch,40,'rgba(255,255,255,.55)',1.4); return {x:cx,y:cy,w:cw,h:ch,urgent:false}; }
+ function header(card,p,title){if(card.urgent){ctx.textAlign='right'; ctx.fillStyle='#fff'; ctx.font='900 44px Yekan,Tahoma'; ctx.fillText(brands[brand].name,cv.width-64,(size==='square'?56:72)+22); const box={x:card.x+24,y:card.y+26,w:card.w-48,h:size==='square'?210:280}; fillR(box.x,box.y,box.w,box.h,30,'rgba(248,250,252,.98)',10); const fit=fitText(title,box.w-64,size==='square'?3:4,size==='square'?54:58,32,'900'); let sy=box.y+72; linesDraw(fit.lines,box.x+box.w-34,sy,box.w-68,fit.font,'#16314b',fit.size+16,'right'); ctx.save();ctx.lineCap='round';ctx.strokeStyle='#15a867';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(box.x+40,box.y+box.h-22);ctx.lineTo(box.x+box.w-40,box.y+box.h-22);ctx.stroke();ctx.restore(); return {x:card.x+24,y:box.y+box.h+20,w:card.w-48,h:card.h-(box.h+72)};} fillR(card.x+26,card.y+24,card.w-52,72,22,'rgba(255,255,255,.86)',6); txt(brands[brand].name,card.x+card.w-46,card.y+66,'900 38px Yekan,Tahoma',p.dark,'right'); txt('RushFinder Infographic',card.x+46,card.y+63,'24px Yekan,Tahoma',p.base,'left'); drawOrb(card.x+110,card.y+142,46,p,variant%3); drawOrb(card.x+card.w-94,card.y+150,36,p,(variant+1)%3);
+ const box={x:card.x+30,y:card.y+122,w:card.w-60,h:size==='square'?188:245}; fillR(box.x,box.y,box.w,box.h,28,'rgba(255,255,255,.68)'); const fit=fitText(title,box.w-70,size==='square'?3:4,size==='square'?58:62,34,'900'); let sy=box.y+76; if(fit.lines.length==1) sy+=16; if(fit.lines.length>=3) sy-=8; linesDraw(fit.lines,box.x+box.w-34,sy,box.w-68,fit.font,p.dark,fit.size+18,'right'); ctx.save();ctx.lineCap='round';ctx.strokeStyle=p.base;ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(box.x+38,box.y+box.h-24);ctx.lineTo(box.x+Math.min(box.w*.72,box.w-42),box.y+box.h-24);ctx.stroke();ctx.restore(); return {x:box.x,y:box.y+box.h+26,w:box.w,h:card.y+card.h-(box.y+box.h+56)} }
+ function drawIcon(x,y,w,h,p,kind){const cx=x+w/2, cy=y+h/2; if(kind===0){drawOrb(cx,cy,Math.min(w,h)*.22,p,0); txt('٪',cx,cy+10,'900 '+Math.round(Math.min(w,h)*.28)+'px Yekan,Tahoma','#fff','center')} else if(kind===1){drawOrb(cx,cy,Math.min(w,h)*.22,p,1); txt('✓',cx,cy+8,'900 '+Math.round(Math.min(w,h)*.24)+'px Yekan,Tahoma','#fff','center')} else if(kind===2){drawOrb(cx,cy,Math.min(w,h)*.22,p,2); txt('★',cx,cy+11,'900 '+Math.round(Math.min(w,h)*.18)+'px Yekan,Tahoma','#fff','center')} else {drawOrb(cx,cy,Math.min(w,h)*.22,p,0); txt('!',cx,cy+10,'900 '+Math.round(Math.min(w,h)*.22)+'px Yekan,Tahoma','#fff','center')}}
+ function drawList(body,items,p){layoutName.textContent='چیدمان لیستی حرفه‌ای';updateMeta(); const listItems=items.length?items.slice(0,size==='square'?6:8):['نکته اول را اینجا بنویسید','نکته دوم را اینجا بنویسید','نکته سوم را اینجا بنویسید']; let fontSize=size==='square'?31:35, lineHeight=Math.round(fontSize*1.45), meta=[]; for(;fontSize>=22;fontSize-=1){lineHeight=Math.round(fontSize*1.45); meta=[]; let total=0; for(let i=0;i<listItems.length;i++){const val=listItems[i]; const lines=wrap(val,body.w-210,'700 '+fontSize+'px Yekan,Tahoma',size==='square'?3:3); const h=Math.max(98, 34+lines.length*lineHeight); meta.push({lines,h}); total += h+18; } if(total < body.h-20) break; }
+ let y=body.y+8; for(let i=0;i<meta.length;i++){if(y+meta[i].h>body.y+body.h-5) break; fillR(body.x+6,y,body.w-12,meta[i].h,24,i%2? 'rgba(255,255,255,.88)' : 'rgba(255,255,255,.98)',10); strokeR(body.x+6,y,body.w-12,meta[i].h,24,'rgba(19,52,93,.06)'); fillR(body.x+body.w-164,y+16,130,meta[i].h-32,20,i%2?p.dark:p.base,10); txt('نکته '+(i+1),body.x+body.w-99,y+meta[i].h/2+11,'900 24px Yekan,Tahoma','#fff','center'); drawIcon(body.x+28,y+14,94,meta[i].h-28,p,(i+variant)%4); linesDraw(meta[i].lines,body.x+body.w-188,y+42,body.w-310,'700 '+fontSize+'px Yekan,Tahoma','#20324d',fontSize*1.42); y += meta[i].h+18; } }
+ function drawCards(body,items,p){layoutName.textContent='کارت‌های آماری';updateMeta(); const arr=(items.length?items:['مورد اول: توضیح کوتاه','مورد دوم: توضیح کوتاه','مورد سوم: توضیح کوتاه','مورد چهارم: توضیح کوتاه']).slice(0,size==='square'?6:8); const cols=size==='square'?2:2; const gap=18; const totalRows=Math.ceil(arr.length/cols); const boxW=(body.w-gap*(cols-1))/cols; let boxH=(body.h-gap*(totalRows-1))/totalRows; boxH=Math.min(boxH,size==='square'?185:190);
+ for(let i=0;i<arr.length;i++){const r=Math.floor(i/cols), c=i%cols; const x=body.x + c*(boxW+gap), y=body.y + r*(boxH+gap); if(y+boxH>body.y+body.h+2) continue; fillR(x,y,boxW,boxH,28,'rgba(255,255,255,.97)',12); strokeR(x,y,boxW,boxH,28,'rgba(18,48,90,.06)'); const parsed=parseLine(arr[i]); fillR(x+18,y+18,92,boxH-36,24,g(0,y,0,y+boxH,[[0,p.base],[1,p.accent]]),12); drawIcon(x+16,y+16,96,boxH-32,p,(i+variant)%4); txt(parsed.label || ('بخش '+(i+1)),x+boxW-24,y+48,'900 28px Yekan,Tahoma',p.dark,'right'); const fit=fitText(parsed.value,boxW-150,4,26,19,'700'); linesDraw(fit.lines,x+boxW-24,y+90,boxW-150,fit.font,'#243853',fit.size+12); } }
+ function groupComparison(items){const out={}; items.forEach(line=>{const p=parseLine(line); const m=(p.label||'').match(/(سال|ماه|هفته|روز)\s*([0-9۰-۹]+)/); if(m){const key=(m[1]+' '+m[2]).trim(); if(!out[key]) out[key]=[]; out[key].push({label:key,value:p.value})} }); return out}
+ function drawComparison(body,items,p){layoutName.textContent='مقایسه‌ای';updateMeta(); const groups=groupComparison(items); const keys=Object.keys(groups); if(keys.length<2){drawCards(body,items,p); layoutName.textContent='کارت‌های آماری'; updateMeta(); return}
+ const show=keys.slice(0,2); const cols=2, gap=20; const colW=(body.w-gap)/2; show.forEach((key,idx)=>{const x=body.x + idx*(colW+gap), y=body.y; const entries=groups[key].slice(0,size==='square'?4:5); fillR(x,y,colW,body.h-4,30,'rgba(255,255,255,.98)',14); const topH=90; fillR(x+18,y+18,colW-36,topH,22,g(x,y,x+colW,y,[[0,p.base],[1,p.accent]]),10); txt(key,x+colW/2,y+62,'900 46px Yekan,Tahoma',idx===0? '#fff': '#fff','center'); let boxY=y+topH+34; let fs=size==='square'?26:28; entries.forEach((it,i)=>{const rowH=(body.h-topH-70)/entries.length - 10; fillR(x+18,boxY,colW-36,rowH,20,i%2? 'rgba(255,255,255,.82)':p.light,8); const valueFit=fitText(it.value,colW-150,2,fs,18,'800'); drawIcon(x+24,boxY+10,86,rowH-20,p,(i+variant+idx)%4); linesDraw(valueFit.lines,x+colW-34,boxY+rowH/2-(valueFit.lines.length-1)*(valueFit.size+8)/2+8,colW-150,valueFit.font,p.dark,valueFit.size+10); boxY += rowH+12; }); }); }
+ function drawUrgentTemplate(){
+  const W=cv.width,H=cv.height;ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+  const selectedTemplate=size==='story'?urgentStoryTemplate:urgentTemplate;
+  if(selectedTemplate.complete&&selectedTemplate.naturalWidth)drawOriginalTemplate(selectedTemplate);
+  else {ctx.fillStyle='#008b4f';ctx.fillRect(W/2,0,W/2,H);}
+  // All authored content fits exclusively inside the left white 50% of the supplied template.
+  const left=size==='story'?45:38,right=size==='story'?Math.floor(W*0.63)-28:W/2-31,cw=right-left,parsed=splitText(input.value), title=parsed.title;
+  const titleTop=size==='story'?110:95;
+  ctx.save();ctx.beginPath();ctx.rect(20,0,size==='story'?Math.floor(W*.63)-32:W/2-32,H);ctx.clip();
+  const titleBottom=drawBalancedHeadline(title,left,right,titleTop,{start:size==='story'?49:45,min:24,maxLines:3,color:'#112c3f'});
+  ctx.fillStyle='#0b9655';ctx.fillRect(left,titleBottom+8,cw-2,5);
+  const count=Math.min(parsed.items.length,size==='story'?9:7);const values=parsed.items.slice(0,count);
+  let first=titleBottom+43,bottom=H-(size==='story'?100:74)-(rf586SourceOn.checked&&rf586SourceText.value.trim()?85:0),available=bottom-first;
+  const gap=size==='story'?23:16;
+  let slot=Math.min(size==='story'?143:118,(available-gap*Math.max(0,count-1))/Math.max(1,count));
+  slot=Math.max(64,slot);
+  if(!values.length)values.push('متن خبر را وارد کنید');
+  values.forEach((item,i)=>{
+    let yy=first+i*(slot+gap); if(yy+slot>bottom+3)return;
+    ctx.save();ctx.shadowColor='rgba(7,51,40,.12)';ctx.shadowBlur=12;ctx.shadowOffsetY=5;
+    ctx.fillStyle=i%2===0?'#f3fcf7':'#ffffff';ctx.beginPath();ctx.roundRect(left,yy,cw,slot,rf580EffectiveStyle()==="table"?3:18);ctx.fill();ctx.restore();
+    ctx.strokeStyle='#d8ebe1';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(left,yy,cw,slot,18);ctx.stroke();
+    ctx.fillStyle='#0b9655';ctx.beginPath();ctx.roundRect(right-11,yy+12,6,slot-24,3);ctx.fill();
+    let base=Math.min(size==='story'?31:27,Math.round(slot*.32));
+    let f=fitText(item,cw-46,3,base,17,'700');
+    // Keep entire text vertically within its own box.
+    while(f.lines.length*(f.size+7)>slot-20&&base>17){base-=2;f=fitText(item,cw-46,3,base,17,'700')}
+    ctx.fillStyle='#14344b';ctx.font=f.font;ctx.textAlign='right';ctx.direction='rtl';
+    const lineH=f.size+7,sy=yy+(slot-f.lines.length*lineH)/2+f.size;
+    f.lines.forEach((s,j)=>ctx.fillText(s,right-25,sy+j*lineH,cw-48));
+  });
+  ctx.restore();layoutName.textContent='قالب اصلی خبر فوری';updateMeta();
+ }
+ function drawMashhadTemplate(){
+  const W=cv.width,H=cv.height;
+  ctx.save();ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+  const template=size==='story'?mashhadStoryTemplate:mashhadSquareTemplate;
+  if(template.complete&&template.naturalWidth)drawOriginalTemplate(template);
+  ctx.restore();
+  // Protect the logo and yellow brand stripe; news content is confined to white safe area.
+  const left=48,right=W*.73,contentWidth=right-left;
+  const parsed=splitText(input.value),title=parsed.title;
+  const titleTop=size==='story'?125:106;
+  const limitY=H-(size==='story'?115:90)-(rf586SourceOn.checked&&rf586SourceText.value.trim()?85:0);
+  ctx.save();ctx.beginPath();ctx.rect(left-4,0,right-left+8,H);ctx.clip();
+  const firstLineEnd=drawBalancedHeadline(title,left+12,right-12,titleTop,{start:size==='story'?53:48,min:25,maxLines:3,color:'#172b45'})+12;
+  ctx.fillStyle='#ffc400';ctx.fillRect(left+6,firstLineEnd,contentWidth-32,6);
+  const values=parsed.items.length?parsed.items.slice(0,size==='story'?10:7):['متن خبر را وارد کنید'];
+  const first=firstLineEnd+38, gap=size==='story'?21:14;
+  const slot=Math.max(65,Math.min(size==='story'?144:121,(limitY-first-gap*(values.length-1))/values.length));
+  values.forEach((item,i)=>{
+    const yy=first+i*(slot+gap);if(yy+slot>limitY+5)return;
+    ctx.save();ctx.shadowColor='rgba(84,65,12,.10)';ctx.shadowBlur=13;ctx.shadowOffsetY=5;
+    ctx.fillStyle=i%2?'#fff':'#fffdf2';ctx.beginPath();ctx.roundRect(left+6,yy,contentWidth-22,slot,rf580EffectiveStyle()==="table"?3:18);ctx.fill();ctx.restore();
+    ctx.strokeStyle='#f4e9b9';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(left+6,yy,contentWidth-22,slot,18);ctx.stroke();
+    ctx.fillStyle='#ffca08';ctx.beginPath();ctx.roundRect(right-30,yy+11,6,slot-22,3);ctx.fill();
+    const f=fitText(item,contentWidth-68,3,Math.min(size==='story'?33:29,Math.round(slot*.31)),18,'700');
+    const lh=f.size+8,yStart=yy+(slot-f.lines.length*lh)/2+f.size;
+    ctx.fillStyle='#172b45';ctx.textAlign='right';ctx.direction='rtl';ctx.font=f.font;
+    f.lines.forEach((line,j)=>ctx.fillText(line,right-43,yStart+j*lh,contentWidth-66));
+  });
+  ctx.restore();layoutName.textContent='قالب اصلی اخبار مشهد';updateMeta();
+ }
+function drawBrandTemplate549(){
+ const W=cv.width,H=cv.height,isStory=size==='story',isJaryan=brand==='jaryan';
+ const image=isJaryan?(isStory?jaryanStory:jaryanSquare):(isStory?fardaStory:fardaSquare);
+ ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+ if(image.complete&&image.naturalWidth)drawOriginalTemplate(image,!isJaryan&&isStory);
+ // Dedicated safe area never overlaps original logos or brand blocks.
+ const left=49, right=isJaryan?Math.floor(W*(isStory?.43:.46)):W-66;
+ const top=isJaryan?100:(isStory?112:76),bottom=(isJaryan?H-94:H-(isStory?300:185))-(rf586SourceOn.checked&&rf586SourceText.value.trim()?85:0);
+ const width=right-left,parsed=splitText(input.value);
+ ctx.save();ctx.beginPath();ctx.rect(left-2,top-20,width+3,bottom-top+20);ctx.clip();
+ let y=drawBalancedHeadline(parsed.title,left,right,top,{start:isJaryan?49:58,min:24,maxLines:3,color:'#152b3c'})+18;
+ ctx.fillStyle=isJaryan?'#f3c928':'#f02b57';ctx.fillRect(left,y,width-14,5);y+=25;
+ const remaining=bottom-y,all=parsed.items.length?parsed.items:['متن خبر را وارد کنید'];
+ const count=Math.min(all.length,isStory?9:6);const gap=isStory?18:13;
+ const cellH=Math.min(isStory?139:116,Math.max(62,(remaining-gap*(count-1))/count));
+ for(let i=0;i<count;i++){
+  const yy=y+i*(cellH+gap);if(yy+cellH>bottom)break;
+  fillR(left+2,yy,width-6,cellH,rf580EffectiveStyle()==='table'?3:15,i%2?'#ffffff':'#f8fafc',rf580EffectiveStyle()==='3d'?20:rf580EffectiveStyle()==='minimal'?0:8);
+  strokeR(left+2,yy,width-6,cellH,15,'#e6ebef',1.5);
+  ctx.fillStyle=isJaryan?'#e9bd05':'#ea3153';ctx.fillRect(right-8,yy+10,4,cellH-20);
+  const st=rf580EffectiveStyle();if(st==='chart'||st==='timeline'||st==='comparison'){ctx.save();ctx.fillStyle=isJaryan?'#e9bd05':'#ea3153';const bx=left+9,by=yy+cellH-16;if(st==='chart'){for(let j=0;j<3;j++)ctx.fillRect(bx+j*10,by-(j+1)*8,7,(j+1)*8)}else if(st==='timeline'){ctx.beginPath();ctx.arc(bx+9,by-14,7,0,Math.PI*2);ctx.fill();ctx.fillRect(bx+8,by-7,2,12)}else{ctx.fillRect(bx,by-28,4,24);ctx.fillRect(bx+9,by-21,4,17)}ctx.restore();} 
+  let f=fitText(all[i],width-30,3,Math.min(30,Math.floor(cellH*.37)),17,'700');
+  const lineH=f.size+7,baseline=yy+(cellH-f.lines.length*lineH)/2+f.size;
+  ctx.font=f.font;ctx.fillStyle='#183449';ctx.textAlign='right';ctx.direction='rtl';
+  f.lines.forEach((line,j)=>ctx.fillText(line,right-20,baseline+j*lineH,width-38));
+ }
+ ctx.restore();layoutName.textContent=isJaryan?'قالب اصلی جریان':'قالب اصلی خبرفردا';updateMeta();
+}
+
+// RF581: distinct Canvas renderers per selected offline style, clipped to safe white region.
+function rf581Render(){
+ const st=rf580EffectiveStyle(), parsed=splitText(input.value);
+ const W=cv.width,H=cv.height,story=size==='story';
+ const isUrgent=brand==='urgent',isMashhad=brand==='mashhad',isJaryan=brand==='jaryan';
+ const img=isUrgent?(story?urgentStoryTemplate:urgentTemplate):isMashhad?(story?mashhadStoryTemplate:mashhadSquareTemplate):isJaryan?(story?jaryanStory:jaryanSquare):(story?fardaStory:fardaSquare);
+ ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+ if(img.complete&&img.naturalWidth)drawOriginalTemplate(img,brand==='farda'&&story);
+ const x=isUrgent?(story?45:38):isMashhad?54:49;
+ const r=isUrgent?(story?Math.floor(W*.63)-28:W/2-31):isMashhad?W*.73:isJaryan?W*(story?.43:.46):W-66;
+ const t=isUrgent?(story?110:95):isMashhad?(story?125:106):isJaryan?100:story?112:76;
+ const b=(isUrgent?H-(story?100:74):isMashhad?H-(story?115:90):isJaryan?H-94:H-(story?300:185))-(rf586SourceOn.checked&&rf586SourceText.value.trim()?85:0);
+ const width=r-x, accent=isUrgent?'#079c57':isMashhad?'#dbab03':isJaryan?'#d7a900':'#e53a60';
+ const ink='#18344a',rows=parsed.items.length?parsed.items:['متن خبر را وارد کنید'];
+ ctx.save();ctx.beginPath();ctx.rect(x,t-5,width,b-t+8);ctx.clip();ctx.textAlign='right';ctx.direction='rtl';
+ let y=t;
+ if(parsed.title){
+   const end=drawBalancedHeadline(parsed.title,x+5,r-5,y,{start:story?49:42,min:23,maxLines:3,color:ink,drawSubtitle:false});
+   y=end+11;
+ }
+ if(parsed.subtitle){
+   const f=fitText(parsed.subtitle,width-20,2,story?31:25,17,'400');
+   const lh=f.size*1.35;ctx.font=f.font;ctx.fillStyle='#506175';
+   f.lines.forEach((line,i)=>ctx.fillText(line,r-12,y+f.size+i*lh,width-24));
+   y+=lh*f.lines.length+18;
+ }
+ if(parsed.title||parsed.subtitle){ctx.fillStyle=accent;ctx.fillRect(x+9,y,width-18,3);y+=26;}
+ const maxRows=story?9:7,shown=rows.slice(0,maxRows);
+ const avail=Math.max(110,b-y-12),gap=st==='minimal'?23:st==='table'?1:st==='timeline'?15:13;
+ const rowH=Math.max(38,Math.min(story?156:116,(avail-gap*(shown.length-1))/shown.length));
+ const radius=st==='minimal'||st==='table'?2:st==='2d'?8:16;
+ const numerical=(v)=>{const converted=String(v).replace(/[۰-۹]/g,c=>String('۰۱۲۳۴۵۶۷۸۹'.indexOf(c))).replace(/[٠-٩]/g,c=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(c)));const m=converted.match(/[-+]?\d+(?:[.,]\d+)?/);return m?Number(m[0].replace(',','.')):null;};
+ const nums=shown.map(x=>numerical(parseLine(x).value));
+ const positives=nums.filter(n=>n!==null&&n>=0),peak=Math.max(1,...positives);
+ const rowText=(str,xx,yy,ww,hh,sz=25,color=ink)=>{let f=fitText(str,Math.max(40,ww-18),3,Math.min(sz,Math.max(16,Math.round(hh*.33))),15,'600');while(f.lines.length*(f.size+6)>hh-12&&f.size>15)f=fitText(str,ww-18,3,f.size-1,15,'600');const lh=f.size+6,sy=yy+(hh-f.lines.length*lh)/2+f.size;ctx.fillStyle=color;ctx.font=f.font;ctx.textAlign='right';ctx.direction='rtl';f.lines.forEach((line,i)=>ctx.fillText(line,xx+ww-8,sy+i*lh,ww-14));};
+ function base(yy,hh,i,rad=radius,fill='#fff',shadow=0){fillR(x+3,yy,width-7,hh,rad,fill,shadow);}
+ if(st==='table'){
+   ctx.fillStyle=accent;ctx.fillRect(x+3,y,width-7,33);
+   ctx.fillStyle='#fff';ctx.font='700 19px Yekan,Tahoma';ctx.fillText('شرح',r-22,y+24);ctx.fillText('مقدار',x+Math.round(width*.37),y+24);
+   const yy0=y+35,h=Math.min(rowH,(b-yy0)/shown.length);
+   shown.forEach((item,i)=>{const p=parseLine(item),yy=yy0+i*h;ctx.fillStyle=i%2?'#f3f7fa':'#ffffff';ctx.fillRect(x+3,yy,width-7,h);ctx.strokeStyle='#d5e0e9';ctx.lineWidth=1;ctx.strokeRect(x+3,yy,width-7,h);ctx.beginPath();ctx.moveTo(x+width*.42,yy);ctx.lineTo(x+width*.42,yy+h);ctx.stroke();rowText(p.label||p.value,x+width*.42,yy,width*.58-9,h,24);if(p.label)rowText(p.value,x+5,yy,width*.42-9,h,23,accent);});
+ }else if(st==='chart'){
+   shown.forEach((item,i)=>{const yy=y+i*(rowH+gap);if(yy+rowH>b+2)return;const p=parseLine(item),val=nums[i];base(yy,rowH,i,8,i%2?'#f7fafd':'#fff');const boxW=width*.44;rowText(p.label||item,x+width*.40,yy,width*.58-12,rowH*.7,24);const q=val===null?(i+1)/(shown.length+1):Math.max(0,val)/peak;ctx.fillStyle='#e5edf4';ctx.fillRect(x+15,yy+rowH*.56,boxW,rowH*.23);ctx.fillStyle=accent;ctx.fillRect(x+15+boxW*(1-q),yy+rowH*.56,boxW*q,rowH*.23);if(val!==null){ctx.font='700 18px Yekan,Tahoma';ctx.fillStyle=ink;ctx.fillText(p.value,x+boxW+12,yy+rowH*.45,boxW-10);}});
+ }else if(st==='comparison'){
+   const colGap=10,colW=(width-colGap-12)/2;
+   shown.forEach((item,i)=>{const row=Math.floor(i/2),col=i%2,hh=Math.min(story?185:135,Math.max(90,(avail-16*Math.floor((shown.length-1)/2))/(Math.ceil(shown.length/2))));const xx=x+4+(1-col)*(colW+colGap),yy=y+row*(hh+16);if(yy+hh>b+2)return;fillR(xx,yy,colW,hh,12,col?'#f5f8fc':'#fdfefe',5);ctx.fillStyle=accent;ctx.fillRect(xx+colW-5,yy+12,4,hh-24);rowText(item,xx+4,yy+10,colW-14,hh-20,23);});
+ }else if(st==='timeline'){
+   const lineX=r-17;ctx.strokeStyle=accent;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(lineX,y+14);ctx.lineTo(lineX,Math.min(b-14,y+(rowH+gap)*shown.length));ctx.stroke();
+   shown.forEach((item,i)=>{const yy=y+i*(rowH+gap);if(yy+rowH>b+2)return;ctx.fillStyle=accent;ctx.beginPath();ctx.arc(lineX,yy+rowH/2,8,0,Math.PI*2);ctx.fill();base(yy,rowH,i,11,'#f7fafd');rowText(item,x+10,yy,width-48,rowH,24);});
+ }else if(st==='cards'){
+   const colGap=13,colW=(width-colGap-12)/2,lines=Math.ceil(shown.length/2),hh=Math.min(story?210:157,Math.max(75,(avail-13*(lines-1))/lines));
+   shown.forEach((item,i)=>{const row=Math.floor(i/2),col=i%2,xx=x+3+col*(colW+colGap),yy=y+row*(hh+13);if(yy+hh>b+2)return;fillR(xx,yy,colW,hh,17,i%2?'#f6fafc':'#fff',9);ctx.fillStyle=accent;ctx.beginPath();ctx.arc(xx+20,yy+21,8,0,Math.PI*2);ctx.fill();rowText(item,xx+3,yy+20,colW-6,hh-27,23);});
+ }else{
+   shown.forEach((item,i)=>{const yy=y+i*(rowH+gap);if(yy+rowH>b+2)return;
+     if(st==='minimal'){
+       ctx.strokeStyle='#dbe4eb';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+8,yy+rowH);ctx.lineTo(r-8,yy+rowH);ctx.stroke();
+       rowText(item,x+17,yy,width-32,rowH,story?27:24);
+     }else if(st==='3d'){
+       base(yy+3,rowH-5,i,19,i%2?'#f2f7fe':'#ffffff',22);
+       const grad=ctx.createLinearGradient(x,yy,x,yy+rowH);grad.addColorStop(0,'#ffffff');grad.addColorStop(1,'#dbe7f4');fillR(x+8,yy+9,16,rowH-25,7,grad,6);
+       rowText(item,x+28,yy,width-45,rowH,25);
+     }else{
+       base(yy,rowH,i,10,i%2?'#f1f6fa':'#ffffff',0);ctx.fillStyle=accent;ctx.fillRect(r-10,yy+11,5,rowH-22);rowText(item,x+13,yy,width-36,rowH,25);
+     }
+   });
+ }
+ ctx.restore();
+ const names={'2d':'دوبعدی','3d':'سه‌بعدی برجسته','minimal':'مینیمال','table':'جدولی','chart':'نموداری','comparison':'مقایسه‌ای','timeline':'خط زمانی','cards':'کارت‌های اطلاعاتی'};
+ layoutName.textContent=(names[st]||'دوبعدی')+' | '+brands[brand].name;updateMeta();
+ statusEl.textContent=rf580Style.value==='other'?'پرامپت شما بررسی شد؛ بخش‌های قابل پشتیبانی به سبک '+(names[st]||'دوبعدی')+' تبدیل شدند. تولید آزاد تصویر نیازمند سرویس هوش مصنوعی است.':'';
+}
+
+ function render(){safeCanvas();if(rf580Style.value!=='auto'){rf581Render();return;}if(brand==='urgent'){drawUrgentTemplate();statusEl.textContent=rf580Style.value==='other'?'پرامپت دلخواه ثبت شد؛ پیش‌نمایش آفلاین فقط از سبک‌های پشتیبانی‌شده استفاده می‌کند.':'';return;}if(brand==='mashhad'){drawMashhadTemplate();statusEl.textContent=rf580Style.value==='other'?'پرامپت دلخواه ثبت شد؛ پیش‌نمایش آفلاین فقط از سبک‌های پشتیبانی‌شده استفاده می‌کند.':'';return;}if(brand==='jaryan'||brand==='farda'){drawBrandTemplate549();statusEl.textContent=rf580Style.value==='other'?'پرامپت دلخواه ثبت شد؛ پیش‌نمایش آفلاین فقط از سبک‌های پشتیبانی‌شده استفاده می‌کند.':'';return;} const p=brands[brand];bg(p);const parsed=splitText(input.value),card=shellCard(p),body=header(card,p,parsed.title),mode=detectLayout(parsed.title,parsed.items);if(mode==='comparison')drawComparison(body,parsed.items,p);else if(mode==='cards')drawCards(body,parsed.items,p);else drawList(body,parsed.items,p);updateMeta();statusEl.textContent='پیش‌نمایش آفلاین آماده است؛ قالب و لوگو حفظ شده‌اند.'; }
+
+ // RF586: Optional source caption. Never alters original brand template images.
+ const rf586SourceOn=document.getElementById('rf586-source-on');
+ const rf586SourceText=document.getElementById('rf586-source-text');
+ function rf586DrawSource(){
+  if(!rf586SourceOn.checked || !rf586SourceText.value.trim())return;
+  const text=rf584PersianDigits('منبع: '+rf586SourceText.value.trim());
+  const story=size==='story';
+  const isUrgent=brand==='urgent',isMashhad=brand==='mashhad',isJaryan=brand==='jaryan',isFarda=brand==='farda';
+  const W=cv.width,H=cv.height;
+  // Anchor the badge to the bottom RIGHT edge of the original white template.
+  const right=W-(isJaryan?72:isUrgent?76:70);
+  const maxW=Math.min(W*.76,right-100);
+  const footerBottom=H-(isFarda?(story?178:104):(story?43:31));
+  const theme=isUrgent?'#07874c':isMashhad?'#f2be00':isJaryan?'#222b3e':'#cf244a';
+  const ink=isMashhad?'#302408':'#ffffff';
+  const family=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
+  const words=text.split(/\s+/).filter(Boolean);
+  ctx.save();ctx.direction='rtl';ctx.textAlign='right';ctx.textBaseline='middle';
+  let lines=[],font=24;
+  // Keep every word: wrap long source descriptions rather than clipping them.
+  for(font=24;font>=14;font--){
+    ctx.font='400 '+font+'px '+family;
+    lines=[];let line='';
+    for(const word of words){
+      const next=line?line+' '+word:word;
+      if(line&&ctx.measureText(next).width>maxW-36){lines.push(line);line=word;}
+      else line=next;
+    }
+    if(line)lines.push(line);
+    if(lines.length<=2)break;
+  }
+  const contentW=Math.max(...lines.map(line=>ctx.measureText(line).width),65);
+  const width=Math.min(maxW,Math.ceil(contentW+42));
+  const lineHeight=font*1.55;
+  const height=Math.ceil(Math.max(38,lines.length*lineHeight+14));
+  const left=right-width;
+  const top=footerBottom-height;
+  ctx.shadowColor='rgba(14,41,67,.14)';ctx.shadowBlur=6;ctx.shadowOffsetY=2;
+  ctx.fillStyle=theme;ctx.beginPath();ctx.roundRect(left,top,width,height,10);ctx.fill();
+  ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+  ctx.fillStyle=ink;
+  lines.forEach((line,i)=>ctx.fillText(line,right-20,top+height/2+(i-(lines.length-1)/2)*lineHeight,width-40));
+  ctx.restore();
+}
+
+const rf586OriginalRender=render;
+ render=function(){rf586OriginalRender();rf586DrawSource();};
+ rf586SourceOn.addEventListener('change',()=>{rf586SourceText.hidden=!rf586SourceOn.checked;render();});
+ rf586SourceText.addEventListener('input',render);
+ document.getElementById('download').onclick=()=>{render(); cv.toBlob(blob=>{const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='RushFinder-Infographic-551-'+brand+'-'+size+'.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500);},'image/png')};
+ document.getElementById('copy').onclick=()=>{const t=input.value; if(navigator.clipboard?.writeText) navigator.clipboard.writeText(t).then(()=>statusEl.textContent='متن کپی شد.'); else {input.select(); document.execCommand('copy'); statusEl.textContent='متن کپی شد.';}};
+ rf580TitleText.value='مقایسه روزهای هوای پاک امسال و سال گذشته';
+ input.value='سال ۱۴۰۴: ۷ روز هوای پاک\nسال ۱۴۰۴: ۹۷ روز قابل قبول\nسال ۱۴۰۴: ۸۶ روز ناسالم برای گروه‌های حساس\nسال ۱۴۰۵: ۴ روز هوای پاک\nسال ۱۴۰۵: ۱۵۸ روز قابل قبول\nسال ۱۴۰۵: ۴۸ روز ناسالم برای گروه‌های حساس\nسال ۱۴۰۵: ۴ روز ناسالم برای تمامی افراد';
+ (document.fonts?.ready||Promise.resolve()).then(render).catch(render);
+})();
+</script>
+<script id="rf550-brand-logos">
+(()=>{
+ const brandMap={urgent:'assets/infographic-logos/fori.webp',mashhad:'assets/infographic-logos/mashhad.webp',jaryan:'assets/infographic-logos/jaryan.jpg',farda:'assets/infographic-logos/khabarfarda.jpg'};
+ const keys=['urgent','mashhad','jaryan','farda'];
+ function sync(){document.querySelectorAll('.brandBtn').forEach((button,i)=>{const box=button.querySelector('.brandIconBox');if(!box||box.querySelector('img')||!keys[i])return;const img=document.createElement('img');img.className='brandLogoMini';img.src=brandMap[keys[i]];img.alt='';box.appendChild(img);});}
+ sync();
+})();
+</script>
+
+
+
+
+<style id="rf585-style-gap">
+.rf580-style-section .rf580-style-select{display:block!important;width:calc(100% - 10px)!important;margin-right:10px!important;margin-left:0!important}
+</style>
+</body></html>
