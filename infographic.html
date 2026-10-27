@@ -281,7 +281,7 @@ textarea{min-height:155px!important;max-height:320px!important;padding:13px!impo
 /* Same medium weight as the output-font heading. */
 .controls .rf603-title-controls .secTitle,.controls .rf580-check{font-weight:500!important}
 </style>
-</head><body>
+<style id="rf607-openrouter-test-style">#rf607-test-area{margin:10px 0 3px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}#rf607-test-button{border:1px solid #c9d9ea;border-radius:11px;background:#fff;color:#264669;padding:9px 13px;font-size:12px;font-weight:500;cursor:pointer}#rf607-test-button:disabled{opacity:.6;cursor:wait}#rf607-test-output{font-size:12px;line-height:1.9;color:#274862;max-width:100%}</style></head><body>
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
@@ -336,6 +336,7 @@ textarea{min-height:155px!important;max-height:320px!important;padding:13px!impo
         </select>
         <div id="rf584-font-help">پیش‌نمایش و فایل PNG با فونت انتخابی و اعداد فارسی ساخته می‌شوند.</div>
       </div>
+<div id="rf607-test-area"><button type="button" id="rf607-test-button">بررسی اتصال OpenRouter (بدون هزینه)</button><span id="rf607-test-output" role="status" aria-live="polite"></span></div>
 <div class="actions rf601-actions"><button id="generate" class="primary">✦ ساخت اینفوگرافیک</button><button id="reroll" class="ghost">↻ طرح متفاوت</button></div><div id="rf594-status" role="status" aria-live="polite" style="font-size:12px;line-height:1.9;color:#27546b;white-space:pre-wrap;margin-top:7px" hidden></div>
     </section>
     <section class="panel">
@@ -1029,4 +1030,18 @@ btn.addEventListener('click',async event=>{
  // Deliberately do not persist private news into browser storage.
 })();
 </script>
-</body></html>
+<script id="rf607-openrouter-test">(function(){
+ const button=document.getElementById('rf607-test-button');
+ const result=document.getElementById('rf607-test-output');
+ if(!button||!result)return;
+ button.addEventListener('click',async function(){
+   button.disabled=true;result.textContent='در حال آزمایش اتصال از سرور Vercel...';
+   try{
+     const response=await fetch('/api/netarz-analyze?probe=openrouter',{method:'GET',cache:'no-store',headers:{Accept:'application/json'}});
+     const data=await response.json();
+     result.textContent=(data.ok?'✓ ':'✕ ')+(data.message||'پاسخ نامشخص از سرور دریافت شد.')+' ['+(data.code||response.status)+']';
+     result.style.color=data.ok?'#08754c':'#ac3b25';
+   }catch(e){result.textContent='خطا در برقراری ارتباط با تابع تست روی Vercel.';result.style.color='#ac3b25';}
+   finally{button.disabled=false;}
+ });
+})();</script></body></html>

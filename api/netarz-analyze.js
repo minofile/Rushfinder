@@ -1,5 +1,31 @@
 import {netarzPost} from '../lib/netarz-common.js';
+
+// OpenRouter connectivity probe. No paid model invocation, no API-key disclosure.
+async function rf607ProbeOpenRouter(req,res){
+  res.setHeader('Cache-Control','no-store');
+  if(req.method!=='GET') return res.status(405).json({ok:false,code:'METHOD_NOT_ALLOWED'});
+  const key=process.env.OPENROUTER_API_KEY;
+  if(!key) return res.status(200).json({ok:false,code:'MISSING_KEY',message:'کلید OPENROUTER_API_KEY در Vercel تنظیم نشده است.'});
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),12000);
+  try{
+    const response=await fetch('https://openrouter.ai/api/v1/auth/key',{
+      method:'GET',headers:{Authorization:`Bearer ${key}`,Accept:'application/json'},
+      signal:controller.signal,redirect:'error'
+    });
+    // Never forward response bodies: some providers may include account identifiers.
+    if(response.ok)return res.status(200).json({ok:true,code:'CONNECTED',message:'اتصال Vercel به OpenRouter و اعتبار کلید تأیید شد.'});
+    if(response.status===401)return res.status(200).json({ok:false,code:'INVALID_KEY',message:'کلید از طرف OpenRouter پذیرفته نشد (401).'});
+    if(response.status===403)return res.status(200).json({ok:false,code:'BLOCKED',message:'OpenRouter درخواست Vercel را رد کرد (403). ممکن است محدودیت امنیتی یا دسترسی باشد.'});
+    if(response.status===429)return res.status(200).json({ok:false,code:'RATE_LIMITED',message:'محدودیت تعداد درخواست اعمال شده است (429).'});
+    return res.status(200).json({ok:false,code:'UPSTREAM_ERROR',status:response.status,message:'OpenRouter پاسخ ناموفق داد: '+response.status});
+  }catch(e){
+    return res.status(200).json({ok:false,code:e.name==='AbortError'?'TIMEOUT':'NETWORK_ERROR',message:e.name==='AbortError'?'مهلت اتصال به OpenRouter تمام شد.':'ارتباط سرور Vercel با OpenRouter برقرار نشد.'});
+  }finally{clearTimeout(timeout)}
+}
+
 export default async function handler(req,res){
+ if(req.query?.probe==='openrouter')return rf607ProbeOpenRouter(req,res);
  try{
   const news=String(req.body?.news||'').trim();
   if(news.length<15||news.length>6500)return res.status(400).json({error:'متن خبر باید بین ۱۵ تا ۶۵۰۰ حرف باشد.'});
