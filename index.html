@@ -4437,6 +4437,12 @@ body.rf-company-view #rfCompanyPanel.rf-company-on {
  }
  function showCompany(){
   try{
+   // RF604: close the full-screen infographic iframe before showing the company archive.
+   const infoPanel=document.getElementById('rfInfoPage');
+   if(infoPanel)infoPanel.classList.remove('rf-visible');
+   document.body.classList.remove('rf-info-is-open');
+   const infoButton=document.getElementById('rfInfoNav');
+   if(infoButton)infoButton.classList.remove('active');
    syncSidebarWidth();
    if(typeof window.rfShowCompanyRush==='function')window.rfShowCompanyRush();
    else{
