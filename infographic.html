@@ -897,65 +897,41 @@ const rf586OriginalRender=render;
 <script id="rf594-one-button">
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
-const btn=$('generate'), status=$('rf594-status'), newsInput=$('input');
-let running=false,localClick=false;
-let lastNews='',lastAnalysis=null,lastImage=null;
-function message(t){status.hidden=!t;status.textContent=t||'';}
-function nativeRender(){localClick=true;try{btn.click()}finally{localClick=false}}
-async function api(endpoint,payload){
- const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
- let data;try{data=await response.json()}catch{throw Error('پاسخ سرور قابل خواندن نیست ('+response.status+')')}
- if(!response.ok)throw Error(data.error||'خطای اتصال ('+response.status+')');return data;
+const btn=$('generate'),status=$('rf594-status'),newsInput=$('input');
+let running=false,internalClick=false,lastSignature='',lastPicture=null;
+function say(t){status.hidden=!t;status.textContent=t||'';}
+function localRender(){internalClick=true;try{btn.click()}finally{internalClick=false}}
+function current(){return {news:newsInput.value.trim(),brand:(document.querySelector('.brandBtn.active')?.textContent||'خبر فوری').trim(),style:$('rf580-graphic-style')?.value||'auto',size:document.querySelector('.sizeBtn.active')?.dataset?.size||'square'};}
+function promptFor(c){
+ const styleText={auto:'award-winning editorial infographic art direction, tasteful 3D thematic objects', '2d':'crisp flat 2D editorial vector illustration, NO 3D', '3d':'premium detailed 3D sculpted objects, layered dimensional illustration, subtle glossy materials',table:'structured visual grid with thematic editorial objects',chart:'data visualization themed illustration, unlabelled chart-like decorations',comparison:'two harmonious contrasting thematic visual zones with space for two columns',timeline:'visual progression and time themed editorial illustration',cards:'modular illustration clusters designed for information cards',minimal:'minimal contemporary premium editorial illustration',other:'creative artistic editorial illustration'};
+ const shape=c.size==='story'?'vertical portrait 9:16':'square 1:1';
+ return `Create a BEAUTIFUL, professional Persian news infographic ARTWORK BACKGROUND only, exceptionally art-directed, refined color harmony, polished thematic icons and visually rich editorial illustration. Aspect ratio ${shape}. Selected style: ${styleText[c.style]||styleText.auto}. Brand mood: ${c.brand}. Use the following authentic source article ONLY to understand its news topic and choose accurate, context-relevant imagery. News: ${c.news.slice(0,1550)}. IMPORTANT: absolutely no lettering, no Arabic or Persian words, no numbers, no glyphs, no logo, no fake statistics, no watermark, no captions. The RushFinder app will draw all actual Persian headlines, data, chart numbers, opaque information cards and logo itself. Reserve generous uncluttered central areas for overlays. Put delightful richly detailed thematic illustrations especially around the edges and in corners; background must remain visible around cards. Do NOT embed ready-made statistical cards with illegible text.`.slice(0,3400);
 }
-function apply(data){
- // Never replace the original article or statistics with a lossy AI summary.
- if(data.title && (!$('rf580-title-text').value.trim() || $('rf580-title-text').value.trim()==='مقایسه روزهای هوای پاک امسال و سال گذشته')){
-  $('rf580-title-on').checked=true;$('rf580-title-text').hidden=false;$('rf580-title-text').value=data.title;
- }
- // Preserve the user's selected type (2D/3D/table/etc.) rather than changing it to GPT's guess.
-}
-function buildPrompt(data){
- const brandButton=document.querySelector('.brandBtn.active');
- const selectedBrand=(brandButton?.textContent||'خبر فوری').trim().slice(0,60);
- const style=$('rf580-graphic-style')?.value||'auto';
- const dimensions=document.querySelector('.sizeBtn.active')?.dataset?.size==='story'?'vertical 9:16':'square 1:1';
- const renderStyle=style==='2d'?'flat vector editorial, strictly 2D, no three-dimensional objects':style==='3d'?'rich premium three-dimensional, polished sculpted icons, sophisticated depth':'premium editorial illustrative style '+style;
- return ((data.visual_prompt||'Premium relevant news editorial imagery')+'\n'+renderStyle+'; '+dimensions+'; color harmony for brand '+selectedBrand+'. Detailed topical atmospheric backdrop, exquisite thematic visual icons, keep the composition behind readable opaque cards. Avoid text, numbers, labels, typography and logos.').slice(0,800);
-}
-
-btn.addEventListener('click',async event=>{
- // Only a real user click may initiate the paid flow. Ignore startup/programmatic clicks.
- if(localClick||!event.isTrusted)return;
- event.preventDefault();event.stopImmediatePropagation();
+btn.addEventListener('click',async evt=>{
+ if(internalClick||!evt.isTrusted)return;
+ evt.preventDefault();evt.stopImmediatePropagation();
  if(running)return;
- const news=newsInput.value.trim();if(!news){message('ابتدا متن خبر را وارد کن.');return}
- // A repeated click with the analyzed points still in the input must not spend again.
- if(lastAnalysis&&news===lastNews){nativeRender();message('خروجی با اطلاعات موجود ساخته شد؛ درخواست پولی جدیدی ارسال نشد.');return}
- if(!window.confirm('ساخت هوشمند از GPT-6 و Recraft استفاده می‌کند و ممکن است از اعتبار نت‌ارز کم شود. ادامه می‌دهی؟')){
-  nativeRender();message('اینفوگرافیک با قالب داخلی و بدون مصرف API ساخته شد.');return;
+ const c=current();if(!c.news){say('ابتدا متن خبر را وارد کن.');return}
+ const sig=JSON.stringify(c);
+ if(sig===lastSignature&&lastPicture){window.rf602Artwork=lastPicture;localRender();say('تصویر قبلی بدون درخواست پولی جدید نمایش داده شد.');return}
+ if(!window.confirm('تولید یک تصویر با مدل OpenAI GPT Image 2.5 Sunburst از طریق OpenRouter هزینه دارد و رایگان نیست. آیا یک درخواست تصویر پولی ارسال شود؟')){
+  say('درخواستی به OpenRouter ارسال نشد.');return;
  }
- running=true;btn.disabled=true;let analyzed=false,rendered=false;
+ running=true;btn.disabled=true;
  try{
-  message('در حال تحلیل خبر و انتخاب چیدمان...');
-  window.rf602Artwork=null;
-  const data=await api('/api/netarz-analyze',{news,brand:document.querySelector('.brandBtn.active')?.textContent||'',style:$('rf580-graphic-style')?.value||'auto',size:document.querySelector('.sizeBtn.active')?.dataset?.size||'square'});
-  apply(data);analyzed=true;lastAnalysis=data;
-  lastNews=news;
-  nativeRender();rendered=true;
-  const prompt=buildPrompt(data);
-  message('متن و چیدمان آماده است؛ در حال ساخت المان تصویری...');
-  const result=await api('/api/netarz-image',{prompt});
-  lastImage=result.image||null;
-  if(!lastImage)throw Error('تصویر قابل نمایش دریافت نشد.');
-  const pic=new Image();pic.crossOrigin='anonymous';
-  await new Promise((resolve,reject)=>{pic.onload=resolve;pic.onerror=()=>reject(Error('بارگذاری تصویر امکان‌پذیر نیست؛ خروجی داخلی باقی می‌ماند.'));pic.src=lastImage;});
-  window.rf602Artwork=pic;
-  nativeRender();
-  message('تصویر هوشمند دریافت و داخل پیش‌نمایش و خروجی PNG ترکیب شد. آمار اصلی حفظ شده است.');
- }catch(err){
-  if(!rendered){nativeRender();rendered=true}
-  message('خروجی داخلی نمایش داده شد؛ '+(err?.message||'اتصال هوش مصنوعی ناموفق بود')+' (درخواست تکرار نشد).');
- }finally{running=false;btn.disabled=false}
+  // Render exact user-provided statistics first; never substitute hallucinated AI summaries.
+  window.rf602Artwork=null;localRender();
+  say('در حال تولید تصویر با GPT Image 2.5 Sunburst در OpenRouter…');
+  const response=await fetch('/api/netarz-image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:promptFor(c),size:c.size})});
+  let data;try{data=await response.json()}catch{throw Error('پاسخ سرور قابل خواندن نیست (HTTP '+response.status+').')}
+  if(!response.ok)throw Error(data.error||'خطای ساخت تصویر (HTTP '+response.status+').');
+  if(!data.image)throw Error('تصویر در پاسخ دریافتی وجود ندارد.');
+  const pic=new Image();
+  await new Promise((resolve,reject)=>{pic.onload=resolve;pic.onerror=()=>reject(Error('تصویر دریافتی قابل نمایش نیست.'));pic.src=data.image;});
+  lastSignature=sig;lastPicture=pic;window.rf602Artwork=pic;localRender();
+  say('✓ تصویر OpenAI در خروجی ترکیب شد؛ متن و آمار اصلی حفظ شدند.'+(typeof data.usage_cost==='number'?' هزینه گزارش‌شده: $'+data.usage_cost.toFixed(4):''));
+ }catch(error){say('ساخت تصویر OpenRouter موفق نشد: '+(error?.message||'خطای نامشخص')+' — پیش از تکرار، اعتبار OpenRouter را بررسی کن.');}
+ finally{running=false;btn.disabled=false}
 },true);
 })();
 </script>
