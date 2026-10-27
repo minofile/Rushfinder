@@ -755,82 +755,98 @@ function rf581Render(){
    const template=brand==='urgent'?(story?urgentStoryTemplate:urgentTemplate):brand==='mashhad'?(story?mashhadStoryTemplate:mashhadSquareTemplate):brand==='jaryan'?(story?jaryanStory:jaryanSquare):(story?fardaStory:fardaSquare);
    ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H);drawOriginalTemplate(template,brand==='farda');
    const pal=brand==='mashhad'?{base:'#f2c400',ink:'#251c08',tint:'#fff7d3',edge:'#efc83a'}:brand==='urgent'?{base:'#008f52',ink:'#063824',tint:'#edf9f3',edge:'#70b999'}:brand==='jaryan'?{base:'#e9ba00',ink:'#211d11',tint:'#fff6d6',edge:'#c49a00'}:{base:'#d62f55',ink:'#43182b',tint:'#fff0f4',edge:'#ef91a5'};
-   const left=42,right=W-50,full=right-left;
-   const titleY=story?205:210,contentTop=story?375:342;
-   const bottom=H-(story?124:88)-(rf586SourceOn.checked&&rf586SourceText.value.trim()?85:0);
+   const left=story?34:42,right=W-(story?36:50),full=right-left;
+   const titleY=story?198:210,contentTop=story?352:342;
+   const bottom=H-(story?112:88)-(rf586SourceOn.checked&&rf586SourceText.value.trim()?85:0);
    ctx.save();ctx.fillStyle=brand==='jaryan'?'#fffdfa':brand==='mashhad'?'#fffef8':'#ffffff';
-   ctx.beginPath();ctx.roundRect(left-9,titleY-26,full+18,bottom-titleY+36,30);ctx.fill();ctx.restore();
+   ctx.beginPath();ctx.roundRect(left-8,titleY-24,full+16,bottom-titleY+32,30);ctx.fill();ctx.restore();
+
    const rawTitle=normalizeText(rf580TitleText.value)||'مقایسه وضعیت کیفیت هوا';
    const headline=rawTitle.length>46?'مقایسه کیفیت هوا در '+cols.map(c=>rf584PersianDigits(c.year)).reverse().join(' و '):rawTitle;
-   const hY=titleY-9,hH=story?104:92;
-   fillR(left,hY,full,hH,27,flatMode?pal.tint:g(left,hY,left,hY+hH,[[0,'#fffcec'],[1,pal.tint]]),flatMode?0:12);
-   strokeR(left,hY,full,hH,27,pal.edge,3);
-   if(!flatMode){ctx.save();ctx.globalAlpha=.28;fillR(left+16,hY+7,full-32,Math.max(6,hH*.18),16,'#fffbe3',0);ctx.restore();}
+   const hY=titleY-8,hH=story?96:92;
+   fillR(left,hY,full,hH,26,flatMode?pal.tint:g(left,hY,left,hY+hH,[[0,'#fffcec'],[1,pal.tint]]),flatMode?0:12);
+   strokeR(left,hY,full,hH,26,pal.edge,3);
+   if(!flatMode){ctx.save();ctx.globalAlpha=.24;fillR(left+16,hY+7,full-32,Math.max(6,hH*.17),15,'#fffbe3',0);ctx.restore();}
    ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=pal.ink;
-   let fs=story?56:50;while(fs>22){ctx.font='900 '+fs+'px '+(rf584FontMap[rf584FontSelector.value]||'Yekan,Tahoma');if(ctx.measureText(headline).width<full-76)break;fs--;}
+   let fs=story?48:50;while(fs>20){ctx.font='900 '+fs+'px '+(rf584FontMap[rf584FontSelector.value]||'Yekan,Tahoma');if(ctx.measureText(headline).width<full-72)break;fs--;}
    ctx.font='900 '+fs+'px '+(rf584FontMap[rf584FontSelector.value]||'Yekan,Tahoma');
-   ctx.fillText(headline,W/2,hY+hH/2+1,full-66);ctx.restore();
-   const gap=22,colW=(full-gap)/2,startY=contentTop;
-   const colors=[['#108d42','#e7f8e9','☀'],['#dfac00','#fff5cc','☀'],['#ed7c19','#fff0df','☁'],['#df3d43','#fff0f0','!'],['#7e3fa9','#f5e8ff','!']];
+   const hm=ctx.measureText(headline), hyText=hY+hH/2+((hm.actualBoundingBoxAscent||fs*0.38)-(hm.actualBoundingBoxDescent||fs*0.24))/2;
+   ctx.fillText(headline,W/2,hyText,full-60);ctx.restore();
+
+   const gap=story?18:22,colW=(full-gap)/2,startY=contentTop;
+   const colors=[['#108d42','#e7f8e9','✳'],['#dfac00','#fff5cc','✳'],['#ed7c19','#fff0df','☁'],['#df3d43','#fff0f0','!'],['#7e3fa9','#f5e8ff','!']];
+   const panelPad=story?10:13, headH=story?96:92, gapY=story?14:15;
+
    cols.forEach((col,index)=>{
      const xx=index===0?left+colW+gap:left;
      const rows=col.rows;const count=rows.length;
-     const headH=story?112:92;
-     const gapY=story?21:15;
-     const rowH=Math.min(story?235:146,(bottom-startY-headH-26-gapY*Math.max(0,count-1))/Math.max(1,count));
-     if(rowH<55)return;
-     fillR(xx,startY,colW,bottom-startY,27,'#fffdf5',flatMode?0:18);
-     strokeR(xx,startY,colW,bottom-startY,27,'#eedba7',2);
-     const hy=startY+10,hh=headH-20,hx=xx+12,hw=colW-24;
+     const available=(bottom-startY-headH-24-gapY*Math.max(0,count-1));
+     const rowH=Math.min(story?180:146,available/Math.max(1,count));
+     if(rowH<52)return;
+
+     fillR(xx,startY,colW,bottom-startY,26,'#fffdf5',flatMode?0:16);
+     strokeR(xx,startY,colW,bottom-startY,26,'#eedba7',2);
+
+     const hy=startY+10,hh=headH-18,hx=xx+12,hw=colW-24;
      if(flatMode){
-       fillR(hx,hy,hw,hh,22,'#f2c928',0);
+       fillR(hx,hy,hw,hh,20,'#f2c928',0);
      }else{
-       ctx.save();ctx.shadowColor='rgba(126,77,0,.26)';ctx.shadowBlur=18;ctx.shadowOffsetY=8;
-       fillR(hx,hy,hw,hh,22,g(hx,hy,hx,hy+hh,[[0,'#ffe875'],[.42,'#ffd83c'],[1,'#e1a600']]),0);ctx.restore();
-       ctx.save();ctx.globalAlpha=.46;fillR(hx+9,hy+6,hw-18,Math.max(5,hh*.20),11,'#fff9d5',0);ctx.restore();
+       ctx.save();ctx.shadowColor='rgba(126,77,0,.22)';ctx.shadowBlur=16;ctx.shadowOffsetY=7;
+       fillR(hx,hy,hw,hh,20,g(hx,hy,hx,hy+hh,[[0,'#ffe875'],[.45,'#ffd83c'],[1,'#e1a600']]),0);ctx.restore();
+       ctx.save();ctx.globalAlpha=.42;fillR(hx+8,hy+6,hw-16,Math.max(5,hh*.18),10,'#fff9d5',0);ctx.restore();
      }
-     strokeR(hx,hy,hw,hh,22,flatMode?'#d2a900':'#fdf1ab',2);
+     strokeR(hx,hy,hw,hh,20,flatMode?'#d2a900':'#fdf1ab',2);
      ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#2b220b';
-     if(!flatMode){ctx.shadowColor='rgba(255,255,255,.8)';ctx.shadowBlur=3;ctx.shadowOffsetY=2;}
-     let yf=story?56:47;const yearText='سال '+rf584PersianDigits(col.year);
-     do{ctx.font='900 '+yf+'px '+(rf584FontMap[rf584FontSelector.value]||'Yekan,Tahoma');if(ctx.measureText(yearText).width<hw-68)break;yf--;}while(yf>24);
+     if(!flatMode){ctx.shadowColor='rgba(255,255,255,.75)';ctx.shadowBlur=2;ctx.shadowOffsetY=1;}
+     const yearText='سال '+rf584PersianDigits(col.year);
+     let yf=story?47:47;
+     do{ctx.font='900 '+yf+'px '+(rf584FontMap[rf584FontSelector.value]||'Yekan,Tahoma');if(ctx.measureText(yearText).width<hw-58)break;yf--;}while(yf>22);
      const yearMetrics=ctx.measureText(yearText), yearY=hy+(hh/2)+((yearMetrics.actualBoundingBoxAscent||yf*0.38)-(yearMetrics.actualBoundingBoxDescent||yf*0.24))/2;
-     ctx.fillText(yearText,hx+hw/2,yearY,hw-52);ctx.restore();
+     ctx.fillText(yearText,hx+hw/2,yearY,hw-44);ctx.restore();
+
      rows.forEach((item,i)=>{
-       const yy=startY+headH+9+i*(rowH+gapY);
-       if(yy+rowH>bottom-7)return;
+       const yy=startY+headH+8+i*(rowH+gapY);
+       if(yy+rowH>bottom-6)return;
        const desc=item.desc.replace(/^(?:هوای\s*)?/,'');
        const category=/بسیار/.test(desc)?4:/تمام|همه|عموم/.test(desc)?3:/حساس|ناسالم/.test(desc)?2:/قابل/.test(desc)?1:0;
        const [base,tint,symbol]=colors[category];
-       fillR(xx+13,yy,colW-26,rowH,19,tint,flatMode?0:12);
-       strokeR(xx+13,yy,colW-26,rowH,19,flatMode?'#d9e3dc':'#ffffff',flatMode?2:3);
-       const metricW=Math.min(137,colW*.29);
+       const cardX=xx+panelPad, cardW=colW-panelPad*2;
+       fillR(cardX,yy,cardW,rowH,17,tint,flatMode?0:10);
+       strokeR(cardX,yy,cardW,rowH,17,flatMode?'#d9e3dc':'#ffffff',flatMode?2:3);
+
+       const metricW=Math.min(story?98:132,colW*(story?0.24:0.285));
+       const metricX=xx+colW-metricW-(story?12:22), metricY=yy+8, metricH=rowH-16;
        if(flatMode){
-         fillR(xx+colW-metricW-22,yy+9,metricW,rowH-18,15,base,0);
+         fillR(metricX,metricY,metricW,metricH,14,base,0);
        }else{
-         fillR(xx+colW-metricW-22,yy+9,metricW,rowH-18,17,g(xx+colW-metricW-22,yy,xx+colW,yy+rowH,[[0,base],[1,category===1?'#b38200':base]]),6);
+         fillR(metricX,metricY,metricW,metricH,16,g(metricX,metricY,metricX,metricY+metricH,[[0,base],[1,category===1?'#b38200':base]]),5);
        }
        ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';ctx.direction='rtl';ctx.fillStyle='#ffffff';
-       ctx.font='900 '+Math.min(story?62:47,rowH*.47)+'px '+(rf584FontMap[rf584FontSelector.value]||'Yekan,Tahoma');ctx.fillText(rf584PersianDigits(item.value),xx+colW-metricW/2-22,yy+rowH*.45,metricW-8);
-       ctx.font='700 '+Math.min(23,rowH*.23)+'px '+(rf584FontMap[rf584FontSelector.value]||'Yekan,Tahoma');ctx.fillText('روز',xx+colW-metricW/2-22,yy+rowH*.79,metricW-8);ctx.restore();
-       const iconX=xx+48,iconY=yy+rowH/2,rad=Math.min(35,rowH*.25);
+       ctx.font='900 '+Math.min(story?44:47,rowH*(story?0.34:0.47))+'px '+(rf584FontMap[rf584FontSelector.value]||'Yekan,Tahoma');ctx.fillText(rf584PersianDigits(item.value),metricX+metricW/2,yy+rowH*.43,metricW-8);
+       ctx.font='700 '+Math.min(story?18:23,rowH*(story?0.18:0.23))+'px '+(rf584FontMap[rf584FontSelector.value]||'Yekan,Tahoma');ctx.fillText('روز',metricX+metricW/2,yy+rowH*.77,metricW-8);ctx.restore();
+
+       const rad=Math.min(story?18:34,rowH*(story?0.18:0.24));
+       const iconX=cardX+rad+(story?10:14), iconY=yy+rowH/2;
        if(flatMode){
          ctx.save();ctx.beginPath();ctx.arc(iconX,iconY,rad,0,Math.PI*2);ctx.fillStyle=base;ctx.fill();ctx.restore();
        }else{
-         ctx.save();ctx.shadowColor='rgba(0,0,0,.14)';ctx.shadowBlur=8;ctx.shadowOffsetY=5;ctx.beginPath();ctx.arc(iconX,iconY,rad,0,Math.PI*2);ctx.fillStyle=base;ctx.fill();ctx.restore();
+         ctx.save();ctx.shadowColor='rgba(0,0,0,.13)';ctx.shadowBlur=7;ctx.shadowOffsetY=4;ctx.beginPath();ctx.arc(iconX,iconY,rad,0,Math.PI*2);ctx.fillStyle=base;ctx.fill();ctx.restore();
        }
-       ctx.save();ctx.fillStyle='#fff';ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='900 '+Math.round(rad*.98)+'px '+(rf584FontMap[rf584FontSelector.value]||'Yekan,Tahoma');ctx.fillText(symbol,iconX,iconY,rad*1.7);ctx.restore();
-       const textX=xx+92,textRight=xx+colW-metricW-34,textW=Math.max(65,textRight-textX);
+       ctx.save();ctx.fillStyle='#fff';ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='900 '+Math.round(rad*.88)+'px '+(rf584FontMap[rf584FontSelector.value]||'Yekan,Tahoma');ctx.fillText(symbol,iconX,iconY,rad*1.7);ctx.restore();
+
+       const textLeft=iconX+rad+(story?10:14), textRight=metricX-(story?10:16), textW=Math.max(52,textRight-textLeft);
        const label=(/پاک/.test(desc)?'هوای پاک':/قابل/.test(desc)?'قابل قبول':/بسیار/.test(desc)?'بسیار ناسالم':/حساس/.test(desc)?'ناسالم برای گروه‌های حساس':/تمام|همه/.test(desc)?'ناسالم برای تمام افراد':desc||'ناسالم');
-       const fit=fitText(label,textW,3,story?27:23,15,'700');
-       const lh=fit.size*1.32,top=yy+(rowH-fit.lines.length*lh)/2+lh/2;
+       const fit=fitText(label,textW,story?4:3,story?20:23,story?11:14,'700');
+       const lh=fit.size*(story?1.18:1.28), totalH=fit.lines.length*lh;
+       const top=yy+(rowH-totalH)/2+lh/2;
        ctx.save();ctx.fillStyle='#222735';ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=fit.font;
-       fit.lines.forEach((t,j)=>ctx.fillText(t,textX+textW/2,top+j*lh,textW));ctx.restore();
+       fit.lines.forEach((t,j)=>ctx.fillText(t,textLeft+textW/2,top+j*lh,textW));ctx.restore();
      });
    });
    const layoutLabel=selectedStyle==='2d'?'مقایسه‌ای دوبعدی':selectedStyle==='3d'?'مقایسه‌ای سه‌بعدی':'مقایسه‌ای دو ستونه';
    layoutName.textContent=layoutLabel+' | '+brands[brand].name;updateMeta();return true;
  }
+
 const rf586OriginalRender=render;
  render=function(){if(!rf595DrawComparison()){if(rf580Style.value==='auto'){safeCanvas();rf581Render();}else rf586OriginalRender();}rf586DrawSource();};
  rf586SourceOn.addEventListener('change',()=>{rf586SourceText.hidden=!rf586SourceOn.checked;render();});
