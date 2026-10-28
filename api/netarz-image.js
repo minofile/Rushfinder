@@ -50,6 +50,41 @@ export default async function handler(req,res){
   }catch(e){return res.status(200).json({ok:false,code:e.name==='AbortError'?'POST_TIMEOUT':'POST_NETWORK_FAILURE',detail:String(e?.cause?.code||e?.code||e?.name||'UNKNOWN').slice(0,80),elapsedMs:Date.now()-started});}
   finally{clearTimeout(timer)}
  }
+ // Staged POST test: identifies header/connection problems without making any image request.
+ if(req.method==='GET' && req.query?.probe==='post2'){
+  const tunnel=(process.env.RUSH_9ROUTER_TUNNEL_URL||'').trim().replace(/\/$/,'');
+  const apiKey=(process.env.RUSH_9ROUTER_API_KEY||'').trim();
+  const secret=(process.env.RUSH_9ROUTER_PROXY_SECRET||'').trim();
+  if(!tunnel||!apiKey||!secret)return res.status(200).json({ok:false,code:'MISSING_ENV'});
+  const url=tunnel+'/v1/images/generations';
+  const body=JSON.stringify({model:'__test_invalid_no_model_call__',prompt:'Connectivity test only, do not generate image.'});
+  const checks=[
+   {name:'POST_NO_AUTH',headers:{'Content-Type':'application/json'},expect:401},
+   {name:'POST_PROXY_AUTH_ONLY',headers:{'Content-Type':'application/json','x-rush-secret':secret},expect:401},
+   {name:'POST_BOTH_KEYS',headers:{'Content-Type':'application/json','x-rush-secret':secret,'Authorization':'Bearer '+apiKey},expect:400}
+  ];
+  const stages=[];
+  for(const check of checks){
+   const started=Date.now();const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),8000);
+   try{
+    const r=await fetch(url,{method:'POST',headers:check.headers,body,redirect:'manual',signal:controller.signal});
+    const ct=r.headers.get('content-type')||'';
+    const raw=(await r.text()).slice(0,300);
+    let parsed={};try{parsed=JSON.parse(raw)}catch{}
+    const proxyResponse=ct.includes('application/json')&&typeof parsed.error==='string';
+    const valid=check.name==='POST_BOTH_KEYS'?r.status===400&&parsed.error==='Model not allowed':r.status===check.expect&&proxyResponse;
+    stages.push({stage:check.name,ok:valid,status:r.status,elapsedMs:Date.now()-started,proxyResponse,errorType:check.name==='POST_BOTH_KEYS'&&r.status===401?'AUTH_REJECTED':undefined});
+    if(!valid)break;
+   }catch(e){
+    const code=String(e?.cause?.code||'').slice(0,60);
+    const name=String(e?.name||'UNKNOWN').slice(0,60);
+    const msg=String(e?.message||'').slice(0,150);
+    stages.push({stage:check.name,ok:false,code:e?.name==='AbortError'?'TIMEOUT':'FETCH_ERROR',name,causeCode:code,message:msg,elapsedMs:Date.now()-started});
+    break;
+   }finally{clearTimeout(timer)}
+  }
+  return res.status(200).json({ok:stages.length===3&&stages.every(x=>x.ok),code:stages.length===3&&stages.every(x=>x.ok)?'ALL_POST_STAGES_OK':'POST_STAGE_FAILED',stages});
+ }
  if(req.method!=='POST')return res.status(405).json({error:'فقط درخواست POST پذیرفته می‌شود.'});
  const tunnel=(process.env.RUSH_9ROUTER_TUNNEL_URL||process.env.NINE_ROUTER_TUNNEL_URL||'').trim().replace(/\/$/,'');
  const apiKey=(process.env.RUSH_9ROUTER_API_KEY||process.env.NINE_ROUTER_API_KEY||'').trim();
