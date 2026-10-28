@@ -25,15 +25,15 @@ export default async function handler(req,res){
   }
 
   const shape=req.body?.size==='story'?'story':'square';
-  const model='gpt-image-2.5-flare';
+  const model='gpt-image-2.5-sunburst';
   const payload={
     model,
     prompt,
     n:1,
     size:shape==='story'?'1024x1536':'1024x1024',
-    response_format:'b64_json'
+    response_format:'b64_json',
+    quality:'low'
   };
-  if(typeof req.body?.quality==='string' && req.body.quality.trim()) payload.quality=req.body.quality.trim();
   if(typeof req.body?.background==='string' && req.body.background.trim()) payload.background=req.body.background.trim();
 
   const started=Date.now();

@@ -951,7 +951,7 @@ const $=id=>document.getElementById(id);
 const btn=$('generate'),status=$('rf594-status'),newsInput=$('input');
 let running=false,internalClick=false,lastSignature='',lastPicture=null;
 // A timed-out request may have consumed paid tokens: hold a same-prompt retry in this browser.
-const pendingKey='rf706-pending-image-request';
+const pendingKey='rf707-pending-image-request';
 function getPending(){try{return JSON.parse(sessionStorage.getItem(pendingKey)||'null')}catch{return null}}
 function savePending(x){try{if(x)sessionStorage.setItem(pendingKey,JSON.stringify(x));else sessionStorage.removeItem(pendingKey)}catch{}}
 
@@ -979,14 +979,14 @@ btn.addEventListener('click',async evt=>{
    return;
  }
  if(sig===lastSignature&&lastPicture){window.rf702FinalImage=lastPicture;window.rf702DrawFinal?.();say('اینفوگرافیک نهایی نمایش داده شد.');return}
- if(!window.confirm('این درخواست تصویر از طریق AvalAI و مدل GPT Image 2.5 Flare انجام می‌شود و ممکن است هزینه داشته باشد. ادامه می‌دهی؟')){
+ if(!window.confirm('این درخواست تصویر از طریق AvalAI و مدل GPT Image 2.5 Sunburst با کیفیت Low انجام می‌شود و ممکن است هزینه داشته باشد. ادامه می‌دهی؟')){
   say('درخواستی به AvalAI ارسال نشد.');return;
  }
  running=true;btn.disabled=true;savePending({signature:sig,time:Date.now()});
  try{
   // Render exact user-provided statistics first; never substitute hallucinated AI summaries.
   window.rf702FinalImage=null;window.rf602Artwork=null;localRender();
-  say('در حال تولید تصویر با GPT Image 2.5 Flare از AvalAI…');
+  say('در حال تولید تصویر با GPT Image 2.5 Sunburst با کیفیت Low از AvalAI…');
   const response=await fetch('/api/avalai-image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:promptFor(c),size:c.size})});
   let data;try{data=await response.json()}catch{throw Error('پاسخ سرور قابل خواندن نیست (HTTP '+response.status+').')}
   if(!response.ok){
