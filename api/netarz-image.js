@@ -7,6 +7,29 @@ export default async function handler(req,res){
   const missing=fields.filter(k=>!process.env[k]);
   return res.status(200).json(missing.length?{ok:false,code:'MISSING_ENV',message:'تنظیمات ناقص است: '+missing.join('، ')}:{ok:true,code:'CONFIGURED',message:'سه تنظیم Vercel ثبت شده‌اند؛ هنوز درخواست واقعی تصویر آزمایش نشده است.'});
  }
+ // Non-billable, read-only connectivity diagnostic. The proxy deliberately responds 404 to GET /.
+ if(req.method==='GET' && req.query?.probe==='tunnel'){
+  const tunnel=(process.env.RUSH_9ROUTER_TUNNEL_URL||'').trim().replace(/\/$/,'');
+  if(!tunnel)return res.status(200).json({ok:false,code:'MISSING_TUNNEL_URL'});
+  let u;
+  try{u=new URL(tunnel);if(u.protocol!=='https:'||u.username||u.password||u.pathname!=='/'||u.search||u.hash)throw Error('Invalid URL');}
+  catch{return res.status(200).json({ok:false,code:'INVALID_TUNNEL_URL'});}
+  const started=Date.now();
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),9000);
+  try{
+   const response=await fetch(u.toString(),{method:'GET',redirect:'manual',cache:'no-store',signal:controller.signal,headers:{Accept:'application/json'}});
+   // A GET on the protected Rush proxy root is intentionally rejected with 404 JSON.
+   const ct=response.headers.get('content-type')||'';
+   const body=await response.text();
+   let parsed=null;try{parsed=JSON.parse(body)}catch{}
+   const matchesProxy=response.status===404&&ct.includes('application/json')&&parsed?.error==='Not found';
+   return res.status(200).json({ok:matchesProxy,code:matchesProxy?'TUNNEL_REACHABLE':'UNEXPECTED_RESPONSE',status:response.status,contentType:ct.split(';')[0],elapsedMs:Date.now()-started,message:matchesProxy?'Vercel به پراکسی از طریق تونل رسید؛ هیچ درخواست تصویر ارسال نشد.':'سرور پاسخ داد اما پاسخ مورد انتظار پراکسی دریافت نشد. آدرس تونل و اجرای پراکسی را بررسی کن.'});
+  }catch(e){
+   const cause=e?.cause||{};
+   return res.status(200).json({ok:false,code:e?.name==='AbortError'?'TIMEOUT':'NETWORK_FAILURE',detail:String(cause.code||e?.code||e?.name||'UNKNOWN').slice(0,80),elapsedMs:Date.now()-started,message:'سرور Vercel نتوانست به تونل متصل شود؛ آدرس، شبکه یا لاگ Cloudflare را بررسی کن.'});
+  }finally{clearTimeout(timer);}
+ }
  if(req.method!=='POST')return res.status(405).json({error:'فقط درخواست POST پذیرفته می‌شود.'});
  const tunnel=(process.env.RUSH_9ROUTER_TUNNEL_URL||process.env.NINE_ROUTER_TUNNEL_URL||'').trim().replace(/\/$/,'');
  const apiKey=(process.env.RUSH_9ROUTER_API_KEY||process.env.NINE_ROUTER_API_KEY||'').trim();
