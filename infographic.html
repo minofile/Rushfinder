@@ -684,16 +684,48 @@ function rf581Render(){
  statusEl.textContent=rf580Style.value==='other'?'پرامپت شما بررسی شد؛ بخش‌های قابل پشتیبانی به سبک '+(names[st]||'دوبعدی')+' تبدیل شدند. تولید آزاد تصویر نیازمند سرویس هوش مصنوعی است.':'';
 }
 
+ const rf705TemplateCache={};
+ const rf705TemplateFiles={
+  urgent:{square:'urgent-square.png',story:'urgent-story.png'},
+  mashhad:{square:'mashhad-square.png',story:'mashhad-story.png'},
+  jaryan:{square:'jaryan-square.png',story:'jaryan-story.png'},
+  farda:{square:'urgent-square.png',story:'urgent-story.png'}
+ };
+ function rf705TemplatePath(b=brand,z=size){
+  return 'assets/infographic-templates/'+(rf705TemplateFiles[b]||rf705TemplateFiles.urgent)[z];
+ }
+ function rf705LoadTemplate(b=brand,z=size){
+  const path=rf705TemplatePath(b,z);
+  if(rf705TemplateCache[path])return rf705TemplateCache[path];
+  rf705TemplateCache[path]=new Promise((resolve,reject)=>{
+   const img=new Image();img.onload=()=>resolve(img);
+   img.onerror=()=>reject(new Error('قالب اصلی برند بارگذاری نشد: '+path));
+   img.src=path;
+  });
+  return rf705TemplateCache[path];
+ }
+ window.rf705LoadTemplate=rf705LoadTemplate;
  function rf702DrawFinal(){
   const pic=window.rf702FinalImage;
   if(!pic)return false;
   safeCanvas();ctx.clearRect(0,0,cv.width,cv.height);
   ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);
-  // Full-frame finished infographic: preserve all generated text and artwork, no template overlay.
-  const ratio=Math.min(cv.width/pic.naturalWidth,cv.height/pic.naturalHeight);
+  // Layer 1: AI artwork fills the canvas. Layer 2: exact transparent PNG brand frame.
+  const ratio=Math.max(cv.width/pic.naturalWidth,cv.height/pic.naturalHeight);
   const w=pic.naturalWidth*ratio,h=pic.naturalHeight*ratio;
   ctx.drawImage(pic,(cv.width-w)/2,(cv.height-h)/2,w,h);
-  layoutName.textContent='اینفوگرافیک نهایی';updateMeta();
+  const template=window.rf705CurrentTemplate;
+  if(template && window.rf705CurrentTemplatePath===rf705TemplatePath()){
+    ctx.drawImage(template,0,0,cv.width,cv.height);
+  }else{
+    rf705LoadTemplate().then(img=>{
+      if(!window.rf702FinalImage)return;
+      window.rf705CurrentTemplate=img;
+      window.rf705CurrentTemplatePath=rf705TemplatePath();
+      rf702DrawFinal();
+    }).catch(err=>{console.error(err);statusEl.textContent=err.message});
+  }
+  layoutName.textContent='اینفوگرافیک داخل قالب اصلی '+brands[brand].name;updateMeta();
   area.classList.add('rf702-has-image');
   return true;
  }
@@ -891,7 +923,7 @@ const rf586OriginalRender=render;
  render=function(){if(window.rf702DrawFinal?.())return;if(!input.value.trim()){safeCanvas();ctx.clearRect(0,0,cv.width,cv.height);return;}if(!rf595DrawComparison()){if(rf580Style.value==='auto'){safeCanvas();rf581Render();}else rf586OriginalRender();}rf586DrawSource();};
  rf586SourceOn.addEventListener('change',()=>{rf586SourceText.hidden=!rf586SourceOn.checked;render();});
  rf586SourceText.addEventListener('input',render);
- document.getElementById('download').onclick=()=>{render(); cv.toBlob(blob=>{const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='RushFinder-Infographic-551-'+brand+'-'+size+'.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500);},'image/png')};
+ document.getElementById('download').onclick=()=>{render(); cv.toBlob(blob=>{const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='RushFinder-Infographic-705-'+brand+'-'+size+'.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500);},'image/png')};
  document.getElementById('copy').onclick=()=>{const t=input.value; if(navigator.clipboard?.writeText) navigator.clipboard.writeText(t).then(()=>statusEl.textContent='متن کپی شد.'); else {input.select(); document.execCommand('copy'); statusEl.textContent='متن کپی شد.';}};
  rf580TitleText.value='';
  input.value='';
@@ -919,7 +951,7 @@ const $=id=>document.getElementById(id);
 const btn=$('generate'),status=$('rf594-status'),newsInput=$('input');
 let running=false,internalClick=false,lastSignature='',lastPicture=null;
 // A timed-out request may have consumed paid tokens: hold a same-prompt retry in this browser.
-const pendingKey='rf704-pending-image-request';
+const pendingKey='rf705-pending-image-request';
 function getPending(){try{return JSON.parse(sessionStorage.getItem(pendingKey)||'null')}catch{return null}}
 function savePending(x){try{if(x)sessionStorage.setItem(pendingKey,JSON.stringify(x));else sessionStorage.removeItem(pendingKey)}catch{}}
 
@@ -929,7 +961,7 @@ function current(){return {news:newsInput.value.trim(),brand:(document.querySele
 function promptFor(c){
  const styleText={auto:'award-winning editorial infographic art direction, tasteful 3D thematic objects', '2d':'crisp flat 2D editorial vector illustration, NO 3D', '3d':'premium detailed 3D sculpted objects, layered dimensional illustration, subtle glossy materials',table:'structured visual grid with thematic editorial objects',chart:'data visualization themed illustration, unlabelled chart-like decorations',comparison:'two harmonious contrasting thematic visual zones with space for two columns',timeline:'visual progression and time themed editorial illustration',cards:'modular illustration clusters designed for information cards',minimal:'minimal contemporary premium editorial illustration',other:'creative artistic editorial illustration'};
  const shape=c.size==='story'?'vertical portrait 9:16':'square 1:1';
- return `Create a COMPLETE, publication-ready PERSIAN INFOGRAPHIC (not a background). The result itself MUST contain the complete title, Persian labels, all supplied statistics, data cards and illustrations, with clear right-to-left Persian typography. Ratio: ${shape}. Style: ${styleText[c.style]||styleText.auto}. Selected news brand visual direction: ${c.brand}. Source to visualize accurately: ${c.news.slice(0,2200)}. Do not invent numbers, explanations, claims or missing categories. Make an elegant cohesive full-bleed infographic, readable text, consistent data visualization, polished graphic icons. The complete output image will be displayed and downloaded AS-IS, with NO additional RushFinder template or text overlay. Ensure all information fits within the safe margins.`.slice(0,3500);
+ return `Create a COMPLETE, publication-ready PERSIAN INFOGRAPHIC (not a background). The result itself MUST contain the complete title, Persian labels, all supplied statistics, data cards and illustrations, with clear right-to-left Persian typography. Ratio: ${shape}. Style: ${styleText[c.style]||styleText.auto}. NO logos, watermarks, publisher names, signatures, banners, or footer brands. A separate authentic transparent media frame will be overlaid by RushFinder. Keep important title and text away from the top-right brand logo zone and 8% outer margins.  Source to visualize accurately: ${c.news.slice(0,2200)}. Do not invent numbers, explanations, claims or missing categories. Make an elegant cohesive full-bleed infographic, readable text, consistent data visualization, polished graphic icons. The complete output image will be displayed and downloaded AS-IS, with NO additional RushFinder template or text overlay. Ensure all information fits within the safe margins.`.slice(0,3500);
 }
 btn.addEventListener('click',async evt=>{
  if(internalClick||!evt.isTrusted)return;
@@ -961,8 +993,9 @@ btn.addEventListener('click',async evt=>{
   if(!data.image)throw Error('تصویر در پاسخ دریافتی وجود ندارد.');
   const pic=new Image();
   await new Promise((resolve,reject)=>{pic.onload=resolve;pic.onerror=()=>reject(Error('تصویر دریافتی قابل نمایش نیست.'));pic.src=data.image;});
+  await window.rf705LoadTemplate();
   lastSignature=sig;lastPicture=pic;savePending(null);window.rf702FinalImage=pic;window.rf702DrawFinal?.();
-  say('✓ اینفوگرافیک کامل AvalAI آماده است؛ تصویر نهایی بدون لایه دمو نمایش داده شد.'+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
+  say('✓ اینفوگرافیک AvalAI با قالب اصلی برند ترکیب شد؛ PNG دانلودی همان پیش‌نمایش است.'+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
  }catch(error){say('نتیجه تصویر دریافت نشد: '+(error?.message||'خطای نامشخص')+' — برای جلوگیری از هزینه دوباره، درخواست مشابه موقتاً قفل شد. ابتدا گزارش مصرف AvalAI را بررسی کن.');}
  finally{running=false;btn.disabled=false}
 },true);
