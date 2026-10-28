@@ -1,0 +1,20 @@
+RushFinder 0704 — راهنمای رفع خطای ۱۲ تابع Vercel Hobby
+
+این بسته شامل ۱۲ تابع API است و api/avalai-image.js جایگزین api/netarz-image.js شده است.
+
+مهم: اگر قبلاً فایل‌ها را در GitHub آپلود کرده‌اید، آپلود ZIP به‌تنهایی فایل قدیمی را حذف نمی‌کند.
+باید این فایل را از مخزن GitHub حذف کنید:
+    api/netarz-image.js
+
+مسیر اقدام در GitHub:
+۱) مخزن Rushfinder > پوشه api > فایل netarz-image.js
+۲) منوی سه‌نقطه فایل > Delete file
+۳) Commit changes روی شاخه main
+۴) منتظر انتشار جدید در Vercel بمانید.
+
+بعد از حذف، مجموع فایل‌های api/*.js باید ۱۲ باشد.
+فایل api/avalai-image.js نباید حذف شود.
+متغیر AVALAI_API_KEY باید در Vercel تعریف شده باشد.
+
+بعد از انتشار موفق، در صفحه اینفو دکمه «بررسی تنظیمات AvalAI (بدون هزینه)» را بزنید.
+تا زمانی که آخرین Deployment وضعیت Ready نگرفته، ساخت تصویر پولی را اجرا نکنید.
