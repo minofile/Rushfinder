@@ -336,7 +336,7 @@ textarea{min-height:155px!important;max-height:320px!important;padding:13px!impo
         </select>
         <div id="rf584-font-help">پیش‌نمایش و فایل PNG با فونت انتخابی و اعداد فارسی ساخته می‌شوند.</div>
       </div>
-<div id="rf607-test-area"><button type="button" id="rf607-test-button">بررسی تنظیمات Netarz (بدون هزینه)</button><span id="rf607-test-output" role="status" aria-live="polite"></span></div>
+<div id="rf607-test-area"><button type="button" id="rf607-test-button">بررسی تنظیمات AvalAI (بدون هزینه)</button><span id="rf607-test-output" role="status" aria-live="polite"></span></div>
 <div class="actions rf601-actions"><button id="generate" class="primary">✦ ساخت اینفوگرافیک</button><button id="reroll" class="ghost">↻ طرح متفاوت</button></div><div id="rf594-status" role="status" aria-live="polite" style="font-size:12px;line-height:1.9;color:#27546b;white-space:pre-wrap;margin-top:7px" hidden></div>
     </section>
     <section class="panel">
@@ -919,7 +919,7 @@ const $=id=>document.getElementById(id);
 const btn=$('generate'),status=$('rf594-status'),newsInput=$('input');
 let running=false,internalClick=false,lastSignature='',lastPicture=null;
 // A timed-out request may have consumed paid tokens: hold a same-prompt retry in this browser.
-const pendingKey='rf703-pending-image-request';
+const pendingKey='rf704-pending-image-request';
 function getPending(){try{return JSON.parse(sessionStorage.getItem(pendingKey)||'null')}catch{return null}}
 function savePending(x){try{if(x)sessionStorage.setItem(pendingKey,JSON.stringify(x));else sessionStorage.removeItem(pendingKey)}catch{}}
 
@@ -939,31 +939,31 @@ btn.addEventListener('click',async evt=>{
  const sig=JSON.stringify(c);
  const pending=getPending();
  if(pending?.signature===sig){
-   say('برای این متن یک درخواست قبلی ثبت شده که تحویل نتیجه‌اش قطعی نیست. ممکن است هزینه شده باشد. قبل از ارسال دوباره، مصرف نت‌ارز را بررسی کن. برای ارسال مجدد پس از بررسی، از دکمه «اجازه تلاش مجدد» استفاده کن.');
+   say('برای این متن یک درخواست قبلی ثبت شده که تحویل نتیجه‌اش قطعی نیست. ممکن است هزینه شده باشد. قبل از ارسال دوباره، مصرف AvalAI را بررسی کن. برای ارسال مجدد پس از بررسی، از دکمه «اجازه تلاش مجدد» استفاده کن.');
    let retry=document.getElementById('rf703-retry');
    if(!retry){retry=document.createElement('button');retry.id='rf703-retry';retry.type='button';retry.className='ghost';retry.textContent='اجازه تلاش مجدد (ممکن است دوباره هزینه شود)';status.parentElement.appendChild(retry);}
    retry.hidden=false;
-   retry.onclick=()=>{if(window.confirm('آیا مصرف نت‌ارز را بررسی کردی و آگاهانه می‌خواهی همین تصویر دوباره ساخته شود؟ ممکن است دوباره هزینه شود.')){savePending(null);retry.hidden=true;say('اجازه تلاش مجدد داده شد؛ برای شروع دکمه ساخت را دوباره بزن.');}};
+   retry.onclick=()=>{if(window.confirm('آیا مصرف AvalAI را بررسی کردی و آگاهانه می‌خواهی همین تصویر دوباره ساخته شود؟ ممکن است دوباره هزینه شود.')){savePending(null);retry.hidden=true;say('اجازه تلاش مجدد داده شد؛ برای شروع دکمه ساخت را دوباره بزن.');}};
    return;
  }
  if(sig===lastSignature&&lastPicture){window.rf702FinalImage=lastPicture;window.rf702DrawFinal?.();say('اینفوگرافیک نهایی نمایش داده شد.');return}
- if(!window.confirm('این درخواست تصویر از طریق نت‌ارز و مدل GPT Image 2.5 Flare انجام می‌شود و ممکن است هزینه داشته باشد. ادامه می‌دهی؟')){
-  say('درخواستی به نت‌ارز ارسال نشد.');return;
+ if(!window.confirm('این درخواست تصویر از طریق AvalAI و مدل GPT Image 2.5 Flare انجام می‌شود و ممکن است هزینه داشته باشد. ادامه می‌دهی؟')){
+  say('درخواستی به AvalAI ارسال نشد.');return;
  }
  running=true;btn.disabled=true;savePending({signature:sig,time:Date.now()});
  try{
   // Render exact user-provided statistics first; never substitute hallucinated AI summaries.
   window.rf702FinalImage=null;window.rf602Artwork=null;localRender();
-  say('در حال تولید تصویر با GPT Image 2.5 Flare از نت‌ارز…');
-  const response=await fetch('/api/netarz-image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:promptFor(c),size:c.size})});
+  say('در حال تولید تصویر با GPT Image 2.5 Flare از AvalAI…');
+  const response=await fetch('/api/avalai-image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:promptFor(c),size:c.size})});
   let data;try{data=await response.json()}catch{throw Error('پاسخ سرور قابل خواندن نیست (HTTP '+response.status+').')}
   if(!response.ok)throw Error(data.error||'خطای ساخت تصویر (HTTP '+response.status+').');
   if(!data.image)throw Error('تصویر در پاسخ دریافتی وجود ندارد.');
   const pic=new Image();
   await new Promise((resolve,reject)=>{pic.onload=resolve;pic.onerror=()=>reject(Error('تصویر دریافتی قابل نمایش نیست.'));pic.src=data.image;});
   lastSignature=sig;lastPicture=pic;savePending(null);window.rf702FinalImage=pic;window.rf702DrawFinal?.();
-  say('✓ اینفوگرافیک کامل نت‌ارز آماده است؛ تصویر نهایی بدون لایه دمو نمایش داده شد.'+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
- }catch(error){say('نتیجه تصویر دریافت نشد: '+(error?.message||'خطای نامشخص')+' — برای جلوگیری از هزینه دوباره، درخواست مشابه موقتاً قفل شد. ابتدا گزارش مصرف نت‌ارز را بررسی کن.');}
+  say('✓ اینفوگرافیک کامل AvalAI آماده است؛ تصویر نهایی بدون لایه دمو نمایش داده شد.'+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
+ }catch(error){say('نتیجه تصویر دریافت نشد: '+(error?.message||'خطای نامشخص')+' — برای جلوگیری از هزینه دوباره، درخواست مشابه موقتاً قفل شد. ابتدا گزارش مصرف AvalAI را بررسی کن.');}
  finally{running=false;btn.disabled=false}
 },true);
 })();
@@ -1039,14 +1039,14 @@ btn.addEventListener('click',async evt=>{
  // Deliberately do not persist private news into browser storage.
 })();
 </script>
-<script id="rf607-openrouter-test">(function(){
+<script id="rf704-avalai-test">(function(){
  const button=document.getElementById('rf607-test-button');
  const result=document.getElementById('rf607-test-output');
  if(!button||!result)return;
  button.addEventListener('click',async function(){
    button.disabled=true;result.textContent='در حال آزمایش اتصال از سرور Vercel...';
    try{
-     const response=await fetch('/api/netarz-image?probe=netarz',{method:'GET',cache:'no-store',headers:{Accept:'application/json'}});
+     const response=await fetch('/api/avalai-image?probe=avalai',{method:'GET',cache:'no-store',headers:{Accept:'application/json'}});
      const data=await response.json();
      result.textContent=(data.ok?'✓ ':'✕ ')+(data.message||'پاسخ نامشخص از سرور دریافت شد.')+' ['+(data.code||response.status)+']';
      result.style.color=data.ok?'#08754c':'#ac3b25';

@@ -3,7 +3,7 @@
     "api/search.js": {
       "maxDuration": 10
     },
-    "api/netarz-image.js": {
+    "api/avalai-image.js": {
       "maxDuration": 300
     }
   }
