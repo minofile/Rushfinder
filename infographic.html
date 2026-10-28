@@ -319,7 +319,7 @@ textarea{min-height:155px!important;max-height:320px!important;padding:13px!impo
       </div>
       <div>
         <div class="secTitle"><span class="stepNumber">۱</span><span>متن اینفوگرافیک</span></div>
-        <textarea id="input" spellcheck="true" placeholder="سطر اول: تیتر اصلی\nسطرهای بعدی: نکات، آمار یا مقایسه\nمثال:\nمقایسه روزهای هوای پاک امسال و سال گذشته\nسال ۱۴۰۴: ۷ روز هوای پاک\nسال ۱۴۰۴: ۹۷ روز قابل قبول\nسال ۱۴۰۴: ۸۶ روز ناسالم برای گروه‌های حساس"></textarea>
+        <textarea id="input" spellcheck="true" placeholder="متن اینفوگرافیک خود را اینجا وارد کنید…"></textarea>
       </div>
       <div class="rf586-source-section">
         <div class="secTitle"><span class="stepNumber">۶</span><span>منبع</span></div>
@@ -684,7 +684,26 @@ function rf581Render(){
  statusEl.textContent=rf580Style.value==='other'?'پرامپت شما بررسی شد؛ بخش‌های قابل پشتیبانی به سبک '+(names[st]||'دوبعدی')+' تبدیل شدند. تولید آزاد تصویر نیازمند سرویس هوش مصنوعی است.':'';
 }
 
- function render(){safeCanvas();if(rf580Style.value!=='auto'){rf581Render();return;}if(brand==='urgent'){drawUrgentTemplate();statusEl.textContent=rf580Style.value==='other'?'پرامپت دلخواه ثبت شد؛ پیش‌نمایش آفلاین فقط از سبک‌های پشتیبانی‌شده استفاده می‌کند.':'';return;}if(brand==='mashhad'){drawMashhadTemplate();statusEl.textContent=rf580Style.value==='other'?'پرامپت دلخواه ثبت شد؛ پیش‌نمایش آفلاین فقط از سبک‌های پشتیبانی‌شده استفاده می‌کند.':'';return;}if(brand==='jaryan'||brand==='farda'){drawBrandTemplate549();statusEl.textContent=rf580Style.value==='other'?'پرامپت دلخواه ثبت شد؛ پیش‌نمایش آفلاین فقط از سبک‌های پشتیبانی‌شده استفاده می‌کند.':'';return;} const p=brands[brand];bg(p);const parsed=splitText(input.value),card=shellCard(p),body=header(card,p,parsed.title),mode=detectLayout(parsed.title,parsed.items);if(mode==='comparison')drawComparison(body,parsed.items,p);else if(mode==='cards')drawCards(body,parsed.items,p);else drawList(body,parsed.items,p);updateMeta();statusEl.textContent='پیش‌نمایش آفلاین آماده است؛ قالب و لوگو حفظ شده‌اند.'; }
+ function rf702DrawFinal(){
+  const pic=window.rf702FinalImage;
+  if(!pic)return false;
+  safeCanvas();ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);
+  // Full-frame finished infographic: preserve all generated text and artwork, no template overlay.
+  const ratio=Math.min(cv.width/pic.naturalWidth,cv.height/pic.naturalHeight);
+  const w=pic.naturalWidth*ratio,h=pic.naturalHeight*ratio;
+  ctx.drawImage(pic,(cv.width-w)/2,(cv.height-h)/2,w,h);
+  layoutName.textContent='اینفوگرافیک نهایی';updateMeta();
+  area.classList.add('rf702-has-image');
+  return true;
+ }
+ window.rf702DrawFinal=rf702DrawFinal;
+ function rf702Blank(){
+  safeCanvas();ctx.clearRect(0,0,cv.width,cv.height);
+  area.classList.remove('rf702-has-image');
+  layoutName.textContent='آماده ساخت';updateMeta();
+ }
+ function render(){if(rf702DrawFinal())return;if(!input.value.trim()){rf702Blank();return;}safeCanvas();if(rf580Style.value!=='auto'){rf581Render();return;}if(brand==='urgent'){drawUrgentTemplate();statusEl.textContent=rf580Style.value==='other'?'پرامپت دلخواه ثبت شد؛ پیش‌نمایش آفلاین فقط از سبک‌های پشتیبانی‌شده استفاده می‌کند.':'';return;}if(brand==='mashhad'){drawMashhadTemplate();statusEl.textContent=rf580Style.value==='other'?'پرامپت دلخواه ثبت شد؛ پیش‌نمایش آفلاین فقط از سبک‌های پشتیبانی‌شده استفاده می‌کند.':'';return;}if(brand==='jaryan'||brand==='farda'){drawBrandTemplate549();statusEl.textContent=rf580Style.value==='other'?'پرامپت دلخواه ثبت شد؛ پیش‌نمایش آفلاین فقط از سبک‌های پشتیبانی‌شده استفاده می‌کند.':'';return;} const p=brands[brand];bg(p);const parsed=splitText(input.value),card=shellCard(p),body=header(card,p,parsed.title),mode=detectLayout(parsed.title,parsed.items);if(mode==='comparison')drawComparison(body,parsed.items,p);else if(mode==='cards')drawCards(body,parsed.items,p);else drawList(body,parsed.items,p);updateMeta();statusEl.textContent='پیش‌نمایش آفلاین آماده است؛ قالب و لوگو حفظ شده‌اند.'; }
 
  // RF586: Optional source caption. Never alters original brand template images.
  const rf586SourceOn=document.getElementById('rf586-source-on');
@@ -869,13 +888,13 @@ function rf581Render(){
  }
 
 const rf586OriginalRender=render;
- render=function(){if(!rf595DrawComparison()){if(rf580Style.value==='auto'){safeCanvas();rf581Render();}else rf586OriginalRender();}rf586DrawSource();};
+ render=function(){if(window.rf702DrawFinal?.())return;if(!input.value.trim()){safeCanvas();ctx.clearRect(0,0,cv.width,cv.height);return;}if(!rf595DrawComparison()){if(rf580Style.value==='auto'){safeCanvas();rf581Render();}else rf586OriginalRender();}rf586DrawSource();};
  rf586SourceOn.addEventListener('change',()=>{rf586SourceText.hidden=!rf586SourceOn.checked;render();});
  rf586SourceText.addEventListener('input',render);
  document.getElementById('download').onclick=()=>{render(); cv.toBlob(blob=>{const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='RushFinder-Infographic-551-'+brand+'-'+size+'.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500);},'image/png')};
  document.getElementById('copy').onclick=()=>{const t=input.value; if(navigator.clipboard?.writeText) navigator.clipboard.writeText(t).then(()=>statusEl.textContent='متن کپی شد.'); else {input.select(); document.execCommand('copy'); statusEl.textContent='متن کپی شد.';}};
- rf580TitleText.value='مقایسه روزهای هوای پاک امسال و سال گذشته';
- input.value='سال ۱۴۰۴: ۷ روز هوای پاک\nسال ۱۴۰۴: ۹۷ روز قابل قبول\nسال ۱۴۰۴: ۸۶ روز ناسالم برای گروه‌های حساس\nسال ۱۴۰۵: ۴ روز هوای پاک\nسال ۱۴۰۵: ۱۵۸ روز قابل قبول\nسال ۱۴۰۵: ۴۸ روز ناسالم برای گروه‌های حساس\nسال ۱۴۰۵: ۴ روز ناسالم برای تمامی افراد';
+ rf580TitleText.value='';
+ input.value='';
  (document.fonts?.ready||Promise.resolve()).then(render).catch(render);
 })();
 </script>
@@ -905,7 +924,7 @@ function current(){return {news:newsInput.value.trim(),brand:(document.querySele
 function promptFor(c){
  const styleText={auto:'award-winning editorial infographic art direction, tasteful 3D thematic objects', '2d':'crisp flat 2D editorial vector illustration, NO 3D', '3d':'premium detailed 3D sculpted objects, layered dimensional illustration, subtle glossy materials',table:'structured visual grid with thematic editorial objects',chart:'data visualization themed illustration, unlabelled chart-like decorations',comparison:'two harmonious contrasting thematic visual zones with space for two columns',timeline:'visual progression and time themed editorial illustration',cards:'modular illustration clusters designed for information cards',minimal:'minimal contemporary premium editorial illustration',other:'creative artistic editorial illustration'};
  const shape=c.size==='story'?'vertical portrait 9:16':'square 1:1';
- return `Create a BEAUTIFUL, professional Persian news infographic ARTWORK BACKGROUND only, exceptionally art-directed, refined color harmony, polished thematic icons and visually rich editorial illustration. Aspect ratio ${shape}. Selected style: ${styleText[c.style]||styleText.auto}. Brand mood: ${c.brand}. Use the following authentic source article ONLY to understand its news topic and choose accurate, context-relevant imagery. News: ${c.news.slice(0,1550)}. IMPORTANT: absolutely no lettering, no Arabic or Persian words, no numbers, no glyphs, no logo, no fake statistics, no watermark, no captions. The RushFinder app will draw all actual Persian headlines, data, chart numbers, opaque information cards and logo itself. Reserve generous uncluttered central areas for overlays. Put delightful richly detailed thematic illustrations especially around the edges and in corners; background must remain visible around cards. Do NOT embed ready-made statistical cards with illegible text.`.slice(0,3400);
+ return `Create a COMPLETE, publication-ready PERSIAN INFOGRAPHIC (not a background). The result itself MUST contain the complete title, Persian labels, all supplied statistics, data cards and illustrations, with clear right-to-left Persian typography. Ratio: ${shape}. Style: ${styleText[c.style]||styleText.auto}. Selected news brand visual direction: ${c.brand}. Source to visualize accurately: ${c.news.slice(0,2200)}. Do not invent numbers, explanations, claims or missing categories. Make an elegant cohesive full-bleed infographic, readable text, consistent data visualization, polished graphic icons. The complete output image will be displayed and downloaded AS-IS, with NO additional RushFinder template or text overlay. Ensure all information fits within the safe margins.`.slice(0,3500);
 }
 btn.addEventListener('click',async evt=>{
  if(internalClick||!evt.isTrusted)return;
@@ -913,14 +932,14 @@ btn.addEventListener('click',async evt=>{
  if(running)return;
  const c=current();if(!c.news){say('ابتدا متن خبر را وارد کن.');return}
  const sig=JSON.stringify(c);
- if(sig===lastSignature&&lastPicture){window.rf602Artwork=lastPicture;localRender();say('تصویر قبلی بدون درخواست پولی جدید نمایش داده شد.');return}
+ if(sig===lastSignature&&lastPicture){window.rf702FinalImage=lastPicture;window.rf702DrawFinal?.();say('اینفوگرافیک نهایی نمایش داده شد.');return}
  if(!window.confirm('این درخواست تصویر از طریق نت‌ارز و مدل GPT Image 2.5 Flare انجام می‌شود و ممکن است هزینه داشته باشد. ادامه می‌دهی؟')){
   say('درخواستی به نت‌ارز ارسال نشد.');return;
  }
  running=true;btn.disabled=true;
  try{
   // Render exact user-provided statistics first; never substitute hallucinated AI summaries.
-  window.rf602Artwork=null;localRender();
+  window.rf702FinalImage=null;window.rf602Artwork=null;localRender();
   say('در حال تولید تصویر با GPT Image 2.5 Flare از نت‌ارز…');
   const response=await fetch('/api/netarz-image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:promptFor(c),size:c.size})});
   let data;try{data=await response.json()}catch{throw Error('پاسخ سرور قابل خواندن نیست (HTTP '+response.status+').')}
@@ -928,8 +947,8 @@ btn.addEventListener('click',async evt=>{
   if(!data.image)throw Error('تصویر در پاسخ دریافتی وجود ندارد.');
   const pic=new Image();
   await new Promise((resolve,reject)=>{pic.onload=resolve;pic.onerror=()=>reject(Error('تصویر دریافتی قابل نمایش نیست.'));pic.src=data.image;});
-  lastSignature=sig;lastPicture=pic;window.rf602Artwork=pic;localRender();
-  say('✓ تصویر نت‌ارز در خروجی ترکیب شد و متن و آمار اصلی حفظ شدند.');
+  lastSignature=sig;lastPicture=pic;window.rf702FinalImage=pic;window.rf702DrawFinal?.();
+  say('✓ اینفوگرافیک کامل نت‌ارز آماده است؛ تصویر نهایی بدون لایه دمو نمایش داده شد.');
  }catch(error){say('ساخت تصویر در نت‌ارز موفق نشد: '+(error?.message||'خطای نامشخص')+' — خطای نت‌ارز و موجودی آن را بررسی کن.');}
  finally{running=false;btn.disabled=false}
 },true);
@@ -1020,4 +1039,10 @@ btn.addEventListener('click',async evt=>{
    }catch(e){result.textContent='خطا در برقراری ارتباط با تابع تست روی Vercel.';result.style.color='#ac3b25';}
    finally{button.disabled=false;}
  });
-})();</script></body></html>
+})();</script><style id="rf702-clean-preview">
+#previewArea{min-height:420px!important;padding:12px!important;background:#f8fbff!important;display:flex!important;justify-content:center!important;align-items:center!important}
+#previewArea:not(.rf702-has-image)::before{content:'پس از وارد کردن متن و انتخاب سبک، اینفوگرافیک ساخته‌شده اینجا نمایش داده می‌شود.';color:#6f839b;text-align:center;line-height:2;max-width:340px;padding:25px}
+#previewArea:not(.rf702-has-image) canvas{display:none!important}
+#previewArea.rf702-has-image canvas{display:block!important;width:100%!important;max-width:100%!important;height:auto!important;object-fit:contain!important;box-shadow:none!important;border-radius:0!important}
+#previewArea.rf702-has-image{min-height:0!important;display:block!important}
+</style></body></html>
