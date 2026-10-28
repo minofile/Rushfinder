@@ -25,7 +25,7 @@ export default async function handler(req,res){
   }
 
   const shape=req.body?.size==='story'?'story':'square';
-  const model=String(req.body?.model||'gpt-image-2.5-flare').trim() || 'gpt-image-2.5-flare';
+  const model='gpt-image-2.5-flare';
   const payload={
     model,
     prompt,
@@ -57,17 +57,28 @@ export default async function handler(req,res){
     try{data=await upstream.json();}catch{}
 
     if(!upstream.ok){
-      const upstreamMessage=String(data?.error?.message||data?.error||data?.message||'').slice(0,260);
-      if(upstream.status===401){
-        return res.status(401).json({error:'کلید AvalAI معتبر نیست یا دسترسی لازم ندارد.'});
+      const rawDetail=data?.error?.message ?? data?.error?.detail ?? data?.detail ?? data?.message ?? data?.error ?? '';
+      const detail=(typeof rawDetail==='string'?rawDetail:JSON.stringify(rawDetail||'')).slice(0,650)
+        .replace(/(?:sk-|Bearer\s+)[A-Za-z0-9_-]{12,}/gi,'[REDACTED]');
+      const retryHeader=upstream.headers.get('retry-after');
+      let retryAfterSeconds=null;
+      if(retryHeader){
+        if(/^\d+$/.test(retryHeader.trim())) retryAfterSeconds=Math.min(3600,Number(retryHeader.trim()));
+        else {const t=Date.parse(retryHeader);if(Number.isFinite(t))retryAfterSeconds=Math.min(3600,Math.max(0,Math.ceil((t-Date.now())/1000)));}
       }
-      if(upstream.status===402){
-        return res.status(402).json({error:'موجودی AvalAI برای رزرو هزینه این تصویر کافی نیست.'});
-      }
-      if(upstream.status===429){
-        return res.status(429).json({error:'درخواست محدود شد یا موجودی AvalAI برای این تصویر کافی نیست.'});
-      }
-      return res.status(502).json({error:'پاسخ ناموفق از AvalAI دریافت شد (HTTP '+upstream.status+'). '+upstreamMessage});
+      const code=upstream.status;
+      const message=code===401?'کلید AvalAI معتبر نیست یا دسترسی ندارد.':
+        code===402?'AvalAI اعلام کرده موجودی/اعتبار کافی نیست.':
+        code===403?'حساب به مدل انتخابی دسترسی ندارد.':
+        code===429?'AvalAI درخواست را محدود کرده است (HTTP 429).':
+        'پاسخ ناموفق AvalAI (HTTP '+code+').';
+      const responseStatus=[400,401,402,403,404,408,409,422,429].includes(code)?code:502;
+      return res.status(responseStatus).json({
+        error:message+(detail?' جزئیات: '+detail:''),
+        upstreamStatus:code,
+        retryAfterSeconds,
+        definitiveRejection:[400,401,402,403,404,409,422,429].includes(code)
+      });
     }
 
     const first=data?.data?.[0]||null;

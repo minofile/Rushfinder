@@ -923,7 +923,7 @@ const rf586OriginalRender=render;
  render=function(){if(window.rf702DrawFinal?.())return;if(!input.value.trim()){safeCanvas();ctx.clearRect(0,0,cv.width,cv.height);return;}if(!rf595DrawComparison()){if(rf580Style.value==='auto'){safeCanvas();rf581Render();}else rf586OriginalRender();}rf586DrawSource();};
  rf586SourceOn.addEventListener('change',()=>{rf586SourceText.hidden=!rf586SourceOn.checked;render();});
  rf586SourceText.addEventListener('input',render);
- document.getElementById('download').onclick=()=>{render(); cv.toBlob(blob=>{const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='RushFinder-Infographic-705-'+brand+'-'+size+'.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500);},'image/png')};
+ document.getElementById('download').onclick=()=>{render(); cv.toBlob(blob=>{const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='RushFinder-Infographic-706-'+brand+'-'+size+'.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500);},'image/png')};
  document.getElementById('copy').onclick=()=>{const t=input.value; if(navigator.clipboard?.writeText) navigator.clipboard.writeText(t).then(()=>statusEl.textContent='متن کپی شد.'); else {input.select(); document.execCommand('copy'); statusEl.textContent='متن کپی شد.';}};
  rf580TitleText.value='';
  input.value='';
@@ -951,7 +951,7 @@ const $=id=>document.getElementById(id);
 const btn=$('generate'),status=$('rf594-status'),newsInput=$('input');
 let running=false,internalClick=false,lastSignature='',lastPicture=null;
 // A timed-out request may have consumed paid tokens: hold a same-prompt retry in this browser.
-const pendingKey='rf705-pending-image-request';
+const pendingKey='rf706-pending-image-request';
 function getPending(){try{return JSON.parse(sessionStorage.getItem(pendingKey)||'null')}catch{return null}}
 function savePending(x){try{if(x)sessionStorage.setItem(pendingKey,JSON.stringify(x));else sessionStorage.removeItem(pendingKey)}catch{}}
 
@@ -973,7 +973,7 @@ btn.addEventListener('click',async evt=>{
  if(pending?.signature===sig){
    say('برای این متن یک درخواست قبلی ثبت شده که تحویل نتیجه‌اش قطعی نیست. ممکن است هزینه شده باشد. قبل از ارسال دوباره، مصرف AvalAI را بررسی کن. برای ارسال مجدد پس از بررسی، از دکمه «اجازه تلاش مجدد» استفاده کن.');
    let retry=document.getElementById('rf703-retry');
-   if(!retry){retry=document.createElement('button');retry.id='rf703-retry';retry.type='button';retry.className='ghost';retry.textContent='اجازه تلاش مجدد (ممکن است دوباره هزینه شود)';status.parentElement.appendChild(retry);}
+   if(!retry){retry=document.createElement('button');retry.id='rf703-retry';retry.type='button';retry.className='ghost';retry.textContent='اجازه تلاش مجدد (ممکن است دوباره هزینه شود)';status.insertAdjacentElement('afterend',retry);}
    retry.hidden=false;
    retry.onclick=()=>{if(window.confirm('آیا مصرف AvalAI را بررسی کردی و آگاهانه می‌خواهی همین تصویر دوباره ساخته شود؟ ممکن است دوباره هزینه شود.')){savePending(null);retry.hidden=true;say('اجازه تلاش مجدد داده شد؛ برای شروع دکمه ساخت را دوباره بزن.');}};
    return;
@@ -989,14 +989,25 @@ btn.addEventListener('click',async evt=>{
   say('در حال تولید تصویر با GPT Image 2.5 Flare از AvalAI…');
   const response=await fetch('/api/avalai-image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:promptFor(c),size:c.size})});
   let data;try{data=await response.json()}catch{throw Error('پاسخ سرور قابل خواندن نیست (HTTP '+response.status+').')}
-  if(!response.ok)throw Error(data.error||'خطای ساخت تصویر (HTTP '+response.status+').');
+  if(!response.ok){
+    if(data.definitiveRejection===true)savePending(null);
+    const wait=Number.isFinite(data.retryAfterSeconds)?' زمان اعلام‌شده تا تلاش بعدی: '+data.retryAfterSeconds+' ثانیه.':'';
+    const e=new Error((data.error||'خطای ساخت تصویر (HTTP '+response.status+').')+wait);
+    e.definitiveRejection=data.definitiveRejection===true;
+    throw e;
+  }
   if(!data.image)throw Error('تصویر در پاسخ دریافتی وجود ندارد.');
   const pic=new Image();
   await new Promise((resolve,reject)=>{pic.onload=resolve;pic.onerror=()=>reject(Error('تصویر دریافتی قابل نمایش نیست.'));pic.src=data.image;});
   await window.rf705LoadTemplate();
   lastSignature=sig;lastPicture=pic;savePending(null);window.rf702FinalImage=pic;window.rf702DrawFinal?.();
   say('✓ اینفوگرافیک AvalAI با قالب اصلی برند ترکیب شد؛ PNG دانلودی همان پیش‌نمایش است.'+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
- }catch(error){say('نتیجه تصویر دریافت نشد: '+(error?.message||'خطای نامشخص')+' — برای جلوگیری از هزینه دوباره، درخواست مشابه موقتاً قفل شد. ابتدا گزارش مصرف AvalAI را بررسی کن.');}
+ }catch(error){
+  const suffix=error?.definitiveRejection
+    ? ' — درخواست از سمت AvalAI رد شده و قفل این درخواست برداشته شد. قبل از تلاش بعدی علت بالا را برطرف کن؛ ساخت تصویر هزینه دارد.'
+    : ' — تحویل درخواست قطعی نیست؛ برای جلوگیری از هزینه دوباره، درخواست مشابه قفل شده. ابتدا گزارش مصرف AvalAI را بررسی کن.';
+  say('نتیجه تصویر دریافت نشد: '+(error?.message||'خطای نامشخص')+suffix);
+ }
  finally{running=false;btn.disabled=false}
 },true);
 })();
