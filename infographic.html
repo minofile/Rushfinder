@@ -918,6 +918,11 @@ const rf586OriginalRender=render;
 const $=id=>document.getElementById(id);
 const btn=$('generate'),status=$('rf594-status'),newsInput=$('input');
 let running=false,internalClick=false,lastSignature='',lastPicture=null;
+// A timed-out request may have consumed paid tokens: hold a same-prompt retry in this browser.
+const pendingKey='rf703-pending-image-request';
+function getPending(){try{return JSON.parse(sessionStorage.getItem(pendingKey)||'null')}catch{return null}}
+function savePending(x){try{if(x)sessionStorage.setItem(pendingKey,JSON.stringify(x));else sessionStorage.removeItem(pendingKey)}catch{}}
+
 function say(t){status.hidden=!t;status.textContent=t||'';}
 function localRender(){internalClick=true;try{btn.click()}finally{internalClick=false}}
 function current(){return {news:newsInput.value.trim(),brand:(document.querySelector('.brandBtn.active')?.textContent||'خبر فوری').trim(),style:$('rf580-graphic-style')?.value||'auto',size:document.querySelector('.sizeBtn.active')?.dataset?.size||'square'};}
@@ -932,11 +937,20 @@ btn.addEventListener('click',async evt=>{
  if(running)return;
  const c=current();if(!c.news){say('ابتدا متن خبر را وارد کن.');return}
  const sig=JSON.stringify(c);
+ const pending=getPending();
+ if(pending?.signature===sig){
+   say('برای این متن یک درخواست قبلی ثبت شده که تحویل نتیجه‌اش قطعی نیست. ممکن است هزینه شده باشد. قبل از ارسال دوباره، مصرف نت‌ارز را بررسی کن. برای ارسال مجدد پس از بررسی، از دکمه «اجازه تلاش مجدد» استفاده کن.');
+   let retry=document.getElementById('rf703-retry');
+   if(!retry){retry=document.createElement('button');retry.id='rf703-retry';retry.type='button';retry.className='ghost';retry.textContent='اجازه تلاش مجدد (ممکن است دوباره هزینه شود)';status.parentElement.appendChild(retry);}
+   retry.hidden=false;
+   retry.onclick=()=>{if(window.confirm('آیا مصرف نت‌ارز را بررسی کردی و آگاهانه می‌خواهی همین تصویر دوباره ساخته شود؟ ممکن است دوباره هزینه شود.')){savePending(null);retry.hidden=true;say('اجازه تلاش مجدد داده شد؛ برای شروع دکمه ساخت را دوباره بزن.');}};
+   return;
+ }
  if(sig===lastSignature&&lastPicture){window.rf702FinalImage=lastPicture;window.rf702DrawFinal?.();say('اینفوگرافیک نهایی نمایش داده شد.');return}
  if(!window.confirm('این درخواست تصویر از طریق نت‌ارز و مدل GPT Image 2.5 Flare انجام می‌شود و ممکن است هزینه داشته باشد. ادامه می‌دهی؟')){
   say('درخواستی به نت‌ارز ارسال نشد.');return;
  }
- running=true;btn.disabled=true;
+ running=true;btn.disabled=true;savePending({signature:sig,time:Date.now()});
  try{
   // Render exact user-provided statistics first; never substitute hallucinated AI summaries.
   window.rf702FinalImage=null;window.rf602Artwork=null;localRender();
@@ -947,9 +961,9 @@ btn.addEventListener('click',async evt=>{
   if(!data.image)throw Error('تصویر در پاسخ دریافتی وجود ندارد.');
   const pic=new Image();
   await new Promise((resolve,reject)=>{pic.onload=resolve;pic.onerror=()=>reject(Error('تصویر دریافتی قابل نمایش نیست.'));pic.src=data.image;});
-  lastSignature=sig;lastPicture=pic;window.rf702FinalImage=pic;window.rf702DrawFinal?.();
-  say('✓ اینفوگرافیک کامل نت‌ارز آماده است؛ تصویر نهایی بدون لایه دمو نمایش داده شد.');
- }catch(error){say('ساخت تصویر در نت‌ارز موفق نشد: '+(error?.message||'خطای نامشخص')+' — خطای نت‌ارز و موجودی آن را بررسی کن.');}
+  lastSignature=sig;lastPicture=pic;savePending(null);window.rf702FinalImage=pic;window.rf702DrawFinal?.();
+  say('✓ اینفوگرافیک کامل نت‌ارز آماده است؛ تصویر نهایی بدون لایه دمو نمایش داده شد.'+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
+ }catch(error){say('نتیجه تصویر دریافت نشد: '+(error?.message||'خطای نامشخص')+' — برای جلوگیری از هزینه دوباره، درخواست مشابه موقتاً قفل شد. ابتدا گزارش مصرف نت‌ارز را بررسی کن.');}
  finally{running=false;btn.disabled=false}
 },true);
 })();
