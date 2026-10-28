@@ -30,6 +30,26 @@ export default async function handler(req,res){
    return res.status(200).json({ok:false,code:e?.name==='AbortError'?'TIMEOUT':'NETWORK_FAILURE',detail:String(cause.code||e?.code||e?.name||'UNKNOWN').slice(0,80),elapsedMs:Date.now()-started,message:'سرور Vercel نتوانست به تونل متصل شود؛ آدرس، شبکه یا لاگ Cloudflare را بررسی کن.'});
   }finally{clearTimeout(timer);}
  }
+ // Free diagnostic: POST reaches the protected proxy, then is rejected before model usage.
+ if(req.method==='GET' && req.query?.probe==='post'){
+  const tunnel=(process.env.RUSH_9ROUTER_TUNNEL_URL||'').trim().replace(/\/$/,'');
+  const apiKey=process.env.RUSH_9ROUTER_API_KEY||'';
+  const secret=process.env.RUSH_9ROUTER_PROXY_SECRET||'';
+  if(!tunnel||!apiKey||!secret)return res.status(200).json({ok:false,code:'MISSING_ENV'});
+  const started=Date.now();const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),12000);
+  try{
+   const r=await fetch(tunnel+'/v1/images/generations',{
+    method:'POST',redirect:'manual',signal:controller.signal,
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey,'x-rush-secret':secret},
+    body:JSON.stringify({model:'__test_invalid_no_model_call__',prompt:'This is a connectivity check; do not generate an image.'})
+   });
+   const body=(await r.text()).slice(0,350);let parsed={};try{parsed=JSON.parse(body)}catch{}
+   const valid=r.status===400&&parsed.error==='Model not allowed';
+   return res.status(200).json({ok:valid,code:valid?'PROTECTED_POST_OK':'POST_UNEXPECTED',status:r.status,elapsedMs:Date.now()-started,message:valid?'درخواست POST از Vercel به پراکسی رسید و قبل از مصرف اعتبار رد شد.':'پاسخ غیرمنتظره در مسیر POST.',detail:valid?undefined:String(parsed.error||'').slice(0,120)});
+  }catch(e){return res.status(200).json({ok:false,code:e.name==='AbortError'?'POST_TIMEOUT':'POST_NETWORK_FAILURE',detail:String(e?.cause?.code||e?.code||e?.name||'UNKNOWN').slice(0,80),elapsedMs:Date.now()-started});}
+  finally{clearTimeout(timer)}
+ }
  if(req.method!=='POST')return res.status(405).json({error:'فقط درخواست POST پذیرفته می‌شود.'});
  const tunnel=(process.env.RUSH_9ROUTER_TUNNEL_URL||process.env.NINE_ROUTER_TUNNEL_URL||'').trim().replace(/\/$/,'');
  const apiKey=(process.env.RUSH_9ROUTER_API_KEY||process.env.NINE_ROUTER_API_KEY||'').trim();
@@ -76,6 +96,6 @@ export default async function handler(req,res){
   const mime=['image/png','image/jpeg','image/webp'].includes(first?.media_type)?first.media_type:'image/png';
   return res.status(200).json({image:'data:'+mime+';base64,'+b64,model:'cx/gpt-image-2.5-flare'});
  }catch(e){
-  return res.status(502).json({error:e?.name==='AbortError'?'زمان پاسخ 9Router طولانی شد؛ پراکسی محلی و 9Router را بررسی کن.':'ارتباط Vercel با تونل 9Router برقرار نشد.'});
+  return res.status(502).json({error:e?.name==='AbortError'?'زمان پاسخ 9Router طولانی شد؛ پراکسی محلی و 9Router را بررسی کن.':'ارتباط Vercel با تونل 9Router برقرار نشد.',detail:String(e?.cause?.code||e?.code||e?.message||'UNKNOWN').slice(0,140)});
  }finally{clearTimeout(timer)}
 }
