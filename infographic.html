@@ -1012,6 +1012,65 @@ btn.addEventListener('click',async evt=>{
 },true);
 })();
 </script>
+<script id="rf708-free-template-test">
+(()=>{'use strict';
+ const generate=document.getElementById('generate');
+ const status=document.getElementById('rf594-status');
+ if(!generate||!status)return;
+ const test=document.createElement('button');
+ test.type='button';test.id='rf708-free-test';test.className='ghost';
+ test.textContent='🧪 تست رایگان قالب (بدون AvalAI)';
+ test.style.cssText='background:#e7fbef;color:#126744;border:1px solid #8bdab1;font-weight:800;white-space:normal';
+ generate.insertAdjacentElement('afterend',test);
+ const el=(id)=>document.getElementById(id);
+ function text(ctx,value,x,y,font,color,align='center'){
+   ctx.fillStyle=color;ctx.font=font;ctx.textAlign=align;ctx.direction='rtl';ctx.fillText(value,x,y);
+ }
+ function round(ctx,x,y,w,h,r,fill){
+   ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();
+ }
+ function sample(story){
+   const c=document.createElement('canvas');c.width=story?900:1000;c.height=story?1600:1000;
+   const ctx=c.getContext('2d'),w=c.width,h=c.height;
+   const g=ctx.createLinearGradient(0,0,w,h);g.addColorStop(0,'#edf8ff');g.addColorStop(1,'#faf2fe');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+   const pad=story?92:90, mid=w/2, start=story?350:260;
+   ctx.fillStyle='rgba(94,172,215,.10)';ctx.beginPath();ctx.arc(110,story?290:180,155,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle='rgba(189,120,228,.13)';ctx.beginPath();ctx.arc(w-75,h-100,240,0,Math.PI*2);ctx.fill();
+   text(ctx,'نمونه تست قالب',mid,start,'bold '+(story?68:66)+'px Tahoma, sans-serif','#18476d');
+   text(ctx,'فقط جهت آزمایش ترکیب لایه‌ها',mid,start+62,'30px Tahoma, sans-serif','#5d7386');
+   const top=start+(story?155:110),gap=story?31:22,boxH=story?210:155;
+   const boxes=[['۲۵٪','نمونه آمار اول','#d8f1ff'],['۵۰٪','نمونه آمار دوم','#dff7ec'],['۷۵٪','نمونه آمار سوم','#f3e5ff']];
+   boxes.forEach(([n,t,bg],i)=>{
+     const y=top+i*(boxH+gap);round(ctx,pad,y,w-2*pad,boxH,25,bg);
+     round(ctx,pad+22,y+22,14,boxH-44,7,['#1681b9','#24a874','#9460c2'][i]);
+     text(ctx,n,mid,y+boxH*.48,'bold '+(story?67:58)+'px Tahoma, sans-serif','#183a5a');
+     text(ctx,t,mid,y+boxH*.77,'30px Tahoma, sans-serif','#566a7d');
+   });
+   text(ctx,'این تصویر با هوش مصنوعی ساخته نشده است',mid,h-(story?135:70),'24px Tahoma, sans-serif','#647d94');
+   return c.toDataURL('image/png');
+ }
+ test.addEventListener('click',async()=>{
+   if(generate.disabled){status.hidden=false;status.textContent='درخواست ساخت در حال اجراست؛ پس از اتمام، تست رایگان قالب را بزن.';return}
+   test.disabled=true;
+   try{
+     const story=document.querySelector('.sizeBtn.active')?.dataset?.size==='story';
+     const src=sample(story);const pic=new Image();
+     await new Promise((resolve,reject)=>{pic.onload=resolve;pic.onerror=reject;pic.src=src});
+     // Preload selected transparent PNG: the same compositing path as paid output.
+     const template=await window.rf705LoadTemplate();
+     window.rf705CurrentTemplate=template;
+     // Force the normal compositor to use this exact brand/size.
+     // Clear the cached path so rf702DrawFinal reloads if the selection changed.
+     window.rf705CurrentTemplatePath=null;
+     window.rf702FinalImage=pic;
+     window.rf702DrawFinal?.();
+     status.hidden=false;
+     status.textContent='✓ تست رایگان انجام شد؛ تصویر نمونه زیر قالب PNG انتخابی نمایش داده شده. برای بررسی خروجی روی «دانلود PNG» بزن. هیچ درخواستی به AvalAI ارسال نشد.';
+   }catch(e){status.hidden=false;status.textContent='تست قالب انجام نشد: '+(e?.message||'قالب بارگذاری نشد. مطمئن شو همه پوشه assets آپلود شده است.');}
+   finally{test.disabled=false}
+ });
+})();
+</script>
 <style id="rf601-studio">
 /* RushFinder 601: real UI editor, preserved existing renderer and brand templates */
 .top .badges .badge:first-child{background:#e8f3ff;color:#0064b7;border-color:#bcdcf7}
