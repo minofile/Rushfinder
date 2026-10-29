@@ -315,7 +315,7 @@ textarea{min-height:155px!important;max-height:320px!important;padding:13px!impo
           <option value="timeline">◷  خط زمانی</option><option value="cards">▣  کارت‌های اطلاعاتی</option><option value="minimal">◌  مینیمال</option>
           <option value="other">✎  سایر (پرامپت دلخواه)</option>
         </select>
-        <div id="rf580-other-wrap" hidden><label class="rf580-prompt-label" for="rf580-other-prompt">پرامپت طراحی دلخواه</label><textarea id="rf580-other-prompt" rows="3" placeholder="سبک، چیدمان، رنگ و جزئیات دلخواه را بنویسید..."></textarea><small>این نسخه آفلاین است؛ پرامپت به‌صورت راهنمای سبک ذخیره می‌شود و تولید آزاد تصاویر نیاز به موتور هوش مصنوعی دارد.</small></div>
+        <div id="rf580-other-wrap" hidden><label class="rf580-prompt-label" for="rf580-other-prompt">پرامپت طراحی دلخواه</label><textarea id="rf580-other-prompt" rows="3" placeholder="سبک، چیدمان، رنگ و جزئیات دلخواه را بنویسید..."></textarea></div>
       </div>
       <div>
         <div class="secTitle"><span class="stepNumber">۱</span><span>متن اینفوگرافیک</span></div>
@@ -710,7 +710,7 @@ function rf581Render(){
   if(!pic)return false;
   safeCanvas();ctx.clearRect(0,0,cv.width,cv.height);
   ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);
-  // 0712: Full-bleed Gemini artwork (COVER). The authentic brand template is
+  // 0715: Full-bleed Gemini artwork (COVER). The authentic brand template is
   // drawn last at its original geometry, without editing any PNG bytes.
   // Do not fit/contain the image into a small center panel.
   const W=cv.width,H=cv.height;
@@ -725,10 +725,10 @@ function rf581Render(){
   const headline=(normalizeText(rf580TitleText.value)||normalizeText(input.value).split(/\n/).map(x=>x.trim()).find(Boolean)||'').slice(0,170);
   if(headline){
    const headL=Math.round(W*.055),headR=isUrgent?Math.round(W*.69):Math.round(W*.73);
-   const headTop=Math.round(W*.052),headBottom=Math.round(W*.238);
+   const headTop=Math.round(H*.035),headBottom=Math.round(H*.19);
    const headW=headR-headL;
    ctx.save();
-   ctx.fillStyle='rgba(255,255,255,.97)';
+   ctx.fillStyle='rgba(255,255,255,.94)';
    ctx.beginPath();ctx.roundRect(headL,headTop,headW,headBottom-headTop,18);ctx.fill();
    const family=rf584FontMap[rf584FontSelector.value]||'Yekan,Tahoma';
    const fit=fitText(headline,headW-36,3,46,23,'800');
@@ -761,7 +761,7 @@ function rf581Render(){
   area.classList.remove('rf702-has-image');
   layoutName.textContent='آماده ساخت';updateMeta();
  }
- function render(){if(rf702DrawFinal())return;if(!input.value.trim()){rf702Blank();return;}safeCanvas();if(rf580Style.value!=='auto'){rf581Render();return;}if(brand==='urgent'){drawUrgentTemplate();statusEl.textContent=rf580Style.value==='other'?'پرامپت دلخواه ثبت شد؛ پیش‌نمایش آفلاین فقط از سبک‌های پشتیبانی‌شده استفاده می‌کند.':'';return;}if(brand==='mashhad'){drawMashhadTemplate();statusEl.textContent=rf580Style.value==='other'?'پرامپت دلخواه ثبت شد؛ پیش‌نمایش آفلاین فقط از سبک‌های پشتیبانی‌شده استفاده می‌کند.':'';return;}if(brand==='jaryan'||brand==='farda'){drawBrandTemplate549();statusEl.textContent=rf580Style.value==='other'?'پرامپت دلخواه ثبت شد؛ پیش‌نمایش آفلاین فقط از سبک‌های پشتیبانی‌شده استفاده می‌کند.':'';return;} const p=brands[brand];bg(p);const parsed=splitText(input.value),card=shellCard(p),body=header(card,p,parsed.title),mode=detectLayout(parsed.title,parsed.items);if(mode==='comparison')drawComparison(body,parsed.items,p);else if(mode==='cards')drawCards(body,parsed.items,p);else drawList(body,parsed.items,p);updateMeta();statusEl.textContent='پیش‌نمایش آفلاین آماده است؛ قالب و لوگو حفظ شده‌اند.'; }
+ function render(){if(rf702DrawFinal())return;if(!input.value.trim()){rf702Blank();return;}safeCanvas();if(rf580Style.value!=='auto'){rf581Render();return;}if(brand==='urgent'){drawUrgentTemplate();statusEl.textContent=rf580Style.value==='other'?'':'';return;}if(brand==='mashhad'){drawMashhadTemplate();statusEl.textContent=rf580Style.value==='other'?'':'';return;}if(brand==='jaryan'||brand==='farda'){drawBrandTemplate549();statusEl.textContent=rf580Style.value==='other'?'':'';return;} const p=brands[brand];bg(p);const parsed=splitText(input.value),card=shellCard(p),body=header(card,p,parsed.title),mode=detectLayout(parsed.title,parsed.items);if(mode==='comparison')drawComparison(body,parsed.items,p);else if(mode==='cards')drawCards(body,parsed.items,p);else drawList(body,parsed.items,p);updateMeta();statusEl.textContent=''; }
 
  // RF586: Optional source caption. Never alters original brand template images.
  const rf586SourceOn=document.getElementById('rf586-source-on');
@@ -983,11 +983,15 @@ function savePending(x){try{if(x)sessionStorage.setItem(pendingKey,JSON.stringif
 
 function say(t){status.hidden=!t;status.textContent=t||'';}
 function localRender(){internalClick=true;try{btn.click()}finally{internalClick=false}}
-function current(){return {news:newsInput.value.trim(),brand:(document.querySelector('.brandBtn.active')?.textContent||'خبر فوری').trim(),style:$('rf580-graphic-style')?.value||'auto',size:document.querySelector('.sizeBtn.active')?.dataset?.size||'square'};}
+function current(){return {news:newsInput.value.trim(),brand:(document.querySelector('.brandBtn.active')?.textContent||'خبر فوری').trim(),style:$('rf580-graphic-style')?.value||'auto',size:document.querySelector('.sizeBtn.active')?.dataset?.size||'square',customPrompt:($('rf580-other-prompt')?.value||'').trim(),headline:($('rf580-title-text')?.value||'').trim()};}
 function promptFor(c){
- const styleText={auto:'award-winning editorial infographic art direction, tasteful 3D thematic objects', '2d':'crisp flat 2D editorial vector illustration, NO 3D', '3d':'premium detailed 3D sculpted objects, layered dimensional illustration, subtle glossy materials',table:'structured visual grid with thematic editorial objects',chart:'data visualization themed illustration, unlabelled chart-like decorations',comparison:'two harmonious contrasting thematic visual zones with space for two columns',timeline:'visual progression and time themed editorial illustration',cards:'modular illustration clusters designed for information cards',minimal:'minimal contemporary premium editorial illustration',other:'creative artistic editorial illustration'};
- const shape=c.size==='story'?'vertical portrait 9:16':'square 1:1';
- return `Create a COMPLETE FULL-BLEED Persian news infographic artwork that uses the ENTIRE image canvas edge-to-edge (not a small centered card or panel), with legible right-to-left Persian information labels, accurate statistics, professional diagrams and rich editorial illustration. Ratio: ${shape}. Style: ${styleText[c.style]||styleText.auto}. The image must FILL the full frame. Scale visual cards, illustrations, charts and information blocks generously so they occupy most of the available canvas; avoid huge empty margins or a small central composition. IMPORTANT: Do not include the article main headline or main title: RushFinder typesets that independently near the top-left/center. Keep the upper right 32% of the top 24% free of important text and chart labels because an unchanged original brand logo is placed over this region. No logos, publisher names, branding or watermarks. No decorative outer frame. Source to visualize accurately: ${c.news.slice(0,2100)}. Never invent statistics, claims or missing categories. Make the graphic beautiful, substantial, and easy to read. A transparent original brand-template PNG will be overlaid on top, unchanged.`.slice(0,3500);
+ const styleText={auto:'professional newsroom infographic, clean editorial graphics', '2d':'precise flat 2D vector editorial illustration', '3d':'carefully composed dimensional 3D editorial objects',table:'structured neat factual tables',chart:'proportionate and clearly labeled factual charts',comparison:'two balanced evidence-based comparison columns',timeline:'ordered chronological timeline',cards:'dense but readable modular data cards',minimal:'minimal modern infographic',other:'custom user art direction'};
+ const shape=c.size==='story'?'VERTICAL PORTRAIT 9:16':'SQUARE 1:1';
+ const custom=c.customPrompt?` USER DESIGN INSTRUCTIONS (obey unless they conflict with accuracy or template protection): ${c.customPrompt.slice(0,700)}.`:'';
+ // All user-supplied facts are passed through; never silently compress or alter numbers.
+ const prefix=`Create ONE publication-ready FULL-BLEED Persian RTL NEWS INFOGRAPHIC. Canvas aspect: ${shape}. Style: ${styleText[c.style]||styleText.auto}. Brand selection: ${c.brand}. Fill the canvas with well-spaced facts, compact logical columns, aligned cards and charts; no small centered image, no unnecessary empty border. Show ALL supplied figures and factual points, without omitting, changing, duplicating, or inventing facts. Use adaptive card sizes, legible fonts, balanced gaps, restrained icons and consistent visual hierarchy; make dense news ordered rather than overlapping. NO MAIN HEADLINE in generated image; RushFinder places the headline separately. Keep the TOP 22% clean and light, especially the TOP-RIGHT 32% reserved exclusively for original publisher corner mark. Never draw any logo, watermark, corner ribbon or publisher text. The original publisher PNG is overlaid later unchanged; do not simulate it. Text and numerical information may continue across the available area below the reserved title strip. ${custom} SOURCE NEWS: `;
+ const tail=' END SOURCE. Render a single complete graphic rather than multiple pages.';
+ return (prefix+c.news+tail).slice(0,3500);
 }
 btn.addEventListener('click',async evt=>{
  if(internalClick||!evt.isTrusted)return;
@@ -1038,65 +1042,7 @@ btn.addEventListener('click',async evt=>{
 },true);
 })();
 </script>
-<script id="rf708-free-template-test">
-(()=>{'use strict';
- const generate=document.getElementById('generate');
- const status=document.getElementById('rf594-status');
- if(!generate||!status)return;
- const test=document.createElement('button');
- test.type='button';test.id='rf708-free-test';test.className='ghost';
- test.textContent='🧪 تست رایگان قالب (بدون هزینه API)';
- test.style.cssText='background:#e7fbef;color:#126744;border:1px solid #8bdab1;font-weight:800;white-space:normal';
- generate.insertAdjacentElement('afterend',test);
- const el=(id)=>document.getElementById(id);
- function text(ctx,value,x,y,font,color,align='center'){
-   ctx.fillStyle=color;ctx.font=font;ctx.textAlign=align;ctx.direction='rtl';ctx.fillText(value,x,y);
- }
- function round(ctx,x,y,w,h,r,fill){
-   ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();
- }
- function sample(story){
-   const c=document.createElement('canvas');c.width=story?900:1000;c.height=story?1600:1000;
-   const ctx=c.getContext('2d'),w=c.width,h=c.height;
-   const g=ctx.createLinearGradient(0,0,w,h);g.addColorStop(0,'#edf8ff');g.addColorStop(1,'#faf2fe');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
-   const pad=story?92:90, mid=w/2, start=story?350:260;
-   ctx.fillStyle='rgba(94,172,215,.10)';ctx.beginPath();ctx.arc(110,story?290:180,155,0,Math.PI*2);ctx.fill();
-   ctx.fillStyle='rgba(189,120,228,.13)';ctx.beginPath();ctx.arc(w-75,h-100,240,0,Math.PI*2);ctx.fill();
-   text(ctx,'نمونه تست قالب',mid,start,'bold '+(story?68:66)+'px Tahoma, sans-serif','#18476d');
-   text(ctx,'فقط جهت آزمایش ترکیب لایه‌ها',mid,start+62,'30px Tahoma, sans-serif','#5d7386');
-   const top=start+(story?155:110),gap=story?31:22,boxH=story?210:155;
-   const boxes=[['۲۵٪','نمونه آمار اول','#d8f1ff'],['۵۰٪','نمونه آمار دوم','#dff7ec'],['۷۵٪','نمونه آمار سوم','#f3e5ff']];
-   boxes.forEach(([n,t,bg],i)=>{
-     const y=top+i*(boxH+gap);round(ctx,pad,y,w-2*pad,boxH,25,bg);
-     round(ctx,pad+22,y+22,14,boxH-44,7,['#1681b9','#24a874','#9460c2'][i]);
-     text(ctx,n,mid,y+boxH*.48,'bold '+(story?67:58)+'px Tahoma, sans-serif','#183a5a');
-     text(ctx,t,mid,y+boxH*.77,'30px Tahoma, sans-serif','#566a7d');
-   });
-   text(ctx,'این تصویر با هوش مصنوعی ساخته نشده است',mid,h-(story?135:70),'24px Tahoma, sans-serif','#647d94');
-   return c.toDataURL('image/png');
- }
- test.addEventListener('click',async()=>{
-   if(generate.disabled){status.hidden=false;status.textContent='درخواست ساخت در حال اجراست؛ پس از اتمام، تست رایگان قالب را بزن.';return}
-   test.disabled=true;
-   try{
-     const story=document.querySelector('.sizeBtn.active')?.dataset?.size==='story';
-     const src=sample(story);const pic=new Image();
-     await new Promise((resolve,reject)=>{pic.onload=resolve;pic.onerror=reject;pic.src=src});
-     // Preload selected transparent PNG: the same compositing path as paid output.
-     const template=await window.rf705LoadTemplate();
-     window.rf705CurrentTemplate=template;
-     // Force the normal compositor to use this exact brand/size.
-     // Clear the cached path so rf702DrawFinal reloads if the selection changed.
-     window.rf705CurrentTemplatePath=null;
-     window.rf702FinalImage=pic;
-     window.rf702DrawFinal?.();
-     status.hidden=false;
-     status.textContent='✓ تست رایگان انجام شد؛ تصویر نمونه زیر قالب PNG انتخابی نمایش داده شده. برای بررسی خروجی روی «دانلود PNG» بزن. هیچ درخواستی به Gemini / چابکان ارسال نشد.';
-   }catch(e){status.hidden=false;status.textContent='تست قالب انجام نشد: '+(e?.message||'قالب بارگذاری نشد. مطمئن شو همه پوشه assets آپلود شده است.');}
-   finally{test.disabled=false}
- });
-})();
-</script>
+
 <style id="rf601-studio">
 /* RushFinder 601: real UI editor, preserved existing renderer and brand templates */
 .top .badges .badge:first-child{background:#e8f3ff;color:#0064b7;border-color:#bcdcf7}
