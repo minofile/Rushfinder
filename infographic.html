@@ -336,7 +336,7 @@ textarea{min-height:155px!important;max-height:320px!important;padding:13px!impo
         </select>
         <div id="rf584-font-help">پیش‌نمایش و فایل PNG با فونت انتخابی و اعداد فارسی ساخته می‌شوند.</div>
       </div>
-<div id="rf607-test-area"><button type="button" id="rf607-test-button">بررسی تنظیمات AvalAI (بدون هزینه)</button><span id="rf607-test-output" role="status" aria-live="polite"></span></div>
+<div id="rf607-test-area"><button type="button" id="rf607-test-button">بررسی تنظیمات Gemini (بدون هزینه)</button><span id="rf607-test-output" role="status" aria-live="polite"></span></div>
 <div class="actions rf601-actions"><button id="generate" class="primary">✦ ساخت اینفوگرافیک</button><button id="reroll" class="ghost">↻ طرح متفاوت</button></div><div id="rf594-status" role="status" aria-live="polite" style="font-size:12px;line-height:1.9;color:#27546b;white-space:pre-wrap;margin-top:7px" hidden></div>
     </section>
     <section class="panel">
@@ -971,22 +971,22 @@ btn.addEventListener('click',async evt=>{
  const sig=JSON.stringify(c);
  const pending=getPending();
  if(pending?.signature===sig){
-   say('برای این متن یک درخواست قبلی ثبت شده که تحویل نتیجه‌اش قطعی نیست. ممکن است هزینه شده باشد. قبل از ارسال دوباره، مصرف AvalAI را بررسی کن. برای ارسال مجدد پس از بررسی، از دکمه «اجازه تلاش مجدد» استفاده کن.');
+   say('برای این متن یک درخواست قبلی ثبت شده که تحویل نتیجه‌اش قطعی نیست. ممکن است هزینه شده باشد. قبل از ارسال دوباره، مصرف Gemini / چابکان را بررسی کن. برای ارسال مجدد پس از بررسی، از دکمه «اجازه تلاش مجدد» استفاده کن.');
    let retry=document.getElementById('rf703-retry');
    if(!retry){retry=document.createElement('button');retry.id='rf703-retry';retry.type='button';retry.className='ghost';retry.textContent='اجازه تلاش مجدد (ممکن است دوباره هزینه شود)';status.insertAdjacentElement('afterend',retry);}
    retry.hidden=false;
-   retry.onclick=()=>{if(window.confirm('آیا مصرف AvalAI را بررسی کردی و آگاهانه می‌خواهی همین تصویر دوباره ساخته شود؟ ممکن است دوباره هزینه شود.')){savePending(null);retry.hidden=true;say('اجازه تلاش مجدد داده شد؛ برای شروع دکمه ساخت را دوباره بزن.');}};
+   retry.onclick=()=>{if(window.confirm('آیا مصرف Gemini / چابکان را بررسی کردی و آگاهانه می‌خواهی همین تصویر دوباره ساخته شود؟ ممکن است دوباره هزینه شود.')){savePending(null);retry.hidden=true;say('اجازه تلاش مجدد داده شد؛ برای شروع دکمه ساخت را دوباره بزن.');}};
    return;
  }
  if(sig===lastSignature&&lastPicture){window.rf702FinalImage=lastPicture;window.rf702DrawFinal?.();say('اینفوگرافیک نهایی نمایش داده شد.');return}
- if(!window.confirm('این درخواست تصویر از طریق AvalAI و مدل GPT Image 2.5 Sunburst با کیفیت Low انجام می‌شود و ممکن است هزینه داشته باشد. ادامه می‌دهی؟')){
-  say('درخواستی به AvalAI ارسال نشد.');return;
+ if(!window.confirm('این درخواست تصویر از طریق Gemini / چابکان و مدل Gemini Nano Banana 2 Lite انجام می‌شود و ممکن است هزینه داشته باشد. ادامه می‌دهی؟')){
+  say('درخواستی به Gemini / چابکان ارسال نشد.');return;
  }
  running=true;btn.disabled=true;savePending({signature:sig,time:Date.now()});
  try{
   // Render exact user-provided statistics first; never substitute hallucinated AI summaries.
   window.rf702FinalImage=null;window.rf602Artwork=null;localRender();
-  say('در حال تولید تصویر با GPT Image 2.5 Sunburst با کیفیت Low از AvalAI…');
+  say('در حال تولید تصویر با Gemini Nano Banana 2 Lite از Gemini / چابکان…');
   const response=await fetch('/api/avalai-image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:promptFor(c),size:c.size})});
   let data;try{data=await response.json()}catch{throw Error('پاسخ سرور قابل خواندن نیست (HTTP '+response.status+').')}
   if(!response.ok){
@@ -1001,11 +1001,11 @@ btn.addEventListener('click',async evt=>{
   await new Promise((resolve,reject)=>{pic.onload=resolve;pic.onerror=()=>reject(Error('تصویر دریافتی قابل نمایش نیست.'));pic.src=data.image;});
   await window.rf705LoadTemplate();
   lastSignature=sig;lastPicture=pic;savePending(null);window.rf702FinalImage=pic;window.rf702DrawFinal?.();
-  say('✓ اینفوگرافیک AvalAI با قالب اصلی برند ترکیب شد؛ PNG دانلودی همان پیش‌نمایش است.'+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
+  say('✓ اینفوگرافیک Gemini / چابکان با قالب اصلی برند ترکیب شد؛ PNG دانلودی همان پیش‌نمایش است.'+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
  }catch(error){
   const suffix=error?.definitiveRejection
-    ? ' — درخواست از سمت AvalAI رد شده و قفل این درخواست برداشته شد. قبل از تلاش بعدی علت بالا را برطرف کن؛ ساخت تصویر هزینه دارد.'
-    : ' — تحویل درخواست قطعی نیست؛ برای جلوگیری از هزینه دوباره، درخواست مشابه قفل شده. ابتدا گزارش مصرف AvalAI را بررسی کن.';
+    ? ' — درخواست از سمت Gemini / چابکان رد شده و قفل این درخواست برداشته شد. قبل از تلاش بعدی علت بالا را برطرف کن؛ ساخت تصویر هزینه دارد.'
+    : ' — تحویل درخواست قطعی نیست؛ برای جلوگیری از هزینه دوباره، درخواست مشابه قفل شده. ابتدا گزارش مصرف Gemini / چابکان را بررسی کن.';
   say('نتیجه تصویر دریافت نشد: '+(error?.message||'خطای نامشخص')+suffix);
  }
  finally{running=false;btn.disabled=false}
@@ -1019,7 +1019,7 @@ btn.addEventListener('click',async evt=>{
  if(!generate||!status)return;
  const test=document.createElement('button');
  test.type='button';test.id='rf708-free-test';test.className='ghost';
- test.textContent='🧪 تست رایگان قالب (بدون AvalAI)';
+ test.textContent='🧪 تست رایگان قالب (بدون هزینه API)';
  test.style.cssText='background:#e7fbef;color:#126744;border:1px solid #8bdab1;font-weight:800;white-space:normal';
  generate.insertAdjacentElement('afterend',test);
  const el=(id)=>document.getElementById(id);
@@ -1065,7 +1065,7 @@ btn.addEventListener('click',async evt=>{
      window.rf702FinalImage=pic;
      window.rf702DrawFinal?.();
      status.hidden=false;
-     status.textContent='✓ تست رایگان انجام شد؛ تصویر نمونه زیر قالب PNG انتخابی نمایش داده شده. برای بررسی خروجی روی «دانلود PNG» بزن. هیچ درخواستی به AvalAI ارسال نشد.';
+     status.textContent='✓ تست رایگان انجام شد؛ تصویر نمونه زیر قالب PNG انتخابی نمایش داده شده. برای بررسی خروجی روی «دانلود PNG» بزن. هیچ درخواستی به Gemini / چابکان ارسال نشد.';
    }catch(e){status.hidden=false;status.textContent='تست قالب انجام نشد: '+(e?.message||'قالب بارگذاری نشد. مطمئن شو همه پوشه assets آپلود شده است.');}
    finally{test.disabled=false}
  });
@@ -1142,14 +1142,14 @@ btn.addEventListener('click',async evt=>{
  // Deliberately do not persist private news into browser storage.
 })();
 </script>
-<script id="rf704-avalai-test">(function(){
+<script id="rf709-gemini-test">(function(){
  const button=document.getElementById('rf607-test-button');
  const result=document.getElementById('rf607-test-output');
  if(!button||!result)return;
  button.addEventListener('click',async function(){
-   button.disabled=true;result.textContent='در حال آزمایش اتصال از سرور Vercel...';
+   button.disabled=true;result.textContent='در حال آزمایش اتصال از سرور سایت...';
    try{
-     const response=await fetch('/api/avalai-image?probe=avalai',{method:'GET',cache:'no-store',headers:{Accept:'application/json'}});
+     const response=await fetch('/api/avalai-image?probe=gemini',{method:'GET',cache:'no-store',headers:{Accept:'application/json'}});
      const data=await response.json();
      result.textContent=(data.ok?'✓ ':'✕ ')+(data.message||'پاسخ نامشخص از سرور دریافت شد.')+' ['+(data.code||response.status)+']';
      result.style.color=data.ok?'#08754c':'#ac3b25';
