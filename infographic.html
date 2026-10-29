@@ -710,27 +710,21 @@ function rf581Render(){
   if(!pic)return false;
   safeCanvas();ctx.clearRect(0,0,cv.width,cv.height);
   ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);
-  // 0710: Keep the original template completely unmodified. AI content is drawn
-  // ONLY inside the safe content area; logo and border zones are kept free.
-  // Title is typeset from the user input (not a potentially misspelled AI title).
+  // 0712: Full-bleed Gemini artwork (COVER). The authentic brand template is
+  // drawn last at its original geometry, without editing any PNG bytes.
+  // Do not fit/contain the image into a small center panel.
   const W=cv.width,H=cv.height;
   const isUrgent=brand==='urgent'||brand==='farda';
-  const sideMargin=isUrgent?Math.round(W*.14):Math.round(W*.10);
-  const left=Math.round(W*.065),right=W-sideMargin;
-  const top=Math.round(W*.26),bottom=H-Math.round(W*.07);
-  const innerW=right-left,innerH=bottom-top;
-  // The AI picture is a contained illustration, never stretched behind the logo.
-  ctx.save();ctx.beginPath();ctx.rect(left,top,innerW,innerH);ctx.clip();
-  ctx.fillStyle='#f5f9fd';ctx.fillRect(left,top,innerW,innerH);
-  const ratio=Math.min(innerW/pic.naturalWidth,innerH/pic.naturalHeight);
-  const w=pic.naturalWidth*ratio,h=pic.naturalHeight*ratio;
-  ctx.drawImage(pic,left+(innerW-w)/2,top+(innerH-h)/2,w,h);
+  ctx.save();
+  const coverScale=Math.max(W/pic.naturalWidth,H/pic.naturalHeight);
+  const coverW=pic.naturalWidth*coverScale,coverH=pic.naturalHeight*coverScale;
+  ctx.drawImage(pic,(W-coverW)/2,(H-coverH)/2,coverW,coverH);
   ctx.restore();
   // Reserve a genuinely clear logo-safe corner. Never let a title or generated
   // label enter the upper-right logo zone or the template's side stripe.
   const headline=(normalizeText(rf580TitleText.value)||normalizeText(input.value).split(/\n/).map(x=>x.trim()).find(Boolean)||'').slice(0,170);
   if(headline){
-   const headL=Math.round(W*.065),headR=isUrgent?Math.round(W*.70):Math.round(W*.75);
+   const headL=Math.round(W*.055),headR=isUrgent?Math.round(W*.69):Math.round(W*.73);
    const headTop=Math.round(W*.052),headBottom=Math.round(W*.238);
    const headW=headR-headL;
    ctx.save();
@@ -955,7 +949,7 @@ const rf586OriginalRender=render;
  render=function(){if(window.rf702DrawFinal?.())return;if(!input.value.trim()){safeCanvas();ctx.clearRect(0,0,cv.width,cv.height);return;}if(!rf595DrawComparison()){if(rf580Style.value==='auto'){safeCanvas();rf581Render();}else rf586OriginalRender();}rf586DrawSource();};
  rf586SourceOn.addEventListener('change',()=>{rf586SourceText.hidden=!rf586SourceOn.checked;render();});
  rf586SourceText.addEventListener('input',render);
- document.getElementById('download').onclick=()=>{render(); cv.toBlob(blob=>{const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='RushFinder-Infographic-711-'+brand+'-'+size+'.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500);},'image/png')};
+ document.getElementById('download').onclick=()=>{render(); cv.toBlob(blob=>{const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='RushFinder-Infographic-712-'+brand+'-'+size+'.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500);},'image/png')};
  document.getElementById('copy').onclick=()=>{const t=input.value; if(navigator.clipboard?.writeText) navigator.clipboard.writeText(t).then(()=>statusEl.textContent='متن کپی شد.'); else {input.select(); document.execCommand('copy'); statusEl.textContent='متن کپی شد.';}};
  rf580TitleText.value='';
  input.value='';
@@ -993,7 +987,7 @@ function current(){return {news:newsInput.value.trim(),brand:(document.querySele
 function promptFor(c){
  const styleText={auto:'award-winning editorial infographic art direction, tasteful 3D thematic objects', '2d':'crisp flat 2D editorial vector illustration, NO 3D', '3d':'premium detailed 3D sculpted objects, layered dimensional illustration, subtle glossy materials',table:'structured visual grid with thematic editorial objects',chart:'data visualization themed illustration, unlabelled chart-like decorations',comparison:'two harmonious contrasting thematic visual zones with space for two columns',timeline:'visual progression and time themed editorial illustration',cards:'modular illustration clusters designed for information cards',minimal:'minimal contemporary premium editorial illustration',other:'creative artistic editorial illustration'};
  const shape=c.size==='story'?'vertical portrait 9:16':'square 1:1';
- return `Create the INNER CONTENT PANEL of a professional Persian news infographic, with attractive RTL Persian data labels, EXACT source statistics, visual cards and polished thematic illustrations. Ratio: ${shape}. Style: ${styleText[c.style]||styleText.auto}. IMPORTANT: Do not include the article headline or title: RushFinder will render the headline independently using accurate Persian typography above this content panel. No logos, publisher names, banners, headers, watermarks or outer decorative frames. Keep statistics and labels in the CENTER 80% of the illustration with generous blank margins; nothing important at the edges. The image will be fitted inside a smaller safe rectangular region BELOW a permanent original logo template. All text and graphical information MUST stay inside the inner panel and must never overlap any logo or page border. Source to visualize accurately: ${c.news.slice(0,2100)}. Do not invent statistics, claims or missing categories. Use beautiful readable Persian typography where possible, professional diagrams, consistent layouts and harmonious colors. Do not draw a new logo, green corner badge or publisher branding.`.slice(0,3500);
+ return `Create a COMPLETE FULL-BLEED Persian news infographic artwork that uses the ENTIRE image canvas edge-to-edge (not a small centered card or panel), with legible right-to-left Persian information labels, accurate statistics, professional diagrams and rich editorial illustration. Ratio: ${shape}. Style: ${styleText[c.style]||styleText.auto}. The image must FILL the full frame. Scale visual cards, illustrations, charts and information blocks generously so they occupy most of the available canvas; avoid huge empty margins or a small central composition. IMPORTANT: Do not include the article main headline or main title: RushFinder typesets that independently near the top-left/center. Keep the upper right 32% of the top 24% free of important text and chart labels because an unchanged original brand logo is placed over this region. No logos, publisher names, branding or watermarks. No decorative outer frame. Source to visualize accurately: ${c.news.slice(0,2100)}. Never invent statistics, claims or missing categories. Make the graphic beautiful, substantial, and easy to read. A transparent original brand-template PNG will be overlaid on top, unchanged.`.slice(0,3500);
 }
 btn.addEventListener('click',async evt=>{
  if(internalClick||!evt.isTrusted)return;
