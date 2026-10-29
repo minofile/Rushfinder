@@ -1038,8 +1038,7 @@ ${c.customPrompt.slice(0,700)}
   c.news,
   'پایان خبر منبع.',
   'خروجی باید یک تصویر کامل و واحد باشد؛ نه چند صفحه و نه چند اسلاید.'
- ].filter(Boolean).join('
-');
+ ].filter(Boolean).join('\n');
 }
 // RF0716: explicit paid-generation approval. Never submit a draft before user confirms.
 function reviewPrompt(draft){
