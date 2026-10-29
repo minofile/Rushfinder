@@ -3178,7 +3178,19 @@ html body.rf-company-view #rfCompanyPanel.rf-company-on .rf-company-pagination {
 @media(max-width:800px){html body.rf-company-view #rfCompanyPanel.rf-company-on{right:0!important;top:62px!important}}
 @media(max-width:580px){html body.rf-company-view #rfCompanyPanel.rf-company-on .rf-company-files{grid-template-columns:repeat(2,minmax(0,1fr))!important}html body.rf-company-view #rfCompanyPanel.rf-company-on{padding:12px 10px 50px!important}}
 </style>
-<style id="rf554-nav-polish">.sidebar .nav #rfInfoNav svg{flex:none;color:currentColor;vertical-align:middle}.sidebar .nav #rfInfoNav span{font-weight:400!important}</style></head>
+<style id="rf554-nav-polish">.sidebar .nav #rfInfoNav svg{flex:none;color:currentColor;vertical-align:middle}.sidebar .nav #rfInfoNav span{font-weight:400!important}</style>
+<!-- RushFinder 0718 - Vazir UI font across the site; original media templates untouched -->
+<style id="rf0718-vazir-global">
+@font-face{font-family:'RFVazir';src:url('fonts/VAZIR-REGULAR-UI.TTF') format('truetype');font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:'RFVazir';src:url('fonts/VAZIR-MEDIUM-UI.TTF') format('truetype');font-style:normal;font-weight:500 600;font-display:swap}
+@font-face{font-family:'RFVazir';src:url('fonts/VAZIR-BOLD-UI.TTF') format('truetype');font-style:normal;font-weight:700 900;font-display:swap}
+/* Compatibility: styles that explicitly request Yekan now use the uploaded Vazir face. */
+@font-face{font-family:Yekan;src:url('fonts/VAZIR-REGULAR-UI.TTF') format('truetype');font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:Yekan;src:url('fonts/VAZIR-MEDIUM-UI.TTF') format('truetype');font-style:normal;font-weight:500 600;font-display:swap}
+@font-face{font-family:Yekan;src:url('fonts/VAZIR-BOLD-UI.TTF') format('truetype');font-style:normal;font-weight:700 900;font-display:swap}
+html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([class*="fa-"]):not(.fa):not([class*="lucide"]):not([class*="icon-font"]),html body input,html body textarea,html body select,html body button {font-family:'RFVazir',Tahoma,sans-serif!important}
+</style>
+</head>
 <body>
 <aside class="sidebar">
 <div class="sidebrand sidebrand-final"><img src="assets/logos/rushfinder-sidebar-white.webp" alt="RushFinder"></div><nav class="nav"><button class="active"><i>▦</i><span>داشبورد</span></button>

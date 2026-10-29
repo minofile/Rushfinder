@@ -281,7 +281,19 @@ textarea{min-height:155px!important;max-height:320px!important;padding:13px!impo
 /* Same medium weight as the output-font heading. */
 .controls .rf603-title-controls .secTitle,.controls .rf580-check{font-weight:500!important}
 </style>
-<style id="rf607-openrouter-test-style">#rf607-test-area{margin:10px 0 3px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}#rf607-test-button{border:1px solid #c9d9ea;border-radius:11px;background:#fff;color:#264669;padding:9px 13px;font-size:12px;font-weight:500;cursor:pointer}#rf607-test-button:disabled{opacity:.6;cursor:wait}#rf607-test-output{font-size:12px;line-height:1.9;color:#274862;max-width:100%}</style></head><body>
+<style id="rf607-openrouter-test-style">#rf607-test-area{margin:10px 0 3px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}#rf607-test-button{border:1px solid #c9d9ea;border-radius:11px;background:#fff;color:#264669;padding:9px 13px;font-size:12px;font-weight:500;cursor:pointer}#rf607-test-button:disabled{opacity:.6;cursor:wait}#rf607-test-output{font-size:12px;line-height:1.9;color:#274862;max-width:100%}</style>
+<!-- RushFinder 0718 - Vazir UI font across the site; original media templates untouched -->
+<style id="rf0718-vazir-global">
+@font-face{font-family:'RFVazir';src:url('fonts/VAZIR-REGULAR-UI.TTF') format('truetype');font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:'RFVazir';src:url('fonts/VAZIR-MEDIUM-UI.TTF') format('truetype');font-style:normal;font-weight:500 600;font-display:swap}
+@font-face{font-family:'RFVazir';src:url('fonts/VAZIR-BOLD-UI.TTF') format('truetype');font-style:normal;font-weight:700 900;font-display:swap}
+/* Compatibility: styles that explicitly request Yekan now use the uploaded Vazir face. */
+@font-face{font-family:Yekan;src:url('fonts/VAZIR-REGULAR-UI.TTF') format('truetype');font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:Yekan;src:url('fonts/VAZIR-MEDIUM-UI.TTF') format('truetype');font-style:normal;font-weight:500 600;font-display:swap}
+@font-face{font-family:Yekan;src:url('fonts/VAZIR-BOLD-UI.TTF') format('truetype');font-style:normal;font-weight:700 900;font-display:swap}
+html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([class*="fa-"]):not(.fa):not([class*="lucide"]):not([class*="icon-font"]),html body input,html body textarea,html body select,html body button {font-family:'RFVazir',Tahoma,sans-serif!important}
+</style>
+</head><body>
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
@@ -972,16 +984,18 @@ const rf586OriginalRender=render;
 .rf580-style-section .rf580-style-select{display:block!important;width:calc(100% - 10px)!important;margin-right:10px!important;margin-left:0!important}
 </style>
 <style id="rf716-review-css">
+@font-face{font-family:RFYekan;src:url("fonts/Yekan.woff2") format("woff2");font-display:swap}
 #rf716-review-shade{position:fixed;z-index:2147483000;inset:0;background:rgba(10,25,47,.7);display:flex;align-items:center;justify-content:center;padding:14px}
-#rf716-review-shade .rf716-modal{background:#fff;color:#17314a;width:min(820px,100%);max-height:94vh;overflow:auto;border-radius:18px;padding:23px;box-shadow:0 18px 60px #09213a55;font-family:Yekan,Tahoma,sans-serif}
-#rf716-review-shade h2{font-size:20px;margin:0 0 12px;color:#14395e}
-#rf716-review-shade p{line-height:1.9;font-size:13px;margin:8px 0}
-#rf716-review-shade label{display:block;font-weight:bold;margin:9px 0}
-#rf716-prompt{display:block;box-sizing:border-box;width:100%;height:min(45vh,400px);resize:vertical;white-space:pre-wrap;line-height:1.65;font-size:13px;font-family:Yekan,Tahoma,sans-serif;padding:12px;border:1px solid #b9d4eb;border-radius:10px;color:#153654;background:#f8fbff}
-#rf716-review-shade .rf716-modal, #rf716-review-shade .rf716-modal *{font-family:Yekan,Tahoma,sans-serif!important}
+#rf716-review-shade .rf716-modal{background:#fff;color:#17314a;width:min(860px,100%);max-height:94vh;overflow:auto;border-radius:18px;padding:23px;box-shadow:0 18px 60px #09213a55;font-family:RFYekan,Tahoma,sans-serif;text-align:right}
+#rf716-review-shade h2{font-size:22px;margin:0 0 12px;color:#14395e;text-align:right}
+#rf716-review-shade p{line-height:1.95;font-size:13px;margin:8px 0;text-align:right}
+#rf716-review-shade label{display:block;font-weight:bold;margin:9px 0;text-align:right}
+#rf716-prompt{display:block;box-sizing:border-box;width:100%;height:min(48vh,420px);resize:vertical;white-space:pre-wrap;line-height:2;font-size:14px;font-family:RFYekan,Tahoma,sans-serif;padding:14px;border:1px solid #b9d4eb;border-radius:10px;color:#153654;background:#f8fbff;direction:rtl;text-align:right}
+#rf716-review-shade .rf716-modal, #rf716-review-shade .rf716-modal *{font-family:RFYekan,Tahoma,sans-serif!important}
 #rf716-review-shade .rf716-warning{color:#875b13}
-#rf716-review-shade .rf716-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:15px}
+#rf716-review-shade .rf716-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:15px;justify-content:flex-start}
 #rf716-review-shade button{padding:11px 17px;border-radius:10px;font-weight:bold;cursor:pointer;border:1px solid #c6d6e8;background:#edf4fa;color:#16426e}
+#rf716-count{font-size:13px;text-align:left;direction:rtl}
 #rf716-approve{background:#0879ce!important;color:#fff!important}
 #rf716-approve:disabled{opacity:.45;cursor:not-allowed}
 </style>
@@ -999,13 +1013,33 @@ function say(t){status.hidden=!t;status.textContent=t||'';}
 function localRender(){internalClick=true;try{btn.click()}finally{internalClick=false}}
 function current(){return {news:newsInput.value.trim(),brand:(document.querySelector('.brandBtn.active')?.textContent||'خبر فوری').trim(),style:$('rf580-graphic-style')?.value||'auto',size:document.querySelector('.sizeBtn.active')?.dataset?.size||'square',customPrompt:($('rf580-other-prompt')?.value||'').trim(),headline:($('rf580-title-text')?.value||'').trim()};}
 function promptFor(c){
- const styleText={auto:'professional newsroom infographic, clean editorial graphics', '2d':'precise flat 2D vector editorial illustration', '3d':'carefully composed dimensional 3D editorial objects',table:'structured neat factual tables',chart:'proportionate and clearly labeled factual charts',comparison:'two balanced evidence-based comparison columns',timeline:'ordered chronological timeline',cards:'dense but readable modular data cards',minimal:'minimal modern infographic',other:'custom user art direction'};
- const shape=c.size==='story'?'VERTICAL PORTRAIT 9:16':'SQUARE 1:1';
- const custom=c.customPrompt?` USER DESIGN INSTRUCTIONS (obey unless they conflict with accuracy or template protection): ${c.customPrompt.slice(0,700)}.`:'';
- // All user-supplied facts are passed through; never silently compress or alter numbers.
- const prefix=`Create ONE publication-ready FULL-BLEED Persian RTL NEWS INFOGRAPHIC. Canvas aspect: ${shape}. Style: ${styleText[c.style]||styleText.auto}. Brand selection: ${c.brand}. Fill the canvas with well-spaced facts, compact logical columns, aligned cards and charts; no small centered image, no unnecessary empty border. Show ALL supplied figures and factual points, without omitting, changing, duplicating, or inventing facts. Use adaptive card sizes, legible fonts, balanced gaps, restrained icons and consistent visual hierarchy; make dense news ordered rather than overlapping. NO MAIN HEADLINE in generated image; RushFinder places the headline separately. Keep the TOP 22% clean and light, especially the TOP-RIGHT 32% reserved exclusively for original publisher corner mark. Never draw any logo, watermark, corner ribbon or publisher text. The original publisher PNG is overlaid later unchanged; do not simulate it. Text and numerical information may continue across the available area below the reserved title strip. ${custom} SOURCE NEWS: `;
- const tail=' END SOURCE. Render a single complete graphic rather than multiple pages.';
- return prefix+c.news+tail;
+ const styleText={auto:'اینفوگرافیک خبری حرفه‌ای و تمیز', '2d':'تصویرسازی دقیق دوبعدی وکتوری', '3d':'چیدمان خبری با عناصر سه‌بعدی کنترل‌شده',table:'جدول‌های منظم و خبری',chart:'نمودارهای دقیق و خوانا',comparison:'مقایسه‌ی دو ستونه و مستند',timeline:'چیدمان زمانی مرحله‌به‌مرحله',cards:'کارت‌های داده‌ای فشرده اما خوانا',minimal:'اینفوگرافیک مینیمال و مدرن',other:'سبک اختصاصی کاربر'};
+ const shape=c.size==='story'?'استوری عمودی ۹:۱۶':'مربع ۱:۱';
+ const custom=c.customPrompt?`
+دستور تکمیلی کاربر (در صورت نداشتن تعارض با صحت داده‌ها و حفاظت از قالب رعایت شود):
+${c.customPrompt.slice(0,700)}
+`:'';
+ return [
+  'یک اینفوگرافیک خبری فارسیِ راست‌به‌چپ و آمادهٔ انتشار بساز.',
+  `نسبت تصویر: ${shape}`,
+  `سبک بصری: ${styleText[c.style]||styleText.auto}`,
+  `برند انتخابی: ${c.brand}`,
+  'از کل بوم به‌صورت تمام‌صفحه استفاده کن و اطلاعات را در ستون‌ها، کادرها و بخش‌های منظم و هم‌تراز بچین؛ تصویر کوچک مرکزی یا حاشیهٔ خالی اضافی نداشته باش.',
+  'همهٔ آمار، اعداد و نکات داده‌شده را کامل نشان بده؛ هیچ اطلاعاتی را حذف، تکرار، تغییر یا از خودت اضافه نکن.',
+  'از اندازه‌های تطبیقی برای کادرها، فاصله‌گذاری متعادل، آیکون‌های محدود و سلسله‌مراتب بصری روشن استفاده کن تا خروجی شلوغ و قاطی نشود.',
+  'تیتر اصلی را داخل تصویر نساز؛ RushFinder تیتر را جداگانه روی قالب قرار می‌دهد.',
+  'بخش بالایی تصویر را تمیز و روشن نگه دار. حدود ۲۲٪ بالای تصویر برای تیتر رزرو است.',
+  'به‌ویژه ۳۲٪ بالای سمت راست فقط برای نشان گوشه‌ای ناشر خالی بماند.',
+  'هیچ لوگو، واترمارک، روبان گوشه‌ای یا نام ناشر را خودت رسم نکن.',
+  'فایل PNG اصلی ناشر بعداً بدون تغییر روی تصویر قرار می‌گیرد؛ آن را شبیه‌سازی نکن.',
+  'متن‌ها و اطلاعات عددی فقط در فضای زیرِ نوار رزروشده چیده شوند.',
+  custom.trim(),
+  'خبر و داده‌های منبع:',
+  c.news,
+  'پایان خبر منبع.',
+  'خروجی باید یک تصویر کامل و واحد باشد؛ نه چند صفحه و نه چند اسلاید.'
+ ].filter(Boolean).join('
+');
 }
 // RF0716: explicit paid-generation approval. Never submit a draft before user confirms.
 function reviewPrompt(draft){
@@ -1013,9 +1047,9 @@ function reviewPrompt(draft){
   const shade=document.createElement('div');shade.id='rf716-review-shade';shade.setAttribute('role','presentation');
   shade.innerHTML=`<section class="rf716-modal" role="dialog" aria-modal="true" aria-labelledby="rf716-heading" dir="rtl">
    <h2 id="rf716-heading">بازبینی پرامپت قبل از ساخت تصویر</h2>
-   <p>متن زیر عیناً برای Gemini ارسال می‌شود. می‌توانی آن را تغییر بدهی. تا وقتی «تأیید و ساخت» را نزنی، هیچ هزینه‌ای برای تولید تصویر ثبت نمی‌شود.</p>
+   <p>متن زیر دقیقاً برای Gemini ارسال می‌شود. می‌توانی آن را ویرایش کنی. تا وقتی «تأیید و ساخت» را نزنی، هیچ درخواست پولی برای تولید تصویر ارسال نمی‌شود.</p>
    <label for="rf716-prompt">پرامپت نهایی (قابل ویرایش)</label>
-   <textarea id="rf716-prompt" spellcheck="false" dir="auto"></textarea>
+   <textarea id="rf716-prompt" spellcheck="false" dir="rtl"></textarea>
    <p id="rf716-count" aria-live="polite"></p>
    <p class="rf716-warning">هوش مصنوعی ممکن است خطای فارسی یا آمار داشته باشد؛ خروجی را قبل از انتشار بررسی کن. فایل قالب اصلی توسط برنامه جداگانه اضافه می‌شود.</p>
    <div class="rf716-actions"><button type="button" id="rf716-approve">تأیید و ساخت با Gemini</button><button type="button" id="rf716-reset">بازسازی متن پیش‌فرض</button><button type="button" id="rf716-cancel">لغو</button></div>
