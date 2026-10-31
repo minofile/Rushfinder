@@ -282,7 +282,7 @@ textarea{min-height:155px!important;max-height:320px!important;padding:13px!impo
 .controls .rf603-title-controls .secTitle,.controls .rf580-check{font-weight:500!important}
 </style>
 <style id="rf607-openrouter-test-style">#rf607-test-area{margin:10px 0 3px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}#rf607-test-button{border:1px solid #c9d9ea;border-radius:11px;background:#fff;color:#264669;padding:9px 13px;font-size:12px;font-weight:500;cursor:pointer}#rf607-test-button:disabled{opacity:.6;cursor:wait}#rf607-test-output{font-size:12px;line-height:1.9;color:#274862;max-width:100%}</style>
-<!-- RushFinder 0718 - Vazir UI font across the site; original media templates untouched -->
+<!-- RushFinder 0724 - Vazir UI font across the site; original media templates untouched; stricter infographic prompt and title/logo-safe rules -->
 <style id="rf0718-vazir-global">
 @font-face{font-family:'RFVazir';src:url('fonts/VAZIR-REGULAR-UI.TTF') format('truetype');font-style:normal;font-weight:400;font-display:swap}
 @font-face{font-family:'RFVazir';src:url('fonts/VAZIR-MEDIUM-UI.TTF') format('truetype');font-style:normal;font-weight:500 600;font-display:swap}
@@ -292,19 +292,6 @@ textarea{min-height:155px!important;max-height:320px!important;padding:13px!impo
 @font-face{font-family:Yekan;src:url('fonts/VAZIR-MEDIUM-UI.TTF') format('truetype');font-style:normal;font-weight:500 600;font-display:swap}
 @font-face{font-family:Yekan;src:url('fonts/VAZIR-BOLD-UI.TTF') format('truetype');font-style:normal;font-weight:700 900;font-display:swap}
 html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([class*="fa-"]):not(.fa):not([class*="lucide"]):not([class*="icon-font"]),html body input,html body textarea,html body select,html body button {font-family:'RFVazir',Tahoma,sans-serif!important}
-</style>
-
-<style id="rf723-vazir-dialog-override">
-/* 0723 - force the actual Vazir web fonts in the review dialog; styles and images elsewhere are unchanged. */
-@font-face{font-family:'RF723Vazir';src:url('./fonts/VAZIR-REGULAR-UI.TTF?v=0723') format('truetype');font-style:normal;font-weight:400;font-display:swap}
-@font-face{font-family:'RF723Vazir';src:url('./fonts/VAZIR-MEDIUM-UI.TTF?v=0723') format('truetype');font-style:normal;font-weight:500 600;font-display:swap}
-@font-face{font-family:'RF723Vazir';src:url('./fonts/VAZIR-BOLD-UI.TTF?v=0723') format('truetype');font-style:normal;font-weight:700 900;font-display:swap}
-html body #rf716-review-shade .rf716-modal,
-html body #rf716-review-shade .rf716-modal *,
-html body #rf716-review-shade textarea#rf716-prompt,
-html body #rf716-review-shade button {font-family:'RF723Vazir',Tahoma,sans-serif!important;}
-html body #rf716-review-shade textarea#rf716-prompt {font-size:16px!important;line-height:2.05!important;direction:rtl!important;text-align:right!important;letter-spacing:normal!important;}
-html body #rf716-review-shade .rf716-modal {direction:rtl!important;text-align:right!important;}
 </style>
 </head><body>
 <div class="shell">
@@ -747,22 +734,30 @@ function rf581Render(){
   ctx.restore();
   // Reserve a genuinely clear logo-safe corner. Never let a title or generated
   // label enter the upper-right logo zone or the template's side stripe.
-  const headline=(normalizeText(rf580TitleText.value)||normalizeText(input.value).split(/\n/).map(x=>x.trim()).find(Boolean)||'').slice(0,170);
+  const headline=rf580TitleOn.checked?normalizeText(rf580TitleText.value).slice(0,170):'';
   if(headline){
-   const headL=Math.round(W*.055),headR=isUrgent?Math.round(W*.69):Math.round(W*.73);
-   const headTop=Math.round(H*.035),headBottom=Math.round(H*.19);
+   const headL=Math.round(W*.045),headR=isUrgent?Math.round(W*.67):Math.round(W*.71);
+   const headTop=Math.round(H*.032),headBottom=Math.round(H*.19);
    const headW=headR-headL;
    ctx.save();
-   ctx.fillStyle='rgba(255,255,255,.94)';
-   ctx.beginPath();ctx.roundRect(headL,headTop,headW,headBottom-headTop,18);ctx.fill();
+   ctx.fillStyle='rgba(255,255,255,.975)';
+   ctx.beginPath();ctx.roundRect(headL,headTop,headW,headBottom-headTop,20);ctx.fill();
+   ctx.strokeStyle='rgba(220,230,238,.92)';ctx.lineWidth=1.5;ctx.stroke();
    const family=rf584FontMap[rf584FontSelector.value]||'Yekan,Tahoma';
-   const fit=fitText(headline,headW-36,3,46,23,'800');
-   const lineH=Math.min(fit.size*1.3,(headBottom-headTop-20)/Math.max(1,fit.lines.length));
+   const fit=fitText(rf724PersianDigits(headline),headW-44,3,46,23,'800');
+   const lineH=Math.min(fit.size*1.28,(headBottom-headTop-18)/Math.max(1,fit.lines.length));
    ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#172b38';
    ctx.font='800 '+fit.size+'px '+family;
    const firstY=(headTop+headBottom)/2-(fit.lines.length-1)*lineH/2;
-   fit.lines.forEach((line,i)=>ctx.fillText(line,headL+headW/2,firstY+i*lineH,headW-36));
+   fit.lines.forEach((line,i)=>ctx.fillText(line,headL+headW/2,firstY+i*lineH,headW-44));
    ctx.restore();
+  }
+  // Keep white lettering of the original KhabarFori logo readable.
+  // This paints only the background UNDER the unmodified template; the PNG pixels are untouched.
+  if(brand==='urgent'){
+    ctx.save();ctx.fillStyle='#ffffff';
+    ctx.fillRect(Math.round(W*.885),Math.round(H*.038),Math.round(W*.115),Math.round(H*.15));
+    ctx.restore();
   }
   // Always draw the exact original PNG template LAST, with no modifications.
   const template=window.rf705CurrentTemplate;
@@ -1004,6 +999,7 @@ const rf586OriginalRender=render;
 #rf716-review-shade p{line-height:1.95;font-size:13px;margin:8px 0;text-align:right}
 #rf716-review-shade label{display:block;font-weight:bold;margin:9px 0;text-align:right}
 #rf716-prompt{display:block;box-sizing:border-box;width:100%;height:min(48vh,420px);resize:vertical;white-space:pre-wrap;line-height:2;font-size:16px;font-family:RFVazir,Tahoma,sans-serif;padding:14px;border:1px solid #b9d4eb;border-radius:10px;color:#153654;background:#f8fbff;direction:rtl;text-align:right}
+#rf716-review-shade .rf716-modal label,#rf716-review-shade .rf716-modal p,#rf716-review-shade .rf716-modal h2,#rf716-review-shade .rf716-modal button{font-family:RFVazir,Tahoma,sans-serif!important}
 #rf716-review-shade .rf716-modal, #rf716-review-shade .rf716-modal *{font-family:RFVazir,Tahoma,sans-serif!important}
 #rf716-review-shade .rf716-warning{color:#875b13}
 #rf716-review-shade .rf716-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:15px;justify-content:flex-start}
@@ -1024,35 +1020,58 @@ function savePending(x){try{if(x)sessionStorage.setItem(pendingKey,JSON.stringif
 
 function say(t){status.hidden=!t;status.textContent=t||'';}
 function localRender(){internalClick=true;try{btn.click()}finally{internalClick=false}}
-function current(){return {news:newsInput.value.trim(),brand:(document.querySelector('.brandBtn.active')?.textContent||'خبر فوری').trim(),style:$('rf580-graphic-style')?.value||'auto',size:document.querySelector('.sizeBtn.active')?.dataset?.size||'square',customPrompt:($('rf580-other-prompt')?.value||'').trim(),headline:($('rf580-title-text')?.value||'').trim()};}
+function rf724PersianDigits(value){
+ return String(value??'').replace(/[0-9]/g,d=>'۰۱۲۳۴۵۶۷۸۹'[Number(d)]).replace(/[٠-٩]/g,d=>'۰۱۲۳۴۵۶۷۸۹'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]);
+}
+function rf724ActiveBrandKey(){
+ const btn=document.querySelector('.brandBtn.active');
+ if(btn?.dataset?.brand)return btn.dataset.brand;
+ const buttons=[...document.querySelectorAll('.brandBtn')];
+ const idx=buttons.indexOf(btn);
+ return ['urgent','mashhad','jaryan','farda'][idx]||'urgent';
+}
+function rf724BrandName(key){
+ return ({urgent:'خبر فوری',mashhad:'اخبار مشهد',jaryan:'جریان',farda:'خبرفردا'})[key]||'خبر فوری';
+}
+function rf724StructuredNews(raw){
+ const lines=normalizeText(raw).split(/\n+/).map(s=>s.trim()).filter(Boolean);
+ // Preserve exactly the supplied facts. Do not introduce synthetic row numbers.
+ return lines.map(rf724PersianDigits).join('\n');
+}
+function current(){const brandKey=rf724ActiveBrandKey();return {news:newsInput.value.trim(),brand:rf724BrandName(brandKey),brandKey,style:$('rf580-graphic-style')?.value||'auto',size:document.querySelector('.sizeBtn.active')?.dataset?.size||'square',customPrompt:($('rf580-other-prompt')?.value||'').trim(),headline:normalizeText(($('rf580-title-text')?.value||'').trim())};}
 function promptFor(c){
  const styleText={auto:'اینفوگرافیک خبری حرفه‌ای و تمیز', '2d':'تصویرسازی دقیق دوبعدی وکتوری', '3d':'چیدمان خبری با عناصر سه‌بعدی کنترل‌شده',table:'جدول‌های منظم و خبری',chart:'نمودارهای دقیق و خوانا',comparison:'مقایسه‌ی دو ستونه و مستند',timeline:'چیدمان زمانی مرحله‌به‌مرحله',cards:'کارت‌های داده‌ای فشرده اما خوانا',minimal:'اینفوگرافیک مینیمال و مدرن',other:'سبک اختصاصی کاربر'};
  const shape=c.size==='story'?'استوری عمودی ۹:۱۶':'مربع ۱:۱';
  const custom=c.customPrompt?`
-دستور تکمیلی کاربر (در صورت نداشتن تعارض با صحت داده‌ها و حفاظت از قالب رعایت شود):
-${c.customPrompt.slice(0,700)}
+دستور تکمیلی کاربر (فقط اگر با قوانین اصلی تعارض نداشت رعایت شود):
+${rf724PersianDigits(c.customPrompt.slice(0,700))}
 `:'';
+ const structured=rf724StructuredNews(c.news);
+ const titleLine=c.headline?`تیتر جداگانه برای جای‌گذاری بعدی توسط سایت: ${rf724PersianDigits(c.headline)}`:'تیتر جداگانه توسط سایت اضافه می‌شود؛ خودت تیتر نساز.';
  return [
-  'یک اینفوگرافیک خبری فارسیِ راست‌به‌چپ و آمادهٔ انتشار بساز.',
+  'فقط یک اینفوگرافیک خبری فارسی، راست‌به‌چپ، تمیز و آمادهٔ انتشار بساز.',
   `نسبت تصویر: ${shape}`,
   `سبک بصری: ${styleText[c.style]||styleText.auto}`,
   `برند انتخابی: ${c.brand}`,
-  'از کل بوم به‌صورت تمام‌صفحه استفاده کن و اطلاعات را در ستون‌ها، کادرها و بخش‌های منظم و هم‌تراز بچین؛ تصویر کوچک مرکزی یا حاشیهٔ خالی اضافی نداشته باش.',
-  'همهٔ آمار، اعداد و نکات داده‌شده را کامل نشان بده؛ هیچ اطلاعاتی را حذف، تکرار، تغییر یا از خودت اضافه نکن.',
-  'از اندازه‌های تطبیقی برای کادرها، فاصله‌گذاری متعادل، آیکون‌های محدود و سلسله‌مراتب بصری روشن استفاده کن تا خروجی شلوغ و قاطی نشود.',
-  'تیتر اصلی را داخل تصویر نساز؛ RushFinder تیتر را جداگانه روی قالب قرار می‌دهد.',
-  'بخش بالایی تصویر را تمیز و روشن نگه دار. حدود ۲۲٪ بالای تصویر برای تیتر رزرو است.',
-  'به‌ویژه ۳۲٪ بالای سمت راست فقط برای نشان گوشه‌ای ناشر خالی بماند.',
-  'هیچ لوگو، واترمارک، روبان گوشه‌ای یا نام ناشر را خودت رسم نکن.',
-  'فایل PNG اصلی ناشر بعداً بدون تغییر روی تصویر قرار می‌گیرد؛ آن را شبیه‌سازی نکن.',
-  'متن‌ها و اطلاعات عددی فقط در فضای زیرِ نوار رزروشده چیده شوند.',
+  'قوانین قطعی و غیرقابل‌تخلف:',
+  '۱) از کل بوم به‌صورت تمام‌صفحه استفاده کن و محتوای اینفو را در کل صفحه پخش کن؛ تصویر کوچکِ وسط، حاشیهٔ خالی زیاد یا چیدمان جمع‌شده نداشته باش.',
+  '۲) همهٔ داده‌ها را کامل و خوانا نشان بده، اما هیچ داده‌ای را حذف، تکرار، خلاصه، تغییر یا از خودت اضافه نکن.',
+  '۳) فقط از همان متن و اعداد داده‌شده استفاده کن. هیچ درصد، تاریخ، توضیح، عدد، تیتر، زیرتیتر یا برچسب اضافه نساز.',
+  '۴) تمام اعداد، سال‌ها و مقادیر را فقط با ارقام فارسی نمایش بده: ۰۱۲۳۴۵۶۷۸۹.',
+  '۵) تیتر اصلی را داخل تصویر نساز. سایت تیتر را جداگانه روی قالب می‌گذارد؛ بنابراین در ناحیهٔ تیتر هیچ متن یا کادر تیتر تولید نکن.',
+  '۶) حدود ۲۲٪ بالای تصویر برای تیتر سایت رزرو است و باید تمیز و خلوت بماند.',
+  '۷) گوشهٔ بالای سمت راست برای لوگوی ناشر رزرو است و باید خالی بماند. هیچ لوگو، واترمارک، نام رسانه، روبان گوشه‌ای یا عنصر برند جایگزین نساز.',
+  '۸) فایل PNG اصلی قالب ناشر بعداً بدون تغییر روی خروجی قرار می‌گیرد. خودت هیچ متن خبر فوری یا شکل سبز گوشه تولید نکن.',
+  '۹) چیدمان را حرفه‌ای، مرتب، هم‌تراز و خوانا نگه دار. اگر داده زیاد بود با کوچک‌کردن کنترل‌شدهٔ فونت، چندستونه‌کردن، جدول فشرده، کادرهای منظم و فاصله‌گذاری هوشمند همهٔ داده‌ها را در یک صفحه جا بده؛ صفحه شلوغ و قاطی نشود.',
+  '۱۰) خروجی فقط یک تصویر واحد و کامل باشد؛ نه چند صفحه و نه چند اسلاید.',
+  titleLine,
   custom.trim(),
-  'خبر و داده‌های منبع:',
-  c.news,
-  'پایان خبر منبع.',
-  'خروجی باید یک تصویر کامل و واحد باشد؛ نه چند صفحه و نه چند اسلاید.'
+  'فقط داده‌های مجاز برای استفاده در این اینفوگرافیک:',
+  structured,
+  'پایان داده‌های مجاز.'
  ].filter(Boolean).join('\n');
 }
+
 // RF0716: explicit paid-generation approval. Never submit a draft before user confirms.
 function reviewPrompt(draft){
  return new Promise(resolve=>{
@@ -1063,7 +1082,7 @@ function reviewPrompt(draft){
    <label for="rf716-prompt">پرامپت نهایی (قابل ویرایش)</label>
    <textarea id="rf716-prompt" spellcheck="false" dir="rtl"></textarea>
    <p id="rf716-count" aria-live="polite"></p>
-   <p class="rf716-warning">هوش مصنوعی ممکن است خطای فارسی یا آمار داشته باشد؛ خروجی را قبل از انتشار بررسی کن. فایل قالب اصلی توسط برنامه جداگانه اضافه می‌شود.</p>
+   <p class="rf716-warning">هوش مصنوعی ممکن است خطای فارسی یا آمار داشته باشد؛ خروجی را قبل از انتشار بررسی کن. قالب اصلی برند، لوگوی خبر فوری و تیتر نهایی توسط سایت جداگانه روی خروجی قرار می‌گیرند.</p>
    <div class="rf716-actions"><button type="button" id="rf716-approve">تأیید و ساخت با Gemini</button><button type="button" id="rf716-reset">بازسازی متن پیش‌فرض</button><button type="button" id="rf716-cancel">لغو</button></div>
   </section>`;
   const previousFocus=document.activeElement;
@@ -1115,7 +1134,7 @@ btn.addEventListener('click',async evt=>{
   await new Promise((resolve,reject)=>{pic.onload=resolve;pic.onerror=()=>reject(Error('تصویر دریافتی قابل نمایش نیست.'));pic.src=data.image;});
   await window.rf705LoadTemplate();
   lastSignature=sig;lastPicture=pic;savePending(null);window.rf702FinalImage=pic;window.rf702DrawFinal?.();
-  say('✓ اینفوگرافیک Gemini / چابکان با قالب اصلی برند ترکیب شد؛ PNG دانلودی همان پیش‌نمایش است.'+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
+  say('✓ اینفوگرافیک Gemini / چابکان با قالب اصلی برند ترکیب شد. لوگو و قالب اصلی از فایل برند روی خروجی قرار گرفتند و PNG دانلودی همان پیش‌نمایش است.'+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
  }catch(error){
   const suffix=error?.definitiveRejection
     ? ' — درخواست از سمت Gemini / چابکان رد شده و قفل این درخواست برداشته شد. قبل از تلاش بعدی علت بالا را برطرف کن؛ ساخت تصویر هزینه دارد.'
