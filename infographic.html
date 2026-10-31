@@ -1,4 +1,4 @@
-<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>اینفوگرافیک هوشمند | RushFinder</title>
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>اینفوگرافیک هوشمند | RushFinder 0728</title>
 <style>
 @font-face{font-family:Yekan;src:url('fonts/Yekan.woff2') format('woff2');font-display:swap}
 *{box-sizing:border-box}html,body{margin:0}body{font-family:Yekan,Tahoma,sans-serif;background:#edf3fa;color:#17314e;font-size:15px}
@@ -726,40 +726,13 @@ function rf581Render(){
   // drawn last at its original geometry, without editing any PNG bytes.
   // Do not fit/contain the image into a small center panel.
   const W=cv.width,H=cv.height;
-  const isUrgent=brand==='urgent'||brand==='farda';
   ctx.save();
   const coverScale=Math.max(W/pic.naturalWidth,H/pic.naturalHeight);
   const coverW=pic.naturalWidth*coverScale,coverH=pic.naturalHeight*coverScale;
   ctx.drawImage(pic,(W-coverW)/2,(H-coverH)/2,coverW,coverH);
   ctx.restore();
-  // Reserve a genuinely clear logo-safe corner. Never let a title or generated
-  // label enter the upper-right logo zone or the template's side stripe.
-  const headline=rf580TitleOn.checked?normalizeText(rf580TitleText.value).slice(0,170):'';
-  if(headline){
-   const headL=Math.round(W*.045),headR=isUrgent?Math.round(W*.67):Math.round(W*.71);
-   const headTop=Math.round(H*.032),headBottom=Math.round(H*.19);
-   const headW=headR-headL;
-   ctx.save();
-   ctx.fillStyle='rgba(255,255,255,.975)';
-   ctx.beginPath();ctx.roundRect(headL,headTop,headW,headBottom-headTop,20);ctx.fill();
-   ctx.strokeStyle='rgba(220,230,238,.92)';ctx.lineWidth=1.5;ctx.stroke();
-   const family=rf584FontMap[rf584FontSelector.value]||'Yekan,Tahoma';
-   const persianHeadline=headline.replace(/[0-9]/g,d=>'۰۱۲۳۴۵۶۷۸۹'[Number(d)]).replace(/[٠-٩]/g,d=>'۰۱۲۳۴۵۶۷۸۹'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]);
-   const fit=fitText(persianHeadline,headW-44,3,46,23,'800');
-   const lineH=Math.min(fit.size*1.28,(headBottom-headTop-18)/Math.max(1,fit.lines.length));
-   ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#172b38';
-   ctx.font='800 '+fit.size+'px '+family;
-   const firstY=(headTop+headBottom)/2-(fit.lines.length-1)*lineH/2;
-   fit.lines.forEach((line,i)=>ctx.fillText(line,headL+headW/2,firstY+i*lineH,headW-44));
-   ctx.restore();
-  }
-  // Keep white lettering of the original KhabarFori logo readable.
-  // This paints only the background UNDER the unmodified template; the PNG pixels are untouched.
-  if(brand==='urgent'){
-    ctx.save();ctx.fillStyle='#ffffff';
-    ctx.fillRect(Math.round(W*.885),Math.round(H*.038),Math.round(W*.115),Math.round(H*.15));
-    ctx.restore();
-  }
+  // RF0728 revised: Gemini receives headline inside original input and lays it out ONCE.
+  // No extra title overlay, panel, white cover, or logo-area repaint by RushFinder.
   // Always draw the exact original PNG template LAST, with no modifications.
   const template=window.rf705CurrentTemplate;
   if(template && window.rf705CurrentTemplatePath===rf705TemplatePath()){
@@ -1049,7 +1022,7 @@ function promptFor(c){
 ${rf724PersianDigits(c.customPrompt.slice(0,700))}
 `:'';
  const structured=rf724StructuredNews(c.news);
- const titleLine=c.headline?`تیتر جداگانه برای جای‌گذاری بعدی توسط سایت: ${rf724PersianDigits(c.headline)}`:'تیتر جداگانه توسط سایت اضافه می‌شود؛ خودت تیتر نساز.';
+ const titleLine='تیتر و محتوای اینفوگرافیک هردو در متن ورودی موجودند. تیتر را فقط یک بار، در بالا و به‌عنوان بخشی یکپارچه از خود اینفو طراحی کن.';
  return [
   'فقط یک اینفوگرافیک خبری فارسی، راست‌به‌چپ، تمیز و آمادهٔ انتشار بساز.',
   `نسبت تصویر: ${shape}`,
@@ -1060,8 +1033,8 @@ ${rf724PersianDigits(c.customPrompt.slice(0,700))}
   '۲) همهٔ داده‌ها را کامل و خوانا نشان بده، اما هیچ داده‌ای را حذف، تکرار، خلاصه، تغییر یا از خودت اضافه نکن.',
   '۳) فقط از همان متن و اعداد داده‌شده استفاده کن. هیچ درصد، تاریخ، توضیح، عدد، تیتر، زیرتیتر یا برچسب اضافه نساز.',
   '۴) تمام اعداد، سال‌ها و مقادیر را فقط با ارقام فارسی نمایش بده: ۰۱۲۳۴۵۶۷۸۹.',
-  '۵) تیتر اصلی را داخل تصویر نساز. سایت تیتر را جداگانه روی قالب می‌گذارد؛ بنابراین در ناحیهٔ تیتر هیچ متن یا کادر تیتر تولید نکن.',
-  '۶) حدود ۲۲٪ بالای تصویر برای تیتر سایت رزرو است و باید تمیز و خلوت بماند.',
+  '۵) تیتر اصلی در متن ورودی همراه داده‌ها آمده است؛ آن را فقط یک‌بار در بالای خود اینفو، با فونت متناسب، بدون کادر اضافه و بدون تکرار طراحی کن.',
+  '۶) تیتر را داخل ساختار همان تصویر قرار بده؛ از تکرار تیتر در متن اصلی یا ایجاد نوار سفید جدا و کادر مضاعف خودداری کن.',
   '۷) گوشهٔ بالای سمت راست برای لوگوی ناشر رزرو است و باید خالی بماند. هیچ لوگو، واترمارک، نام رسانه، روبان گوشه‌ای یا عنصر برند جایگزین نساز.',
   '۸) فایل PNG اصلی قالب ناشر بعداً بدون تغییر روی خروجی قرار می‌گیرد. خودت هیچ متن خبر فوری یا شکل سبز گوشه تولید نکن.',
   '۹) چیدمان را حرفه‌ای، مرتب، هم‌تراز و خوانا نگه دار. اگر داده زیاد بود با کوچک‌کردن کنترل‌شدهٔ فونت، چندستونه‌کردن، جدول فشرده، کادرهای منظم و فاصله‌گذاری هوشمند همهٔ داده‌ها را در یک صفحه جا بده؛ صفحه شلوغ و قاطی نشود.',
@@ -1084,7 +1057,7 @@ function reviewPrompt(draft){
    <label for="rf716-prompt">پرامپت نهایی (قابل ویرایش)</label>
    <textarea id="rf716-prompt" spellcheck="false" dir="rtl"></textarea>
    <p id="rf716-count" aria-live="polite"></p>
-   <p class="rf716-warning">هوش مصنوعی ممکن است خطای فارسی یا آمار داشته باشد؛ خروجی را قبل از انتشار بررسی کن. قالب اصلی برند، لوگوی خبر فوری و تیتر نهایی توسط سایت جداگانه روی خروجی قرار می‌گیرند.</p>
+   <p class="rf716-warning">هوش مصنوعی ممکن است خطای فارسی یا آمار داشته باشد؛ خروجی را قبل از انتشار بررسی کن. قالب و لوگوی اصلی برند توسط سایت روی خروجی قرار می‌گیرند؛ تیتر را خود Gemini از متن ورودی، فقط یک بار، داخل اینفو می‌چیند.</p>
    <div class="rf716-actions"><button type="button" id="rf716-approve">تأیید و ساخت با Gemini</button><button type="button" id="rf716-reset">بازسازی متن پیش‌فرض</button><button type="button" id="rf716-cancel">لغو</button></div>
   </section>`;
   const previousFocus=document.activeElement;
@@ -1134,9 +1107,19 @@ btn.addEventListener('click',async evt=>{
   if(!data.image)throw Error('تصویر در پاسخ دریافتی وجود ندارد.');
   const pic=new Image();
   await new Promise((resolve,reject)=>{pic.onload=resolve;pic.onerror=()=>reject(Error('تصویر دریافتی قابل نمایش نیست.'));pic.src=data.image;});
-  await window.rf705LoadTemplate();
-  lastSignature=sig;lastPicture=pic;savePending(null);window.rf702FinalImage=pic;window.rf702DrawFinal?.();
-  say('✓ اینفوگرافیک Gemini / چابکان با قالب اصلی برند ترکیب شد. لوگو و قالب اصلی از فایل برند روی خروجی قرار گرفتند و PNG دانلودی همان پیش‌نمایش است.'+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
+  // Request delivered and image decoded successfully: clear the billing-uncertainty lock BEFORE local rendering.
+  // A later canvas/UI error must never masquerade as an undelivered paid request.
+  lastSignature=sig;lastPicture=pic;savePending(null);
+  window.rf702FinalImage=pic;
+  try{
+   await window.rf705LoadTemplate();
+   if(typeof window.rf702DrawFinal!=='function')throw new Error('تابع نمایش خروجی در این صفحه در دسترس نیست.');
+   window.rf702DrawFinal();
+   say('✓ تصویر دریافت و با قالب اصلی برند ترکیب شد؛ PNG دانلودی همان پیش‌نمایش است.'+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
+  }catch(renderError){
+   console.error('RF0728 image received but local composition failed',renderError);
+   say('✓ تصویر از Gemini دریافت شده، ولی نمایش یا بارگذاری قالب در سایت خطا دارد: '+(renderError?.message||'خطای نامشخص')+' — از ساخت مجدد تصویر پولی خودداری کن؛ ابتدا فایل قالب را بررسی کن.');
+  }
  }catch(error){
   const suffix=error?.definitiveRejection
     ? ' — درخواست از سمت Gemini / چابکان رد شده و قفل این درخواست برداشته شد. قبل از تلاش بعدی علت بالا را برطرف کن؛ ساخت تصویر هزینه دارد.'
