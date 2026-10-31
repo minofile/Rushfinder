@@ -744,7 +744,8 @@ function rf581Render(){
    ctx.beginPath();ctx.roundRect(headL,headTop,headW,headBottom-headTop,20);ctx.fill();
    ctx.strokeStyle='rgba(220,230,238,.92)';ctx.lineWidth=1.5;ctx.stroke();
    const family=rf584FontMap[rf584FontSelector.value]||'Yekan,Tahoma';
-   const fit=fitText(rf724PersianDigits(headline),headW-44,3,46,23,'800');
+   const persianHeadline=headline.replace(/[0-9]/g,d=>'۰۱۲۳۴۵۶۷۸۹'[Number(d)]).replace(/[٠-٩]/g,d=>'۰۱۲۳۴۵۶۷۸۹'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]);
+   const fit=fitText(persianHeadline,headW-44,3,46,23,'800');
    const lineH=Math.min(fit.size*1.28,(headBottom-headTop-18)/Math.max(1,fit.lines.length));
    ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#172b38';
    ctx.font='800 '+fit.size+'px '+family;
