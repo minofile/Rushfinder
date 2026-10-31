@@ -1020,6 +1020,7 @@ function savePending(x){try{if(x)sessionStorage.setItem(pendingKey,JSON.stringif
 
 function say(t){status.hidden=!t;status.textContent=t||'';}
 function localRender(){internalClick=true;try{btn.click()}finally{internalClick=false}}
+function rf726NormalizeText(value){return String(value||'').replace(/\r/g,'').replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/ۀ/g,'ه').replace(/\u200c{2,}/g,'‌').trim();}
 function rf724PersianDigits(value){
  return String(value??'').replace(/[0-9]/g,d=>'۰۱۲۳۴۵۶۷۸۹'[Number(d)]).replace(/[٠-٩]/g,d=>'۰۱۲۳۴۵۶۷۸۹'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]);
 }
@@ -1034,11 +1035,11 @@ function rf724BrandName(key){
  return ({urgent:'خبر فوری',mashhad:'اخبار مشهد',jaryan:'جریان',farda:'خبرفردا'})[key]||'خبر فوری';
 }
 function rf724StructuredNews(raw){
- const lines=normalizeText(raw).split(/\n+/).map(s=>s.trim()).filter(Boolean);
+ const lines=rf726NormalizeText(raw).split(/\n+/).map(s=>s.trim()).filter(Boolean);
  // Preserve exactly the supplied facts. Do not introduce synthetic row numbers.
  return lines.map(rf724PersianDigits).join('\n');
 }
-function current(){const brandKey=rf724ActiveBrandKey();return {news:newsInput.value.trim(),brand:rf724BrandName(brandKey),brandKey,style:$('rf580-graphic-style')?.value||'auto',size:document.querySelector('.sizeBtn.active')?.dataset?.size||'square',customPrompt:($('rf580-other-prompt')?.value||'').trim(),headline:normalizeText(($('rf580-title-text')?.value||'').trim())};}
+function current(){const brandKey=rf724ActiveBrandKey();return {news:newsInput.value.trim(),brand:rf724BrandName(brandKey),brandKey,style:$('rf580-graphic-style')?.value||'auto',size:document.querySelector('.sizeBtn.active')?.dataset?.size||'square',customPrompt:($('rf580-other-prompt')?.value||'').trim(),headline:rf726NormalizeText(($('rf580-title-text')?.value||'').trim())};}
 function promptFor(c){
  const styleText={auto:'اینفوگرافیک خبری حرفه‌ای و تمیز', '2d':'تصویرسازی دقیق دوبعدی وکتوری', '3d':'چیدمان خبری با عناصر سه‌بعدی کنترل‌شده',table:'جدول‌های منظم و خبری',chart:'نمودارهای دقیق و خوانا',comparison:'مقایسه‌ی دو ستونه و مستند',timeline:'چیدمان زمانی مرحله‌به‌مرحله',cards:'کارت‌های داده‌ای فشرده اما خوانا',minimal:'اینفوگرافیک مینیمال و مدرن',other:'سبک اختصاصی کاربر'};
  const shape=c.size==='story'?'استوری عمودی ۹:۱۶':'مربع ۱:۱';
