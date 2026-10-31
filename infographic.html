@@ -348,7 +348,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
         </select>
         <div id="rf584-font-help">پیش‌نمایش و فایل PNG با فونت انتخابی و اعداد فارسی ساخته می‌شوند.</div>
       </div>
-<div id="rf607-test-area"><button type="button" id="rf607-test-button">بررسی اتصال چابکان (بدون هزینه)</button><span id="rf607-test-output" role="status" aria-live="polite"></span></div>
+<div id="rf607-test-area"><button type="button" id="rf607-test-button">بررسی اتصال</button><span id="rf607-test-output" role="status" aria-live="polite"></span></div>
 <div class="actions rf601-actions"><button id="generate" class="primary">✦ ساخت اینفوگرافیک</button><button id="reroll" class="ghost">↻ طرح متفاوت</button></div><div id="rf594-status" role="status" aria-live="polite" style="font-size:12px;line-height:1.9;color:#27546b;white-space:pre-wrap;margin-top:7px" hidden></div>
     </section>
     <section class="panel">
@@ -1220,7 +1220,7 @@ btn.addEventListener('click',async evt=>{
    try{
      const response=await fetch('/api/avalai-image?probe=gemini',{method:'GET',cache:'no-store',headers:{Accept:'application/json'}});
      const data=await response.json();
-     result.textContent=(data.ok?'✓ ':'✕ ')+(data.message||'پاسخ نامشخص از سرور دریافت شد.')+' ['+(data.code||response.status)+']';
+     result.textContent=data.ok?'✓ تنظیمات ثبت شده است. تولید تصویر هنوز آزمایش نشده و ممکن است هزینه داشته باشد.':('✕ '+(data.message||'پاسخ نامشخص از سرور دریافت شد.')+' ['+(data.code||response.status)+']');
      result.style.color=data.ok?'#08754c':'#ac3b25';
    }catch(e){result.textContent='خطا در برقراری ارتباط با تابع تست روی Vercel.';result.style.color='#ac3b25';}
    finally{button.disabled=false;}
