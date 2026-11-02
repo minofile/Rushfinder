@@ -15,3 +15,10 @@ README-0798-FA.txt
 README-0799-FA.txt
 راهنمای-شروع.txt
 راهنمای-0796.txt
+
+# Local migration and cache helpers
+Move-Old-RushFinder-Outputs.ps1
+Move-Old-RushFinder-Outputs.cmd
+Clean-Completed-Render-Temp.ps1
+Clean-Completed-Render-Temp.cmd
+README-0802-FA.txt

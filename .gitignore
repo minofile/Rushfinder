@@ -1,5 +1,26 @@
-private.env
+# RushFinder 0802: source files only in GitHub.
 .env
 .env.*
 !.env.example
+private.env
 node_modules/
+
+# Legacy and temporary render data, including all large generated media.
+/ae-jobs/
+/ae-output/
+/alpha-frames/
+/render-output/
+/RushFinder-Exports/
+/RushFinder-Cache/
+*.log
+
+# Packages saved accidentally inside the repository.
+/*.zip
+/*.7z
+/*.rar
+
+# OS/editor leftovers.
+.DS_Store
+Thumbs.db
+Desktop.ini
+*~
