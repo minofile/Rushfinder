@@ -1,13 +1,13 @@
 'use strict';
 // Windows-only proof-of-concept Adobe After Effects automation. Bound to localhost.
 const http=require('http'),fs=require('fs'),path=require('path'),os=require('os'),cp=require('child_process'),crypto=require('crypto');
-// 0805: never generate large working files or final videos inside the GitHub project.
+// 0806: never generate large working files or final videos inside the GitHub project.
 // Both directories live in the current Windows user's home folder.
-const root=__dirname,port=18818;
+const root=__dirname,port=18819;
 const dataRoot=path.join(os.homedir(),'RushFinder-Cache');
 const work=path.join(dataRoot,'ae-jobs');
 const exportDir=path.join(os.homedir(),'RushFinder-Exports');
-const template=path.join(root,'ae-original','tag1-source.aep');
+const template=path.join(root,'ae-original','خبر فوری 2(1).aep');
 fs.mkdirSync(work,{recursive:true});
 fs.mkdirSync(exportDir,{recursive:true});
 const jobs=new Map();
@@ -16,7 +16,11 @@ function aeExe(){const roots=[process.env.ProgramFiles,process.env['ProgramFiles
 function jsxString(s){return JSON.stringify(s.replace(/\\/g,'/'))}
 function scriptFor(job){
 // Runs on the *installed* After Effects engine; never paints a substitute plate.
-const assetFiles=fs.readdirSync(path.join(root,'ae-original')).filter(x=>x.toLowerCase().endsWith('.png')).map(x=>path.join(root,'ae-original',x).replace(/\\/g,'/'));
+// Ensure the three linked images exist under exactly the names embedded in the AEP.
+const requiredAssets=['ت2گ copy.png','تگ copy.png','Micropho4.png'];
+const missingAssets=requiredAssets.filter(name=>!fs.existsSync(path.join(root,'ae-original',name)));
+if(missingAssets.length)throw Error('Missing original After Effects images: '+missingAssets.join(', '));
+const assetFiles=requiredAssets.map(name=>path.join(root,'ae-original',name).replace(/\\/g,'/'));
 const script=`(function(){
 var folder=${jsxString(job.folder)};var framesFolder=new Folder(folder+'/alpha-frames');if(!framesFolder.exists)framesFolder.create();var result=new File(folder+'/render.done');var error=new File(folder+'/render.error');var log=new File(folder+'/ae-render.log');
 function writeLog(s){try{log.open('a');log.writeln(new Date().toString()+' | '+s);log.close();}catch(ignore){}}
@@ -29,17 +33,54 @@ if(!comp){for(var i=1;i<=app.project.numItems;i++){var c=app.project.item(i);if(
 var visited={};var textEntries=[];
 function collectText(c){if(!c||visited[c.id])return;visited[c.id]=true;for(var j=1;j<=c.numLayers;j++){var lyr=c.layer(j);try{if(lyr.property('ADBE Text Properties')&&lyr.property('ADBE Text Properties').property('ADBE Text Document'))textEntries.push({layer:lyr,comp:c});}catch(ignore){}try{if(lyr.source instanceof CompItem)collectText(lyr.source);}catch(ignore){}}}
 collectText(comp);if(!textEntries.length)throw Error('Editable text layer not found in tag1');
-function scoreText(entry){var score=0;try{var td=entry.layer.property('ADBE Text Properties').property('ADBE Text Document').value;var txt=String(td.text||'');if(txt.indexOf('گزارش')>=0)score+=100;if(txt.indexOf('@')>=0)score-=80;if(/[اآبپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی]/.test(txt))score+=30;score+=Math.min(txt.length,40);}catch(ignore){}return score;}
-var picked=textEntries[0],best=-9999;for(var t=0;t<textEntries.length;t++){var sc=scoreText(textEntries[t]);if(sc>best){best=sc;picked=textEntries[t];}}
-var textLayer=picked.layer;var textComp=picked.comp;writeLog('Text layer: '+textLayer.name+' | comp: '+textComp.name);
+// Only replace the reporter text in the ORIGINAL AEP. Never edit @AkhbareFori or graphic layers.
+var picked=null;
+for(var t=0;t<textEntries.length;t++){
+ try{
+  var sample=String(textEntries[t].layer.property('ADBE Text Properties').property('ADBE Text Document').value.text||'');
+  writeLog('Found text layer '+textEntries[t].comp.name+'/'+textEntries[t].layer.name+' = '+sample.substring(0,120));
+  if(sample.indexOf('گزارش')>=0&&sample.indexOf('@')<0){picked=textEntries[t];break;}
+ }catch(ignore){}
+}
+if(!picked)throw Error('Reporter text layer not found in original AEP; refused to change another layer.');
+var textLayer=picked.layer;var textComp=picked.comp;
+var reporterLocked=textLayer.locked;
+if(reporterLocked)textLayer.locked=false;
+writeLog('Editing original reporter text layer: '+textLayer.name+' | comp: '+textComp.name);
 var textProp=textLayer.property('ADBE Text Properties').property('ADBE Text Document');
 if(textProp.numKeys>0){for(var key=1;key<=textProp.numKeys;key++){var kd=textProp.keyValue(key);kd.text=${jsxString(job.name)};textProp.setValueAtKey(key,kd);}}else{var td=textProp.value;td.text=${jsxString(job.name)};textProp.setValue(td);}
 // Do not assign renderQueue.rendering: read-only property in ExtendScript.
 var textRect=textLayer.sourceRectAtTime(0,false);writeLog('Text width after update: '+textRect.width);
 var assets=${JSON.stringify(assetFiles)};
-for(var a=1;a<=app.project.numItems;a++){var foot=app.project.item(a);try{if(!(foot instanceof FootageItem)||!(foot.mainSource instanceof FileSource))continue;if(foot.file&&foot.file.exists)continue;
- for(var k=0;k<assets.length;k++){var candidate=new File(assets[k]);if(candidate.name===foot.name){foot.replace(candidate);writeLog('Relinked '+foot.name);break;}}
-}catch(ignore){writeLog('Relink check warning '+ignore.toString());}}
+for(var a=1;a<=app.project.numItems;a++){
+ var foot=app.project.item(a);
+ try{
+  if(!(foot instanceof FootageItem)||!(foot.mainSource instanceof FileSource))continue;
+  // Always relink known original graphics to the delivered package, not paths
+  // from the machine on which the template AEP was authored.
+  for(var k=0;k<assets.length;k++){
+   var candidate=new File(assets[k]);
+   if(candidate.name===foot.name){
+    if(!candidate.exists)throw Error('Missing source image '+candidate.fsName);
+    foot.replace(candidate);
+    writeLog('Original graphics linked: '+foot.name+' -> '+candidate.fsName);
+    break;
+   }
+  }
+ }catch(relinkError){writeLog('Relink warning '+foot.name+': '+relinkError.toString());}
+}
+// Prevent incomplete videos: all three original PNG sources must resolve.
+var missingFootage=[];
+for(var check=1;check<=app.project.numItems;check++){
+ var footage=app.project.item(check);
+ try{
+  if(!(footage instanceof FootageItem)||!(footage.mainSource instanceof FileSource))continue;
+  if(!/\\.png$/i.test(footage.name))continue;
+  if(!footage.file||!footage.file.exists)missingFootage.push(footage.name);
+ }catch(checkProblem){writeLog('Asset validation warning: '+checkProblem.toString());}
+}
+if(missingFootage.length)throw Error('AEP required PNG footage could not be relinked: '+missingFootage.join(', '));
+writeLog('All referenced original PNG graphics found. Reporter text updated; logo remains unchanged.');
 // 0775: Keep the original white plate fixed; center the name in that plate.
 // Position relative to the existing right-hand separator instead of moving the logo.
 try{
@@ -108,6 +149,14 @@ try{
  // Any Adobe-specific expression controlling plate size remains in the original project.
  // This runner does not add or replace the actual white plate.
 }catch(e){writeLog('Text measurement warning '+e.toString());}
+if(reporterLocked)textLayer.locked=true;
+// Save an EDITABLE copy with the text change and relinked original graphics.
+// The source template is never overwritten; the saved AEP stays alongside the final MP4.
+try{
+ var editedProject=new File(${jsxString(path.join(exportDir,'RushFinder-Edited-'+job.id+'.aep'))});
+ app.project.save(editedProject);
+ writeLog('Saved editable AEP: '+editedProject.fsName);
+}catch(saveError){writeLog('Warning: editable AEP copy could not be saved: '+saveError.toString());}
 for(var q=app.project.renderQueue.numItems;q>=1;q--)app.project.renderQueue.item(q).remove();
 var rq=app.project.renderQueue.items.add(comp);var om=rq.outputModule(1);
 // Output Module settings such as Format/Channels/Color may be read-only.
@@ -145,7 +194,7 @@ result.open('w');result.write('ok');result.close();writeLog('Completed: transpar
 const f=path.join(job.folder,'run.jsx');fs.writeFileSync(f,'\uFEFF'+script,'utf8');return f}
 
 function ffmpegExe(){for(const f of [path.join(root,'tools','ffmpeg.exe'),path.join(process.env.LOCALAPPDATA||'', 'RushFinder','tools','ffmpeg.exe'),path.join(root,'ffmpeg.exe'),path.join(process.env.LOCALAPPDATA||'', 'Microsoft','WinGet','Links','ffmpeg.exe'),'ffmpeg']){try{const r=cp.spawnSync(f,['-version'],{windowsHide:true,timeout:5000});if(r.status===0)return f}catch(e){}}return null}
-function report(){return {afterEffects:!!aeExe(),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),local:true,version:"0805",outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
+function report(){return {afterEffects:!!aeExe(),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0806",outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
 function runActive(job){const fail=e=>{job.state='error';let tail='';try{const f=path.join(job.folder,'ae-render.log');if(fs.existsSync(f))tail=fs.readFileSync(f,'utf8').split(/\r?\n/).filter(Boolean).slice(-10).join('\n').slice(-2500);}catch(ignore){}job.message=String(e)+(tail?'\nآخرین گزارش واقعی افتر افکت:\n'+tail:'\nگزارش افتر افکت هنوز ایجاد نشده است.');};(async()=>{try{job.state='rendering';job.message='مرحله ۱/۳: تغییر متن در پروژه AEP و رندر آلفای اصلی After Effects...';const exe=aeExe();if(!exe)throw Error('After Effects در Program Files/Adobe پیدا نشد.');if(!ffmpegExe())throw Error('FFmpeg پیدا نشد. فایل ffmpeg.exe مخصوص ویندوز را در پوشه tools کنار سایت قرار بدهید، یا FFmpeg را در PATH نصب کنید.');const script=scriptFor(job);job.message='مرحله ۱/۳: درخواست اجرای اسکریپت به After Effects فرستاده شد.';// Launch AE directly as in the last functioning releases. PowerShell Start-Process
  // occasionally loses the JSX -r argument and prevents script startup.
  const proc=cp.spawn(exe,['-r',script],{cwd:job.folder,windowsHide:true,detached:false,stdio:'ignore'});
@@ -193,10 +242,10 @@ function scheduleNextAE(){
     }
   },1000);
 }
-// 0805: The AE composition contains large transparent margins around the
+// 0806: The AE composition contains large transparent margins around the
 // actual lower third. Detect the visible alpha region from settled frames,
 // crop those margins, and scale the real artwork with its native aspect ratio.
-// 0805: Crop against the complete alpha-animation envelope, not only its middle.
+// 0806: Crop against the complete alpha-animation envelope, not only its middle.
 // The AEP lower third contains separate moving text, divider, and logo layers.
 // Middle-only crops clipped the later animated layers, making the logo appear alone.
 function detectVisibleTag(ff,mov){
@@ -253,7 +302,7 @@ function blend(job){return new Promise((resolve,reject)=>{
   job.message='مرحله ۳/۳: اندازه‌گیری محدوده واقعی تگ و ساخت MP4...';
   detectVisibleTag(ff,mov).then(crop=>{
    const tagFilter='[1:v]format=rgba,crop='+crop.w+':'+crop.h+':'+crop.x+':'+crop.y+',setsar=1[tag-src];[tag-src][0:v]scale2ref=w=trunc(main_w*0.38/2)*2:h=-2:flags=lanczos[tag][base];[base][tag]overlay=W-w-W*0.024:H-h-H*0.075:shortest=0:format=auto,format=yuv420p[v]';
-   fs.appendFileSync(path.join(job.folder,'ae-render.log'),'0805 full-animation alpha-crop '+JSON.stringify(crop)+'\\n');
+   fs.appendFileSync(path.join(job.folder,'ae-render.log'),'0806 full-animation alpha-crop '+JSON.stringify(crop)+'\\n');
   const out=path.join(exportDir,job.id+'.mp4');const args=['-hide_banner','-y','-i',job.input,'-i',mov,'-filter_complex',tagFilter,'-map','[v]','-map','0:a?','-c:v','libx264','-preset','medium','-crf','18','-c:a','aac','-movflags','+faststart',out];
   const c2=cp.spawn(ff,args,{windowsHide:true});let err2='';c2.stderr.on('data',x=>err2=(err2+x.toString()).slice(-9000));c2.on('error',reject);c2.on('close',n=>{
    if(n===0&&fs.existsSync(out)&&fs.statSync(out).size>1000){
@@ -276,10 +325,10 @@ const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=
 // Explicitly allow the official hosted site; do not expose the rendering API to arbitrary sites.
 const trustedWebOrigins=new Set([
  'https://rushfinder.vercel.app',
- 'http://127.0.0.1:18818',
- 'http://localhost:18818'
+ 'http://127.0.0.1:18819',
+ 'http://localhost:18819'
 ]);
-const trustedHostnames=new Set(['127.0.0.1:18818','localhost:18818']);
+const trustedHostnames=new Set(['127.0.0.1:18819','localhost:18819']);
 http.createServer((req,res)=>{
  if(!trustedHostnames.has(req.headers.host))return respond(res,403,{error:'Host not allowed'});
  let u;try{u=new URL(req.url,'http://127.0.0.1')}catch{return respond(res,400,{error:'Invalid URL'})}
@@ -301,7 +350,7 @@ http.createServer((req,res)=>{
  }
  if(u.pathname==='/ae-api/check')return respond(res,200,report());
 if(u.pathname==='/ae-api/create' && req.method==='POST'){
-const name=(u.searchParams.get('name')||'').trim();if(!name||name.length>140)return respond(res,400,{error:'نام باید بین یک تا ۱۴۰ حرف باشد.'});if(!aeExe()||!ffmpegExe()||!fs.existsSync(template))return respond(res,503,{error:'پیش‌نیاز ناقص: '+(!aeExe()?'After Effects ':'')+(!ffmpegExe()?'FFmpeg ':'')+(!fs.existsSync(template)?'AEP ':'')});const id=crypto.randomUUID(),folder=path.join(work,id);fs.mkdirSync(folder,{recursive:true});const job={id,folder,name,input:path.join(folder,'source-video'+(path.extname(u.searchParams.get('filename')||'').toLowerCase().match(/^\.(mp4|mov|webm|m4v|avi)$/)?.[0]||'.mp4')),state:'uploading',message:'دریافت فیلم...'};jobs.set(id,job);let total=0;const f=fs.createWriteStream(job.input);req.on('data',c=>{total+=c.length;if(total>1024*1024*1024){req.destroy();f.destroy()}});req.pipe(f);f.on('finish',()=>{job.state='queued';job.message='در صف رندر...';respond(res,200,{id});run(job)});req.on('error',()=>{job.state='error';job.message='آپلود فیلم متوقف شد.'});return;}
+const name=(u.searchParams.get('name')||'').trim();if(!name||name.length>140)return respond(res,400,{error:'نام باید بین یک تا ۱۴۰ حرف باشد.'});if(!aeExe()||!ffmpegExe()||!fs.existsSync(template)||!['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(n=>fs.existsSync(path.join(root,'ae-original',n))))return respond(res,503,{error:'پیش‌نیاز ناقص: '+(!aeExe()?'After Effects ':'')+(!ffmpegExe()?'FFmpeg ':'')+(!fs.existsSync(template)?'AEP ':'')+(!['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(n=>fs.existsSync(path.join(root,'ae-original',n)))?'PNG original assets ':'')});const id=crypto.randomUUID(),folder=path.join(work,id);fs.mkdirSync(folder,{recursive:true});const job={id,folder,name,input:path.join(folder,'source-video'+(path.extname(u.searchParams.get('filename')||'').toLowerCase().match(/^\.(mp4|mov|webm|m4v|avi)$/)?.[0]||'.mp4')),state:'uploading',message:'دریافت فیلم...'};jobs.set(id,job);let total=0;const f=fs.createWriteStream(job.input);req.on('data',c=>{total+=c.length;if(total>1024*1024*1024){req.destroy();f.destroy()}});req.pipe(f);f.on('finish',()=>{job.state='queued';job.message='در صف رندر...';respond(res,200,{id});run(job)});req.on('error',()=>{job.state='error';job.message='آپلود فیلم متوقف شد.'});return;}
 if(u.pathname==='/ae-api/status'){const j=jobs.get(u.searchParams.get('id'));if(!j)return respond(res,200,{state:'error',message:'پردازش پیدا نشد.'});return respond(res,200,{id:j.id,state:j.state,message:j.message});}
 let file;try{if(u.pathname.startsWith('/ae-output/')){const id=path.basename(u.pathname,'.mp4');if(!/^[a-f0-9-]{36}$/.test(id))throw Error();file=path.join(exportDir,id+'.mp4')}else{if(u.pathname.startsWith('/ae-jobs')||u.pathname.startsWith('/ae-original')||u.pathname.startsWith('/tools/'))throw Error();file=path.resolve(root,'.'+decodeURIComponent(u.pathname));if(!file.startsWith(root+path.sep))throw Error()}}catch{return respond(res,403,{error:'Forbidden'})}if(fs.existsSync(file)&&fs.statSync(file).isDirectory())file=path.join(file,'index.html');fs.stat(file,(err,s)=>{if(err||!s.isFile()){res.writeHead(404);res.end('Not found');return}let start=0,end=s.size-1,code=200,headers={'Content-Type':types[path.extname(file).toLowerCase()]||'application/octet-stream','Cache-Control':'no-store','Accept-Ranges':'bytes'};if(req.headers.range){const m=/bytes=(\d+)-(\d*)/.exec(req.headers.range);if(m){start=Number(m[1]);end=m[2]?Number(m[2]):end;if(start>end||start>=s.size){res.writeHead(416);res.end();return}code=206;headers['Content-Range']=`bytes ${start}-${end}/${s.size}`}}headers['Content-Length']=end-start+1;res.writeHead(code,headers);fs.createReadStream(file,{start,end}).pipe(res)})
-}).listen(port,'127.0.0.1',()=>console.log('RushFinder 0805: http://127.0.0.1:'+port+'/index.html'));
+}).listen(port,'127.0.0.1',()=>console.log('RushFinder 0806: http://127.0.0.1:'+port+'/index.html'));
