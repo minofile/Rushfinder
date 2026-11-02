@@ -1,0 +1,17 @@
+# These are Windows/local-only components; retain them in the downloadable ZIP, not on Vercel.
+ae-original/
+ae-jobs/
+tools/
+RushFinder.vbs
+Enable-AutoStart.vbs
+ae-auto-server.js
+ae-tray.ps1
+setup-ffmpeg.ps1
+local-server.js
+local-server.ps1
+local_server.py
+README-0797-FA.txt
+README-0798-FA.txt
+README-0799-FA.txt
+راهنمای-شروع.txt
+راهنمای-0796.txt
