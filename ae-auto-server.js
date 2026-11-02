@@ -3,11 +3,11 @@
 const http=require('http'),fs=require('fs'),path=require('path'),os=require('os'),cp=require('child_process'),crypto=require('crypto');
 // 0806: never generate large working files or final videos inside the GitHub project.
 // Both directories live in the current Windows user's home folder.
-const root=__dirname,port=18819;
+const root=__dirname,port=18825;
 const dataRoot=path.join(os.homedir(),'RushFinder-Cache');
 const work=path.join(dataRoot,'ae-jobs');
 const exportDir=path.join(os.homedir(),'RushFinder-Exports');
-const template=path.join(root,'ae-original','خبر فوری 2(1).aep');
+const template=path.join(root,'ae-original','خبر فوری 2(2).aep');
 fs.mkdirSync(work,{recursive:true});
 fs.mkdirSync(exportDir,{recursive:true});
 const jobs=new Map();
@@ -26,10 +26,17 @@ var folder=${jsxString(job.folder)};var framesFolder=new Folder(folder+'/alpha-f
 function writeLog(s){try{log.open('a');log.writeln(new Date().toString()+' | '+s);log.close();}catch(ignore){}}
 function safe(v,d){return (v===undefined||v===null)?d:v;}
 try{
-app.beginSuppressDialogs();writeLog('Starting original project');
-app.open(new File(${jsxString(template)}));
+app.beginSuppressDialogs();
+try{app.exitAfterLaunchAndEval=true;}catch(ignore){}
+writeLog('0809: isolated After Effects worker started; opening ORIGINAL AEP');
+var requestedProject=new File(${jsxString(template)});
+if(!requestedProject.exists)throw Error('Original AEP not found: '+requestedProject.fsName);
+app.open(requestedProject);
+if(!app.project||!app.project.file)throw Error('After Effects did not load the AEP');
+writeLog('PROJECT_OPENED: '+app.project.file.fsName);
 var comp=null;for(var i=1;i<=app.project.numItems;i++){var it=app.project.item(i);if(it instanceof CompItem&&it.name.toLowerCase().indexOf('tag1')>=0){comp=it;break;}}
-if(!comp){for(var i=1;i<=app.project.numItems;i++){var c=app.project.item(i);if(c instanceof CompItem && c.numLayers>0 && (!comp || c.numLayers>comp.numLayers))comp=c;}writeLog('tag1 not named in new AEP; fallback comp '+(comp?comp.name:'none'));}if(!comp)throw Error('No composition found in uploaded AEP');writeLog('Comp: '+comp.name);
+if(!comp){var names=[];for(var ci=1;ci<=app.project.numItems;ci++){var c=app.project.item(ci);if(c instanceof CompItem)names.push(c.name);}throw Error('No tag1 composition in supplied AEP. Compositions: '+names.join(' | '));}
+writeLog('COMPOSITION_SELECTED: '+comp.name+' | '+comp.width+'x'+comp.height+' duration='+comp.duration);
 var visited={};var textEntries=[];
 function collectText(c){if(!c||visited[c.id])return;visited[c.id]=true;for(var j=1;j<=c.numLayers;j++){var lyr=c.layer(j);try{if(lyr.property('ADBE Text Properties')&&lyr.property('ADBE Text Properties').property('ADBE Text Document'))textEntries.push({layer:lyr,comp:c});}catch(ignore){}try{if(lyr.source instanceof CompItem)collectText(lyr.source);}catch(ignore){}}}
 collectText(comp);if(!textEntries.length)throw Error('Editable text layer not found in tag1');
@@ -42,15 +49,95 @@ for(var t=0;t<textEntries.length;t++){
   if(sample.indexOf('گزارش')>=0&&sample.indexOf('@')<0){picked=textEntries[t];break;}
  }catch(ignore){}
 }
-if(!picked)throw Error('Reporter text layer not found in original AEP; refused to change another layer.');
+// In some original AEP variants the reporter area is intentionally blank.
+ // Try a uniquely named reporter layer, then a uniquely empty text layer.
+ if(!picked){
+   var named=[];
+   for(var ni=0;ni<textEntries.length;ni++){
+     var lName=String(textEntries[ni].layer.name||'');
+     var tContent=String(textEntries[ni].layer.property('ADBE Text Properties').property('ADBE Text Document').value.text||'');
+     if(tContent.indexOf('@')<0 && /خبرنگار|گزارش|reporter|reportername|name field/i.test(lName))named.push(textEntries[ni]);
+   }
+   if(named.length===1){picked=named[0];writeLog('Selected uniquely named reporter text layer: '+picked.layer.name);}
+ }
+ if(!picked){
+   var empty=[];
+   for(var ei=0;ei<textEntries.length;ei++){
+     var tx=String(textEntries[ei].layer.property('ADBE Text Properties').property('ADBE Text Document').value.text||'');
+     if(!tx.replace(/\\s/g,''))empty.push(textEntries[ei]);
+   }
+   if(empty.length===1){picked=empty[0];writeLog('Selected unique blank reporter text slot: '+picked.layer.name);}
+ }
+ if(!picked)throw Error('Reporter text layer is ambiguous: please name it Reporter or خبرنگار in the AEP. No other text has been modified.');
 var textLayer=picked.layer;var textComp=picked.comp;
+if(!textLayer.enabled)throw Error('Original reporter text layer is disabled in the AEP');
 var reporterLocked=textLayer.locked;
 if(reporterLocked)textLayer.locked=false;
-writeLog('Editing original reporter text layer: '+textLayer.name+' | comp: '+textComp.name);
+writeLog('REPORTER_LAYER_SELECTED: '+textLayer.name+' | comp: '+textComp.name);
+// 0812: keep every reporter name centered in the ORIGINAL white name plate.
+// Record the template's visible text center before replacing its placeholder.
+// This center travels correctly with the existing tag animation and parent comps.
 var textProp=textLayer.property('ADBE Text Properties').property('ADBE Text Document');
-if(textProp.numKeys>0){for(var key=1;key<=textProp.numKeys;key++){var kd=textProp.keyValue(key);kd.text=${jsxString(job.name)};textProp.setValueAtKey(key,kd);}}else{var td=textProp.value;td.text=${jsxString(job.name)};textProp.setValue(td);}
+if(textProp.expressionEnabled)throw Error('Reporter Source Text has an expression; cannot guarantee centered custom names.');
+var centerAt=Math.max(0,Math.min(textComp.duration*0.5,textComp.duration-1/Math.max(1,textComp.frameRate)));
+var originalRect=textLayer.sourceRectAtTime(centerAt,false);
+if(!(originalRect.width>1 && originalRect.height>1))throw Error('Reporter placeholder has no visible bounds to locate its white box center.');
+var fixedCenterX=originalRect.left+originalRect.width/2;
+var fixedCenterY=originalRect.top+originalRect.height/2;
+// The original placeholder fits the plate. Use its width as a safe limit
+// so longer input can shrink, but NEVER enlarge shorter names.
+var maxTextWidth=originalRect.width*1.02;
+var initialDoc=textProp.value;
+var initialFont=Number(initialDoc.fontSize)||50;
+var minimumFont=Math.max(8,initialFont*0.32);
+function setReporterText(scale){
+ function editDoc(d){
+  d.text=${jsxString(job.name)};
+  d.justification=ParagraphJustification.CENTER_JUSTIFY;
+  if(scale<1)d.fontSize=Number(d.fontSize)*scale;
+  return d;
+ }
+ if(textProp.numKeys>0){
+  for(var ki=1;ki<=textProp.numKeys;ki++)
+   textProp.setValueAtKey(ki,editDoc(textProp.keyValue(ki)));
+ }else textProp.setValue(editDoc(textProp.value));
+}
+setReporterText(1);
+var updatedRect=textLayer.sourceRectAtTime(centerAt,false);
+// Only point-text needs a transform compensation. Paragraph/box text is
+// already centered by CENTER_JUSTIFY within its existing authored text box.
+var isBoxText=!!textProp.value.boxText;
+if(!isBoxText){
+ for(var shrink=0;shrink<8 && updatedRect.width>maxTextWidth;shrink++){
+  var ratio=Math.min(0.96,0.98*maxTextWidth/updatedRect.width);
+  if(Number(textProp.value.fontSize)*ratio<minimumFont)
+   throw Error('Reporter name is too long to fit legibly inside the white plate.');
+  setReporterText(ratio);
+  updatedRect=textLayer.sourceRectAtTime(centerAt,false);
+ }
+ if(updatedRect.width>maxTextWidth*1.01)
+  throw Error('Reporter text still exceeds its white plate after fitting.');
+ // Moving Anchor Point by the measured change in glyph center keeps the
+ // ORIGINAL comp-space center while preserving Position keyframes, parents,
+ // scale, rotation, masks and all original animation.
+ var dx=(updatedRect.left+updatedRect.width/2)-fixedCenterX;
+ var dy=(updatedRect.top+updatedRect.height/2)-fixedCenterY;
+ var anchorProp=textLayer.property('ADBE Transform Group').property('ADBE Anchor Point');
+ if(anchorProp.expressionEnabled)
+  throw Error('Reporter Anchor Point uses an expression; automated centering needs a separate safe layout.');
+ function shiftAnchor(v){
+  var a=v.slice(0);a[0]+=dx;a[1]+=dy;return a;
+ }
+ if(anchorProp.numKeys>0){
+  for(var ak=1;ak<=anchorProp.numKeys;ak++)
+   anchorProp.setValueAtKey(ak,shiftAnchor(anchorProp.keyValue(ak)));
+ }else anchorProp.setValue(shiftAnchor(anchorProp.value));
+ writeLog('0812 REPORTER_CENTERED: center='+fixedCenterX+','+fixedCenterY+' width='+updatedRect.width+' max='+maxTextWidth+' offset='+dx+','+dy+' anchor adjusted');
+}else{
+ writeLog('0812 REPORTER_CENTERED_BOX_TEXT: center alignment inside existing text box');
+}
+writeLog('REPORTER_TEXT_CHANGED: '+String(textProp.value.text).substring(0,120));
 // Do not assign renderQueue.rendering: read-only property in ExtendScript.
-var textRect=textLayer.sourceRectAtTime(0,false);writeLog('Text width after update: '+textRect.width);
 var assets=${JSON.stringify(assetFiles)};
 for(var a=1;a<=app.project.numItems;a++){
  var foot=app.project.item(a);
@@ -81,83 +168,13 @@ for(var check=1;check<=app.project.numItems;check++){
 }
 if(missingFootage.length)throw Error('AEP required PNG footage could not be relinked: '+missingFootage.join(', '));
 writeLog('All referenced original PNG graphics found. Reporter text updated; logo remains unchanged.');
-// 0775: Keep the original white plate fixed; center the name in that plate.
-// Position relative to the existing right-hand separator instead of moving the logo.
-try{
- var targetT=Math.min(Math.max(0,textComp.duration*0.45),Math.max(0,textComp.duration-0.01));
- // The original plate is fixed. Never set animated/locked transform properties.
- // AE's paragraph alignment can be adjusted safely without changing layer anchors.
- var count=Math.max(1,textProp.numKeys);
- for(var ai=1;ai<=count;ai++){
-  var d=textProp.numKeys?textProp.keyValue(ai):textProp.value;
-  d.justification=ParagraphJustification.CENTER_JUSTIFY;
-  if(textProp.numKeys)textProp.setValueAtKey(ai,d);else textProp.setValue(d);
- }
- // Keep an inner margin on BOTH sides of the fixed white name plate.
- // Source comp coordinates: fit the actual rendered text into ~218px, not right against separator.
- try{
-   var safeWidth=218;
-   var fontKeys=Math.max(1,textProp.numKeys);
-   var checkTime=Math.min(Math.max(0,textComp.duration*0.45),Math.max(0,textComp.duration-0.01));
-   var originalWidth=textLayer.sourceRectAtTime(checkTime,false).width;
-   if(originalWidth>safeWidth){
-     var fittedRatio=safeWidth/originalWidth;
-     for(var fi=1;fi<=fontKeys;fi++){
-       var fontDoc=textProp.numKeys?textProp.keyValue(fi):textProp.value;
-       // Preserve typography; never shrink below ~82% unless the template itself requires it.
-       var fittedSize=Math.max(26,Math.round(fontDoc.fontSize*Math.max(0.82,fittedRatio)));
-       fontDoc.fontSize=fittedSize;
-       if(textProp.numKeys)textProp.setValueAtKey(fi,fontDoc);else textProp.setValue(fontDoc);
-     }
-   }
-   writeLog('0782 text inner padding: width before='+originalWidth+' after='+textLayer.sourceRectAtTime(checkTime,false).width);
- }catch(fitError){writeLog('0782 padding warning: '+fitError.toString());}
- // Place the text layer center over the fixed white name plate, not the divider.
- // Preserve all animated Y values and shift X in every existing position keyframe.
- // This AEP places the name text origin immediately beside the divider;
- // its white plate center is approximately 165 source-comp pixels to the left.
- var horizontalCorrection=-215;
- var tf=textLayer.property('ADBE Transform Group');
- var positionProp=tf && tf.property('ADBE Position');
- if(!positionProp)throw Error('Name text Position not found');
- var wasLocked=textLayer.locked;
- if(wasLocked)textLayer.locked=false;
- try{
-   var sep=positionProp.dimensionsSeparated;
-   if(sep){
-     var px=positionProp.getSeparationFollower(0);
-     if(px.numKeys>0){for(var ki=1;ki<=px.numKeys;ki++)px.setValueAtKey(ki,px.keyValue(ki)+horizontalCorrection);}
-     else px.setValue(px.value+horizontalCorrection);
-   }else if(positionProp.numKeys>0){
-     for(var ki=1;ki<=positionProp.numKeys;ki++){
-       var pv=positionProp.keyValue(ki);
-       if(pv.length>2)positionProp.setValueAtKey(ki,[pv[0]+horizontalCorrection,pv[1],pv[2]]);
-       else positionProp.setValueAtKey(ki,[pv[0]+horizontalCorrection,pv[1]]);
-     }
-   }else{
-     var pv=positionProp.value;
-     if(pv.length>2)positionProp.setValue([pv[0]+horizontalCorrection,pv[1],pv[2]]);
-     else positionProp.setValue([pv[0]+horizontalCorrection,pv[1]]);
-   }
- }finally{if(wasLocked)textLayer.locked=true;}
- writeLog('0783: Optical centering of the fixed name plate; shifted X '+horizontalCorrection+' px left to fixed white plate center.');
-}catch(e){writeLog('0777 centering warning '+e.toString());}
-// 0768: keep original graphic layers and masks unchanged; adjust only editable text box.
-try{
- var widthBefore=textLayer.sourceRectAtTime(0,false).width;
- writeLog('Original reporter text width: '+widthBefore);
- // Any Adobe-specific expression controlling plate size remains in the original project.
- // This runner does not add or replace the actual white plate.
-}catch(e){writeLog('Text measurement warning '+e.toString());}
+// 0812: only reporter text formatting and (for point text) its own anchor
+ // are adjusted for visual centering; all original plate, logo, movement,
+ // Position keyframes, scale, masks and linked graphic assets remain unchanged.
+ writeLog('0812 REPORTER_NAME_CENTERED_IN_WHITE_PLATE');
+ writeLog('ORIGINAL_ARTWORK_AND_ANIMATION_PRESERVED: yes');
 if(reporterLocked)textLayer.locked=true;
-// Save an EDITABLE copy with the text change and relinked original graphics.
-// The source template is never overwritten; the saved AEP stays alongside the final MP4.
-try{
- var editedProject=new File(${jsxString(path.join(exportDir,'RushFinder-Edited-'+job.id+'.aep'))});
- app.project.save(editedProject);
- writeLog('Saved editable AEP: '+editedProject.fsName);
-}catch(saveError){writeLog('Warning: editable AEP copy could not be saved: '+saveError.toString());}
-for(var q=app.project.renderQueue.numItems;q>=1;q--)app.project.renderQueue.item(q).remove();
+// 0807: save the edited AEP AFTER configuring its transparent render queue.\n// The original template remains untouched.\nfor(var q=app.project.renderQueue.numItems;q>=1;q--)app.project.renderQueue.item(q).remove();
 var rq=app.project.renderQueue.items.add(comp);var om=rq.outputModule(1);
 // Output Module settings such as Format/Channels/Color may be read-only.
 // Apply an installed Alpha template; never try to write read-only settings.
@@ -165,22 +182,53 @@ var templates=om.templates;writeLog('Available output templates: '+templates.joi
 var candidates=[];for(var z=0;z<templates.length;z++)if(templates[z]==='Lossless with Alpha')candidates.push(templates[z]);
 for(var z=0;z<templates.length;z++)if(/alpha/i.test(templates[z])&&candidates.join('|').indexOf(templates[z])<0)candidates.push(templates[z]);
 if(!candidates.length)throw Error('No Alpha output template is installed. Available: '+templates.join(', '));
-var masterReady=false, lastFailure='';
+// Render queue settings are saved in the edited project for aerender.exe.
+// This separates the scripted edit stage from the background rendering stage.
+var prepared=false;
 for(var attempt=0;attempt<candidates.length;attempt++){
  try{
-  om.applyTemplate(candidates[attempt]);writeLog('Trying template '+candidates[attempt]);
-  var st=om.getSettings(GetSettingsFormat.STRING);var fmt=String(st['Format']||'');writeLog('Output format='+fmt+' channels='+st['Channels']);
-  var seq=/png|sequence|tiff|targa|exr/i.test(fmt);var ext=seq?'.png':(/quicktime|mov/i.test(fmt)?'.mov':'.avi');
+  om.applyTemplate(candidates[attempt]);
+  var st=om.getSettings(GetSettingsFormat.STRING);
+  var fmt=String(st['Format']||'');writeLog('Transparent output template '+candidates[attempt]+' format='+fmt+' channels='+st['Channels']);
+  var channels=String(st['Channels']||'');
+  if(channels && !/alpha|rgba/i.test(channels)){
+    writeLog('Rejected template without alpha: '+candidates[attempt]+' channels='+channels);
+    continue;
+  }
+  var seq=/png|sequence|tiff|targa|exr/i.test(fmt);
+  var ext=seq?'.png':(/quicktime|mov/i.test(fmt)?'.mov':'.avi');
   var target=seq?(framesFolder.fsName+'/tag-[#####]'+ext):(folder+'/tag-alpha-source'+ext);
-  om.file=new File(target);writeLog('Rendering alpha master to '+target);
-  app.project.renderQueue.render();writeLog('Render queue finished, status='+rq.status+' DONE='+RQItemStatus.DONE);
-  if(seq){var frameFiles=framesFolder.getFiles(function(f){return f instanceof File&&/\.png$/i.test(f.name);});if(frameFiles.length>2){writeLog('PNG frames created '+frameFiles.length);masterReady=true;break;}}
-  else{var rendered=om.file;if(rendered.exists&&rendered.length>1000){writeLog('Alpha movie created '+rendered.length);masterReady=true;break;}}
-  lastFailure='No actual output produced; render status='+rq.status;writeLog('Attempt failed: '+lastFailure);
- }catch(renderProblem){lastFailure=renderProblem.toString();writeLog('Attempt exception: '+lastFailure);}
+  om.file=new File(target);
+  rq.render=true;
+  var editedProject=new File(${jsxString(path.join(exportDir,'RushFinder-Edited-'+job.id+'.aep'))});
+  app.project.save(editedProject);
+  writeLog('EDITED_AEP_SAVED: '+editedProject.fsName+' -> '+target);
+  if(!editedProject.exists || editedProject.length<10000)throw Error('Edited AEP was not saved correctly');
+  prepared=true;
+  break;
+ }catch(setupError){writeLog('Template preparation warning '+setupError.toString());}
 }
-if(!masterReady)throw Error('After Effects produced no Alpha master. Last reason: '+lastFailure+'; check AE Render Queue log, missing effects, or output codec.');
-result.open('w');result.write('ok');result.close();writeLog('Completed: transparent master verified');
+if(!prepared)throw Error('Could not configure a transparent render output for the original project.');
+// 0811: Regression fix. Render in the same After Effects process that opened
+// and edited the AEP. The split edit/aerender flow in 0807-0809 yielded only
+// the green logo on the user's Windows machine despite successfully relinking
+// all PNG assets. Do not mark a job ready until real alpha output exists.
+writeLog('0812 DIRECT_AE_RENDER_BEGIN');
+app.project.renderQueue.render();
+writeLog('0812 DIRECT_AE_RENDER_END status='+rq.status+' DONE='+RQItemStatus.DONE);
+if(rq.status!==RQItemStatus.DONE)throw Error('After Effects render queue did not complete. Status='+rq.status);
+var finishedFile=om.file;
+if(seq){
+ var made=framesFolder.getFiles(function(f){return f instanceof File&&/\\.png$/i.test(f.name);});
+ if(made.length<3)throw Error('AE finished but PNG alpha frames are missing: '+made.length);
+ writeLog('0812 OUTPUT_PNG_COUNT='+made.length);
+}else if(!finishedFile.exists || finishedFile.length<1000){
+ throw Error('AE finished but alpha master movie is missing: '+finishedFile.fsName);
+}else{
+ writeLog('0812 OUTPUT_ALPHA_SIZE='+finishedFile.length+' FILE='+finishedFile.fsName);
+}
+result.open('w');result.write('ALPHA_RENDERED');result.close();
+writeLog('0812 DIRECT_AE_RENDER_VALIDATED');
 }catch(e){writeLog('ERROR '+e.toString());error.open('w');error.write(e.toString());error.close();}finally{
  try{app.endSuppressDialogs(false)}catch(ignore){}
  // Close only the current project; leave the running After Effects application alive.
@@ -188,23 +236,35 @@ result.open('w');result.write('ok');result.close();writeLog('Completed: transpar
  try{writeLog('Closing the After Effects worker automatically');
    if(app.project)app.project.close(CloseOptions.DO_NOT_SAVE_CHANGES);
  }catch(closeError){writeLog('Project close: '+closeError.toString());}
- writeLog('AE remains running for the next reporter video; no app.quit called.');
+ writeLog('AE script finished; next job can be scheduled.');
 }
 })();`;
 const f=path.join(job.folder,'run.jsx');fs.writeFileSync(f,'\uFEFF'+script,'utf8');return f}
 
 function ffmpegExe(){for(const f of [path.join(root,'tools','ffmpeg.exe'),path.join(process.env.LOCALAPPDATA||'', 'RushFinder','tools','ffmpeg.exe'),path.join(root,'ffmpeg.exe'),path.join(process.env.LOCALAPPDATA||'', 'Microsoft','WinGet','Links','ffmpeg.exe'),'ffmpeg']){try{const r=cp.spawnSync(f,['-version'],{windowsHide:true,timeout:5000});if(r.status===0)return f}catch(e){}}return null}
-function report(){return {afterEffects:!!aeExe(),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0806",outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
-function runActive(job){const fail=e=>{job.state='error';let tail='';try{const f=path.join(job.folder,'ae-render.log');if(fs.existsSync(f))tail=fs.readFileSync(f,'utf8').split(/\r?\n/).filter(Boolean).slice(-10).join('\n').slice(-2500);}catch(ignore){}job.message=String(e)+(tail?'\nآخرین گزارش واقعی افتر افکت:\n'+tail:'\nگزارش افتر افکت هنوز ایجاد نشده است.');};(async()=>{try{job.state='rendering';job.message='مرحله ۱/۳: تغییر متن در پروژه AEP و رندر آلفای اصلی After Effects...';const exe=aeExe();if(!exe)throw Error('After Effects در Program Files/Adobe پیدا نشد.');if(!ffmpegExe())throw Error('FFmpeg پیدا نشد. فایل ffmpeg.exe مخصوص ویندوز را در پوشه tools کنار سایت قرار بدهید، یا FFmpeg را در PATH نصب کنید.');const script=scriptFor(job);job.message='مرحله ۱/۳: درخواست اجرای اسکریپت به After Effects فرستاده شد.';// Launch AE directly as in the last functioning releases. PowerShell Start-Process
+function report(){return {afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0812",outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
+// 0811: Direct After Effects render, without a second aerender process.
+function runActive(job){const fail=e=>{job.state='error';let tail='';try{const f=path.join(job.folder,'ae-render.log');if(fs.existsSync(f))tail=fs.readFileSync(f,'utf8').split(/\r?\n/).filter(Boolean).slice(-10).join('\n').slice(-2500);}catch(ignore){}job.message=String(e)+(tail?'\nآخرین گزارش واقعی افتر افکت:\n'+tail:'\nگزارش افتر افکت هنوز ایجاد نشده است.');};(async()=>{try{job.state='rendering';job.message='مرحله ۱/۳: بازکردن AEP، اصلاح متن و رندر شفاف در خود After Effects...';const exe=aeExe();if(!exe)throw Error('After Effects در Program Files/Adobe پیدا نشد.');if(!ffmpegExe())throw Error('FFmpeg پیدا نشد. فایل ffmpeg.exe مخصوص ویندوز را در پوشه tools کنار سایت قرار بدهید، یا FFmpeg را در PATH نصب کنید.');const script=scriptFor(job);job.message='مرحله ۱/۳: پروژه اصلی در After Effects در حال آماده‌سازی و رندر است.';// Launch AE directly as in the last functioning releases. PowerShell Start-Process
  // occasionally loses the JSX -r argument and prevents script startup.
- const proc=cp.spawn(exe,['-r',script],{cwd:job.folder,windowsHide:true,detached:false,stdio:'ignore'});
- // Use native AE -r invocation. No process-wide taskkill/minimizer is used.
+ // -m starts a separate AE instance: never inject the script into a user's
+ // already-running After Effects session. -noui requests a hidden editing
+ // process; -r executes our per-job JSX inside that instance.
+ // Note: Adobe's GUI suppression can vary by version; the separate aerender
+ // stage is always a command-line render.
+ const launchArgs=['-m','-noui','-r',script];
+ fs.appendFileSync(path.join(job.folder,'worker-launch.log'),
+   'EXE='+exe+'\\nARGS='+JSON.stringify(launchArgs)+'\\n');
+ const proc=cp.spawn(exe,launchArgs,{cwd:job.folder,windowsHide:true,detached:false,stdio:['ignore','pipe','pipe']});
+ proc.stdout.on('data',b=>fs.appendFileSync(path.join(job.folder,'worker-launch.log'),b));
+ proc.stderr.on('data',b=>fs.appendFileSync(path.join(job.folder,'worker-launch.log'),b));
+ // Scripted editing may briefly expose the Adobe GUI on some versions;
+ // the actual render happens separately with aerender.exe in the background.
  proc.on('error',fail);proc.on('exit',(code)=>{if(code!==0&&job.state==='rendering'&&!fs.existsSync(path.join(job.folder,'ae-render.log')))job.message='راه‌اندازی موتور با کد '+code+' پایان یافت؛ در حال بررسی گزارش افتر افکت...';});let elapsed=0;const timer=setInterval(()=>{
   elapsed+=2;
   if(job.state==='error'){clearInterval(timer);return}
   const errorPath=path.join(job.folder,'render.error'), donePath=path.join(job.folder,'render.done'), logPath=path.join(job.folder,'ae-render.log');
   if(fs.existsSync(errorPath)){clearInterval(timer);fail(fs.readFileSync(errorPath,'utf8'));return}
-  if(fs.existsSync(donePath)){clearInterval(timer);blend(job).catch(fail);return}
+  if(fs.existsSync(donePath)){clearInterval(timer);job.message='خروجی شفاف در خود After Effects ساخته شد؛ در حال بررسی و ترکیب...';blend(job).catch(fail);return}
   let message='مرحله ۱/۳: اجرای پروژه اصلی After Effects';
   message+=' | زمان سپری‌شده: '+Math.floor(elapsed/60)+' دقیقه و '+(elapsed%60)+' ثانیه';
   if(fs.existsSync(logPath)){
@@ -242,93 +302,164 @@ function scheduleNextAE(){
     }
   },1000);
 }
-// 0806: The AE composition contains large transparent margins around the
-// actual lower third. Detect the visible alpha region from settled frames,
-// crop those margins, and scale the real artwork with its native aspect ratio.
-// 0806: Crop against the complete alpha-animation envelope, not only its middle.
-// The AEP lower third contains separate moving text, divider, and logo layers.
-// Middle-only crops clipped the later animated layers, making the logo appear alone.
-function detectVisibleTag(ff,mov){
+
+// 0809: The ORIGINAL lower third occupies a limited region of a much wider
+// AE composition (3471x212). Dynamic cropdetect from 0803-0809 can include
+// unrelated animation bounds and shrink the white plate away. Never crop.
+// Validate the alpha render, and position the unmodified AE canvas according
+// to the known bounds of the original full plate instead.
+function verifyCompleteTag(ff,mov){
+ // Do not reject a lower-third just because its height is small compared to
+ // a tall AE composition. Version 0811 falsely rejected 919px-wide artwork
+ // on a 1200x1080 canvas because h < 12% of canvas height.
  return new Promise((resolve,reject)=>{
-  const cmd=['-hide_banner','-i',mov,'-vf','fps=12,format=rgba,alphaextract,cropdetect=limit=0.065:round=2:reset=1','-an','-f','null','-'];
-  let log='';
-  const probe=cp.spawn(ff,cmd,{windowsHide:true});
-  probe.stderr.on('data',b=>{log+=b.toString();if(log.length>6000000)log=log.slice(-6000000);});
-  probe.on('error',e=>reject(Error('Cannot measure tag alpha: '+e.message)));
-  probe.on('close',code=>{
-   if(code!==0){reject(Error('Failed to inspect transparent tag: '+log.slice(-500)));return;}
-   const size=/Video:[^\r\n]*?\b(\d{2,5})x(\d{2,5})\b/.exec(log);
-   if(!size){reject(Error('Transparent tag dimensions could not be read.'));return;}
-   const srcW=Number(size[1]),srcH=Number(size[2]);
-   const boxes=[];
-   const re=/x1:(\d+)\s+x2:(\d+)\s+y1:(\d+)\s+y2:(\d+)[^\r\n]*?\bt:([\d.]+)/g;
-   let match;
-   while((match=re.exec(log))){
-    const x1=Number(match[1]),x2=Number(match[2]),y1=Number(match[3]),y2=Number(match[4]);
-    if(x2>x1+15&&y2>y1+6&&x1>=0&&y1>=0&&x2<srcW&&y2<srcH){
-      boxes.push({x1,x2,y1,y2});
-    }
+   const args=['-hide_banner','-i',mov,'-vf',
+     'fps=8,format=rgba,alphaextract,bbox=min_val=24',
+     '-an','-f','null','-'];
+   let stderr='';
+   const proc=cp.spawn(ff,args,{windowsHide:true});
+   proc.stderr.on('data',c=>{stderr+=c.toString();if(stderr.length>2000000)stderr=stderr.slice(-2000000)});
+   let ended=false;
+   function finish(err,info){
+     if(ended)return;ended=true;
+     if(err)reject(Error(err));else resolve(info);
    }
-   if(!boxes.length){reject(Error('No visible alpha region found in the After Effects render.'));return;}
-   // Use EVERY visible frame, including animated entrance and exit.
-   // A fixed crop makes all animation frames share the same coordinates.
-   const minX=Math.min(...boxes.map(b=>b.x1)),maxX=Math.max(...boxes.map(b=>b.x2));
-   const minY=Math.min(...boxes.map(b=>b.y1)),maxY=Math.max(...boxes.map(b=>b.y2));
-   const padX=Math.max(10,Math.ceil((maxX-minX+1)*0.025));
-   const padY=Math.max(6,Math.ceil((maxY-minY+1)*0.065));
-   const x=Math.max(0,Math.floor((minX-padX)/2)*2);
-   const y=Math.max(0,Math.floor((minY-padY)/2)*2);
-   const right=Math.min(srcW,Math.ceil((maxX+1+padX)/2)*2);
-   const bottom=Math.min(srcH,Math.ceil((maxY+1+padY)/2)*2);
-   const w=right-x,h=bottom-y;
-   if(w<50||h<18||w>srcW||h>srcH){reject(Error('Invalid tag crop: '+[x,y,w,h].join(',')));return;}
-   resolve({x,y,w,h,frames:boxes.length,source:[srcW,srcH]});
+   proc.on('error',e=>finish('Cannot inspect AE alpha: '+e.message));
+   proc.on('close',code=>{
+     if(ended)return;
+     if(code!==0)return finish('FFmpeg alpha inspection failed: '+stderr.slice(-1200));
+     const size=/Video:[^\r\n]*?\b(\d{2,5})x(\d{2,5})\b/.exec(stderr);
+     if(!size)return finish('Cannot determine AE alpha canvas dimensions');
+     const canvasW=Number(size[1]),canvasH=Number(size[2]);
+     const boxes=[];
+     for(const line of stderr.split(/\r?\n/)){
+       if(!/Parsed_bbox/.test(line))continue;
+       const b=/\bx1:(\d+)\s+x2:(\d+)\s+y1:(\d+)\s+y2:(\d+)\s+w:(\d+)\s+h:(\d+)/.exec(line);
+       if(b)boxes.push({x:+b[1],y:+b[3],w:+b[5],h:+b[6]});
+     }
+     const maxVisibleWidth=boxes.length?Math.max(...boxes.map(b=>b.w)):0;
+     // The bar is *wide and thin*. Do not use a percentage of canvas height.
+     // Require actual alpha content across at least two frames, avoiding
+     // successful rendering of just the much narrower isolated logo.
+     const minBarWidth=Math.max(150,canvasW*0.35);
+     const plateFrames=boxes.filter(b=>b.w>=minBarWidth && b.h>=5);
+     const info={canvasW,canvasH,framesChecked:boxes.length,
+       plateFrames:plateFrames.length,maxVisibleWidth};
+     if(plateFrames.length<2)
+       return finish('خروجی شفاف، نوار کامل قابل تشخیص ندارد. '+JSON.stringify(info));
+     // Anchor to visible (not transparent) bounds, preserving the full
+     // unchanged canvas and all motion. No dynamic cropping whatsoever.
+     const content=boxes.filter(b=>b.w>=Math.max(minBarWidth,maxVisibleWidth*0.55) && b.h>=5);
+     const x0=Math.min(...content.map(b=>b.x));
+     const y0=Math.min(...content.map(b=>b.y));
+     const x1=Math.max(...content.map(b=>b.x+b.w));
+     const y1=Math.max(...content.map(b=>b.y+b.h));
+     info.bounds={x:x0,y:y0,w:x1-x0,h:y1-y0};
+     finish(null,info);
+   });
+ });
+}
+function videoDimensions(ff,videoFile){
+ // Probe only the incoming reporter video. scale2ref previously used the
+ // wrong frame as its reference and distorted the result.
+ const r=cp.spawnSync(ff,['-hide_banner','-i',videoFile],{
+   windowsHide:true,encoding:'utf8',timeout:12000,maxBuffer:1024*1024
+ });
+ const log=String(r.stderr||'');
+ const line=log.split(/\r?\n/).find(l=>/Stream #\d+:\d+.*Video:/.test(l));
+ const m=line&&/\b(\d{2,5})x(\d{2,5})\b/.exec(line);
+ if(!m)throw Error('ابعاد فیلم ورودی با FFmpeg مشخص نشد. '+log.slice(-500));
+ return {width:Number(m[1]),height:Number(m[2])};
+}
+function blend(job){
+ return new Promise((resolve,reject)=>{
+  job.state='converting';
+  job.message='مرحله ۲/۳: ساخت MOV شفاف از خروجی اصلی After Effects...';
+  const frameDir=path.join(job.folder,'alpha-frames');
+  const frames=fs.existsSync(frameDir)?fs.readdirSync(frameDir).filter(n=>/\.png$/i.test(n)).sort():[];
+  const source=fs.readdirSync(job.folder).filter(n=>/^tag-alpha-source\.(mov|avi)$/i.test(n))
+    .map(n=>path.join(job.folder,n)).find(p=>fs.statSync(p).size>1000);
+  const mov=path.join(job.folder,'tag-transparent.mov');
+  if(!source && frames.length<3)return reject(Error('رندر شفاف AE ساخته نشد؛ ae-render.log را بررسی کنید.'));
+  const ff=ffmpegExe();
+  const args1=frames.length>=3
+   ? ['-hide_banner','-y','-framerate','30','-pattern_type','sequence','-i',
+      path.join(frameDir,frames[0].replace(/\d+(?=\.png$)/,m=>'%0'+m.length+'d')),
+      '-an','-c:v','prores_ks','-profile:v','4','-pix_fmt','yuva444p10le','-alpha_bits','16',mov]
+   : ['-hide_banner','-y','-i',source,
+      '-an','-c:v','prores_ks','-profile:v','4','-pix_fmt','yuva444p10le','-alpha_bits','16',mov];
+  const c1=cp.spawn(ff,args1,{windowsHide:true});
+  let err1='',completed=false;
+  const fail=err=>{if(completed)return;completed=true;reject(err instanceof Error?err:Error(String(err)))};
+  c1.stderr.on('data',x=>err1=(err1+x.toString()).slice(-9000));
+  c1.on('error',fail);
+  c1.on('close',async code=>{
+   if(completed)return;
+   if(code!==0||!fs.existsSync(mov)||fs.statSync(mov).size<1000)
+      return fail('تبدیل MOV شفاف ناموفق: '+err1.slice(-1600));
+   try{
+    job.state='validating';
+    job.message='بررسی وجود نوار سفید، متن و لوگو در خروجی شفاف...';
+    const qa=await verifyCompleteTag(ff,mov);
+    fs.appendFileSync(path.join(job.folder,'ae-render.log'),
+       '0809 alpha verification '+JSON.stringify(qa)+'\n');
+    // Anchor the full unmodified alpha canvas by its measured visible bounds.
+    // Never crop or stretch the exported AEP lower third.
+    job.state='combining';
+    job.message='مرحله ۳/۳: جایگذاری MOV شفاف روی فیلم...';
+    const videoSize=videoDimensions(ff,job.input);
+    const scale=(videoSize.width*0.40)/qa.bounds.w;
+    const tagWidth=Math.max(2,Math.round((qa.canvasW*scale)/2)*2);
+    const realScale=tagWidth/qa.canvasW;
+    const x=Math.round(videoSize.width*0.975-(qa.bounds.x+qa.bounds.w)*realScale);
+    const y=Math.round(videoSize.height*0.925-(qa.bounds.y+qa.bounds.h)*realScale);
+    const filter=[
+      '[1:v]format=rgba,setsar=1,scale='+tagWidth+':-2:flags=lanczos[tag]',
+      '[0:v][tag]overlay=x='+x+':y='+y+':shortest=0:repeatlast=0:eof_action=pass:format=auto,format=yuv420p[v]'
+    ].join(';');
+    fs.appendFileSync(path.join(job.folder,'ae-render.log'),
+      '0812 overlay '+JSON.stringify({videoSize,bounds:qa.bounds,scale:realScale,x,y})+'\\n');
+    const out=path.join(exportDir,job.id+'.mp4');
+    const args=['-hide_banner','-y','-i',job.input,'-i',mov,
+      '-filter_complex',filter,'-map','[v]','-map','0:a?',
+      '-c:v','libx264','-preset','medium','-crf','18','-c:a','aac',
+      '-movflags','+faststart',out];
+    const c2=cp.spawn(ff,args,{windowsHide:true});
+    let err2='',finalized=false;
+    c2.stderr.on('data',x=>err2=(err2+x.toString()).slice(-12000));
+    c2.on('error',fail);
+    c2.on('close',n=>{
+      if(finalized||completed)return;finalized=true;
+      if(n!==0||!fs.existsSync(out)||fs.statSync(out).size<1000)
+        return fail('ترکیب MP4 ناموفق: '+err2.slice(-2400));
+      completed=true;
+      job.state='done';job.message='تگ کامل با کنترل شفافیت رندر شد؛ MP4 آماده دانلود است.';
+      try{
+        const logsDir=path.join(exportDir,'Render-Logs');
+        fs.mkdirSync(logsDir,{recursive:true});
+        for(const logName of ['ae-render.log','aerender.log','worker-launch.log']){
+          const file=path.join(job.folder,logName);
+          if(fs.existsSync(file))fs.copyFileSync(file,path.join(logsDir,job.id+'-'+logName));
+        }
+      }catch(e){console.warn('Archive logs failed:',e.message)}
+      fs.rm(job.folder,{recursive:true,force:true,maxRetries:4,retryDelay:1000},
+        e=>{if(e)console.warn('Temp cleanup failed:',e.message)});
+      resolve();
+    });
+   }catch(e){fail(e)}
   });
  });
 }
-
-function blend(job){return new Promise((resolve,reject)=>{
- job.state='converting';job.message='مرحله ۲/۳: تبدیل خروجی آلفای افتر افکت به MOV شفاف ProRes 4444...';
- const frameDir=path.join(job.folder,'alpha-frames');const frames=fs.existsSync(frameDir)?fs.readdirSync(frameDir).filter(n=>/\.png$/i.test(n)).sort():[];const source=fs.readdirSync(job.folder).filter(n=>/^tag-alpha-source\.(mov|avi)$/i.test(n)).map(n=>path.join(job.folder,n)).find(p=>fs.statSync(p).size>1000);const mov=path.join(job.folder,'tag-transparent.mov');
- if(!source && frames.length<3){reject(Error('فایل آلفا یا فریم PNG ساخته نشده؛ ae-render.log را بررسی کنید.'));return}
- const ff=ffmpegExe();const args1=frames.length>=3?['-hide_banner','-y','-framerate','30','-pattern_type','sequence','-i',path.join(frameDir, frames[0].replace(/\d+(?=\.png$)/, m=>'%0'+m.length+'d')),'-an','-c:v','prores_ks','-profile:v','4','-pix_fmt','yuva444p10le','-alpha_bits','16',mov]:['-hide_banner','-y','-i',source,'-an','-c:v','prores_ks','-profile:v','4','-pix_fmt','yuva444p10le','-alpha_bits','16',mov];
- const c1=cp.spawn(ff,args1,{windowsHide:true});let err1='';c1.stderr.on('data',x=>err1=(err1+x.toString()).slice(-9000));c1.on('error',reject);
- c1.on('close',code=>{
-  if(code!==0||!fs.existsSync(mov)||fs.statSync(mov).size<1000){reject(Error('تبدیل MOV شفاف ناموفق: '+err1.slice(-1600)));return}
-  // The MP4 is composed only after an actual transparent MOV exists.
-  job.state='combining';job.message='مرحله ۳/۳: ترکیب MOV شفاف با فیلم و ساخت MP4...';
-  // Crop away transparent composition space before fitting the visible lower third.
-  // A proportionate 38% lower-third width is used; never distort X/Y separately.
-  job.message='مرحله ۳/۳: اندازه‌گیری محدوده واقعی تگ و ساخت MP4...';
-  detectVisibleTag(ff,mov).then(crop=>{
-   const tagFilter='[1:v]format=rgba,crop='+crop.w+':'+crop.h+':'+crop.x+':'+crop.y+',setsar=1[tag-src];[tag-src][0:v]scale2ref=w=trunc(main_w*0.38/2)*2:h=-2:flags=lanczos[tag][base];[base][tag]overlay=W-w-W*0.024:H-h-H*0.075:shortest=0:format=auto,format=yuv420p[v]';
-   fs.appendFileSync(path.join(job.folder,'ae-render.log'),'0806 full-animation alpha-crop '+JSON.stringify(crop)+'\\n');
-  const out=path.join(exportDir,job.id+'.mp4');const args=['-hide_banner','-y','-i',job.input,'-i',mov,'-filter_complex',tagFilter,'-map','[v]','-map','0:a?','-c:v','libx264','-preset','medium','-crf','18','-c:a','aac','-movflags','+faststart',out];
-  const c2=cp.spawn(ff,args,{windowsHide:true});let err2='';c2.stderr.on('data',x=>err2=(err2+x.toString()).slice(-9000));c2.on('error',reject);c2.on('close',n=>{
-   if(n===0&&fs.existsSync(out)&&fs.statSync(out).size>1000){
-     job.state='done';job.message='MP4 در پوشه RushFinder-Exports ذخیره شد.';
-     // Successful renders no longer accumulate multi-gigabyte alpha frames/MOVs.
-     // On failure, leave the temporary files for troubleshooting.
-     fs.rm(job.folder,{recursive:true,force:true,maxRetries:4,retryDelay:1000},err=>{
-       if(err)console.warn('Temporary render cleanup failed:',err.message);
-     });
-     resolve();
-   }
-   else reject(Error('خطای ترکیب MP4: '+err2.slice(-1600)))
-  })
-  }).catch(reject);
- })
-})}
 
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.webm':'video/webm','.mp4':'video/mp4','.wasm':'application/wasm','.svg':'image/svg+xml','.woff2':'font/woff2','.ttf':'font/ttf'};
 // 0800: the public website can talk only to this local engine, on the same Windows PC.
 // Explicitly allow the official hosted site; do not expose the rendering API to arbitrary sites.
 const trustedWebOrigins=new Set([
  'https://rushfinder.vercel.app',
- 'http://127.0.0.1:18819',
- 'http://localhost:18819'
+ 'http://127.0.0.1:18825',
+ 'http://localhost:18825'
 ]);
-const trustedHostnames=new Set(['127.0.0.1:18819','localhost:18819']);
+const trustedHostnames=new Set(['127.0.0.1:18825','localhost:18825']);
 http.createServer((req,res)=>{
  if(!trustedHostnames.has(req.headers.host))return respond(res,403,{error:'Host not allowed'});
  let u;try{u=new URL(req.url,'http://127.0.0.1')}catch{return respond(res,400,{error:'Invalid URL'})}
@@ -350,7 +481,7 @@ http.createServer((req,res)=>{
  }
  if(u.pathname==='/ae-api/check')return respond(res,200,report());
 if(u.pathname==='/ae-api/create' && req.method==='POST'){
-const name=(u.searchParams.get('name')||'').trim();if(!name||name.length>140)return respond(res,400,{error:'نام باید بین یک تا ۱۴۰ حرف باشد.'});if(!aeExe()||!ffmpegExe()||!fs.existsSync(template)||!['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(n=>fs.existsSync(path.join(root,'ae-original',n))))return respond(res,503,{error:'پیش‌نیاز ناقص: '+(!aeExe()?'After Effects ':'')+(!ffmpegExe()?'FFmpeg ':'')+(!fs.existsSync(template)?'AEP ':'')+(!['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(n=>fs.existsSync(path.join(root,'ae-original',n)))?'PNG original assets ':'')});const id=crypto.randomUUID(),folder=path.join(work,id);fs.mkdirSync(folder,{recursive:true});const job={id,folder,name,input:path.join(folder,'source-video'+(path.extname(u.searchParams.get('filename')||'').toLowerCase().match(/^\.(mp4|mov|webm|m4v|avi)$/)?.[0]||'.mp4')),state:'uploading',message:'دریافت فیلم...'};jobs.set(id,job);let total=0;const f=fs.createWriteStream(job.input);req.on('data',c=>{total+=c.length;if(total>1024*1024*1024){req.destroy();f.destroy()}});req.pipe(f);f.on('finish',()=>{job.state='queued';job.message='در صف رندر...';respond(res,200,{id});run(job)});req.on('error',()=>{job.state='error';job.message='آپلود فیلم متوقف شد.'});return;}
+const name=(u.searchParams.get('name')||'').trim();if(!name||name.length>140)return respond(res,400,{error:'نام باید بین یک تا ۱۴۰ حرف باشد.'});if(!aeExe()||!ffmpegExe()||!fs.existsSync(template)||!['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(n=>fs.existsSync(path.join(root,'ae-original',n))))return respond(res,503,{error:'پیش‌نیاز ناقص: '+(!aeExe()?'After Effects ':'')+(!aeExe()||!fs.existsSync(path.join(path.dirname(aeExe()||''),'aerender.exe'))?'aerender ':'')+(!ffmpegExe()?'FFmpeg ':'')+(!fs.existsSync(template)?'AEP ':'')+(!['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(n=>fs.existsSync(path.join(root,'ae-original',n)))?'PNG original assets ':'')});const id=crypto.randomUUID(),folder=path.join(work,id);fs.mkdirSync(folder,{recursive:true});const job={id,folder,name,input:path.join(folder,'source-video'+(path.extname(u.searchParams.get('filename')||'').toLowerCase().match(/^\.(mp4|mov|webm|m4v|avi)$/)?.[0]||'.mp4')),state:'uploading',message:'دریافت فیلم...'};jobs.set(id,job);let total=0;const f=fs.createWriteStream(job.input);req.on('data',c=>{total+=c.length;if(total>1024*1024*1024){req.destroy();f.destroy()}});req.pipe(f);f.on('finish',()=>{job.state='queued';job.message='در صف رندر...';respond(res,200,{id});run(job)});req.on('error',()=>{job.state='error';job.message='آپلود فیلم متوقف شد.'});return;}
 if(u.pathname==='/ae-api/status'){const j=jobs.get(u.searchParams.get('id'));if(!j)return respond(res,200,{state:'error',message:'پردازش پیدا نشد.'});return respond(res,200,{id:j.id,state:j.state,message:j.message});}
 let file;try{if(u.pathname.startsWith('/ae-output/')){const id=path.basename(u.pathname,'.mp4');if(!/^[a-f0-9-]{36}$/.test(id))throw Error();file=path.join(exportDir,id+'.mp4')}else{if(u.pathname.startsWith('/ae-jobs')||u.pathname.startsWith('/ae-original')||u.pathname.startsWith('/tools/'))throw Error();file=path.resolve(root,'.'+decodeURIComponent(u.pathname));if(!file.startsWith(root+path.sep))throw Error()}}catch{return respond(res,403,{error:'Forbidden'})}if(fs.existsSync(file)&&fs.statSync(file).isDirectory())file=path.join(file,'index.html');fs.stat(file,(err,s)=>{if(err||!s.isFile()){res.writeHead(404);res.end('Not found');return}let start=0,end=s.size-1,code=200,headers={'Content-Type':types[path.extname(file).toLowerCase()]||'application/octet-stream','Cache-Control':'no-store','Accept-Ranges':'bytes'};if(req.headers.range){const m=/bytes=(\d+)-(\d*)/.exec(req.headers.range);if(m){start=Number(m[1]);end=m[2]?Number(m[2]):end;if(start>end||start>=s.size){res.writeHead(416);res.end();return}code=206;headers['Content-Range']=`bytes ${start}-${end}/${s.size}`}}headers['Content-Length']=end-start+1;res.writeHead(code,headers);fs.createReadStream(file,{start,end}).pipe(res)})
-}).listen(port,'127.0.0.1',()=>console.log('RushFinder 0806: http://127.0.0.1:'+port+'/index.html'));
+}).listen(port,'127.0.0.1',()=>console.log('RushFinder 0812: http://127.0.0.1:'+port+'/index.html'));
