@@ -1,9 +1,9 @@
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
-$base = 'http://127.0.0.1:18817'
+$base = 'http://127.0.0.1:18818'
 $probe = "$base/ae-api/check"
-$url = "$base/index.html?v=0804"
-$version = '0804'
+$url = "$base/index.html?v=0805"
+$version = '0805'
 $expectedRoot = $root.Replace('\', '/').TrimEnd('/')
 
 function Read-Engine {
@@ -18,7 +18,7 @@ function Is-This-Engine($report) {
 function Is-Port-Busy {
     $socket = New-Object System.Net.Sockets.TcpClient
     try {
-        $async = $socket.BeginConnect('127.0.0.1', 18817, $null, $null)
+        $async = $socket.BeginConnect('127.0.0.1', 18818, $null, $null)
         if (-not $async.AsyncWaitHandle.WaitOne(500)) { return $false }
         $socket.EndConnect($async)
         return $true
@@ -34,7 +34,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $root 'index.html') -PathType Leaf))
 $report = Read-Engine
 if (-not (Is-This-Engine $report)) {
     if (Is-Port-Busy) {
-        Write-Host 'ERROR: Port 18817 is in use by another program or RushFinder copy.' -ForegroundColor Red
+        Write-Host 'ERROR: Port 18818 is in use by another program or RushFinder copy.' -ForegroundColor Red
         Write-Host 'Close the old RushFinder engine and start this folder again.'
         exit 1
     }
