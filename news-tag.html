@@ -1,4 +1,4 @@
-<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>استودیو تگ خبر | RushFinder 0812</title><style>
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>استودیو تگ خبر | RushFinder 0813</title><style>
 :root{--ink:#123251;--blue:#1269e8;--line:#dbe8f6;--soft:#f3f8ff}
 *{box-sizing:border-box}[hidden]{display:none!important}
 body{background:transparent;direction:rtl;color:var(--ink);font-family:"Vazir",Tahoma,"Segoe UI",sans-serif;max-width:1120px;margin:0 auto;padding:8px 10px}
@@ -163,7 +163,7 @@ body,html,main{background:#edf4fc!important}
 .engine-connection-help strong{display:block}
 .engine-connection-help a{display:block;color:#075fb3;text-decoration:underline;font-weight:700}
 .engine-connection-help[hidden]{display:none!important}
-/* 0812: video stays within its preview panel; the download button cannot be covered. */
+/* 0813: video stays within its preview panel; the download button cannot be covered. */
 .studio-frame .workspace>.panel:has(#preview) #preview:not([hidden]){
   flex:0 0 auto!important;height:auto!important;min-height:0!important;
   max-height:430px!important;aspect-ratio:16/9!important;object-fit:contain!important
@@ -213,7 +213,7 @@ body,html,main{background:#edf4fc!important}
 <div id="localEngineHelp" class="engine-connection-help" hidden role="status">
 <strong>رندر ویدیو به موتور محلی ویندوز نیاز دارد.</strong>
 فرم تگ خبر در همین index.html باز است. برای ساخت MP4، موتور رندر باید روی ویندوز روشن باشد: فایل <b>Start-RushFinder.cmd</b> را از پوشه پروژه اجرا کنید، سپس از صفحه index.html که باز می‌شود به «تگ خبر» برگردید. اگر مرورگر درخواست مجوز شبکه محلی داد، آن را بررسی و در صورت اطمینان مجاز کنید.
-<a href="http://127.0.0.1:18825/index.html?v=0812#news-tag" target="_top" rel="noopener noreferrer">باز کردن همان index.html روی سرور محلی، در بخش تگ خبر</a>
+<a href="http://127.0.0.1:18826/index.html?v=0813#news-tag" target="_top" rel="noopener noreferrer">باز کردن همان index.html روی سرور محلی، در بخش تگ خبر</a>
 </div>
 <details class="details"><summary>جزئیات فنی</summary><pre id="preflight">در حال بررسی موتور خروجی...</pre><button id="test" type="button">بررسی اتصال</button><pre id="status">آماده ساخت فیلم</pre></details>
 </section>
@@ -228,7 +228,7 @@ body,html,main{background:#edf4fc!important}
 const $=id=>document.getElementById(id);
 // On Vercel /ae-api/* does not exist: real rendering is performed by the user's Windows computer.
 // Keep the API on the Windows render engine, even in an inlined iframe (about:srcdoc).
-const engineBase='http://127.0.0.1:18825';
+const engineBase='http://127.0.0.1:18826';
 let appProtocol='';try{appProtocol=window.parent.location.protocol}catch(_){appProtocol=window.location.protocol}
 const openedFromFile=appProtocol==='file:';
 const runningLocally=['127.0.0.1','localhost'].includes((()=>{try{return window.parent.location.hostname}catch(_){return window.location.hostname}})());
@@ -238,12 +238,12 @@ const showEngineHelp=(visible)=>{
 };
 let timer=null,busy=false,engineReady=false;
 const status=$('status'),button=$('go'),file=$('file');
-const setStatus=(message)=>{status.textContent='نسخه 0812 | '+new Date().toLocaleTimeString('fa-IR')+' | '+message;$('liveState').textContent='وضعیت لحظه‌ای: '+message;console.log('[RushFinder AE]',message);document.getElementById('status').textContent=message};
+const setStatus=(message)=>{status.textContent='نسخه 0813 | '+new Date().toLocaleTimeString('fa-IR')+' | '+message;$('liveState').textContent='وضعیت لحظه‌ای: '+message;console.log('[RushFinder AE]',message);document.getElementById('status').textContent=message};
 const setBusy=(value)=>{busy=value;button.disabled=value;file.disabled=value;$('name').disabled=value};
-async function check(){try{const r=await fetch(renderUrl('/ae-api/check'),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();if(d.version!=='0812')throw Error('سرور قدیمی پاسخ داده است؛ پنجره های سرور قدیمی را ببندید.');engineReady=!!(d.afterEffects&&d.ffmpeg&&d.project&&d.assetsReady);$('preflight').textContent='وضعیت موتور محلی\nAfter Effects: '+(d.afterEffects?'✓ شناسایی شد':'✗ پیدا نشد')+'\nرندر در After Effects: '+(d.afterEffects?'✓ آماده':'✗ پیدا نشد')+'\nFFmpeg: '+(d.ffmpeg?'✓ شناسایی شد':'✗ پیدا نشد')+'\nپروژه اصلی: '+(d.project?'✓ موجود است':'✗ پیدا نشد')+'\nقالب AEP: '+(d.templateName||'نامشخص')+'\nتصاویر اصلی: '+(d.assetsReady?'✓ کامل':'✗ ناقص')+'\nموتور آماده: '+(engineReady?'بله':'خیر');if(!busy)button.disabled=false;showEngineHelp(!engineReady);return d;}catch(e){engineReady=false;button.disabled=false;showEngineHelp(true);$('preflight').textContent='اتصال به موتور رندر ویندوز برقرار نشد. '+(openedFromFile?'index.html مستقیم از فایل باز شده است. Start-RushFinder.cmd را اجرا کنید تا همین index.html از موتور محلی باز شود.':runningLocally?'موتور را با Start-RushFinder.cmd روشن کنید.':'موتور محلی را با Start-RushFinder.cmd روی همین رایانه اجرا کنید و مجوز شبکه محلی را بررسی کنید.')+'\nجزئیات: '+e.message;throw e;}}
+async function check(){try{const r=await fetch(renderUrl('/ae-api/check'),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();if(d.version!=='0813')throw Error('سرور قدیمی پاسخ داده است؛ پنجره های سرور قدیمی را ببندید.');engineReady=!!(d.afterEffects&&d.ffmpeg&&d.project&&d.assetsReady);$('preflight').textContent='وضعیت موتور محلی\nAfter Effects: '+(d.afterEffects?'✓ شناسایی شد':'✗ پیدا نشد')+'\nرندر در After Effects: '+(d.afterEffects?'✓ آماده':'✗ پیدا نشد')+'\nFFmpeg: '+(d.ffmpeg?'✓ شناسایی شد':'✗ پیدا نشد')+'\nپروژه اصلی: '+(d.project?'✓ موجود است':'✗ پیدا نشد')+'\nقالب AEP: '+(d.templateName||'نامشخص')+'\nتصاویر اصلی: '+(d.assetsReady?'✓ کامل':'✗ ناقص')+'\nموتور آماده: '+(engineReady?'بله':'خیر');if(!busy)button.disabled=false;showEngineHelp(!engineReady);return d;}catch(e){engineReady=false;button.disabled=false;showEngineHelp(true);$('preflight').textContent='اتصال به موتور رندر ویندوز برقرار نشد. '+(openedFromFile?'index.html مستقیم از فایل باز شده است. Start-RushFinder.cmd را اجرا کنید تا همین index.html از موتور محلی باز شود.':runningLocally?'موتور را با Start-RushFinder.cmd روشن کنید.':'موتور محلی را با Start-RushFinder.cmd روی همین رایانه اجرا کنید و مجوز شبکه محلی را بررسی کنید.')+'\nجزئیات: '+e.message;throw e;}}
 $('test').addEventListener('click',async()=>{setStatus('در حال بررسی ارتباط با موتور...');try{await check();setStatus(engineReady?'✓ ارتباط برقرار شد؛ اکنون فیلم و نام را وارد کنید.':'برخی ابزارها آماده نیستند؛ وضعیت بالای صفحه را بررسی کنید.')}catch(e){setStatus('خطا: '+e.message)}});
 let localPreviewURL=null;file.addEventListener('change',()=>{if(localPreviewURL)URL.revokeObjectURL(localPreviewURL);if(file.files[0]){localPreviewURL=URL.createObjectURL(file.files[0]);$('preview').src=localPreviewURL;$('preview').hidden=false;$('placeholder').hidden=true;$('previewLabel').textContent='پیش‌نمایش فیلم ورودی؛ خروجی نهایی هنوز ساخته نشده';}$('fileInfo').textContent=file.files.length?'فیلم انتخاب شد: '+file.files[0].name+' ('+Math.ceil(file.files[0].size/1048576)+' مگابایت)':'هنوز فیلمی انتخاب نشده است.'});
-// 0812 — download MP4 without navigating the embedded News Tag iframe.
+// 0813 — download MP4 without navigating the embedded News Tag iframe.
  // Browsers can ignore <a download> for cross-origin localhost video URLs.
  // Always download the bytes as an object URL, or show an inline error.
  let finishedVideoUrl='', downloadingFinalVideo=false;
