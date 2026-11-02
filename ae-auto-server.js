@@ -1,7 +1,7 @@
 'use strict';
 // Windows-only proof-of-concept Adobe After Effects automation. Bound to localhost.
 const http=require('http'),fs=require('fs'),path=require('path'),os=require('os'),cp=require('child_process'),crypto=require('crypto');
-const root=__dirname,port=18810,work=path.join(root,'ae-jobs'),template=path.join(root,'ae-original','tag1-source.aep');fs.mkdirSync(work,{recursive:true});
+const root=__dirname,port=18813,work=path.join(root,'ae-jobs'),template=path.join(root,'ae-original','tag1-source.aep');fs.mkdirSync(work,{recursive:true});
 const jobs=new Map();
 function respond(res,n,x){res.writeHead(n,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(x))}
 function aeExe(){const roots=[process.env.ProgramFiles,process.env['ProgramFiles(x86)']].filter(Boolean);for(const p of roots){const d=path.join(p,'Adobe');if(!fs.existsSync(d))continue;for(const dir of fs.readdirSync(d).filter(s=>s.startsWith('Adobe After Effects')).sort().reverse()){const f=path.join(d,dir,'Support Files','AfterFX.exe');if(fs.existsSync(f))return f}}return null}
@@ -137,7 +137,7 @@ result.open('w');result.write('ok');result.close();writeLog('Completed: transpar
 const f=path.join(job.folder,'run.jsx');fs.writeFileSync(f,'\uFEFF'+script,'utf8');return f}
 
 function ffmpegExe(){for(const f of [path.join(root,'tools','ffmpeg.exe'),path.join(process.env.LOCALAPPDATA||'', 'RushFinder','tools','ffmpeg.exe'),path.join(root,'ffmpeg.exe'),path.join(process.env.LOCALAPPDATA||'', 'Microsoft','WinGet','Links','ffmpeg.exe'),'ffmpeg']){try{const r=cp.spawnSync(f,['-version'],{windowsHide:true,timeout:5000});if(r.status===0)return f}catch(e){}}return null}
-function report(){return {afterEffects:!!aeExe(),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),local:true,version:"0796"}}
+function report(){return {afterEffects:!!aeExe(),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),local:true,version:"0799",installRoot:root.replace(/\\/g,'/')}}
 function runActive(job){const fail=e=>{job.state='error';let tail='';try{const f=path.join(job.folder,'ae-render.log');if(fs.existsSync(f))tail=fs.readFileSync(f,'utf8').split(/\r?\n/).filter(Boolean).slice(-10).join('\n').slice(-2500);}catch(ignore){}job.message=String(e)+(tail?'\nآخرین گزارش واقعی افتر افکت:\n'+tail:'\nگزارش افتر افکت هنوز ایجاد نشده است.');};(async()=>{try{job.state='rendering';job.message='مرحله ۱/۳: تغییر متن در پروژه AEP و رندر آلفای اصلی After Effects...';const exe=aeExe();if(!exe)throw Error('After Effects در Program Files/Adobe پیدا نشد.');if(!ffmpegExe())throw Error('FFmpeg پیدا نشد. فایل ffmpeg.exe مخصوص ویندوز را در پوشه tools کنار سایت قرار بدهید، یا FFmpeg را در PATH نصب کنید.');const script=scriptFor(job);job.message='مرحله ۱/۳: درخواست اجرای اسکریپت به After Effects فرستاده شد.';// Launch AE directly as in the last functioning releases. PowerShell Start-Process
  // occasionally loses the JSX -r argument and prevents script startup.
  const proc=cp.spawn(exe,['-r',script],{cwd:job.folder,windowsHide:true,detached:false,stdio:'ignore'});
@@ -195,7 +195,13 @@ function blend(job){return new Promise((resolve,reject)=>{
   if(code!==0||!fs.existsSync(mov)||fs.statSync(mov).size<1000){reject(Error('تبدیل MOV شفاف ناموفق: '+err1.slice(-1600)));return}
   // The MP4 is composed only after an actual transparent MOV exists.
   job.state='combining';job.message='مرحله ۳/۳: ترکیب MOV شفاف با فیلم و ساخت MP4...';
-  const out=path.join(work,job.id+'.mp4');const args=['-hide_banner','-y','-i',job.input,'-i',mov,'-filter_complex','[1:v]format=rgba,scale=trunc(iw*0.78/2)*2:trunc(ih*0.78/2)*2:flags=lanczos[tag];[0:v][tag]overlay=W-w:H-h+H*0.035:shortest=0:format=auto,format=yuv420p[v]','-map','[v]','-map','0:a?','-c:v','libx264','-preset','medium','-crf','18','-c:a','aac','-movflags','+faststart',out];
+  // 0798: size the full transparent AE composition against the INPUT video width.
+  // A fixed percentage of AE's source dimensions used to make the lower-third
+  // disproportionately large on smaller videos. 60% of final video width for
+  // the comp ensures a compact, consistent tag across input resolutions.
+  // Right-anchor with a small safe margin; retain original AE animation/alpha.
+  const tagFilter='[1:v]format=rgba[tag-src];[tag-src][0:v]scale2ref=w=trunc(main_w*0.60/2)*2:h=-2:flags=lanczos[tag][base];[base][tag]overlay=W-w-W*0.015:H-h+H*0.035:shortest=0:format=auto,format=yuv420p[v]';
+  const out=path.join(work,job.id+'.mp4');const args=['-hide_banner','-y','-i',job.input,'-i',mov,'-filter_complex',tagFilter,'-map','[v]','-map','0:a?','-c:v','libx264','-preset','medium','-crf','18','-c:a','aac','-movflags','+faststart',out];
   const c2=cp.spawn(ff,args,{windowsHide:true});let err2='';c2.stderr.on('data',x=>err2=(err2+x.toString()).slice(-9000));c2.on('error',reject);c2.on('close',n=>{
    if(n===0&&fs.existsSync(out)&&fs.statSync(out).size>1000){job.state='done';job.message='MP4 ساخته شد؛ متن از لایه اصلی افتر افکت رندر شده است.';resolve()}
    else reject(Error('خطای ترکیب MP4: '+err2.slice(-1600)))
@@ -204,9 +210,34 @@ function blend(job){return new Promise((resolve,reject)=>{
 })}
 
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.webm':'video/webm','.mp4':'video/mp4','.wasm':'application/wasm','.svg':'image/svg+xml','.woff2':'font/woff2','.ttf':'font/ttf'};
-http.createServer((req,res)=>{let u;try{u=new URL(req.url,'http://127.0.0.1')}catch{return respond(res,400,{error:'Invalid URL'})}if(u.pathname==='/ae-api/check')return respond(res,200,report());
+// 0799: the public website can talk only to this local engine, on the same Windows PC.
+// Explicitly allow the official hosted site; do not expose the rendering API to arbitrary sites.
+const trustedWebOrigins=new Set([
+ 'https://rushfinder.vercel.app',
+ 'http://127.0.0.1:18813',
+ 'http://localhost:18813'
+]);
+const trustedHostnames=new Set(['127.0.0.1:18813','localhost:18813']);
+http.createServer((req,res)=>{
+ if(!trustedHostnames.has(req.headers.host))return respond(res,403,{error:'Host not allowed'});
+ let u;try{u=new URL(req.url,'http://127.0.0.1')}catch{return respond(res,400,{error:'Invalid URL'})}
+ if(u.pathname.startsWith('/ae-api/')||u.pathname.startsWith('/ae-output/')){
+   const origin=req.headers.origin;
+   res.setHeader('Vary','Origin');
+   if(origin && !trustedWebOrigins.has(origin))return respond(res,403,{error:'Origin not allowed'});
+   if(origin){
+     res.setHeader('Access-Control-Allow-Origin',origin);
+     res.setHeader('Access-Control-Allow-Methods','GET, POST, OPTIONS');
+     res.setHeader('Access-Control-Allow-Headers','Content-Type');
+     res.setHeader('Access-Control-Allow-Private-Network','true');
+   }
+   if(req.method==='OPTIONS'){
+     res.writeHead(204,{'Cache-Control':'no-store','Content-Length':'0'});res.end();return;
+   }
+ }
+ if(u.pathname==='/ae-api/check')return respond(res,200,report());
 if(u.pathname==='/ae-api/create' && req.method==='POST'){
 const name=(u.searchParams.get('name')||'').trim();if(!name||name.length>140)return respond(res,400,{error:'نام باید بین یک تا ۱۴۰ حرف باشد.'});if(!aeExe()||!ffmpegExe()||!fs.existsSync(template))return respond(res,503,{error:'پیش‌نیاز ناقص: '+(!aeExe()?'After Effects ':'')+(!ffmpegExe()?'FFmpeg ':'')+(!fs.existsSync(template)?'AEP ':'')});const id=crypto.randomUUID(),folder=path.join(work,id);fs.mkdirSync(folder,{recursive:true});const job={id,folder,name,input:path.join(folder,'source-video'+(path.extname(u.searchParams.get('filename')||'').toLowerCase().match(/^\.(mp4|mov|webm|m4v|avi)$/)?.[0]||'.mp4')),state:'uploading',message:'دریافت فیلم...'};jobs.set(id,job);let total=0;const f=fs.createWriteStream(job.input);req.on('data',c=>{total+=c.length;if(total>1024*1024*1024){req.destroy();f.destroy()}});req.pipe(f);f.on('finish',()=>{job.state='queued';job.message='در صف رندر...';respond(res,200,{id});run(job)});req.on('error',()=>{job.state='error';job.message='آپلود فیلم متوقف شد.'});return;}
 if(u.pathname==='/ae-api/status'){const j=jobs.get(u.searchParams.get('id'));if(!j)return respond(res,200,{state:'error',message:'پردازش پیدا نشد.'});return respond(res,200,{id:j.id,state:j.state,message:j.message});}
 let file;try{if(u.pathname.startsWith('/ae-output/')){const id=path.basename(u.pathname,'.mp4');if(!/^[a-f0-9-]{36}$/.test(id))throw Error();file=path.join(work,id+'.mp4')}else{if(u.pathname.startsWith('/ae-jobs')||u.pathname.startsWith('/ae-original')||u.pathname.startsWith('/tools/'))throw Error();file=path.resolve(root,'.'+decodeURIComponent(u.pathname));if(!file.startsWith(root+path.sep))throw Error()}}catch{return respond(res,403,{error:'Forbidden'})}if(fs.existsSync(file)&&fs.statSync(file).isDirectory())file=path.join(file,'index.html');fs.stat(file,(err,s)=>{if(err||!s.isFile()){res.writeHead(404);res.end('Not found');return}let start=0,end=s.size-1,code=200,headers={'Content-Type':types[path.extname(file).toLowerCase()]||'application/octet-stream','Cache-Control':'no-store','Accept-Ranges':'bytes'};if(req.headers.range){const m=/bytes=(\d+)-(\d*)/.exec(req.headers.range);if(m){start=Number(m[1]);end=m[2]?Number(m[2]):end;if(start>end||start>=s.size){res.writeHead(416);res.end();return}code=206;headers['Content-Range']=`bytes ${start}-${end}/${s.size}`}}headers['Content-Length']=end-start+1;res.writeHead(code,headers);fs.createReadStream(file,{start,end}).pipe(res)})
-}).listen(port,'127.0.0.1',()=>console.log('RushFinder 0796 AE Offline: http://127.0.0.1:'+port+'/ae-render.html'));
+}).listen(port,'127.0.0.1',()=>console.log('RushFinder 0799: http://127.0.0.1:'+port+'/index.html'));
