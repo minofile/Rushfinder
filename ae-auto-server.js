@@ -1,9 +1,9 @@
 'use strict';
 // Windows-only proof-of-concept Adobe After Effects automation. Bound to localhost.
 const http=require('http'),fs=require('fs'),path=require('path'),os=require('os'),cp=require('child_process'),crypto=require('crypto');
-// 0803: never generate large working files or final videos inside the GitHub project.
+// 0804: never generate large working files or final videos inside the GitHub project.
 // Both directories live in the current Windows user's home folder.
-const root=__dirname,port=18816;
+const root=__dirname,port=18817;
 const dataRoot=path.join(os.homedir(),'RushFinder-Cache');
 const work=path.join(dataRoot,'ae-jobs');
 const exportDir=path.join(os.homedir(),'RushFinder-Exports');
@@ -145,7 +145,7 @@ result.open('w');result.write('ok');result.close();writeLog('Completed: transpar
 const f=path.join(job.folder,'run.jsx');fs.writeFileSync(f,'\uFEFF'+script,'utf8');return f}
 
 function ffmpegExe(){for(const f of [path.join(root,'tools','ffmpeg.exe'),path.join(process.env.LOCALAPPDATA||'', 'RushFinder','tools','ffmpeg.exe'),path.join(root,'ffmpeg.exe'),path.join(process.env.LOCALAPPDATA||'', 'Microsoft','WinGet','Links','ffmpeg.exe'),'ffmpeg']){try{const r=cp.spawnSync(f,['-version'],{windowsHide:true,timeout:5000});if(r.status===0)return f}catch(e){}}return null}
-function report(){return {afterEffects:!!aeExe(),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),local:true,version:"0803",outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
+function report(){return {afterEffects:!!aeExe(),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),local:true,version:"0804",outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
 function runActive(job){const fail=e=>{job.state='error';let tail='';try{const f=path.join(job.folder,'ae-render.log');if(fs.existsSync(f))tail=fs.readFileSync(f,'utf8').split(/\r?\n/).filter(Boolean).slice(-10).join('\n').slice(-2500);}catch(ignore){}job.message=String(e)+(tail?'\nآخرین گزارش واقعی افتر افکت:\n'+tail:'\nگزارش افتر افکت هنوز ایجاد نشده است.');};(async()=>{try{job.state='rendering';job.message='مرحله ۱/۳: تغییر متن در پروژه AEP و رندر آلفای اصلی After Effects...';const exe=aeExe();if(!exe)throw Error('After Effects در Program Files/Adobe پیدا نشد.');if(!ffmpegExe())throw Error('FFmpeg پیدا نشد. فایل ffmpeg.exe مخصوص ویندوز را در پوشه tools کنار سایت قرار بدهید، یا FFmpeg را در PATH نصب کنید.');const script=scriptFor(job);job.message='مرحله ۱/۳: درخواست اجرای اسکریپت به After Effects فرستاده شد.';// Launch AE directly as in the last functioning releases. PowerShell Start-Process
  // occasionally loses the JSX -r argument and prevents script startup.
  const proc=cp.spawn(exe,['-r',script],{cwd:job.folder,windowsHide:true,detached:false,stdio:'ignore'});
@@ -193,48 +193,47 @@ function scheduleNextAE(){
     }
   },1000);
 }
-// 0803: The AE composition contains large transparent margins around the
+// 0804: The AE composition contains large transparent margins around the
 // actual lower third. Detect the visible alpha region from settled frames,
 // crop those margins, and scale the real artwork with its native aspect ratio.
+// 0804: Crop against the complete alpha-animation envelope, not only its middle.
+// The AEP lower third contains separate moving text, divider, and logo layers.
+// Middle-only crops clipped the later animated layers, making the logo appear alone.
 function detectVisibleTag(ff,mov){
  return new Promise((resolve,reject)=>{
-  const cmd=['-hide_banner','-i',mov,'-vf','fps=3,format=rgba,alphaextract,cropdetect=limit=0.065:round=2:reset=1','-an','-f','null','-'];
+  const cmd=['-hide_banner','-i',mov,'-vf','fps=12,format=rgba,alphaextract,cropdetect=limit=0.065:round=2:reset=1','-an','-f','null','-'];
   let log='';
   const probe=cp.spawn(ff,cmd,{windowsHide:true});
   probe.stderr.on('data',b=>{log+=b.toString();if(log.length>6000000)log=log.slice(-6000000);});
   probe.on('error',e=>reject(Error('Cannot measure tag alpha: '+e.message)));
   probe.on('close',code=>{
-   if(code!==0){reject(Error('Failed to inspect transparent tag. Check FFmpeg alpha support. '+log.slice(-500)));return;}
+   if(code!==0){reject(Error('Failed to inspect transparent tag: '+log.slice(-500)));return;}
    const size=/Video:[^\r\n]*?\b(\d{2,5})x(\d{2,5})\b/.exec(log);
    if(!size){reject(Error('Transparent tag dimensions could not be read.'));return;}
    const srcW=Number(size[1]),srcH=Number(size[2]);
-   const dur=/Duration:\s*(\d+):(\d+):([\d.]+)/.exec(log);
-   const seconds=dur?Number(dur[1])*3600+Number(dur[2])*60+Number(dur[3]):0;
    const boxes=[];
    const re=/x1:(\d+)\s+x2:(\d+)\s+y1:(\d+)\s+y2:(\d+)[^\r\n]*?\bt:([\d.]+)/g;
    let match;
    while((match=re.exec(log))){
-    const x1=Number(match[1]),x2=Number(match[2]),y1=Number(match[3]),y2=Number(match[4]),t=Number(match[5]);
-    if(x2>x1+15 && y2>y1+6 && x2<srcW && y2<srcH)boxes.push({x1,x2,y1,y2,t});
+    const x1=Number(match[1]),x2=Number(match[2]),y1=Number(match[3]),y2=Number(match[4]);
+    if(x2>x1+15&&y2>y1+6&&x1>=0&&y1>=0&&x2<srcW&&y2<srcH){
+      boxes.push({x1,x2,y1,y2});
+    }
    }
    if(!boxes.length){reject(Error('No visible alpha region found in the After Effects render.'));return;}
-   // Use steady-state frames rather than the sliding entrance/exit, which
-   // may briefly cover a larger area than the final news lower third.
-   const middle=seconds>3?boxes.filter(b=>b.t>=seconds*.25&&b.t<=seconds*.75):boxes;
-   const chosen=middle.length>=2?middle:boxes;
-   const minX=Math.min(...chosen.map(b=>b.x1));
-   const minY=Math.min(...chosen.map(b=>b.y1));
-   const maxX=Math.max(...chosen.map(b=>b.x2));
-   const maxY=Math.max(...chosen.map(b=>b.y2));
-   const padX=Math.max(6,Math.ceil((maxX-minX+1)*.018));
-   const padY=Math.max(12,Math.ceil((maxY-minY+1)*.20));
+   // Use EVERY visible frame, including animated entrance and exit.
+   // A fixed crop makes all animation frames share the same coordinates.
+   const minX=Math.min(...boxes.map(b=>b.x1)),maxX=Math.max(...boxes.map(b=>b.x2));
+   const minY=Math.min(...boxes.map(b=>b.y1)),maxY=Math.max(...boxes.map(b=>b.y2));
+   const padX=Math.max(10,Math.ceil((maxX-minX+1)*0.025));
+   const padY=Math.max(6,Math.ceil((maxY-minY+1)*0.065));
    const x=Math.max(0,Math.floor((minX-padX)/2)*2);
    const y=Math.max(0,Math.floor((minY-padY)/2)*2);
    const right=Math.min(srcW,Math.ceil((maxX+1+padX)/2)*2);
    const bottom=Math.min(srcH,Math.ceil((maxY+1+padY)/2)*2);
    const w=right-x,h=bottom-y;
-   if(w<50||h<18||w>srcW||h>srcH){reject(Error('Measured tag crop is not valid: '+[x,y,w,h].join(',')));return;}
-   resolve({x,y,w,h});
+   if(w<50||h<18||w>srcW||h>srcH){reject(Error('Invalid tag crop: '+[x,y,w,h].join(',')));return;}
+   resolve({x,y,w,h,frames:boxes.length,source:[srcW,srcH]});
   });
  });
 }
@@ -250,11 +249,11 @@ function blend(job){return new Promise((resolve,reject)=>{
   // The MP4 is composed only after an actual transparent MOV exists.
   job.state='combining';job.message='مرحله ۳/۳: ترکیب MOV شفاف با فیلم و ساخت MP4...';
   // Crop away transparent composition space before fitting the visible lower third.
-  // 35% refers to actual tag width, not the oversized AE transparent canvas.
+  // A proportionate 38% lower-third width is used; never distort X/Y separately.
   job.message='مرحله ۳/۳: اندازه‌گیری محدوده واقعی تگ و ساخت MP4...';
   detectVisibleTag(ff,mov).then(crop=>{
-   const tagFilter='[1:v]format=rgba,crop='+crop.w+':'+crop.h+':'+crop.x+':'+crop.y+',setsar=1[tag-src];[tag-src][0:v]scale2ref=w=trunc(main_w*0.35/2)*2:h=-2:flags=lanczos[tag][base];[base][tag]overlay=W-w-W*0.020:H-h-H*0.070:shortest=0:format=auto,format=yuv420p[v]';
-   fs.appendFileSync(path.join(job.folder,'ae-render.log'),'0803 alpha-crop '+JSON.stringify(crop)+'\\n');
+   const tagFilter='[1:v]format=rgba,crop='+crop.w+':'+crop.h+':'+crop.x+':'+crop.y+',setsar=1[tag-src];[tag-src][0:v]scale2ref=w=trunc(main_w*0.38/2)*2:h=-2:flags=lanczos[tag][base];[base][tag]overlay=W-w-W*0.024:H-h-H*0.075:shortest=0:format=auto,format=yuv420p[v]';
+   fs.appendFileSync(path.join(job.folder,'ae-render.log'),'0804 full-animation alpha-crop '+JSON.stringify(crop)+'\\n');
   const out=path.join(exportDir,job.id+'.mp4');const args=['-hide_banner','-y','-i',job.input,'-i',mov,'-filter_complex',tagFilter,'-map','[v]','-map','0:a?','-c:v','libx264','-preset','medium','-crf','18','-c:a','aac','-movflags','+faststart',out];
   const c2=cp.spawn(ff,args,{windowsHide:true});let err2='';c2.stderr.on('data',x=>err2=(err2+x.toString()).slice(-9000));c2.on('error',reject);c2.on('close',n=>{
    if(n===0&&fs.existsSync(out)&&fs.statSync(out).size>1000){
@@ -277,10 +276,10 @@ const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=
 // Explicitly allow the official hosted site; do not expose the rendering API to arbitrary sites.
 const trustedWebOrigins=new Set([
  'https://rushfinder.vercel.app',
- 'http://127.0.0.1:18816',
- 'http://localhost:18816'
+ 'http://127.0.0.1:18817',
+ 'http://localhost:18817'
 ]);
-const trustedHostnames=new Set(['127.0.0.1:18816','localhost:18816']);
+const trustedHostnames=new Set(['127.0.0.1:18817','localhost:18817']);
 http.createServer((req,res)=>{
  if(!trustedHostnames.has(req.headers.host))return respond(res,403,{error:'Host not allowed'});
  let u;try{u=new URL(req.url,'http://127.0.0.1')}catch{return respond(res,400,{error:'Invalid URL'})}
@@ -305,4 +304,4 @@ if(u.pathname==='/ae-api/create' && req.method==='POST'){
 const name=(u.searchParams.get('name')||'').trim();if(!name||name.length>140)return respond(res,400,{error:'نام باید بین یک تا ۱۴۰ حرف باشد.'});if(!aeExe()||!ffmpegExe()||!fs.existsSync(template))return respond(res,503,{error:'پیش‌نیاز ناقص: '+(!aeExe()?'After Effects ':'')+(!ffmpegExe()?'FFmpeg ':'')+(!fs.existsSync(template)?'AEP ':'')});const id=crypto.randomUUID(),folder=path.join(work,id);fs.mkdirSync(folder,{recursive:true});const job={id,folder,name,input:path.join(folder,'source-video'+(path.extname(u.searchParams.get('filename')||'').toLowerCase().match(/^\.(mp4|mov|webm|m4v|avi)$/)?.[0]||'.mp4')),state:'uploading',message:'دریافت فیلم...'};jobs.set(id,job);let total=0;const f=fs.createWriteStream(job.input);req.on('data',c=>{total+=c.length;if(total>1024*1024*1024){req.destroy();f.destroy()}});req.pipe(f);f.on('finish',()=>{job.state='queued';job.message='در صف رندر...';respond(res,200,{id});run(job)});req.on('error',()=>{job.state='error';job.message='آپلود فیلم متوقف شد.'});return;}
 if(u.pathname==='/ae-api/status'){const j=jobs.get(u.searchParams.get('id'));if(!j)return respond(res,200,{state:'error',message:'پردازش پیدا نشد.'});return respond(res,200,{id:j.id,state:j.state,message:j.message});}
 let file;try{if(u.pathname.startsWith('/ae-output/')){const id=path.basename(u.pathname,'.mp4');if(!/^[a-f0-9-]{36}$/.test(id))throw Error();file=path.join(exportDir,id+'.mp4')}else{if(u.pathname.startsWith('/ae-jobs')||u.pathname.startsWith('/ae-original')||u.pathname.startsWith('/tools/'))throw Error();file=path.resolve(root,'.'+decodeURIComponent(u.pathname));if(!file.startsWith(root+path.sep))throw Error()}}catch{return respond(res,403,{error:'Forbidden'})}if(fs.existsSync(file)&&fs.statSync(file).isDirectory())file=path.join(file,'index.html');fs.stat(file,(err,s)=>{if(err||!s.isFile()){res.writeHead(404);res.end('Not found');return}let start=0,end=s.size-1,code=200,headers={'Content-Type':types[path.extname(file).toLowerCase()]||'application/octet-stream','Cache-Control':'no-store','Accept-Ranges':'bytes'};if(req.headers.range){const m=/bytes=(\d+)-(\d*)/.exec(req.headers.range);if(m){start=Number(m[1]);end=m[2]?Number(m[2]):end;if(start>end||start>=s.size){res.writeHead(416);res.end();return}code=206;headers['Content-Range']=`bytes ${start}-${end}/${s.size}`}}headers['Content-Length']=end-start+1;res.writeHead(code,headers);fs.createReadStream(file,{start,end}).pipe(res)})
-}).listen(port,'127.0.0.1',()=>console.log('RushFinder 0803: http://127.0.0.1:'+port+'/index.html'));
+}).listen(port,'127.0.0.1',()=>console.log('RushFinder 0804: http://127.0.0.1:'+port+'/index.html'));
