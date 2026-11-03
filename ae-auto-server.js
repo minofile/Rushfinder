@@ -243,8 +243,49 @@ const f=path.join(job.folder,'run.jsx');fs.writeFileSync(f,'\uFEFF'+script,'utf8
 
 function ffmpegExe(){for(const f of [path.join(root,'tools','ffmpeg.exe'),path.join(process.env.LOCALAPPDATA||'', 'RushFinder','tools','ffmpeg.exe'),path.join(root,'ffmpeg.exe'),path.join(process.env.LOCALAPPDATA||'', 'Microsoft','WinGet','Links','ffmpeg.exe'),'ffmpeg']){try{const r=cp.spawnSync(f,['-version'],{windowsHide:true,timeout:5000});if(r.status===0)return f}catch(e){}}return null}
 function report(){return {afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0813",outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
+// 0814: dedicated CHANNEL-tag render. The existing reporter After Effects path below
+// is intentionally unchanged. This mode uses the exact supplied transparent PNG.
+function renderChannelTag(job){
+ const logo=path.join(root,'assets','news-tag','fori-channel-tag.png');
+ let finished=false;
+ const fail=error=>{
+  if(finished)return;
+  finished=true;job.state='error';
+  job.message='ساخت تگ کانال خبرفوری ناموفق بود: '+String(error);
+ };
+ try{
+  const ff=ffmpegExe();
+  if(!ff)throw Error('FFmpeg پیدا نشد.');
+  if(!fs.existsSync(logo))throw Error('تصویر تگ کانال خبرفوری موجود نیست.');
+  const size=videoDimensions(ff,job.input);
+  const tagWidth=Math.max(2,Math.round(size.width*0.40/2)*2);
+  const padRight=Math.max(0,Math.round(size.width*0.025));
+  const padBottom=Math.max(0,Math.round(size.height*0.075));
+  const filter='[1:v]format=rgba,scale='+tagWidth+':-2:flags=lanczos,setsar=1[tag];'+
+   '[0:v][tag]overlay=x=main_w-overlay_w-'+padRight+':y=main_h-overlay_h-'+padBottom+
+   ':shortest=1:format=auto,format=yuv420p[v]';
+  const output=path.join(exportDir,job.id+'.mp4');
+  const args=['-hide_banner','-y','-i',job.input,'-loop','1','-framerate','25','-i',logo,
+   '-filter_complex',filter,'-map','[v]','-map','0:a?',
+   '-c:v','libx264','-preset','medium','-crf','18','-c:a','aac','-movflags','+faststart',output];
+  job.state='rendering';job.message='در حال قرار دادن تگ کانال خبرفوری روی فیلم...';
+  const proc=cp.spawn(ff,args,{windowsHide:true});
+  let ffLog='';
+  proc.stderr.on('data',data=>{ffLog=(ffLog+data.toString()).slice(-5000)});
+  proc.on('error',fail);
+  proc.on('close',code=>{
+   if(finished)return;
+   if(code!==0||!fs.existsSync(output)||fs.statSync(output).size<1000)
+    return fail('FFmpeg: '+ffLog.slice(-1600));
+   finished=true;job.state='done';job.message='تگ کانال خبرفوری آماده است.';
+   fs.rm(job.folder,{recursive:true,force:true,maxRetries:4,retryDelay:1000},
+    error=>{if(error)console.warn('Channel temp cleanup failed:',error.message)});
+  });
+ }catch(error){fail(error.message)}
+}
+
 // 0811: Direct After Effects render, without a second aerender process.
-function runActive(job){const fail=e=>{job.state='error';let tail='';try{const f=path.join(job.folder,'ae-render.log');if(fs.existsSync(f))tail=fs.readFileSync(f,'utf8').split(/\r?\n/).filter(Boolean).slice(-10).join('\n').slice(-2500);}catch(ignore){}job.message=String(e)+(tail?'\nآخرین گزارش واقعی افتر افکت:\n'+tail:'\nگزارش افتر افکت هنوز ایجاد نشده است.');};(async()=>{try{job.state='rendering';job.message='مرحله ۱/۳: بازکردن AEP، اصلاح متن و رندر شفاف در خود After Effects...';const exe=aeExe();if(!exe)throw Error('After Effects در Program Files/Adobe پیدا نشد.');if(!ffmpegExe())throw Error('FFmpeg پیدا نشد. فایل ffmpeg.exe مخصوص ویندوز را در پوشه tools کنار سایت قرار بدهید، یا FFmpeg را در PATH نصب کنید.');const script=scriptFor(job);job.message='مرحله ۱/۳: پروژه اصلی در After Effects در حال آماده‌سازی و رندر است.';// Launch AE directly as in the last functioning releases. PowerShell Start-Process
+function runActive(job){if(job.mode==='channel'){renderChannelTag(job);return;}const fail=e=>{job.state='error';let tail='';try{const f=path.join(job.folder,'ae-render.log');if(fs.existsSync(f))tail=fs.readFileSync(f,'utf8').split(/\r?\n/).filter(Boolean).slice(-10).join('\n').slice(-2500);}catch(ignore){}job.message=String(e)+(tail?'\nآخرین گزارش واقعی افتر افکت:\n'+tail:'\nگزارش افتر افکت هنوز ایجاد نشده است.');};(async()=>{try{job.state='rendering';job.message='مرحله ۱/۳: بازکردن AEP، اصلاح متن و رندر شفاف در خود After Effects...';const exe=aeExe();if(!exe)throw Error('After Effects در Program Files/Adobe پیدا نشد.');if(!ffmpegExe())throw Error('FFmpeg پیدا نشد. فایل ffmpeg.exe مخصوص ویندوز را در پوشه tools کنار سایت قرار بدهید، یا FFmpeg را در PATH نصب کنید.');const script=scriptFor(job);job.message='مرحله ۱/۳: پروژه اصلی در After Effects در حال آماده‌سازی و رندر است.';// Launch AE directly as in the last functioning releases. PowerShell Start-Process
  // occasionally loses the JSX -r argument and prevents script startup.
  // -m starts a separate AE instance: never inject the script into a user's
  // already-running After Effects session. -noui requests a hidden editing
@@ -480,6 +521,22 @@ http.createServer((req,res)=>{
    }
  }
  if(u.pathname==='/ae-api/check')return respond(res,200,report());
+// 0814: channel mode only. The existing /ae-api/create reporter route remains intact.
+if(u.pathname==='/ae-api/channel-create' && req.method==='POST'){
+ const ff=ffmpegExe(),logo=path.join(root,'assets','news-tag','fori-channel-tag.png');
+ if(!ff||!fs.existsSync(logo))return respond(res,503,{error:!ff?'FFmpeg روی موتور رندر پیدا نشد.':'تصویر تگ کانال پیدا نشد.'});
+ const id=crypto.randomUUID(),folder=path.join(work,id);
+ fs.mkdirSync(folder,{recursive:true});
+ const ext=(path.extname(u.searchParams.get('filename')||'').toLowerCase().match(/^\.(mp4|mov|webm|m4v|avi)$/)||[])[0]||'.mp4';
+ const job={id,folder,mode:'channel',name:'',input:path.join(folder,'source-video'+ext),state:'uploading',message:'دریافت فیلم...'};
+ jobs.set(id,job);
+ let total=0;const f=fs.createWriteStream(job.input);
+ req.on('data',c=>{total+=c.length;if(total>1024*1024*1024){req.destroy();f.destroy()}});
+ req.pipe(f);
+ f.on('finish',()=>{job.state='queued';job.message='در صف رندر...';respond(res,200,{id});run(job)});
+ req.on('error',()=>{job.state='error';job.message='آپلود فیلم متوقف شد.'});
+ return;
+}
 if(u.pathname==='/ae-api/create' && req.method==='POST'){
 const name=(u.searchParams.get('name')||'').trim();if(!name||name.length>140)return respond(res,400,{error:'نام باید بین یک تا ۱۴۰ حرف باشد.'});if(!aeExe()||!ffmpegExe()||!fs.existsSync(template)||!['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(n=>fs.existsSync(path.join(root,'ae-original',n))))return respond(res,503,{error:'پیش‌نیاز ناقص: '+(!aeExe()?'After Effects ':'')+(!aeExe()||!fs.existsSync(path.join(path.dirname(aeExe()||''),'aerender.exe'))?'aerender ':'')+(!ffmpegExe()?'FFmpeg ':'')+(!fs.existsSync(template)?'AEP ':'')+(!['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(n=>fs.existsSync(path.join(root,'ae-original',n)))?'PNG original assets ':'')});const id=crypto.randomUUID(),folder=path.join(work,id);fs.mkdirSync(folder,{recursive:true});const job={id,folder,name,input:path.join(folder,'source-video'+(path.extname(u.searchParams.get('filename')||'').toLowerCase().match(/^\.(mp4|mov|webm|m4v|avi)$/)?.[0]||'.mp4')),state:'uploading',message:'دریافت فیلم...'};jobs.set(id,job);let total=0;const f=fs.createWriteStream(job.input);req.on('data',c=>{total+=c.length;if(total>1024*1024*1024){req.destroy();f.destroy()}});req.pipe(f);f.on('finish',()=>{job.state='queued';job.message='در صف رندر...';respond(res,200,{id});run(job)});req.on('error',()=>{job.state='error';job.message='آپلود فیلم متوقف شد.'});return;}
 if(u.pathname==='/ae-api/status'){const j=jobs.get(u.searchParams.get('id'));if(!j)return respond(res,200,{state:'error',message:'پردازش پیدا نشد.'});return respond(res,200,{id:j.id,state:j.state,message:j.message});}
