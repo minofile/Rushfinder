@@ -278,8 +278,8 @@ function scriptForRole(job){
  const script=`(function(){
 var folder=${jsxString(job.folder)},done=new File(folder+'/render.done'),error=new File(folder+'/render.error'),log=new File(folder+'/ae-render.log');
 var framesFolder=new Folder(folder+'/alpha-frames');if(!framesFolder.exists)framesFolder.create();
-function logIt(x){try{log.open('a');log.writeln('0822 ROLE | '+new Date().toString()+' | '+x);log.close();}catch(ignore){}}
-logIt('SCRIPT_ENTERED: jsx is executing in After Effects');
+function logIt(x){try{log.open('a');log.writeln('0823 ROLE | '+new Date().toString()+' | '+x);log.close();}catch(ignore){}}
+logIt('SCRIPT_ENTERED: JSX 0823 executing in After Effects');
 try{
  app.beginSuppressDialogs();try{app.exitAfterLaunchAndEval=true;}catch(ignore){}
  var src=new File(${jsxString(roleTemplate)});if(!src.exists)throw Error('Role AEP template missing');
@@ -303,13 +303,14 @@ try{
   }
  }
  logIt('FOOTAGE_RELINK_CHECK_DONE');
+ logIt('COMP_SCAN_STARTED: items='+app.project.numItems);
  var comp=null;
  for(var i=1;i<=app.project.numItems;i++){
   var item=app.project.item(i);
   if(item instanceof CompItem&&String(item.name).toLowerCase()==='tag 5'){comp=item;break;}
  }
  if(!comp)throw Error('ترکیب Tag 5 در پروژه تگ گزارش پیدا نشد.');
- logIt('Main comp '+comp.name+' '+comp.width+'x'+comp.height+' duration='+comp.duration);
+ logIt('COMP_FOUND: '+comp.name+' '+comp.width+'x'+comp.height+' duration='+comp.duration);
  var layers=[],visited={};
  function collect(c){if(!c||visited[c.id])return;visited[c.id]=true;
   for(var li=1;li<=c.numLayers;li++){
@@ -322,7 +323,9 @@ try{
    try{if(layer.source instanceof CompItem)collect(layer.source);}catch(ignore){}
   }
  }
+ logIt('TEXT_SCAN_STARTED');
  collect(comp);
+ logIt('TEXT_SCAN_DONE: '+layers.length+' text layers');
  if(!layers.length)throw Error('هیچ لایه متن قابل ویرایشی داخل Tag 5 یافت نشد.');
  var updatedName=0,updatedRole=0;
  function normalizeText(s){return String(s||'').replace(/\\s+/g,' ').trim();}
@@ -412,7 +415,17 @@ try{
  if(seq){var files=framesFolder.getFiles(function(f){return f instanceof File&&/\\.png$/i.test(f.name);});if(files.length<3)throw Error('فریم‌های شفاف کافی ساخته نشد.');}
  else{var rendered=new File(target);if(!rendered.exists||rendered.length<1000)throw Error('فایل شفاف رندر ساخته نشد.');}
  done.open('w');done.write('ROLE_ALPHA_RENDERED');done.close();logIt('Render completed');
-}catch(e){logIt('ERROR '+e.toString());error.open('w');error.write(e.toString());error.close();}
+}catch(e){
+ var detail=''+e;
+ try{if(e&&e.line)detail+=' | JSX line '+e.line;}catch(ignore){}
+ logIt('ERROR '+detail);
+ try{
+  var tmpErr=new File(folder+'/render.error.pending');
+  if(tmpErr.open('w')){tmpErr.write(detail);tmpErr.close();
+   if(!tmpErr.rename('render.error'))throw Error('Cannot publish role error marker');
+  }else throw Error('Cannot write role error marker');
+ }catch(writeErr){try{if(error.open('w')){error.write(detail);error.close();}}catch(ignore){}}
+}
 finally{try{app.endSuppressDialogs(false)}catch(ignore){}
  try{if(app.project)app.project.close(CloseOptions.DO_NOT_SAVE_CHANGES);}catch(ignore){}}
 })();`;
@@ -457,7 +470,7 @@ function channelTagSizePercent(){
   }catch(_ignored){}
   return 12;
 }
-function report(){return {afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0813",engineBuild:"0819-channel-size-control",channelTagWidthPercent:channelTagSizePercent(),channelTagControl:true,roleBuild:"0822-role-media-diagnostics",roleMediaMissing:missingRoleMedia(),roleTag:!!aeExe()&&!!ffmpegExe()&&fs.existsSync(roleTemplate),roleTemplateName:path.basename(roleTemplate),channelTag:!!ffmpegExe()&&fs.existsSync(path.join(root,'assets','news-tag','fori-channel-tag.png')),outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
+function report(){return {afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0813",engineBuild:"0819-channel-size-control",channelTagWidthPercent:channelTagSizePercent(),channelTagControl:true,roleBuild:"0823-role-render-diagnostics",roleMediaMissing:missingRoleMedia(),roleTag:!!aeExe()&&!!ffmpegExe()&&fs.existsSync(roleTemplate),roleTemplateName:path.basename(roleTemplate),channelTag:!!ffmpegExe()&&fs.existsSync(path.join(root,'assets','news-tag','fori-channel-tag.png')),outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
 // 0814: dedicated CHANNEL-tag render. The existing reporter After Effects path below
 // is intentionally unchanged. This mode uses the exact supplied transparent PNG.
 function renderChannelTag(job){
@@ -519,12 +532,31 @@ function runActive(job){if(job.mode==='channel'){renderChannelTag(job);return;}c
  proc.stderr.on('data',b=>fs.appendFileSync(path.join(job.folder,'worker-launch.log'),b));
  // Scripted editing may briefly expose the Adobe GUI on some versions;
  // the actual render happens separately with aerender.exe in the background.
- proc.on('error',fail);proc.on('exit',(code)=>{if(code!==0&&job.state==='rendering'&&!fs.existsSync(path.join(job.folder,'ae-render.log')))job.message='راه‌اندازی موتور با کد '+code+' پایان یافت؛ در حال بررسی گزارش افتر افکت...';});let elapsed=0;const timer=setInterval(()=>{
+ proc.on('error',fail);let roleWorkerExit=null;
+ proc.on('exit',(code,signal)=>{
+  if(job.mode==='role'){
+   roleWorkerExit={code,signal,at:Date.now()};
+   try{fs.appendFileSync(path.join(job.folder,'worker-launch.log'),'\nWORKER_EXIT code='+code+' signal='+signal+'\n');}catch(ignore){}
+  }else if(code!==0&&job.state==='rendering'&&!fs.existsSync(path.join(job.folder,'ae-render.log'))){
+   job.message='راه‌اندازی موتور با کد '+code+' پایان یافت؛ در حال بررسی گزارش افتر افکت...';
+  }
+ });let elapsed=0;const timer=setInterval(()=>{
   elapsed+=2;
   if(job.state==='error'){clearInterval(timer);return}
   const errorPath=path.join(job.folder,'render.error'), donePath=path.join(job.folder,'render.done'), logPath=path.join(job.folder,'ae-render.log');
-  if(fs.existsSync(errorPath)){clearInterval(timer);fail(fs.readFileSync(errorPath,'utf8'));return}
+  if(fs.existsSync(errorPath)){
+   const errorText=fs.readFileSync(errorPath,'utf8').trim();
+   const errorAge=Date.now()-fs.statSync(errorPath).mtimeMs;
+   if(job.mode==='role'&&!errorText&&errorAge<6000){job.message='در حال دریافت گزارش خطای After Effects...';return}
+   clearInterval(timer);
+   fail(errorText||'After Effects فایل خطای خالی ایجاد کرد. گزارش راه‌اندازی و آخرین مراحل در پوشه کار رندر ثبت شده است.');return
+  }
   if(fs.existsSync(donePath)){clearInterval(timer);job.message='خروجی شفاف در خود After Effects ساخته شد؛ در حال بررسی و ترکیب...';blend(job).catch(fail);return}
+  if(job.mode==='role'&&roleWorkerExit&&roleWorkerExit.code!==0&&Date.now()-roleWorkerExit.at>8000){
+   const code=roleWorkerExit.code,signal=roleWorkerExit.signal;
+   clearInterval(timer);
+   fail('پردازش After Effects قبل از ساخت خروجی یا ثبت خطای کامل متوقف شد. کد خروج: '+code+(signal?'، سیگنال: '+signal:'')+'. آخرین مراحل در گزارش زیر ثبت شده‌اند. فایل Get-Role-Render-Log.cmd را اجرا کنید تا گزارش کامل آماده شود.');return;
+  }
   let message='مرحله ۱/۳: اجرای پروژه اصلی After Effects';
   message+=' | زمان سپری‌شده: '+Math.floor(elapsed/60)+' دقیقه و '+(elapsed%60)+' ثانیه';
   if(fs.existsSync(logPath)){
@@ -544,7 +576,7 @@ function runActive(job){if(job.mode==='channel'){renderChannelTag(job);return;}c
    return;
   }
   if(elapsed>=300)message+='\n⚠ پنج دقیقه گذشته است؛ اگر اندازه فایل آلفا افزایش نمی‌یابد، پنجره After Effects را بررسی کنید.';
-  if(elapsed>=1200){clearInterval(timer);fail('رندر After Effects پس از ۲۰ دقیقه به پایان نرسید. آخرین وضعیت: '+message);return}
+  if(elapsed>=1200){clearInterval(timer);fail('رندر After Effects پس از ۲۰ دقیقه به پایان نرسید. '+(job.mode==='role'&&roleWorkerExit?'آخرین کد خروج پردازش: '+roleWorkerExit.code+'. ':'')+'آخرین وضعیت: '+message);return}
   job.message=message;
 },2000);
 }catch(e){fail(e.message)}})()}
