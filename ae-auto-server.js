@@ -278,8 +278,8 @@ function scriptForRole(job){
  const script=`(function(){
 var folder=${jsxString(job.folder)},done=new File(folder+'/render.done'),error=new File(folder+'/render.error'),log=new File(folder+'/ae-render.log');
 var framesFolder=new Folder(folder+'/alpha-frames');if(!framesFolder.exists)framesFolder.create();
-function logIt(x){try{log.open('a');log.writeln('0827 ROLE | '+new Date().toString()+' | '+x);log.close();}catch(ignore){}}
-logIt('SCRIPT_ENTERED: JSX 0827 executing in After Effects');
+function logIt(x){try{log.open('a');log.writeln('0828 ROLE | '+new Date().toString()+' | '+x);log.close();}catch(ignore){}}
+logIt('SCRIPT_ENTERED: JSX 0828 executing in After Effects');
 try{
  app.beginSuppressDialogs();try{app.exitAfterLaunchAndEval=false;}catch(ignore){}
  var src=new File(${jsxString(roleTemplate)});if(!src.exists)throw Error('Role AEP template missing');
@@ -382,15 +382,57 @@ try{
    return true;
   }finally{if(locked)item.layer.locked=true;}
  }
+ var candidateSummaries=[],unreadableLayers=0;
  for(var t=0;t<layers.length;t++){
   var item=layers[t],prop=item.prop;
-  var sample=normalizeText(prop.value.text);
-  logIt('Candidate '+item.comp.name+'/'+item.layer.name+' = '+sample.substring(0,110)+' expression='+prop.expressionEnabled);
-  if(sample==='گزارشگر فلانی'||sample==='NULL گزارشگر فلانی'){
-   if(replaceText(item,${jsxString(job.fullName)}))updatedName++;
-  }else if(sample==='بررسی عوامل گرانی همه چیز'||sample==='NULL بررسی عوامل گرانی همه چیز'){
-   if(replaceText(item,${jsxString(job.roleTitle)}))updatedRole++;
+  // Isolate reading each text layer. Some AEP text properties throw while
+  // evaluating value/text even though they are discoverable as text layers.
+  // Other layers must remain inspectable so an informative error can be made.
+  var label='text-layer-'+(t+1);
+  try{label=String(item.layer.name);}catch(ignore){}
+  logIt('TEXT_LAYER_BEGIN: index='+t+' layer='+label);
+  var textDoc=null,rawText=null,readOk=false;
+  try{
+   logIt('TEXT_VALUE_READ_BEGIN: index='+t);
+   textDoc=prop.value;
+   logIt('TEXT_VALUE_READ_OK: index='+t);
+   rawText=textDoc.text;
+   logIt('TEXT_CONTENT_READ_OK: index='+t);
+   readOk=true;
+  }catch(readErr){
+   logIt('TEXT_VALUE_READ_FAILED: index='+t+' layer='+label);
+   try{
+    logIt('TEXT_VALUE_AT_TIME_BEGIN: index='+t);
+    textDoc=prop.valueAtTime(0,false);
+    rawText=textDoc.text;
+    readOk=true;
+    logIt('TEXT_VALUE_AT_TIME_OK: index='+t);
+   }catch(readFallbackErr){
+    logIt('TEXT_VALUE_AT_TIME_FAILED: index='+t);
+   }
   }
+  if(!readOk){unreadableLayers++;continue;}
+  var sample='';
+  try{sample=normalizeText(rawText);}catch(normalizeErr){
+   unreadableLayers++;logIt('TEXT_NORMALIZE_FAILED: index='+t);continue;
+  }
+  var expressionFlag='unavailable';
+  try{expressionFlag=String(prop.expressionEnabled);}catch(ignore){}
+  candidateSummaries.push(label+': '+sample.substring(0,70));
+  logIt('TEXT_CANDIDATE: index='+t+' layer='+label+' text='+sample.substring(0,110)+' expression='+expressionFlag);
+  if(sample==='گزارشگر فلانی'||sample==='NULL گزارشگر فلانی'){
+   logIt('NAME_REPLACE_BEGIN: index='+t);
+   if(replaceText(item,${jsxString(job.fullName)}))updatedName++;
+   logIt('NAME_REPLACE_END: index='+t);
+  }else if(sample==='بررسی عوامل گرانی همه چیز'||sample==='NULL بررسی عوامل گرانی همه چیز'){
+   logIt('ROLE_REPLACE_BEGIN: index='+t);
+   if(replaceText(item,${jsxString(job.roleTitle)}))updatedRole++;
+   logIt('ROLE_REPLACE_END: index='+t);
+  }
+ }
+ logIt('TEXT_MATCH_SUMMARY: name='+updatedName+' role='+updatedRole+' unreadable='+unreadableLayers);
+ if(updatedName<1||updatedRole<1){
+  logIt('TEXT_NOT_MATCHED: '+candidateSummaries.join(' | ').substring(0,800));
  }
  if(updatedName<1||updatedRole<1)throw Error('هر دو متن نمونه قالب (گزارشگر فلانی / بررسی عوامل گرانی همه چیز) در لایه‌های قابل‌ویرایش Tag 5 پیدا نشدند. نام: '+updatedName+'، سمت: '+updatedRole+'؛ رندر بدون جایگزینی انجام نمی‌شود.');
  logIt('Both text fields replaced; name='+updatedName+' role='+updatedRole);
@@ -441,20 +483,31 @@ try{
  else{var rendered=new File(target);if(!rendered.exists||rendered.length<1000)throw Error('فایل شفاف رندر ساخته نشد.');}
  done.open('w');done.write('ROLE_ALPHA_RENDERED');done.close();logIt('Render completed');
 }catch(e){
- // ExtendScript's Error object may not support implicit string concatenation.
- // Always write an error marker so the single-worker queue can continue.
- var detail='خطای اجرای اسکریپت تگ نام و سمت';
- try{if(e && typeof e.message==='string' && e.message.length)detail=e.message;
-     else if(e && typeof e.description==='string' && e.description.length)detail=e.description;
-     else if(e && typeof e.toString==='function')detail=e.toString();}catch(ignore){}
- try{if(e && typeof e.line==='number')detail+=' | JSX line '+e.line;}catch(ignore){}
- logIt('ERROR_HANDLED: '+detail);
+ // Write an ASCII error marker FIRST, before attempting to inspect an
+ // ExtendScript exception object (which may itself throw on property access).
+ logIt('ROLE_ERROR_HANDLER_ENTERED');
+ var detail='ROLE_RENDER_ERROR: unexpected error after the last logged stage';
  try{
-  var tmpErr=new File(folder+'/render.error.pending');
-  if(tmpErr.open('w')){tmpErr.write(detail);tmpErr.close();
-   if(!tmpErr.rename('render.error'))throw Error('Cannot publish role error marker');
-  }else throw Error('Cannot write role error marker');
- }catch(writeErr){try{if(error.open('w')){error.write(detail);error.close();}}catch(ignore){}}
+  error.encoding='UTF-8';
+  if(error.open('w')){
+   error.write(detail);error.close();
+   logIt('ROLE_ERROR_MARKER_CREATED');
+  }else{logIt('ROLE_ERROR_MARKER_OPEN_FAILED');}
+ }catch(markerErr){logIt('ROLE_ERROR_MARKER_WRITE_FAILED');}
+ // Each field of the thrown object is read independently. Avoid calling
+ // e.toString(), which has triggered secondary errors in older JSX runs.
+ var em='';
+ try{if(e && e.message!==undefined && e.message!==null)em=String(e.message);}catch(ignore){}
+ if(!em)try{if(e && e.description!==undefined && e.description!==null)em=String(e.description);}catch(ignore){}
+ if(!em)em='Unknown ExtendScript error; see the last ROLE log stage';
+ var lineText='';
+ try{if(e && e.line!==undefined)lineText=String(e.line);}catch(ignore){}
+ detail='ROLE_RENDER_ERROR: '+em+(lineText?' | JSX line '+lineText:'');
+ logIt('ROLE_ERROR_DETAIL: '+detail.substring(0,1200));
+ try{
+  error.encoding='UTF-8';
+  if(error.open('w')){error.write(detail);error.close();logIt('ROLE_ERROR_DETAIL_SAVED');}
+ }catch(saveErr){logIt('ROLE_ERROR_DETAIL_SAVE_FAILED');}
 }
 finally{logIt('SCRIPT_FINALLY_ENTERED');try{app.endSuppressDialogs(false)}catch(ignore){}
  try{if(app.project)app.project.close(CloseOptions.DO_NOT_SAVE_CHANGES);}catch(ignore){}
@@ -501,7 +554,7 @@ function channelTagSizePercent(){
   }catch(_ignored){}
   return 12;
 }
-function report(){return {afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0813",engineBuild:"0819-channel-size-control",channelTagWidthPercent:channelTagSizePercent(),channelTagControl:true,roleBuild:"0827-role-extendscript-trim-fix",roleMediaMissing:missingRoleMedia(),roleTag:!!aeExe()&&!!ffmpegExe()&&fs.existsSync(roleTemplate),roleTemplateName:path.basename(roleTemplate),channelTag:!!ffmpegExe()&&fs.existsSync(path.join(root,'assets','news-tag','fori-channel-tag.png')),outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
+function report(){return {afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0813",engineBuild:"0819-channel-size-control",channelTagWidthPercent:channelTagSizePercent(),channelTagControl:true,roleBuild:"0828-role-text-read-recovery",roleMediaMissing:missingRoleMedia(),roleTag:!!aeExe()&&!!ffmpegExe()&&fs.existsSync(roleTemplate),roleTemplateName:path.basename(roleTemplate),channelTag:!!ffmpegExe()&&fs.existsSync(path.join(root,'assets','news-tag','fori-channel-tag.png')),outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
 // 0814: dedicated CHANNEL-tag render. The existing reporter After Effects path below
 // is intentionally unchanged. This mode uses the exact supplied transparent PNG.
 function renderChannelTag(job){
