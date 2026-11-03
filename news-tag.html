@@ -532,6 +532,95 @@ body,html,main{background:#edf4fc!important}
  .mode-grid .rf-mode-card strong{font-size:10px!important}
 }
 
+
+/* 0814 refinement — distinctive video-tag models; only cards are styled. */
+.mode-grid{gap:14px!important;direction:rtl!important;align-items:stretch!important}
+.mode-grid .mode-item.rf-mode-card{
+ position:relative;isolation:isolate;display:flex!important;flex-direction:column!important;
+ align-items:stretch!important;justify-content:space-between!important;gap:11px!important;
+ min-width:0!important;min-height:179px!important;padding:10px!important;border-radius:20px!important;
+ border:1px solid #d8e6f4!important;background:linear-gradient(155deg,#fff,#f6faff)!important;
+ box-shadow:0 6px 18px rgba(16,51,94,.08)!important;color:#153759!important;
+ transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease!important;
+}
+.mode-grid .mode-item.rf-mode-card.active{border:2px solid #1479f5!important;padding:9px!important;background:linear-gradient(145deg,#fff 32%,#eaf4ff)!important;box-shadow:0 0 0 4px rgba(20,121,245,.08),0 10px 24px rgba(24,94,194,.14)!important}
+.mode-grid button.rf-mode-card{cursor:pointer!important}
+.mode-grid button.rf-mode-card:hover{transform:translateY(-3px)!important;border-color:#66a7ee!important;box-shadow:0 14px 28px rgba(19,85,176,.15)!important}
+.mode-grid button.rf-mode-card:focus-visible{outline:3px solid #85c0ff!important;outline-offset:3px}
+.mode-grid .mode-item.rf-mode-card.disabled{opacity:.8!important;cursor:not-allowed!important;filter:grayscale(.18)}
+.mode-grid .mode-item.rf-mode-card .rf-card-art{height:107px!important;min-height:107px!important;border-radius:13px!important;padding:5px!important;background:linear-gradient(135deg,#e3f5ff,#f7faff)!important;border:1px solid #dbeefb!important;overflow:hidden!important;display:flex!important;align-items:stretch!important;justify-content:stretch!important}
+.mode-grid .rf-card-channel .rf-card-art{background:linear-gradient(135deg,#d8f7ea,#f4fff9)!important;border-color:#cbedde!important}
+.mode-grid .rf-card-role .rf-card-art{background:linear-gradient(135deg,#eef1f8,#f8faff)!important;border-color:#e1e8f3!important}
+.mode-grid .rf-card-art::before{display:none!important}
+.mode-grid .rf-stage-screen{display:flex;position:relative;flex-direction:column;justify-content:space-between;min-width:0;flex:1;overflow:hidden;border-radius:10px;padding:8px 10px 8px;
+ color:#fff;background:radial-gradient(circle at 84% 38%,#21628f,#102e53 45%,#091d3a 100%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.13),0 3px 9px rgba(13,41,77,.16)}
+.mode-grid .rf-stage-screen::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(110deg,transparent 0 35px,rgba(255,255,255,.032) 35px 36px)}
+.mode-grid .rf-stage-channel{background:radial-gradient(circle at 84% 36%,#267e7c,#0c4350 48%,#092b3d 100%)}
+.mode-grid .rf-stage-role{background:radial-gradient(circle at 84% 36%,#69809c,#273e5a 48%,#1c2e47 100%)}
+.mode-grid .rf-stage-top{display:flex;direction:rtl;align-items:center;gap:6px;position:relative;z-index:1;font-size:10px;font-weight:700;letter-spacing:0;opacity:.95}
+.mode-grid .rf-broadcast-dot{width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:#48e5a5;box-shadow:0 0 0 3px rgba(42,230,150,.12),0 0 10px rgba(42,230,150,.52)}
+.mode-grid .rf-stage-reporter .rf-broadcast-dot{background:#6abcff;box-shadow:0 0 0 3px rgba(106,188,255,.12)}
+.mode-grid .rf-stage-role .rf-broadcast-dot{background:#b7c4d6;box-shadow:none}
+.mode-grid .rf-stage-play{display:grid;place-items:center;margin-right:auto;width:25px;height:25px;border-radius:50%;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.24)}
+.mode-grid .rf-stage-play svg{width:13px;height:13px}
+.mode-grid .rf-screen-highlight{position:absolute;width:125px;height:125px;left:-8px;top:-52px;border-radius:50%;border:1px solid rgba(255,255,255,.10);box-shadow:0 0 0 17px rgba(255,255,255,.027),0 0 0 34px rgba(255,255,255,.025)}
+.mode-grid .rf-channel-logo{display:flex;position:relative;z-index:1;align-items:center;justify-content:center;align-self:stretch;min-height:38px;max-height:38px;padding:3px 6px;background:#fff;border-radius:6px;border-right:4px solid #02a86a;box-shadow:0 4px 12px rgba(0,0,0,.22)}
+.mode-grid .rf-channel-logo img{display:block;object-fit:contain;width:100%;height:100%;max-height:33px}
+.mode-grid .rf-reporter-lower{display:flex;direction:rtl;align-items:center;position:relative;z-index:1;overflow:hidden;min-height:35px;background:#f6faff;border-radius:5px;box-shadow:0 4px 12px rgba(0,0,0,.23);color:#1b466b}
+.mode-grid .rf-plate-accent{display:grid;place-items:center;flex:0 0 36px;align-self:stretch;background:linear-gradient(135deg,#1577e7,#39a5ff);color:white}
+.mode-grid .rf-plate-accent svg{width:19px;height:19px}
+.mode-grid .rf-plate-copy{font-size:11px;font-weight:800;padding-inline:9px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mode-grid .rf-plate-mark{height:35px;width:7px;margin-right:auto;align-self:stretch;flex:0 0 7px;background:#1683ed}
+.mode-grid .rf-role-lower .rf-plate-accent{background:linear-gradient(135deg,#6682aa,#91a5bf)}
+.mode-grid .rf-role-lower .rf-plate-mark{background:#8297b7}
+.mode-grid .rf-soon-ribbon{position:absolute;top:40px;left:10px;padding:3px 8px;font-size:9px;border-radius:9px;background:#f3f7ff;color:#416187;z-index:2;font-weight:800}
+.mode-grid .rf-card-caption{display:flex!important;flex-direction:row!important;justify-content:space-between!important;align-items:center!important;min-height:42px!important;width:100%!important;gap:6px!important}
+.mode-grid .rf-card-name{display:inline-flex;align-items:center;gap:9px;min-width:0}
+.mode-grid .rf-card-icon{display:grid;place-items:center;flex:0 0 37px;width:37px;height:37px;border-radius:12px;background:#e0edff;color:#126ed1}
+.mode-grid .rf-card-icon svg{width:21px;height:21px}
+.mode-grid .rf-card-channel .rf-card-icon{color:#07845d;background:#e0f7eb}
+.mode-grid .rf-card-role .rf-card-icon{color:#607793;background:#e9eef5}
+.mode-grid .rf-caption-copy{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:0}
+.mode-grid .rf-caption-copy strong{font-size:13px!important;line-height:1.5!important;font-weight:900!important;color:#173e65!important;white-space:nowrap}
+.mode-grid .rf-caption-copy small{font-size:10px!important;line-height:1.5!important;color:#6e88a1!important;white-space:nowrap}
+.mode-grid .rf-radio-mark{display:grid;place-items:center;width:22px;height:22px;flex:0 0 22px;margin-right:auto;border:2px solid #c8d7ea;border-radius:50%;color:transparent;background:white}
+.mode-grid .rf-radio-mark svg{width:14px;height:14px;opacity:0}
+.mode-grid .rf-mode-card.active .rf-radio-mark{background:#1779ec;border-color:#1779ec;color:#fff;box-shadow:0 2px 9px rgba(25,105,215,.22)}
+.mode-grid .rf-mode-card.active .rf-radio-mark svg{opacity:1}
+.mode-grid .rf-card-role .rf-radio-mark{border-style:dashed;background:#eef3fa}
+@media(max-width:760px){
+ .mode-grid{gap:8px!important}
+ .mode-grid .mode-item.rf-mode-card{min-height:151px!important;padding:6px!important;gap:6px!important;border-radius:15px!important}
+ .mode-grid .mode-item.rf-mode-card.active{padding:5px!important}
+ .mode-grid .mode-item.rf-mode-card .rf-card-art{height:93px!important;min-height:93px!important;padding:4px!important;border-radius:11px!important}
+ .mode-grid .rf-stage-screen{padding:6px!important}
+ .mode-grid .rf-stage-top{font-size:8px!important;gap:3px!important}
+ .mode-grid .rf-stage-play{width:21px;height:21px}
+ .mode-grid .rf-channel-logo{min-height:31px;max-height:31px;padding:2px 3px}
+ .mode-grid .rf-reporter-lower{min-height:29px}
+ .mode-grid .rf-plate-accent{flex-basis:24px}
+ .mode-grid .rf-plate-copy{font-size:8px;padding-inline:4px}
+ .mode-grid .rf-plate-mark{height:29px;width:4px;flex-basis:4px}
+ .mode-grid .rf-card-caption{min-height:37px!important}
+ .mode-grid .rf-card-icon{width:26px;height:26px;flex-basis:26px;border-radius:9px}
+ .mode-grid .rf-card-icon svg{width:15px;height:15px}
+ .mode-grid .rf-card-name{gap:5px}
+ .mode-grid .rf-caption-copy strong{font-size:10px!important}
+ .mode-grid .rf-caption-copy small{font-size:8px!important}
+ .mode-grid .rf-radio-mark{width:16px;height:16px;flex-basis:16px;border-width:1.5px}
+ .mode-grid .rf-radio-mark svg{width:11px;height:11px}
+}
+@media(max-width:380px){
+ .mode-grid .rf-stage-top{font-size:7px!important}
+ .mode-grid .rf-caption-copy small{display:none}
+ .mode-grid .rf-card-icon{display:none}
+ .mode-grid .rf-radio-mark{display:none}
+}
+/* Only shown when channel capability is not installed in the running local engine. */
+#rfChannelHelp[hidden]{display:none!important}
+.rf-channel-help{display:flex;align-items:flex-start;gap:8px;margin:10px 0 0;padding:12px 13px;border:1px solid #ffcbaa;border-radius:12px;background:#fff6ed;color:#925318;font-size:12px;font-weight:650;line-height:1.9}
+.rf-channel-help svg{width:20px;height:20px;flex:0 0 20px;color:#dd851e}
+
 </style></head><body><main>
 <section class="hero"><h2>استودیو تگ خبر</h2><p class="hero-desc">خبرگزاری و مدل را انتخاب کن؛ فیلمت را اضافه کن و خروجی بگیر.</p></section>
 <section class="panel" style="margin-top:16px">
@@ -554,16 +643,16 @@ body,html,main{background:#edf4fc!important}
 <div class="section-title section-title-graphic"><span class="section-title-main"><span class="section-symbol" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"/><circle cx="10" cy="11" r="2"/><path d="M7 17c0-2 6-2 6 0M15 10h3M15 14h3M9 5V3h6v2"/></svg></span><span>انتخاب مدل تگ</span></span></div>
 <div class="mode-grid" role="group" aria-label="مدل تگ خبر">
  <button type="button" class="mode-item rf-channel-mode rf-mode-card rf-card-channel" data-rf-mode="channel" aria-pressed="false">
-   <span class="rf-card-art" aria-hidden="true"><span class="rf-mini-screen"><span class="rf-mini-play"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="m9 6 9 6-9 6V6Z"/></svg></span><span class="rf-mini-channel-tag"><img src="assets/news-tag/fori-channel-tag.png" alt="" loading="lazy"></span></span></span>
-   <span class="rf-card-caption"><span class="rf-card-name"><span class="rf-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="m10 10 5 2-5 2v-4Z" fill="currentColor" stroke="none"/><path d="M8 3h8"/></svg></span><strong>تگ کانال</strong></span><span class="rf-card-state" aria-hidden="true"></span></span>
+  <span class="rf-card-art" aria-hidden="true"><span class="rf-stage-screen rf-stage-channel"><span class="rf-stage-top"><span class="rf-broadcast-dot"></span> شبکه خبرفوری <span class="rf-stage-play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m9 5 10 7-10 7V5Z"/></svg></span></span><span class="rf-screen-highlight"></span><span class="rf-channel-logo"><img src="assets/news-tag/fori-channel-tag.png" alt="" loading="lazy"></span></span></span>
+  <span class="rf-card-caption"><span class="rf-card-name"><span class="rf-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3v-6Z"/><path d="M6 2h12"/></svg></span><span class="rf-caption-copy"><strong>تگ کانال</strong><small>لوگوی اصلی خبرفوری</small></span></span><span class="rf-radio-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span></span>
  </button>
  <button type="button" class="mode-item active rf-mode-card rf-card-reporter" data-rf-mode="reporter" aria-pressed="true">
-   <span class="rf-card-art" aria-hidden="true"><span class="rf-mini-screen"><span class="rf-mini-play"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="m9 6 9 6-9 6V6Z"/></svg></span><span class="rf-mini-reporter-tag"><span class="rf-mini-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.3"/><path d="M5.5 20v-2c0-3.3 2.5-5.5 6.5-5.5s6.5 2.2 6.5 5.5v2"/><path d="M18.5 6.5h3m-1.5-1.5v3"/></svg></span><span class="rf-mini-words"><span class="rf-mini-title-line"></span><span class="rf-mini-subline"></span></span><span class="rf-mini-blue-edge"></span></span></span></span>
-   <span class="rf-card-caption"><span class="rf-card-name"><span class="rf-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.3"/><path d="M5.5 20v-2c0-3.3 2.5-5.5 6.5-5.5s6.5 2.2 6.5 5.5v2"/><path d="M18.5 6.5h3m-1.5-1.5v3"/></svg></span><strong>تگ نام خبرنگار</strong></span><span class="rf-card-state" aria-hidden="true"></span></span>
+  <span class="rf-card-art" aria-hidden="true"><span class="rf-stage-screen rf-stage-reporter"><span class="rf-stage-top"><span class="rf-broadcast-dot"></span> گزارش اختصاصی <span class="rf-stage-play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m9 5 10 7-10 7V5Z"/></svg></span></span><span class="rf-screen-highlight"></span><span class="rf-reporter-lower"><span class="rf-plate-accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="8" r="3"/><path d="M5 20v-2a6 6 0 0 1 12 0v2M20 8v8m-2-6h4"/></svg></span><span class="rf-plate-copy">گزارشی از: نام خبرنگار</span><span class="rf-plate-mark"></span></span></span></span>
+  <span class="rf-card-caption"><span class="rf-card-name"><span class="rf-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="8" r="3"/><path d="M5 20v-2a6 6 0 0 1 12 0v2M20 8v8m-2-6h4"/></svg></span><span class="rf-caption-copy"><strong>تگ نام خبرنگار</strong><small>با نام دلخواه شما</small></span></span><span class="rf-radio-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span></span>
  </button>
  <div class="mode-item disabled rf-mode-card rf-card-role" aria-disabled="true">
-   <span class="rf-card-art" aria-hidden="true"><span class="rf-mini-screen"><span class="rf-mini-play"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="m9 6 9 6-9 6V6Z"/></svg></span><span class="rf-mini-role-tag"><span class="rf-mini-role-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="11" r="2"/><path d="M5.9 16c.5-1.8 1.5-2.5 3.1-2.5s2.6.7 3.1 2.5M15 10h4m-4 4h4"/></svg></span><span class="rf-mini-words"><span class="rf-mini-title-line"></span><span class="rf-mini-subline"></span></span><span class="rf-mini-role-edge"></span></span></span></span>
-   <span class="rf-card-caption"><span class="rf-card-name"><span class="rf-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="11" r="2"/><path d="M5.9 16c.5-1.8 1.5-2.5 3.1-2.5s2.6.7 3.1 2.5M15 10h4m-4 4h4"/></svg></span><strong>تگ نام و سمت</strong></span><span class="rf-card-state" aria-hidden="true"></span></span>
+  <span class="rf-card-art" aria-hidden="true"><span class="rf-stage-screen rf-stage-role"><span class="rf-stage-top"><span class="rf-broadcast-dot"></span> معرفی عوامل <span class="rf-stage-play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m9 5 10 7-10 7V5Z"/></svg></span></span><span class="rf-screen-highlight"></span><span class="rf-reporter-lower rf-role-lower"><span class="rf-plate-accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="10.5" r="2"/><path d="M5.5 16c.4-1.7 1.6-2.5 3.5-2.5s3.1.8 3.5 2.5M15 10h4m-4 4h4"/></svg></span><span class="rf-plate-copy">نام و سمت خبرنگار</span><span class="rf-plate-mark"></span></span><span class="rf-soon-ribbon">به‌زودی</span></span></span>
+  <span class="rf-card-caption"><span class="rf-card-name"><span class="rf-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="10.5" r="2"/><path d="M5.5 16c.4-1.7 1.6-2.5 3.5-2.5s3.1.8 3.5 2.5M15 10h4m-4 4h4"/></svg></span><span class="rf-caption-copy"><strong>تگ نام و سمت</strong><small>در دست آماده‌سازی</small></span></span><span class="rf-radio-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span></span>
  </div>
 </div>
 
@@ -581,6 +670,7 @@ body,html,main{background:#edf4fc!important}
 <button id="go" type="button">▶ ساخت فیلم</button>
 <progress id="uploadProgress" max="100" value="0" hidden></progress>
 <div id="liveState">آماده ساخت</div>
+<div id="rfChannelHelp" class="rf-channel-help" hidden role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 21h20L12 3Z"/><path d="M12 9v5m0 3h.01"/></svg><span>برای ساخت «تگ کانال» باید موتور جدید را نصب و یک‌بار با <b>Start-RushFinder.cmd</b> دوباره اجرا کنید. موتور قبلی این مدل را پشتیبانی نمی‌کند.</span></div>
 <div id="localEngineHelp" class="engine-connection-help" hidden role="status">
 <strong>رندر ویدیو به موتور محلی ویندوز نیاز دارد.</strong>
 فرم تگ خبر در همین index.html باز است. برای ساخت MP4، موتور رندر باید روی ویندوز روشن باشد: فایل <b>Start-RushFinder.cmd</b> را از پوشه پروژه اجرا کنید، سپس از صفحه index.html که باز می‌شود به «تگ خبر» برگردید. اگر مرورگر درخواست مجوز شبکه محلی داد، آن را بررسی و در صورت اطمینان مجاز کنید.
@@ -607,7 +697,9 @@ const renderUrl=path=>engineBase+path;
 const showEngineHelp=(visible)=>{
   const el=$('localEngineHelp');if(el)el.hidden=!visible;
 };
-let timer=null,busy=false,engineReady=false;
+let timer=null,busy=false,engineReady=false,engineSupportsChannel=false;
+const channelHelp=()=>document.getElementById('rfChannelHelp');
+const syncChannelHelp=()=>{const n=channelHelp();if(n)n.hidden=rfTagMode!=='channel'||engineSupportsChannel;};
 const status=$('status'),button=$('go'),file=$('file');
 let rfTagMode='reporter';
 for(const tile of document.querySelectorAll('.mode-item[data-rf-mode]')){
@@ -622,12 +714,13 @@ for(const tile of document.querySelectorAll('.mode-item[data-rf-mode]')){
   document.querySelector('.rf-name-title').hidden=!reporter;
   document.querySelector('.reporter-entry').hidden=!reporter;
   $('name').required=reporter;
-  setStatus(reporter?'آماده ساخت':'تگ کانال خبرفوری انتخاب شد؛ فیلم را اضافه کنید.');
+  syncChannelHelp();
+  setStatus(reporter?'آماده ساخت':engineSupportsChannel?'تگ کانال خبرفوری انتخاب شد؛ فیلم را اضافه کنید.':'برای ساخت تگ کانال، موتور جدید را نصب و دوباره اجرا کنید.');
  });
 }
 const setStatus=(message)=>{const done=message==='خروجی فیلم شما آماده است';const live=$('liveState');live.textContent=done?message:'وضعیت لحظه‌ای: '+message;live.classList.toggle('is-success',done);status.textContent=message;console.log('[RushFinder AE]',message);};
 const setBusy=(value)=>{busy=value;button.disabled=value;file.disabled=value;$('name').disabled=value};
-async function check(){try{const r=await fetch(renderUrl('/ae-api/check'),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();if(d.version!=='0813')throw Error('سرور قدیمی پاسخ داده است؛ پنجره های سرور قدیمی را ببندید.');engineReady=!!(d.afterEffects&&d.ffmpeg&&d.project&&d.assetsReady);$('preflight').textContent='وضعیت موتور محلی\nAfter Effects: '+(d.afterEffects?'✓ شناسایی شد':'✗ پیدا نشد')+'\nرندر در After Effects: '+(d.afterEffects?'✓ آماده':'✗ پیدا نشد')+'\nFFmpeg: '+(d.ffmpeg?'✓ شناسایی شد':'✗ پیدا نشد')+'\nپروژه اصلی: '+(d.project?'✓ موجود است':'✗ پیدا نشد')+'\nقالب AEP: '+(d.templateName||'نامشخص')+'\nتصاویر اصلی: '+(d.assetsReady?'✓ کامل':'✗ ناقص')+'\nموتور آماده: '+(engineReady?'بله':'خیر');if(!busy)button.disabled=false;showEngineHelp(!engineReady);return d;}catch(e){engineReady=false;button.disabled=false;showEngineHelp(true);$('preflight').textContent='اتصال به موتور رندر ویندوز برقرار نشد. '+(openedFromFile?'index.html مستقیم از فایل باز شده است. Start-RushFinder.cmd را اجرا کنید تا همین index.html از موتور محلی باز شود.':runningLocally?'موتور را با Start-RushFinder.cmd روشن کنید.':'موتور محلی را با Start-RushFinder.cmd روی همین رایانه اجرا کنید و مجوز شبکه محلی را بررسی کنید.')+'\nجزئیات: '+e.message;throw e;}}
+async function check(){try{const r=await fetch(renderUrl('/ae-api/check'),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();if(d.version!=='0813')throw Error('سرور قدیمی پاسخ داده است؛ پنجره های سرور قدیمی را ببندید.');engineReady=!!(d.afterEffects&&d.ffmpeg&&d.project&&d.assetsReady);engineSupportsChannel=d.channelTag===true;syncChannelHelp();$('preflight').textContent='وضعیت موتور محلی\nAfter Effects: '+(d.afterEffects?'✓ شناسایی شد':'✗ پیدا نشد')+'\nرندر در After Effects: '+(d.afterEffects?'✓ آماده':'✗ پیدا نشد')+'\nFFmpeg: '+(d.ffmpeg?'✓ شناسایی شد':'✗ پیدا نشد')+'\nپروژه اصلی: '+(d.project?'✓ موجود است':'✗ پیدا نشد')+'\nقالب AEP: '+(d.templateName||'نامشخص')+'\nتصاویر اصلی: '+(d.assetsReady?'✓ کامل':'✗ ناقص')+'\nموتور آماده: '+(engineReady?'بله':'خیر');if(!busy)button.disabled=false;showEngineHelp(!engineReady);return d;}catch(e){engineReady=false;engineSupportsChannel=false;syncChannelHelp();button.disabled=false;showEngineHelp(true);$('preflight').textContent='اتصال به موتور رندر ویندوز برقرار نشد. '+(openedFromFile?'index.html مستقیم از فایل باز شده است. Start-RushFinder.cmd را اجرا کنید تا همین index.html از موتور محلی باز شود.':runningLocally?'موتور را با Start-RushFinder.cmd روشن کنید.':'موتور محلی را با Start-RushFinder.cmd روی همین رایانه اجرا کنید و مجوز شبکه محلی را بررسی کنید.')+'\nجزئیات: '+e.message;throw e;}}
 $('test').addEventListener('click',async()=>{setStatus('در حال بررسی ارتباط با موتور...');try{await check();setStatus(engineReady?'✓ ارتباط برقرار شد؛ اکنون فیلم و نام را وارد کنید.':'برخی ابزارها آماده نیستند؛ وضعیت بالای صفحه را بررسی کنید.')}catch(e){setStatus('خطا: '+e.message)}});
 let localPreviewURL=null;file.addEventListener('change',()=>{if(localPreviewURL)URL.revokeObjectURL(localPreviewURL);if(file.files[0]){localPreviewURL=URL.createObjectURL(file.files[0]);$('preview').src=localPreviewURL;$('preview').hidden=false;$('placeholder').hidden=true;$('previewLabel').textContent='پیش‌نمایش فیلم ورودی؛ خروجی نهایی هنوز ساخته نشده';}$('fileInfo').textContent=file.files.length?'فیلم انتخاب شد: '+file.files[0].name+' ('+Math.ceil(file.files[0].size/1048576)+' مگابایت)':'هنوز فیلمی انتخاب نشده است.'});
 // 0813 — download MP4 without navigating the embedded News Tag iframe.
@@ -670,9 +763,9 @@ let localPreviewURL=null;file.addEventListener('change',()=>{if(localPreviewURL)
      downloadButton.textContent='⬇ دریافت فیلم نهایی';
    }
  });
- function upload(f,name){return new Promise((resolve,reject)=>{const xhr=new XMLHttpRequest();xhr.open('POST',renderUrl(rfTagMode==='channel'?'/ae-api/channel-create?filename='+encodeURIComponent(f.name):'/ae-api/create?name='+encodeURIComponent(name)+'&filename='+encodeURIComponent(f.name)));xhr.setRequestHeader('Content-Type','application/octet-stream');xhr.timeout=120000;xhr.upload.onprogress=e=>{if(e.lengthComputable){const pct=Math.round(100*e.loaded/e.total);$('uploadProgress').value=pct;setStatus('در حال ارسال فیلم به موتور محلی: '+pct+'٪')}};xhr.onerror=()=>reject(Error('ارسال فیلم با خطای ارتباطی روبه‌رو شد.'));xhr.ontimeout=()=>reject(Error('ارسال فیلم بیش از دو دقیقه طول کشید.'));xhr.onload=()=>{let result;try{result=JSON.parse(xhr.responseText)}catch{reject(Error('پاسخ نامعتبر سرور: HTTP '+xhr.status));return}if(xhr.status<200||xhr.status>=300){reject(Error(result.error||'HTTP '+xhr.status));return}resolve(result)};xhr.send(f)})}
+ function upload(f,name){return new Promise((resolve,reject)=>{const xhr=new XMLHttpRequest();xhr.open('POST',renderUrl(rfTagMode==='channel'?'/ae-api/channel-create?filename='+encodeURIComponent(f.name):'/ae-api/create?name='+encodeURIComponent(name)+'&filename='+encodeURIComponent(f.name)));xhr.setRequestHeader('Content-Type','application/octet-stream');xhr.timeout=120000;xhr.upload.onprogress=e=>{if(e.lengthComputable){const pct=Math.round(100*e.loaded/e.total);$('uploadProgress').value=pct;setStatus('در حال ارسال فیلم به موتور محلی: '+pct+'٪')}};xhr.onerror=()=>reject(Error('ارسال فیلم با خطای ارتباطی روبه‌رو شد.'));xhr.ontimeout=()=>reject(Error('ارسال فیلم بیش از دو دقیقه طول کشید.'));xhr.onload=()=>{let result;try{result=JSON.parse(xhr.responseText)}catch{reject(Error(xhr.status===404&&rfTagMode==='channel'?'موتور قبلی هنوز اجراست؛ فایل ae-auto-server.js نسخه جدید را جایگزین و موتور را دوباره راه‌اندازی کنید.':'پاسخ نامعتبر سرور: HTTP '+xhr.status));return}if(xhr.status<200||xhr.status>=300){reject(Error(result.error||'HTTP '+xhr.status));return}resolve(result)};xhr.send(f)})}
 async function poll(id){let errors=0;const step=async()=>{try{const r=await fetch(renderUrl('/ae-api/status?id='+encodeURIComponent(id)),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();errors=0;const stateKey=String(d.state||'').toLowerCase();const persianStage=({uploading:'در حال دریافت فیلم',queued:'فیلم در صف ساخت قرار دارد',rendering:'در حال ساخت فیلم',processing:'در حال پردازش فیلم',editing:'در حال آماده‌سازی تگ',compositing:'در حال ترکیب تگ با فیلم',merging:'در حال ترکیب تگ با فیلم',finalizing:'در حال آماده‌سازی خروجی',done:'خروجی فیلم شما آماده است'})[stateKey]||'در حال ساخت فیلم';if(stateKey==='error'){console.error('[RushFinder AE] Original render error:',d.message);setStatus('ساخت فیلم ناموفق بود. لطفاً دوباره تلاش کنید.')}else setStatus(persianStage);if(d.state==='done'){clearInterval(timer);timer=null;const url=renderUrl('/ae-output/'+id+'.mp4');$('preview').src=url+'?v='+Date.now();$('preview').hidden=false;$('placeholder').hidden=true;$('preview').load();finishedVideoUrl=url;$('dl').hidden=false;setStatus('خروجی فیلم شما آماده است');setBusy(false);$('uploadProgress').hidden=true;}else if(d.state==='error'){clearInterval(timer);timer=null;setBusy(false);$('uploadProgress').hidden=true;} }catch(e){if(++errors>=4){clearInterval(timer);timer=null;setStatus('ارتباط با وضعیت رندر قطع شد: '+e.message);setBusy(false);$('uploadProgress').hidden=true;}}};await step();if(busy){timer=setInterval(step,2500)}}
-button.addEventListener('click',async()=>{setStatus('دکمه ساخت زده شد؛ در حال بررسی ورودی‌ها...');const f=file.files[0],reporterName=$('name').value.trim().replace(/^گزارشی\s+از\s*[:：]?\s*/, '').trim(),name=reporterName?'گزارشی از: '+reporterName:'';if(!f){setStatus('⚠ ابتدا از بخش «فیلم خبرنگار» فایل ویدیویی را انتخاب کن.');file.focus();return}if(rfTagMode!=='channel'&&!name){setStatus('⚠ متن خبرنگار خالی است.');$('name').focus();return}if(!engineReady){setStatus('اتصال اولیه آماده نبود؛ در حال بررسی مجدد موتور...');try{await check()}catch(e){setStatus('❌ ارتباط با سرور محلی برقرار نیست: '+e.message);return}if(!engineReady){setStatus('❌ پیش‌نیازها آماده نیستند. متن بالای صفحه را ببین.');return}}clearInterval(timer);setBusy(true);finishedVideoUrl='';$('dl').hidden=true;$('preview').hidden=!file.files[0];$('previewLabel').textContent='پیش‌نمایش فیلم انتخاب‌شده؛ پس از موفقیت رندر، فایل نهایی نمایش داده می‌شود';$('uploadProgress').hidden=false;$('uploadProgress').value=0;try{setStatus('در حال شروع ارسال فیلم...');const job=await upload(f,name);setStatus('فیلم دریافت شد و در صف ساخت قرار گرفت.');await poll(job.id)}catch(e){setStatus('❌ '+e.message);setBusy(false);$('uploadProgress').hidden=true;}});
+button.addEventListener('click',async()=>{setStatus('دکمه ساخت زده شد؛ در حال بررسی ورودی‌ها...');const f=file.files[0],reporterName=$('name').value.trim().replace(/^گزارشی\s+از\s*[:：]?\s*/, '').trim(),name=reporterName?'گزارشی از: '+reporterName:'';if(!f){setStatus('⚠ ابتدا از بخش «فیلم خبرنگار» فایل ویدیویی را انتخاب کن.');file.focus();return}if(rfTagMode!=='channel'&&!name){setStatus('⚠ متن خبرنگار خالی است.');$('name').focus();return}if(rfTagMode==='channel'){try{await check()}catch(e){setStatus('❌ موتور محلی در دسترس نیست: '+e.message);return}if(!engineSupportsChannel){syncChannelHelp();setStatus('❌ موتور قدیمی هنوز فعال است؛ فایل ae-auto-server.js جدید را جایگزین کن و Start-RushFinder.cmd را دوباره اجرا کن.');return}}if(!engineReady){setStatus('اتصال اولیه آماده نبود؛ در حال بررسی مجدد موتور...');try{await check()}catch(e){setStatus('❌ ارتباط با سرور محلی برقرار نیست: '+e.message);return}if(!engineReady){setStatus('❌ پیش‌نیازها آماده نیستند. متن بالای صفحه را ببین.');return}}clearInterval(timer);setBusy(true);finishedVideoUrl='';$('dl').hidden=true;$('preview').hidden=!file.files[0];$('previewLabel').textContent='پیش‌نمایش فیلم انتخاب‌شده؛ پس از موفقیت رندر، فایل نهایی نمایش داده می‌شود';$('uploadProgress').hidden=false;$('uploadProgress').value=0;try{setStatus('در حال شروع ارسال فیلم...');const job=await upload(f,name);setStatus('فیلم دریافت شد و در صف ساخت قرار گرفت.');await poll(job.id)}catch(e){setStatus('❌ '+e.message);setBusy(false);$('uploadProgress').hidden=true;}});
 window.addEventListener('error',e=>setStatus('خطای صفحه: '+e.message));window.addEventListener('unhandledrejection',e=>setStatus('خطای اجرا: '+(e.reason?.message||String(e.reason))));
 setStatus('آماده ساخت');check().catch(e=>setStatus('برای ساخت MP4 موتور ویندوز باید روشن باشد؛ Start-RushFinder.cmd را اجرا کن. ('+e.message+')'));
 
