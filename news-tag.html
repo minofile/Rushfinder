@@ -1,4 +1,4 @@
-<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>استودیو تگ خبر | RushFinder 0817</title><style>
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>استودیو تگ خبر | RushFinder 0818</title><style>
 :root{--ink:#123251;--blue:#1269e8;--line:#dbe8f6;--soft:#f3f8ff}
 *{box-sizing:border-box}[hidden]{display:none!important}
 body{background:transparent;direction:rtl;color:var(--ink);font-family:"Vazir",Tahoma,"Segoe UI",sans-serif;max-width:1120px;margin:0 auto;padding:8px 10px}
@@ -358,7 +358,7 @@ body,html,main{background:#edf4fc!important}
   .studio-frame .reporter-entry .reporter-icon {width: 28px !important;height: 28px !important;flex-basis: 28px !important}
 }
 
-/* 0817 UI: compact icon/title chips; preserve input spacing and renderer behavior. */
+/* 0818 UI: compact icon/title chips; preserve input spacing and renderer behavior. */
 .studio-frame .workspace > .panel .rf-field-title {
   box-sizing: border-box !important;
   display: inline-flex !important;
@@ -404,14 +404,14 @@ body,html,main{background:#edf4fc!important}
   .studio-frame .workspace > .panel .rf-field-title .rf-field-title-icon {width: 27px;height: 27px;flex-basis:27px;}
 }
 
-/* 0817 channel tag: activate only the existing channel model; reporter layout unchanged. */
+/* 0818 channel tag: activate only the existing channel model; reporter layout unchanged. */
 .mode-grid button.mode-item{cursor:pointer;width:100%;text-align:right;margin:0;color:#184467;font:inherit}
 .mode-grid button.mode-item.active{border:2px solid #1c77ec;background:#eaf3ff}
 .mode-grid button.rf-channel-mode .mode-visual{height:33px;background:#fff url("assets/news-tag/fori-channel-tag.png") center/contain no-repeat}
 .mode-grid button.mode-item:focus-visible{outline:3px solid #8ebeff;outline-offset:3px}
 .studio-frame .workspace > .panel .rf-field-title[hidden],.studio-frame .workspace > .panel .reporter-entry[hidden]{display:none!important}
 
-/* 0817 UI: refined model selection cards. Layout/design only; keep data-rf-mode & JS behavior intact. */
+/* 0818 UI: refined model selection cards. Layout/design only; keep data-rf-mode & JS behavior intact. */
 .mode-grid{gap:13px!important;align-items:stretch}
 .mode-grid .mode-item.rf-mode-card{
  position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;
@@ -533,7 +533,7 @@ body,html,main{background:#edf4fc!important}
 }
 
 
-/* 0817 refinement — distinctive video-tag models; only cards are styled. */
+/* 0818 refinement — distinctive video-tag models; only cards are styled. */
 .mode-grid{gap:14px!important;direction:rtl!important;align-items:stretch!important}
 .mode-grid .mode-item.rf-mode-card{
  position:relative;isolation:isolate;display:flex!important;flex-direction:column!important;
@@ -674,7 +674,7 @@ body,html,main{background:#edf4fc!important}
 <div id="localEngineHelp" class="engine-connection-help" hidden role="status">
 <strong>رندر ویدیو به موتور محلی ویندوز نیاز دارد.</strong>
 فرم تگ خبر در همین index.html باز است. برای ساخت MP4، موتور رندر باید روی ویندوز روشن باشد: فایل <b>Start-RushFinder.cmd</b> را از پوشه پروژه اجرا کنید، سپس از صفحه index.html که باز می‌شود به «تگ خبر» برگردید. اگر مرورگر درخواست مجوز شبکه محلی داد، آن را بررسی و در صورت اطمینان مجاز کنید.
-<a href="http://127.0.0.1:18826/index.html?v=0817#news-tag" target="_top" rel="noopener noreferrer">باز کردن همان index.html روی سرور محلی، در بخش تگ خبر</a>
+<a href="http://127.0.0.1:18826/index.html?v=0818#news-tag" target="_top" rel="noopener noreferrer">باز کردن همان index.html روی سرور محلی، در بخش تگ خبر</a>
 </div>
 <div id="rfInternalDiagnostics" hidden aria-hidden="true" inert><pre id="preflight">در حال بررسی موتور خروجی...</pre><button id="test" type="button" tabindex="-1">بررسی اتصال</button><pre id="status">آماده ساخت فیلم</pre></div>
 </section>
@@ -720,7 +720,7 @@ for(const tile of document.querySelectorAll('.mode-item[data-rf-mode]')){
 }
 const setStatus=(message)=>{const done=message==='خروجی فیلم شما آماده است';const live=$('liveState');live.textContent=done?message:'وضعیت لحظه‌ای: '+message;live.classList.toggle('is-success',done);status.textContent=message;console.log('[RushFinder AE]',message);};
 const setBusy=(value)=>{busy=value;button.disabled=value;file.disabled=value;$('name').disabled=value};
-async function check(){try{const r=await fetch(renderUrl('/ae-api/check'),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();if(d.version!=='0813')throw Error('سرور قدیمی پاسخ داده است؛ پنجره های سرور قدیمی را ببندید.');engineReady=!!(d.afterEffects&&d.ffmpeg&&d.project&&d.assetsReady);engineSupportsChannel=d.channelTag===true&&Number(d.channelTagWidthPercent)===8;syncChannelHelp();$('preflight').textContent='وضعیت موتور محلی\nAfter Effects: '+(d.afterEffects?'✓ شناسایی شد':'✗ پیدا نشد')+'\nرندر در After Effects: '+(d.afterEffects?'✓ آماده':'✗ پیدا نشد')+'\nFFmpeg: '+(d.ffmpeg?'✓ شناسایی شد':'✗ پیدا نشد')+'\nپروژه اصلی: '+(d.project?'✓ موجود است':'✗ پیدا نشد')+'\nقالب AEP: '+(d.templateName||'نامشخص')+'\nتصاویر اصلی: '+(d.assetsReady?'✓ کامل':'✗ ناقص')+'\nموتور آماده: '+(engineReady?'بله':'خیر');if(!busy)button.disabled=false;showEngineHelp(!engineReady);return d;}catch(e){engineReady=false;engineSupportsChannel=false;syncChannelHelp();button.disabled=false;showEngineHelp(true);$('preflight').textContent='اتصال به موتور رندر ویندوز برقرار نشد. '+(openedFromFile?'index.html مستقیم از فایل باز شده است. Start-RushFinder.cmd را اجرا کنید تا همین index.html از موتور محلی باز شود.':runningLocally?'موتور را با Start-RushFinder.cmd روشن کنید.':'موتور محلی را با Start-RushFinder.cmd روی همین رایانه اجرا کنید و مجوز شبکه محلی را بررسی کنید.')+'\nجزئیات: '+e.message;throw e;}}
+async function check(){try{const r=await fetch(renderUrl('/ae-api/check'),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();if(d.version!=='0813')throw Error('سرور قدیمی پاسخ داده است؛ پنجره های سرور قدیمی را ببندید.');engineReady=!!(d.afterEffects&&d.ffmpeg&&d.project&&d.assetsReady);engineSupportsChannel=d.channelTag===true&&d.engineBuild==="0818-channel-adjustable";syncChannelHelp();$('preflight').textContent='وضعیت موتور محلی\nAfter Effects: '+(d.afterEffects?'✓ شناسایی شد':'✗ پیدا نشد')+'\nرندر در After Effects: '+(d.afterEffects?'✓ آماده':'✗ پیدا نشد')+'\nFFmpeg: '+(d.ffmpeg?'✓ شناسایی شد':'✗ پیدا نشد')+'\nپروژه اصلی: '+(d.project?'✓ موجود است':'✗ پیدا نشد')+'\nقالب AEP: '+(d.templateName||'نامشخص')+'\nتصاویر اصلی: '+(d.assetsReady?'✓ کامل':'✗ ناقص')+'\nموتور آماده: '+(engineReady?'بله':'خیر');if(!busy)button.disabled=false;showEngineHelp(!engineReady);return d;}catch(e){engineReady=false;engineSupportsChannel=false;syncChannelHelp();button.disabled=false;showEngineHelp(true);$('preflight').textContent='اتصال به موتور رندر ویندوز برقرار نشد. '+(openedFromFile?'index.html مستقیم از فایل باز شده است. Start-RushFinder.cmd را اجرا کنید تا همین index.html از موتور محلی باز شود.':runningLocally?'موتور را با Start-RushFinder.cmd روشن کنید.':'موتور محلی را با Start-RushFinder.cmd روی همین رایانه اجرا کنید و مجوز شبکه محلی را بررسی کنید.')+'\nجزئیات: '+e.message;throw e;}}
 $('test').addEventListener('click',async()=>{setStatus('در حال بررسی ارتباط با موتور...');try{await check();setStatus(engineReady?'✓ ارتباط برقرار شد؛ اکنون فیلم و نام را وارد کنید.':'برخی ابزارها آماده نیستند؛ وضعیت بالای صفحه را بررسی کنید.')}catch(e){setStatus('خطا: '+e.message)}});
 let localPreviewURL=null;file.addEventListener('change',()=>{if(localPreviewURL)URL.revokeObjectURL(localPreviewURL);if(file.files[0]){localPreviewURL=URL.createObjectURL(file.files[0]);$('preview').src=localPreviewURL;$('preview').hidden=false;$('placeholder').hidden=true;$('previewLabel').textContent='پیش‌نمایش فیلم ورودی؛ خروجی نهایی هنوز ساخته نشده';}$('fileInfo').textContent=file.files.length?'فیلم انتخاب شد: '+file.files[0].name+' ('+Math.ceil(file.files[0].size/1048576)+' مگابایت)':'هنوز فیلمی انتخاب نشده است.'});
 // 0813 — download MP4 without navigating the embedded News Tag iframe.

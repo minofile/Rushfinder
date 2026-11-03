@@ -2,9 +2,9 @@
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $base = 'http://127.0.0.1:18826'
 $probe = "$base/ae-api/check"
-$url = "$base/index.html?v=0817"
+$url = "$base/index.html?v=0818"
 $version = '0813'  # API compatibility; render engine build is checked separately
-$expectedBuild = '0817-channel-8pct'
+$expectedBuild = '0818-channel-adjustable'
 $expectedRoot = $root.Replace('\', '/').TrimEnd('/')
 
 function Read-Engine {
@@ -14,7 +14,7 @@ function Read-Engine {
 function Is-This-Engine($report) {
     if ($null -eq $report) { return $false }
     $actual = ([string]$report.installRoot).TrimEnd('/')
-    return ([string]$report.version -eq $version -and $actual -ieq $expectedRoot -and [string]$report.engineBuild -eq $expectedBuild -and [int]$report.channelTagWidthPercent -eq 8)
+    return ([string]$report.version -eq $version -and $actual -ieq $expectedRoot -and [string]$report.engineBuild -eq $expectedBuild)
 }
 function Is-Port-Busy {
     $socket = New-Object System.Net.Sockets.TcpClient
