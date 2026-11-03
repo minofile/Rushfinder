@@ -241,6 +241,165 @@ writeLog('0813 DIRECT_AE_RENDER_VALIDATED');
 })();`;
 const f=path.join(job.folder,'run.jsx');fs.writeFileSync(f,'\uFEFF'+script,'utf8');return f}
 
+
+// 0820: standalone name + role template. Do not modify the reporter-tag AEP,
+// reporter text algorithm, channel filter, or any of their rendering options.
+const roleTemplate=path.join(root,'ae-original','تگ گزارش.aep');
+function scriptForRole(job){
+ if(!fs.existsSync(roleTemplate))throw Error('فایل قالب تگ نام و سمت پیدا نشد: ae-original/تگ گزارش.aep');
+ const script=`(function(){
+var folder=${jsxString(job.folder)},done=new File(folder+'/render.done'),error=new File(folder+'/render.error'),log=new File(folder+'/ae-render.log');
+var framesFolder=new Folder(folder+'/alpha-frames');if(!framesFolder.exists)framesFolder.create();
+function logIt(x){try{log.open('a');log.writeln('0820 ROLE | '+new Date().toString()+' | '+x);log.close();}catch(ignore){}}
+try{
+ app.beginSuppressDialogs();try{app.exitAfterLaunchAndEval=true;}catch(ignore){}
+ var src=new File(${jsxString(roleTemplate)});if(!src.exists)throw Error('Role AEP template missing');
+ app.open(src);
+ if(!app.project||!app.project.file)throw Error('After Effects could not load role AEP');
+ var comp=null;
+ for(var i=1;i<=app.project.numItems;i++){
+  var item=app.project.item(i);
+  if(item instanceof CompItem&&String(item.name).toLowerCase()==='tag 5'){comp=item;break;}
+ }
+ if(!comp)throw Error('ترکیب Tag 5 در پروژه تگ گزارش پیدا نشد.');
+ logIt('Main comp '+comp.name+' '+comp.width+'x'+comp.height+' duration='+comp.duration);
+ var layers=[],visited={};
+ function collect(c){if(!c||visited[c.id])return;visited[c.id]=true;
+  for(var li=1;li<=c.numLayers;li++){
+   var layer=c.layer(li);
+   try{
+    var source=layer.property('ADBE Text Properties');
+    if(source){var prop=source.property('ADBE Text Document');
+     if(prop)layers.push({comp:c,layer:layer,prop:prop});}
+   }catch(ignore){}
+   try{if(layer.source instanceof CompItem)collect(layer.source);}catch(ignore){}
+  }
+ }
+ collect(comp);
+ if(!layers.length)throw Error('هیچ لایه متن قابل ویرایشی داخل Tag 5 یافت نشد.');
+ var updatedName=0,updatedRole=0;
+ function normalizeText(s){return String(s||'').replace(/\\s+/g,' ').trim();}
+ function replaceText(item,newText){
+  var p=item.prop;if(p.expressionEnabled)return false;
+  var locked=item.layer.locked;if(locked)item.layer.locked=false;
+  try{
+   var sampleTime=Math.max(0,Math.min(item.comp.duration*0.5,item.comp.duration-1/Math.max(1,item.comp.frameRate)));
+   var oldRect=item.layer.sourceRectAtTime(sampleTime,false);
+   var oldFont=Number(p.value.fontSize)||50;
+   function edit(d,scale){d.text=newText;if(scale<1)d.fontSize=Number(d.fontSize)*scale;return d;}
+   function update(scale){
+    if(p.numKeys>0){for(var j=1;j<=p.numKeys;j++)p.setValueAtKey(j,edit(p.keyValue(j),scale));}
+    else p.setValue(edit(p.value,scale));
+   }
+   update(1);
+   // Preserve template font, anchor, alignment and keyframed animations.
+   // Only reduce font on overlong names/titles; never enlarge it.
+   if(oldRect.width>10){
+    for(var n=0;n<7;n++){
+     var newRect=item.layer.sourceRectAtTime(sampleTime,false);
+     if(newRect.width<=oldRect.width*1.04)break;
+     var ratio=Math.min(.96,.98*oldRect.width/newRect.width);
+     if(Number(p.value.fontSize)*ratio<Math.max(8,oldFont*.38)){
+      logIt('Long text kept at minimum legible size '+item.layer.name);break;
+     }
+     update(ratio);
+    }
+   }
+   logIt('Updated '+item.comp.name+'/'+item.layer.name+' = '+newText);
+   return true;
+  }finally{if(locked)item.layer.locked=true;}
+ }
+ for(var t=0;t<layers.length;t++){
+  var item=layers[t],prop=item.prop;
+  var sample=normalizeText(prop.value.text);
+  logIt('Candidate '+item.comp.name+'/'+item.layer.name+' = '+sample.substring(0,110)+' expression='+prop.expressionEnabled);
+  if(sample==='گزارشگر فلانی'||sample==='NULL گزارشگر فلانی'){
+   if(replaceText(item,${jsxString(job.fullName)}))updatedName++;
+  }else if(sample==='بررسی عوامل گرانی همه چیز'||sample==='NULL بررسی عوامل گرانی همه چیز'){
+   if(replaceText(item,${jsxString(job.roleTitle)}))updatedRole++;
+  }
+ }
+ if(updatedName<1||updatedRole<1)throw Error('هر دو متن نمونه قالب (گزارشگر فلانی / بررسی عوامل گرانی همه چیز) در لایه‌های قابل‌ویرایش Tag 5 پیدا نشدند. نام: '+updatedName+'، سمت: '+updatedRole+'؛ رندر بدون جایگزینی انجام نمی‌شود.');
+ logIt('Both text fields replaced; name='+updatedName+' role='+updatedRole);
+ // Reject missing active footage instead of producing a broken/misleading MP4.
+ var missing=[];
+ function checkFoot(c,seen){if(seen[c.id])return;seen[c.id]=true;
+  for(var i=1;i<=c.numLayers;i++){
+   var l=c.layer(i);if(!l.enabled)continue;
+   try{
+    if(l.source instanceof CompItem){checkFoot(l.source,seen);}
+    else if(l.source instanceof FootageItem&&l.source.mainSource instanceof FileSource){
+     if(!l.source.file||!l.source.file.exists)missing.push(l.source.name);
+    }
+   }catch(ignore){}
+  }
+ }
+ checkFoot(comp,{});
+ if(missing.length)throw Error('فایل تصویری/ویدیویی موردنیاز قالب تگ گزارش در دسترس نیست: '+missing.join(', ')+'. فایل‌های مرتبط با پروژه AEP باید کنار آن قرار بگیرند.');
+ for(var q=app.project.renderQueue.numItems;q>=1;q--)app.project.renderQueue.item(q).remove();
+ var rq=app.project.renderQueue.items.add(comp),om=rq.outputModule(1);
+ var templates=om.templates,candidates=[];
+ for(var z=0;z<templates.length;z++)if(templates[z]==='Lossless with Alpha')candidates.push(templates[z]);
+ for(var z=0;z<templates.length;z++)if(/alpha/i.test(templates[z])&&candidates.join('|').indexOf(templates[z])<0)candidates.push(templates[z]);
+ if(!candidates.length)throw Error('هیچ خروجی شفاف Alpha در تنظیمات After Effects نصب نیست.');
+ var prepared=false,seq=false,target='';
+ for(var a=0;a<candidates.length;a++){
+  try{
+   om.applyTemplate(candidates[a]);
+   var settings=om.getSettings(GetSettingsFormat.STRING),fmt=String(settings['Format']||'');
+   var channels=String(settings['Channels']||'');
+   if(channels && !/alpha|rgba/i.test(channels))continue;
+   seq=/png|sequence|tiff|targa|exr/i.test(fmt);
+   var ext=seq?'.png':(/quicktime|mov/i.test(fmt)?'.mov':'.avi');
+   target=seq?(framesFolder.fsName+'/tag-[#####]'+ext):(folder+'/tag-alpha-source'+ext);
+   om.file=new File(target);rq.render=true;
+   var edited=new File(${jsxString(path.join(exportDir,'RushFinder-Role-Edited-'+job.id+'.aep'))});
+   app.project.save(edited);
+   if(!edited.exists||edited.length<10000)throw Error('Edited role project was not saved');
+   logIt('Alpha template='+candidates[a]+' target='+target);prepared=true;break;
+  }catch(templateErr){logIt('Template failed: '+templateErr);}
+ }
+ if(!prepared)throw Error('After Effects نتوانست خروجی شفاف تگ نام و سمت را تنظیم کند.');
+ app.project.renderQueue.render();
+ if(rq.status!==RQItemStatus.DONE)throw Error('رندر تگ نام و سمت کامل نشد: '+rq.status);
+ if(seq){var files=framesFolder.getFiles(function(f){return f instanceof File&&/\\.png$/i.test(f.name);});if(files.length<3)throw Error('فریم‌های شفاف کافی ساخته نشد.');}
+ else{var rendered=new File(target);if(!rendered.exists||rendered.length<1000)throw Error('فایل شفاف رندر ساخته نشد.');}
+ done.open('w');done.write('ROLE_ALPHA_RENDERED');done.close();logIt('Render completed');
+}catch(e){logIt('ERROR '+e.toString());error.open('w');error.write(e.toString());error.close();}
+finally{try{app.endSuppressDialogs(false)}catch(ignore){}
+ try{if(app.project)app.project.close(CloseOptions.DO_NOT_SAVE_CHANGES);}catch(ignore){}}
+})();`;
+ const f=path.join(job.folder,'run-role.jsx');fs.writeFileSync(f,'\uFEFF'+script,'utf8');return f;
+}
+
+function verifyRoleTag(ff,mov){
+ return new Promise((resolve,reject)=>{
+  const args=['-hide_banner','-i',mov,'-vf','fps=8,format=rgba,alphaextract,bbox=min_val=24','-an','-f','null','-'];
+  let stderr='';const proc=cp.spawn(ff,args,{windowsHide:true});
+  proc.stderr.on('data',c=>{stderr+=c.toString();if(stderr.length>1800000)stderr=stderr.slice(-1800000)});
+  proc.on('error',reject);
+  proc.on('close',code=>{
+   if(code!==0)return reject(Error('بررسی آلفای تگ نام و سمت ناموفق شد: '+stderr.slice(-800)));
+   const match=/Video:[^\r\n]*?\b(\d{2,5})x(\d{2,5})\b/.exec(stderr);
+   if(!match)return reject(Error('ابعاد خروجی شفاف تگ نام و سمت شناسایی نشد.'));
+   const canvasW=+match[1],canvasH=+match[2],boxes=[];
+   for(const line of stderr.split(/\r?\n/)){
+    if(!/Parsed_bbox/.test(line))continue;
+    const b=/\bx1:(\d+)\s+x2:(\d+)\s+y1:(\d+)\s+y2:(\d+)\s+w:(\d+)\s+h:(\d+)/.exec(line);
+    if(b)boxes.push({x:+b[1],y:+b[3],w:+b[5],h:+b[6]});
+   }
+   const content=boxes.filter(b=>b.w>=20&&b.h>=5);
+   if(content.length<2)return reject(Error('خروجی تگ نام و سمت هیچ عنصر شفاف قابل‌نمایشی ندارد.'));
+   const x0=Math.min(...content.map(b=>b.x)),y0=Math.min(...content.map(b=>b.y));
+   const x1=Math.max(...content.map(b=>b.x+b.w)),y1=Math.max(...content.map(b=>b.y+b.h));
+   const bounds={x:x0,y:y0,w:x1-x0,h:y1-y0};
+   if(bounds.w>canvasW*.96&&bounds.h>canvasH*.85)
+    return reject(Error('قالب شامل پس‌زمینه تقریباً تمام‌صفحه است؛ برای تگ روی فیلم به رندر شفاف نیاز است.'));
+   resolve({canvasW,canvasH,bounds});
+  });
+ });
+}
+
 function ffmpegExe(){for(const f of [path.join(root,'tools','ffmpeg.exe'),path.join(process.env.LOCALAPPDATA||'', 'RushFinder','tools','ffmpeg.exe'),path.join(root,'ffmpeg.exe'),path.join(process.env.LOCALAPPDATA||'', 'Microsoft','WinGet','Links','ffmpeg.exe'),'ffmpeg']){try{const r=cp.spawnSync(f,['-version'],{windowsHide:true,timeout:5000});if(r.status===0)return f}catch(e){}}return null}
 // 0818: Read the desired CHANNEL tag width (%) from a simple editable text file.
 // Read anew for each job, so users can resize the channel tag without editing JS.
@@ -251,7 +410,7 @@ function channelTagSizePercent(){
   }catch(_ignored){}
   return 12;
 }
-function report(){return {afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0813",engineBuild:"0818-channel-adjustable",channelTagWidthPercent:channelTagSizePercent(),channelTag:!!ffmpegExe()&&fs.existsSync(path.join(root,'assets','news-tag','fori-channel-tag.png')),outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
+function report(){return {afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0813",engineBuild:"0819-channel-size-control",channelTagWidthPercent:channelTagSizePercent(),channelTagControl:true,roleBuild:"0821-name-role-active",roleTag:!!aeExe()&&!!ffmpegExe()&&fs.existsSync(roleTemplate),roleTemplateName:path.basename(roleTemplate),channelTag:!!ffmpegExe()&&fs.existsSync(path.join(root,'assets','news-tag','fori-channel-tag.png')),outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
 // 0814: dedicated CHANNEL-tag render. The existing reporter After Effects path below
 // is intentionally unchanged. This mode uses the exact supplied transparent PNG.
 function renderChannelTag(job){
@@ -267,7 +426,11 @@ function renderChannelTag(job){
   if(!ff)throw Error('FFmpeg پیدا نشد.');
   if(!fs.existsSync(logo))throw Error('تصویر تگ کانال خبرفوری موجود نیست.');
   const size=videoDimensions(ff,job.input);
-  const tagWidth=Math.max(2,Math.round(size.width*(channelTagSizePercent()/100)/2)*2);
+  const tagPercent=Number(job.channelTagPercent);
+  if(!Number.isInteger(tagPercent)||tagPercent<6||tagPercent>40)throw Error('اندازه تگ کانال باید از ۶ تا ۴۰ درصد باشد.');
+  const tagWidth=Math.max(2,Math.round(size.width*(tagPercent/100)/2)*2);
+  job.channelTagWidthPercent=tagPercent;
+  job.channelTagWidthPixels=tagWidth;
   const padRight=Math.max(0,Math.round(size.width*0.025));
   const padBottom=Math.max(0,Math.round(size.height*0.075));
   const filter='[1:v]format=rgba,scale='+tagWidth+':-2:flags=lanczos,setsar=1[tag];'+
@@ -286,7 +449,7 @@ function renderChannelTag(job){
    if(finished)return;
    if(code!==0||!fs.existsSync(output)||fs.statSync(output).size<1000)
     return fail('FFmpeg: '+ffLog.slice(-1600));
-   finished=true;job.state='done';job.message='تگ کانال خبرفوری آماده است.';
+   finished=true;job.state='done';job.message='تگ کانال خبرفوری با اندازه '+job.channelTagWidthPercent+'٪ (عرض '+job.channelTagWidthPixels+' پیکسل) آماده است.';
    fs.rm(job.folder,{recursive:true,force:true,maxRetries:4,retryDelay:1000},
     error=>{if(error)console.warn('Channel temp cleanup failed:',error.message)});
   });
@@ -294,7 +457,7 @@ function renderChannelTag(job){
 }
 
 // 0811: Direct After Effects render, without a second aerender process.
-function runActive(job){if(job.mode==='channel'){renderChannelTag(job);return;}const fail=e=>{job.state='error';let tail='';try{const f=path.join(job.folder,'ae-render.log');if(fs.existsSync(f))tail=fs.readFileSync(f,'utf8').split(/\r?\n/).filter(Boolean).slice(-10).join('\n').slice(-2500);}catch(ignore){}job.message=String(e)+(tail?'\nآخرین گزارش واقعی افتر افکت:\n'+tail:'\nگزارش افتر افکت هنوز ایجاد نشده است.');};(async()=>{try{job.state='rendering';job.message='مرحله ۱/۳: بازکردن AEP، اصلاح متن و رندر شفاف در خود After Effects...';const exe=aeExe();if(!exe)throw Error('After Effects در Program Files/Adobe پیدا نشد.');if(!ffmpegExe())throw Error('FFmpeg پیدا نشد. فایل ffmpeg.exe مخصوص ویندوز را در پوشه tools کنار سایت قرار بدهید، یا FFmpeg را در PATH نصب کنید.');const script=scriptFor(job);job.message='مرحله ۱/۳: پروژه اصلی در After Effects در حال آماده‌سازی و رندر است.';// Launch AE directly as in the last functioning releases. PowerShell Start-Process
+function runActive(job){if(job.mode==='channel'){renderChannelTag(job);return;}const fail=e=>{job.state='error';let tail='';try{const f=path.join(job.folder,'ae-render.log');if(fs.existsSync(f))tail=fs.readFileSync(f,'utf8').split(/\r?\n/).filter(Boolean).slice(-10).join('\n').slice(-2500);}catch(ignore){}job.message=String(e)+(tail?'\nآخرین گزارش واقعی افتر افکت:\n'+tail:'\nگزارش افتر افکت هنوز ایجاد نشده است.');};(async()=>{try{job.state='rendering';job.message='مرحله ۱/۳: بازکردن AEP، اصلاح متن و رندر شفاف در خود After Effects...';const exe=aeExe();if(!exe)throw Error('After Effects در Program Files/Adobe پیدا نشد.');if(!ffmpegExe())throw Error('FFmpeg پیدا نشد. فایل ffmpeg.exe مخصوص ویندوز را در پوشه tools کنار سایت قرار بدهید، یا FFmpeg را در PATH نصب کنید.');const script=job.mode==='role'?scriptForRole(job):scriptFor(job);job.message='مرحله ۱/۳: پروژه اصلی در After Effects در حال آماده‌سازی و رندر است.';// Launch AE directly as in the last functioning releases. PowerShell Start-Process
  // occasionally loses the JSX -r argument and prevents script startup.
  // -m starts a separate AE instance: never inject the script into a user's
  // already-running After Effects session. -noui requests a hidden editing
@@ -450,7 +613,7 @@ function blend(job){
    try{
     job.state='validating';
     job.message='بررسی وجود نوار سفید، متن و لوگو در خروجی شفاف...';
-    const qa=await verifyCompleteTag(ff,mov);
+    const qa=await (job.mode==='role'?verifyRoleTag(ff,mov):verifyCompleteTag(ff,mov));
     fs.appendFileSync(path.join(job.folder,'ae-render.log'),
        '0809 alpha verification '+JSON.stringify(qa)+'\n');
     // Anchor the full unmodified alpha canvas by its measured visible bounds.
@@ -458,7 +621,7 @@ function blend(job){
     job.state='combining';
     job.message='مرحله ۳/۳: جایگذاری MOV شفاف روی فیلم...';
     const videoSize=videoDimensions(ff,job.input);
-    const scale=(videoSize.width*0.40)/qa.bounds.w;
+    const scale=(videoSize.width*(job.mode==='role'?0.38:0.40))/qa.bounds.w;
     const tagWidth=Math.max(2,Math.round((qa.canvasW*scale)/2)*2);
     const realScale=tagWidth/qa.canvasW;
     const x=Math.round(videoSize.width*0.975-(qa.bounds.x+qa.bounds.w)*realScale);
@@ -531,23 +694,44 @@ http.createServer((req,res)=>{
  }
  if(u.pathname==='/ae-api/check')return respond(res,200,report());
 // 0814: channel mode only. The existing /ae-api/create reporter route remains intact.
+// 0820: isolated role model; reporter and channel routes remain unchanged.
+if(u.pathname==='/ae-api/role-create' && req.method==='POST'){
+ const fullName=(u.searchParams.get('fullName')||'').trim();
+ const roleTitle=(u.searchParams.get('roleTitle')||'').trim();
+ if(!fullName||fullName.length>100||!roleTitle||roleTitle.length>100)
+  return respond(res,400,{error:'نام و نام خانوادگی و سمت باید هر کدام بین ۱ تا ۱۰۰ حرف باشند.'});
+ if(!aeExe()||!ffmpegExe()||!fs.existsSync(roleTemplate))
+  return respond(res,503,{error:'برای تگ نام و سمت، After Effects، FFmpeg و فایل ae-original/تگ گزارش.aep لازم است.'});
+ const id=crypto.randomUUID(),folder=path.join(work,id);fs.mkdirSync(folder,{recursive:true});
+ const ext=(path.extname(u.searchParams.get('filename')||'').toLowerCase().match(/^\.(mp4|mov|webm|m4v|avi)$/)||[])[0]||'.mp4';
+ const job={id,folder,mode:'role',fullName,roleTitle,input:path.join(folder,'source-video'+ext),state:'uploading',message:'دریافت فیلم...'};
+ jobs.set(id,job);let total=0;const f=fs.createWriteStream(job.input);
+ req.on('data',c=>{total+=c.length;if(total>1024*1024*1024){req.destroy();f.destroy();}});
+ req.pipe(f);
+ f.on('finish',()=>{job.state='queued';job.message='فیلم در صف رندر تگ نام و سمت قرار گرفت.';respond(res,200,{id});run(job)});
+ req.on('error',()=>{job.state='error';job.message='آپلود فیلم متوقف شد.'});
+ return;
+}
 if(u.pathname==='/ae-api/channel-create' && req.method==='POST'){
  const ff=ffmpegExe(),logo=path.join(root,'assets','news-tag','fori-channel-tag.png');
  if(!ff||!fs.existsSync(logo))return respond(res,503,{error:!ff?'FFmpeg روی موتور رندر پیدا نشد.':'تصویر تگ کانال پیدا نشد.'});
  const id=crypto.randomUUID(),folder=path.join(work,id);
  fs.mkdirSync(folder,{recursive:true});
  const ext=(path.extname(u.searchParams.get('filename')||'').toLowerCase().match(/^\.(mp4|mov|webm|m4v|avi)$/)||[])[0]||'.mp4';
- const job={id,folder,mode:'channel',name:'',input:path.join(folder,'source-video'+ext),state:'uploading',message:'دریافت فیلم...'};
+ const sizeText=u.searchParams.get('tagPercent');
+ const tagPercent=(sizeText===null||sizeText==='')?channelTagSizePercent():Number(sizeText);
+ if(!Number.isInteger(tagPercent)||tagPercent<6||tagPercent>40)return respond(res,400,{error:'درصد اندازه تگ کانال معتبر نیست (۶ تا ۴۰).'});
+ const job={id,folder,mode:'channel',channelTagPercent:tagPercent,name:'',input:path.join(folder,'source-video'+ext),state:'uploading',message:'دریافت فیلم...'};
  jobs.set(id,job);
  let total=0;const f=fs.createWriteStream(job.input);
  req.on('data',c=>{total+=c.length;if(total>1024*1024*1024){req.destroy();f.destroy()}});
  req.pipe(f);
- f.on('finish',()=>{job.state='queued';job.message='در صف رندر...';respond(res,200,{id});run(job)});
+ f.on('finish',()=>{job.state='queued';job.message='در صف رندر...';respond(res,200,{id,channelTagWidthPercent:tagPercent});run(job)});
  req.on('error',()=>{job.state='error';job.message='آپلود فیلم متوقف شد.'});
  return;
 }
 if(u.pathname==='/ae-api/create' && req.method==='POST'){
 const name=(u.searchParams.get('name')||'').trim();if(!name||name.length>140)return respond(res,400,{error:'نام باید بین یک تا ۱۴۰ حرف باشد.'});if(!aeExe()||!ffmpegExe()||!fs.existsSync(template)||!['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(n=>fs.existsSync(path.join(root,'ae-original',n))))return respond(res,503,{error:'پیش‌نیاز ناقص: '+(!aeExe()?'After Effects ':'')+(!aeExe()||!fs.existsSync(path.join(path.dirname(aeExe()||''),'aerender.exe'))?'aerender ':'')+(!ffmpegExe()?'FFmpeg ':'')+(!fs.existsSync(template)?'AEP ':'')+(!['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(n=>fs.existsSync(path.join(root,'ae-original',n)))?'PNG original assets ':'')});const id=crypto.randomUUID(),folder=path.join(work,id);fs.mkdirSync(folder,{recursive:true});const job={id,folder,name,input:path.join(folder,'source-video'+(path.extname(u.searchParams.get('filename')||'').toLowerCase().match(/^\.(mp4|mov|webm|m4v|avi)$/)?.[0]||'.mp4')),state:'uploading',message:'دریافت فیلم...'};jobs.set(id,job);let total=0;const f=fs.createWriteStream(job.input);req.on('data',c=>{total+=c.length;if(total>1024*1024*1024){req.destroy();f.destroy()}});req.pipe(f);f.on('finish',()=>{job.state='queued';job.message='در صف رندر...';respond(res,200,{id});run(job)});req.on('error',()=>{job.state='error';job.message='آپلود فیلم متوقف شد.'});return;}
-if(u.pathname==='/ae-api/status'){const j=jobs.get(u.searchParams.get('id'));if(!j)return respond(res,200,{state:'error',message:'پردازش پیدا نشد.'});return respond(res,200,{id:j.id,state:j.state,message:j.message});}
+if(u.pathname==='/ae-api/status'){const j=jobs.get(u.searchParams.get('id'));if(!j)return respond(res,200,{state:'error',message:'پردازش پیدا نشد.'});return respond(res,200,{id:j.id,state:j.state,message:j.message,channelTagWidthPercent:j.mode==='channel'?j.channelTagWidthPercent:null,channelTagWidthPixels:j.mode==='channel'?j.channelTagWidthPixels:null});}
 let file;try{if(u.pathname.startsWith('/ae-output/')){const id=path.basename(u.pathname,'.mp4');if(!/^[a-f0-9-]{36}$/.test(id))throw Error();file=path.join(exportDir,id+'.mp4')}else{if(u.pathname.startsWith('/ae-jobs')||u.pathname.startsWith('/ae-original')||u.pathname.startsWith('/tools/'))throw Error();file=path.resolve(root,'.'+decodeURIComponent(u.pathname));if(!file.startsWith(root+path.sep))throw Error()}}catch{return respond(res,403,{error:'Forbidden'})}if(fs.existsSync(file)&&fs.statSync(file).isDirectory())file=path.join(file,'index.html');fs.stat(file,(err,s)=>{if(err||!s.isFile()){res.writeHead(404);res.end('Not found');return}let start=0,end=s.size-1,code=200,headers={'Content-Type':types[path.extname(file).toLowerCase()]||'application/octet-stream','Cache-Control':'no-store','Accept-Ranges':'bytes'};if(req.headers.range){const m=/bytes=(\d+)-(\d*)/.exec(req.headers.range);if(m){start=Number(m[1]);end=m[2]?Number(m[2]):end;if(start>end||start>=s.size){res.writeHead(416);res.end();return}code=206;headers['Content-Range']=`bytes ${start}-${end}/${s.size}`}}headers['Content-Length']=end-start+1;res.writeHead(code,headers);fs.createReadStream(file,{start,end}).pipe(res)})
 }).listen(port,'127.0.0.1',()=>console.log('RushFinder 0813: http://127.0.0.1:'+port+'/index.html'));

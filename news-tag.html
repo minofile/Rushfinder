@@ -1,4 +1,4 @@
-<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>استودیو تگ خبر | RushFinder 0818</title><style>
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>استودیو تگ خبر | RushFinder 0821</title><style>
 :root{--ink:#123251;--blue:#1269e8;--line:#dbe8f6;--soft:#f3f8ff}
 *{box-sizing:border-box}[hidden]{display:none!important}
 body{background:transparent;direction:rtl;color:var(--ink);font-family:"Vazir",Tahoma,"Segoe UI",sans-serif;max-width:1120px;margin:0 auto;padding:8px 10px}
@@ -358,7 +358,7 @@ body,html,main{background:#edf4fc!important}
   .studio-frame .reporter-entry .reporter-icon {width: 28px !important;height: 28px !important;flex-basis: 28px !important}
 }
 
-/* 0818 UI: compact icon/title chips; preserve input spacing and renderer behavior. */
+/* 0819 UI: compact icon/title chips; preserve input spacing and renderer behavior. */
 .studio-frame .workspace > .panel .rf-field-title {
   box-sizing: border-box !important;
   display: inline-flex !important;
@@ -404,14 +404,14 @@ body,html,main{background:#edf4fc!important}
   .studio-frame .workspace > .panel .rf-field-title .rf-field-title-icon {width: 27px;height: 27px;flex-basis:27px;}
 }
 
-/* 0818 channel tag: activate only the existing channel model; reporter layout unchanged. */
+/* 0819 channel tag: activate only the existing channel model; reporter layout unchanged. */
 .mode-grid button.mode-item{cursor:pointer;width:100%;text-align:right;margin:0;color:#184467;font:inherit}
 .mode-grid button.mode-item.active{border:2px solid #1c77ec;background:#eaf3ff}
 .mode-grid button.rf-channel-mode .mode-visual{height:33px;background:#fff url("assets/news-tag/fori-channel-tag.png") center/contain no-repeat}
 .mode-grid button.mode-item:focus-visible{outline:3px solid #8ebeff;outline-offset:3px}
 .studio-frame .workspace > .panel .rf-field-title[hidden],.studio-frame .workspace > .panel .reporter-entry[hidden]{display:none!important}
 
-/* 0818 UI: refined model selection cards. Layout/design only; keep data-rf-mode & JS behavior intact. */
+/* 0819 UI: refined model selection cards. Layout/design only; keep data-rf-mode & JS behavior intact. */
 .mode-grid{gap:13px!important;align-items:stretch}
 .mode-grid .mode-item.rf-mode-card{
  position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;
@@ -533,7 +533,7 @@ body,html,main{background:#edf4fc!important}
 }
 
 
-/* 0818 refinement — distinctive video-tag models; only cards are styled. */
+/* 0819 refinement — distinctive video-tag models; only cards are styled. */
 .mode-grid{gap:14px!important;direction:rtl!important;align-items:stretch!important}
 .mode-grid .mode-item.rf-mode-card{
  position:relative;isolation:isolate;display:flex!important;flex-direction:column!important;
@@ -621,6 +621,37 @@ body,html,main{background:#edf4fc!important}
 .rf-channel-help{display:flex;align-items:flex-start;gap:8px;margin:10px 0 0;padding:12px 13px;border:1px solid #ffcbaa;border-radius:12px;background:#fff6ed;color:#925318;font-size:12px;font-weight:650;line-height:1.9}
 .rf-channel-help svg{width:20px;height:20px;flex:0 0 20px;color:#dd851e}
 
+
+/* 0819: direct per-video channel-tag size control; affects channel mode only */
+.rf-channel-size{border:1px solid #cae1f6;background:linear-gradient(120deg,#f2f8ff,#fff);border-radius:15px;padding:12px 14px;margin:12px 0 5px}
+.rf-channel-size-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.rf-channel-size-head label{margin:0;display:inline;font-size:12px;color:#183f65;font-weight:800}
+#rfChannelSizeValue{font-family:inherit;font-size:16px;font-weight:900;color:#0967d8;background:#e4f1ff;border-radius:10px;padding:4px 12px;min-width:60px;text-align:center}
+#rfChannelSizeSlider{display:block;width:100%;padding:0;margin:4px 0 10px;border:0;outline:0;box-shadow:none;border-radius:10px;background:transparent;height:20px;accent-color:#126fe1;cursor:pointer}
+.rf-channel-size-hint{color:#587893;font-size:11px;line-height:1.9}
+#rfChannelSizeActual{font-size:11px;background:#e9f8ef;color:#11613f;border-radius:9px;margin-top:8px;padding:7px 9px;font-weight:700}
+
+/* 0820: only the newly enabled name-and-role mode. Existing cards unchanged. */
+.mode-grid .rf-card-role{cursor:pointer!important;opacity:1!important;filter:none!important}
+.mode-grid .rf-card-role .rf-radio-mark{border-style:solid!important;background:#eff5ff!important}
+.mode-grid .rf-card-role.active{border-color:#2185ed!important;box-shadow:0 0 0 2px rgba(33,133,237,.13),0 9px 22px rgba(23,75,140,.10)!important}
+.mode-grid .rf-card-role.active .rf-radio-mark{background:#187cf1!important;color:#fff!important;border-color:#187cf1!important}
+.rf-role-fields{display:flex;flex-direction:column;gap:9px;margin-top:0}
+.rf-role-fields[hidden]{display:none!important}
+.rf-role-fields .rf-field-title{align-self:flex-start;margin-top:6px!important;margin-bottom:1px!important}
+.rf-role-input{width:100%;min-height:47px;border:1px solid #d5e6ff;border-radius:13px;background:#f7fbff;display:flex;align-items:center;gap:9px;padding:5px 11px;box-sizing:border-box;transition:border-color .18s,box-shadow .18s}
+.rf-role-input:focus-within{border-color:#348beb;box-shadow:0 0 0 3px #288beb19}
+.rf-role-input-icon{display:inline-grid;place-items:center;flex:0 0 31px;width:31px;height:31px;background:#e7f1ff;border-radius:10px;color:#176ede}
+.rf-role-input-icon svg{width:19px;height:19px}
+.rf-role-input input{flex:1;min-width:0;background:transparent!important;border:0!important;box-shadow:none!important;outline:0!important;padding:8px 2px!important;height:33px!important;font-family:inherit;font-size:13px;color:#17395a;text-align:right}
+.rf-role-input input::placeholder{color:#88a0bb}
+@media(max-width:700px){.rf-role-input{min-height:44px}.rf-role-fields .rf-field-title{margin-top:4px!important}}
+
+/* 0821: name-and-role tile is a fully enabled choice (only this model). */
+.mode-grid button.rf-card-role:not(.active){opacity:1!important;filter:none!important;cursor:pointer!important;border-color:#bdd7f6!important;background:linear-gradient(160deg,#fff,#eef6ff)!important}
+.mode-grid button.rf-card-role:not(.active) .rf-card-icon{color:#176cdb!important;background:#e7f1ff!important}
+.mode-grid button.rf-card-role:not(.active) .rf-radio-mark{border-style:solid!important}
+.mode-grid button.rf-card-role:focus-visible{outline:3px solid #4b9df4!important;outline-offset:2px!important}
 </style></head><body><main>
 <section class="hero"><h2>استودیو تگ خبر</h2><p class="hero-desc">خبرگزاری و مدل را انتخاب کن؛ فیلمت را اضافه کن و خروجی بگیر.</p></section>
 <section class="panel" style="margin-top:16px">
@@ -650,10 +681,10 @@ body,html,main{background:#edf4fc!important}
   <span class="rf-card-art" aria-hidden="true"><span class="rf-stage-screen rf-stage-reporter"><span class="rf-stage-top"><span class="rf-broadcast-dot"></span> گزارش اختصاصی <span class="rf-stage-play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m9 5 10 7-10 7V5Z"/></svg></span></span><span class="rf-screen-highlight"></span><span class="rf-reporter-lower"><span class="rf-plate-accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="8" r="3"/><path d="M5 20v-2a6 6 0 0 1 12 0v2M20 8v8m-2-6h4"/></svg></span><span class="rf-plate-copy">گزارشی از: نام خبرنگار</span><span class="rf-plate-mark"></span></span></span></span>
   <span class="rf-card-caption"><span class="rf-card-name"><span class="rf-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="8" r="3"/><path d="M5 20v-2a6 6 0 0 1 12 0v2M20 8v8m-2-6h4"/></svg></span><span class="rf-caption-copy"><strong>تگ نام خبرنگار</strong><small>با نام دلخواه شما</small></span></span><span class="rf-radio-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span></span>
  </button>
- <div class="mode-item disabled rf-mode-card rf-card-role" aria-disabled="true">
-  <span class="rf-card-art" aria-hidden="true"><span class="rf-stage-screen rf-stage-role"><span class="rf-stage-top"><span class="rf-broadcast-dot"></span> معرفی عوامل <span class="rf-stage-play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m9 5 10 7-10 7V5Z"/></svg></span></span><span class="rf-screen-highlight"></span><span class="rf-reporter-lower rf-role-lower"><span class="rf-plate-accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="10.5" r="2"/><path d="M5.5 16c.4-1.7 1.6-2.5 3.5-2.5s3.1.8 3.5 2.5M15 10h4m-4 4h4"/></svg></span><span class="rf-plate-copy">نام و سمت خبرنگار</span><span class="rf-plate-mark"></span></span><span class="rf-soon-ribbon">به‌زودی</span></span></span>
-  <span class="rf-card-caption"><span class="rf-card-name"><span class="rf-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="10.5" r="2"/><path d="M5.5 16c.4-1.7 1.6-2.5 3.5-2.5s3.1.8 3.5 2.5M15 10h4m-4 4h4"/></svg></span><span class="rf-caption-copy"><strong>تگ نام و سمت</strong><small>در دست آماده‌سازی</small></span></span><span class="rf-radio-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span></span>
- </div>
+ <button type="button" class="mode-item rf-mode-card rf-card-role" data-rf-mode="role" aria-pressed="false">
+  <span class="rf-card-art" aria-hidden="true"><span class="rf-stage-screen rf-stage-role"><span class="rf-stage-top"><span class="rf-broadcast-dot"></span> معرفی عوامل <span class="rf-stage-play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m9 5 10 7-10 7V5Z"/></svg></span></span><span class="rf-screen-highlight"></span><span class="rf-reporter-lower rf-role-lower"><span class="rf-plate-accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="10.5" r="2"/><path d="M5.5 16c.4-1.7 1.6-2.5 3.5-2.5s3.1.8 3.5 2.5M15 10h4m-4 4h4"/></svg></span><span class="rf-plate-copy">نام و سمت خبرنگار</span><span class="rf-plate-mark"></span></span></span></span>
+  <span class="rf-card-caption"><span class="rf-card-name"><span class="rf-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="10.5" r="2"/><path d="M5.5 16c.4-1.7 1.6-2.5 3.5-2.5s3.1.8 3.5 2.5M15 10h4m-4 4h4"/></svg></span><span class="rf-caption-copy"><strong>تگ نام و سمت</strong><small>فعال • نام و سمت دلخواه</small></span></span><span class="rf-radio-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span></span>
+ </button>
 </div>
 
 </section>
@@ -667,14 +698,27 @@ body,html,main{background:#edf4fc!important}
   <label for="name" class="reporter-static">گزارشی از:</label>
   <input id="name" type="text" dir="rtl" placeholder="نام خود را وارد کنید" aria-label="نام گزارشگر پس از عبارت گزارشی از" autocomplete="off" maxlength="120" required>
 </div>
+<div id="rfRoleFields" class="rf-role-fields" hidden>
+ <label for="rfFullName" class="rf-field-title rf-role-name-title"><span class="rf-field-title-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-4.2 3.2-6.5 7-6.5s7 2.3 7 6.5"/></svg></span><span>نام و نام خانوادگی</span></label>
+ <div class="rf-role-input"><span class="rf-role-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3"/><path d="M4 20c0-4 3-6 8-6s8 2 8 6"/></svg></span><input id="rfFullName" type="text" dir="rtl" maxlength="100" placeholder="نام و نام خانوادگی را وارد کنید" autocomplete="off" aria-label="نام و نام خانوادگی"/></div>
+ <label for="rfRoleTitle" class="rf-field-title rf-role-title-label"><span class="rf-field-title-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/></svg></span><span>سمت</span></label>
+ <div class="rf-role-input"><span class="rf-role-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span><input id="rfRoleTitle" type="text" dir="rtl" maxlength="100" placeholder="مثلاً: خبرنگار، تهیه‌کننده، کارشناس" autocomplete="off" aria-label="سمت"/></div>
+</div>
+<div id="rfChannelSize" class="rf-channel-size" hidden>
+  <div class="rf-channel-size-head"><label for="rfChannelSizeSlider">اندازه تگ کانال روی فیلم</label><output id="rfChannelSizeValue" for="rfChannelSizeSlider">۲۰٪</output></div>
+  <input id="rfChannelSizeSlider" type="range" min="6" max="40" step="1" value="20" aria-label="اندازه تگ کانال به درصد عرض فیلم">
+  <div class="rf-channel-size-hint">اندازه انتخاب‌شده مستقیماً روی فیلم جدید اعمال می‌شود. برای بزرگ‌ترشدن، نوار را به سمت عدد بیشتر ببر.</div>
+  <div id="rfChannelSizeActual" hidden></div>
+ </div>
 <button id="go" type="button">▶ ساخت فیلم</button>
 <progress id="uploadProgress" max="100" value="0" hidden></progress>
 <div id="liveState">آماده ساخت</div>
+<div id="rfRoleHelp" class="rf-channel-help" hidden role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 21h20L12 3Z"/><path d="M12 9v5m0 3h.01"/></svg><span>برای ساخت «تگ نام و سمت»، موتور نسخه 0821 را نصب و با <b>Start-RushFinder.cmd</b> دوباره اجرا کنید.</span></div>
 <div id="rfChannelHelp" class="rf-channel-help" hidden role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 21h20L12 3Z"/><path d="M12 9v5m0 3h.01"/></svg><span>برای ساخت «تگ کانال» باید موتور جدید را نصب و یک‌بار با <b>Start-RushFinder.cmd</b> دوباره اجرا کنید. موتور قبلی این مدل را پشتیبانی نمی‌کند.</span></div>
 <div id="localEngineHelp" class="engine-connection-help" hidden role="status">
 <strong>رندر ویدیو به موتور محلی ویندوز نیاز دارد.</strong>
 فرم تگ خبر در همین index.html باز است. برای ساخت MP4، موتور رندر باید روی ویندوز روشن باشد: فایل <b>Start-RushFinder.cmd</b> را از پوشه پروژه اجرا کنید، سپس از صفحه index.html که باز می‌شود به «تگ خبر» برگردید. اگر مرورگر درخواست مجوز شبکه محلی داد، آن را بررسی و در صورت اطمینان مجاز کنید.
-<a href="http://127.0.0.1:18826/index.html?v=0818#news-tag" target="_top" rel="noopener noreferrer">باز کردن همان index.html روی سرور محلی، در بخش تگ خبر</a>
+<a href="http://127.0.0.1:18826/index.html?v=0821#news-tag" target="_top" rel="noopener noreferrer">باز کردن همان index.html روی سرور محلی، در بخش تگ خبر</a>
 </div>
 <div id="rfInternalDiagnostics" hidden aria-hidden="true" inert><pre id="preflight">در حال بررسی موتور خروجی...</pre><button id="test" type="button" tabindex="-1">بررسی اتصال</button><pre id="status">آماده ساخت فیلم</pre></div>
 </section>
@@ -697,11 +741,23 @@ const renderUrl=path=>engineBase+path;
 const showEngineHelp=(visible)=>{
   const el=$('localEngineHelp');if(el)el.hidden=!visible;
 };
-let timer=null,busy=false,engineReady=false,engineSupportsChannel=false;
+let timer=null,busy=false,engineReady=false,engineSupportsChannel=false,engineSupportsRole=false;
 const channelHelp=()=>document.getElementById('rfChannelHelp');
-const syncChannelHelp=()=>{const n=channelHelp();if(n)n.hidden=rfTagMode!=='channel'||engineSupportsChannel;};
+const roleHelp=()=>document.getElementById('rfRoleHelp');
+const channelSizeSlider=$('rfChannelSizeSlider'),channelSizeValue=$('rfChannelSizeValue');
+let sizeChangedByUser=false;
+const setChannelPercent=(pct,fromUser=false)=>{
+  const n=Math.min(40,Math.max(6,Math.round(Number(pct)||20)));
+  channelSizeSlider.value=String(n);channelSizeValue.textContent=n.toLocaleString('fa-IR')+'٪';
+  if(fromUser)sizeChangedByUser=true;
+};
+channelSizeSlider.addEventListener('input',()=>{setChannelPercent(channelSizeSlider.value,true);$('rfChannelSizeActual').hidden=true;});
+setChannelPercent(20);
+const syncChannelHelp=()=>{const n=channelHelp();if(n)n.hidden=rfTagMode!=='channel'||engineSupportsChannel;const r=roleHelp();if(r)r.hidden=rfTagMode!=='role'||engineSupportsRole;};
 const status=$('status'),button=$('go'),file=$('file');
 let rfTagMode='reporter';
+const roleCard=document.querySelector('.mode-item[data-rf-mode="role"]');
+if(roleCard){roleCard.disabled=false;roleCard.classList.remove('disabled');roleCard.removeAttribute('aria-disabled');roleCard.title='تگ نام و سمت فعال است';}
 for(const tile of document.querySelectorAll('.mode-item[data-rf-mode]')){
  tile.addEventListener('click',()=>{
   if(busy)return;
@@ -714,13 +770,20 @@ for(const tile of document.querySelectorAll('.mode-item[data-rf-mode]')){
   document.querySelector('.rf-name-title').hidden=!reporter;
   document.querySelector('.reporter-entry').hidden=!reporter;
   $('name').required=reporter;
+  $('rfChannelSize').hidden=rfTagMode!=='channel';
+  $('rfRoleFields').hidden=rfTagMode!=='role';
+  $('rfFullName').required=rfTagMode==='role';
+  $('rfRoleTitle').required=rfTagMode==='role';
+  $('rfChannelSizeActual').hidden=true;
   syncChannelHelp();
-  setStatus(reporter?'آماده ساخت':engineSupportsChannel?'تگ کانال خبرفوری انتخاب شد؛ فیلم را اضافه کنید.':'برای ساخت تگ کانال، موتور جدید را نصب و دوباره اجرا کنید.');
+  setStatus(reporter?'آماده ساخت':rfTagMode==='role'?(engineSupportsRole?'تگ نام و سمت انتخاب شد؛ نام و سمت را وارد کنید.':'برای تگ نام و سمت، موتور نسخه 0821 را نصب کنید.'):(engineSupportsChannel?'تگ کانال خبرفوری انتخاب شد؛ فیلم را اضافه کنید.':'برای ساخت تگ کانال، موتور جدید را نصب و دوباره اجرا کنید.'));
  });
 }
 const setStatus=(message)=>{const done=message==='خروجی فیلم شما آماده است';const live=$('liveState');live.textContent=done?message:'وضعیت لحظه‌ای: '+message;live.classList.toggle('is-success',done);status.textContent=message;console.log('[RushFinder AE]',message);};
-const setBusy=(value)=>{busy=value;button.disabled=value;file.disabled=value;$('name').disabled=value};
-async function check(){try{const r=await fetch(renderUrl('/ae-api/check'),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();if(d.version!=='0813')throw Error('سرور قدیمی پاسخ داده است؛ پنجره های سرور قدیمی را ببندید.');engineReady=!!(d.afterEffects&&d.ffmpeg&&d.project&&d.assetsReady);engineSupportsChannel=d.channelTag===true&&d.engineBuild==="0818-channel-adjustable";syncChannelHelp();$('preflight').textContent='وضعیت موتور محلی\nAfter Effects: '+(d.afterEffects?'✓ شناسایی شد':'✗ پیدا نشد')+'\nرندر در After Effects: '+(d.afterEffects?'✓ آماده':'✗ پیدا نشد')+'\nFFmpeg: '+(d.ffmpeg?'✓ شناسایی شد':'✗ پیدا نشد')+'\nپروژه اصلی: '+(d.project?'✓ موجود است':'✗ پیدا نشد')+'\nقالب AEP: '+(d.templateName||'نامشخص')+'\nتصاویر اصلی: '+(d.assetsReady?'✓ کامل':'✗ ناقص')+'\nموتور آماده: '+(engineReady?'بله':'خیر');if(!busy)button.disabled=false;showEngineHelp(!engineReady);return d;}catch(e){engineReady=false;engineSupportsChannel=false;syncChannelHelp();button.disabled=false;showEngineHelp(true);$('preflight').textContent='اتصال به موتور رندر ویندوز برقرار نشد. '+(openedFromFile?'index.html مستقیم از فایل باز شده است. Start-RushFinder.cmd را اجرا کنید تا همین index.html از موتور محلی باز شود.':runningLocally?'موتور را با Start-RushFinder.cmd روشن کنید.':'موتور محلی را با Start-RushFinder.cmd روی همین رایانه اجرا کنید و مجوز شبکه محلی را بررسی کنید.')+'\nجزئیات: '+e.message;throw e;}}
+const setBusy=(value)=>{busy=value;button.disabled=value;file.disabled=value;$('name').disabled=value;$('rfFullName').disabled=value;$('rfRoleTitle').disabled=value;channelSizeSlider.disabled=value};
+async function check(){try{const r=await fetch(renderUrl('/ae-api/check'),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();if(d.version!=='0813')throw Error('سرور قدیمی پاسخ داده است؛ پنجره های سرور قدیمی را ببندید.');engineReady=!!(d.afterEffects&&d.ffmpeg&&d.project&&d.assetsReady);engineSupportsChannel=d.channelTag===true&&d.channelTagControl===true&&d.engineBuild==="0819-channel-size-control";engineSupportsRole=d.roleTag===true&&d.roleBuild==="0821-name-role-active";
+  if(!sizeChangedByUser&&Number.isInteger(d.channelTagWidthPercent))setChannelPercent(d.channelTagWidthPercent);
+  syncChannelHelp();$('preflight').textContent='وضعیت موتور محلی\nAfter Effects: '+(d.afterEffects?'✓ شناسایی شد':'✗ پیدا نشد')+'\nرندر در After Effects: '+(d.afterEffects?'✓ آماده':'✗ پیدا نشد')+'\nFFmpeg: '+(d.ffmpeg?'✓ شناسایی شد':'✗ پیدا نشد')+'\nپروژه اصلی: '+(d.project?'✓ موجود است':'✗ پیدا نشد')+'\nقالب AEP: '+(d.templateName||'نامشخص')+'\nتصاویر اصلی: '+(d.assetsReady?'✓ کامل':'✗ ناقص')+'\nموتور آماده: '+(engineReady?'بله':'خیر');if(!busy)button.disabled=false;showEngineHelp(!engineReady);return d;}catch(e){engineReady=false;engineSupportsChannel=false;engineSupportsRole=false;syncChannelHelp();button.disabled=false;showEngineHelp(true);$('preflight').textContent='اتصال به موتور رندر ویندوز برقرار نشد. '+(openedFromFile?'index.html مستقیم از فایل باز شده است. Start-RushFinder.cmd را اجرا کنید تا همین index.html از موتور محلی باز شود.':runningLocally?'موتور را با Start-RushFinder.cmd روشن کنید.':'موتور محلی را با Start-RushFinder.cmd روی همین رایانه اجرا کنید و مجوز شبکه محلی را بررسی کنید.')+'\nجزئیات: '+e.message;throw e;}}
 $('test').addEventListener('click',async()=>{setStatus('در حال بررسی ارتباط با موتور...');try{await check();setStatus(engineReady?'✓ ارتباط برقرار شد؛ اکنون فیلم و نام را وارد کنید.':'برخی ابزارها آماده نیستند؛ وضعیت بالای صفحه را بررسی کنید.')}catch(e){setStatus('خطا: '+e.message)}});
 let localPreviewURL=null;file.addEventListener('change',()=>{if(localPreviewURL)URL.revokeObjectURL(localPreviewURL);if(file.files[0]){localPreviewURL=URL.createObjectURL(file.files[0]);$('preview').src=localPreviewURL;$('preview').hidden=false;$('placeholder').hidden=true;$('previewLabel').textContent='پیش‌نمایش فیلم ورودی؛ خروجی نهایی هنوز ساخته نشده';}$('fileInfo').textContent=file.files.length?'فیلم انتخاب شد: '+file.files[0].name+' ('+Math.ceil(file.files[0].size/1048576)+' مگابایت)':'هنوز فیلمی انتخاب نشده است.'});
 // 0813 — download MP4 without navigating the embedded News Tag iframe.
@@ -763,9 +826,18 @@ let localPreviewURL=null;file.addEventListener('change',()=>{if(localPreviewURL)
      downloadButton.textContent='⬇ دریافت فیلم نهایی';
    }
  });
- function upload(f,name){return new Promise((resolve,reject)=>{const xhr=new XMLHttpRequest();xhr.open('POST',renderUrl(rfTagMode==='channel'?'/ae-api/channel-create?filename='+encodeURIComponent(f.name):'/ae-api/create?name='+encodeURIComponent(name)+'&filename='+encodeURIComponent(f.name)));xhr.setRequestHeader('Content-Type','application/octet-stream');xhr.timeout=120000;xhr.upload.onprogress=e=>{if(e.lengthComputable){const pct=Math.round(100*e.loaded/e.total);$('uploadProgress').value=pct;setStatus('در حال ارسال فیلم به موتور محلی: '+pct+'٪')}};xhr.onerror=()=>reject(Error('ارسال فیلم با خطای ارتباطی روبه‌رو شد.'));xhr.ontimeout=()=>reject(Error('ارسال فیلم بیش از دو دقیقه طول کشید.'));xhr.onload=()=>{let result;try{result=JSON.parse(xhr.responseText)}catch{reject(Error(xhr.status===404&&rfTagMode==='channel'?'موتور قبلی هنوز اجراست؛ فایل ae-auto-server.js نسخه جدید را جایگزین و موتور را دوباره راه‌اندازی کنید.':'پاسخ نامعتبر سرور: HTTP '+xhr.status));return}if(xhr.status<200||xhr.status>=300){reject(Error(result.error||'HTTP '+xhr.status));return}resolve(result)};xhr.send(f)})}
-async function poll(id){let errors=0;const step=async()=>{try{const r=await fetch(renderUrl('/ae-api/status?id='+encodeURIComponent(id)),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();errors=0;const stateKey=String(d.state||'').toLowerCase();const persianStage=({uploading:'در حال دریافت فیلم',queued:'فیلم در صف ساخت قرار دارد',rendering:'در حال ساخت فیلم',processing:'در حال پردازش فیلم',editing:'در حال آماده‌سازی تگ',compositing:'در حال ترکیب تگ با فیلم',merging:'در حال ترکیب تگ با فیلم',finalizing:'در حال آماده‌سازی خروجی',done:'خروجی فیلم شما آماده است'})[stateKey]||'در حال ساخت فیلم';if(stateKey==='error'){console.error('[RushFinder AE] Original render error:',d.message);setStatus('ساخت فیلم ناموفق بود. لطفاً دوباره تلاش کنید.')}else setStatus(persianStage);if(d.state==='done'){clearInterval(timer);timer=null;const url=renderUrl('/ae-output/'+id+'.mp4');$('preview').src=url+'?v='+Date.now();$('preview').hidden=false;$('placeholder').hidden=true;$('preview').load();finishedVideoUrl=url;$('dl').hidden=false;setStatus('خروجی فیلم شما آماده است');setBusy(false);$('uploadProgress').hidden=true;}else if(d.state==='error'){clearInterval(timer);timer=null;setBusy(false);$('uploadProgress').hidden=true;} }catch(e){if(++errors>=4){clearInterval(timer);timer=null;setStatus('ارتباط با وضعیت رندر قطع شد: '+e.message);setBusy(false);$('uploadProgress').hidden=true;}}};await step();if(busy){timer=setInterval(step,2500)}}
-button.addEventListener('click',async()=>{setStatus('دکمه ساخت زده شد؛ در حال بررسی ورودی‌ها...');const f=file.files[0],reporterName=$('name').value.trim().replace(/^گزارشی\s+از\s*[:：]?\s*/, '').trim(),name=reporterName?'گزارشی از: '+reporterName:'';if(!f){setStatus('⚠ ابتدا از بخش «فیلم خبرنگار» فایل ویدیویی را انتخاب کن.');file.focus();return}if(rfTagMode!=='channel'&&!name){setStatus('⚠ متن خبرنگار خالی است.');$('name').focus();return}if(rfTagMode==='channel'){try{await check()}catch(e){setStatus('❌ موتور محلی در دسترس نیست: '+e.message);return}if(!engineSupportsChannel){syncChannelHelp();setStatus('❌ موتور قدیمی هنوز فعال است؛ فایل ae-auto-server.js جدید را جایگزین کن و Start-RushFinder.cmd را دوباره اجرا کن.');return}}if(!engineReady){setStatus('اتصال اولیه آماده نبود؛ در حال بررسی مجدد موتور...');try{await check()}catch(e){setStatus('❌ ارتباط با سرور محلی برقرار نیست: '+e.message);return}if(!engineReady){setStatus('❌ پیش‌نیازها آماده نیستند. متن بالای صفحه را ببین.');return}}clearInterval(timer);setBusy(true);finishedVideoUrl='';$('dl').hidden=true;$('preview').hidden=!file.files[0];$('previewLabel').textContent='پیش‌نمایش فیلم انتخاب‌شده؛ پس از موفقیت رندر، فایل نهایی نمایش داده می‌شود';$('uploadProgress').hidden=false;$('uploadProgress').value=0;try{setStatus('در حال شروع ارسال فیلم...');const job=await upload(f,name);setStatus('فیلم دریافت شد و در صف ساخت قرار گرفت.');await poll(job.id)}catch(e){setStatus('❌ '+e.message);setBusy(false);$('uploadProgress').hidden=true;}});
+ function upload(f,name){return new Promise((resolve,reject)=>{const xhr=new XMLHttpRequest();xhr.open('POST',renderUrl(rfTagMode==='channel'?'/ae-api/channel-create?filename='+encodeURIComponent(f.name)+'&tagPercent='+encodeURIComponent(channelSizeSlider.value):rfTagMode==='role'?'/ae-api/role-create?filename='+encodeURIComponent(f.name)+'&fullName='+encodeURIComponent($('rfFullName').value.trim())+'&roleTitle='+encodeURIComponent($('rfRoleTitle').value.trim()):'/ae-api/create?name='+encodeURIComponent(name)+'&filename='+encodeURIComponent(f.name)));xhr.setRequestHeader('Content-Type','application/octet-stream');xhr.timeout=120000;xhr.upload.onprogress=e=>{if(e.lengthComputable){const pct=Math.round(100*e.loaded/e.total);$('uploadProgress').value=pct;setStatus('در حال ارسال فیلم به موتور محلی: '+pct+'٪')}};xhr.onerror=()=>reject(Error('ارسال فیلم با خطای ارتباطی روبه‌رو شد.'));xhr.ontimeout=()=>reject(Error('ارسال فیلم بیش از دو دقیقه طول کشید.'));xhr.onload=()=>{let result;try{result=JSON.parse(xhr.responseText)}catch{reject(Error(xhr.status===404&&rfTagMode==='channel'?'موتور قبلی هنوز اجراست؛ فایل ae-auto-server.js نسخه جدید را جایگزین و موتور را دوباره راه‌اندازی کنید.':'پاسخ نامعتبر سرور: HTTP '+xhr.status));return}if(xhr.status<200||xhr.status>=300){reject(Error(result.error||'HTTP '+xhr.status));return}resolve(result)};xhr.send(f)})}
+async function poll(id){let errors=0;const step=async()=>{try{const r=await fetch(renderUrl('/ae-api/status?id='+encodeURIComponent(id)),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();errors=0;const stateKey=String(d.state||'').toLowerCase();const persianStage=({uploading:'در حال دریافت فیلم',queued:'فیلم در صف ساخت قرار دارد',rendering:'در حال ساخت فیلم',processing:'در حال پردازش فیلم',editing:'در حال آماده‌سازی تگ',compositing:'در حال ترکیب تگ با فیلم',merging:'در حال ترکیب تگ با فیلم',finalizing:'در حال آماده‌سازی خروجی',done:'خروجی فیلم شما آماده است'})[stateKey]||'در حال ساخت فیلم';if(stateKey==='error'){console.error('[RushFinder AE] Original render error:',d.message);setStatus(rfTagMode==='role'?'ساخت تگ نام و سمت ناموفق بود: '+String(d.message||'خطای نامشخص').slice(0,500):'ساخت فیلم ناموفق بود. لطفاً دوباره تلاش کنید.')}else setStatus(persianStage);if(d.state==='done'){clearInterval(timer);timer=null;
+  if(rfTagMode==='channel'){
+    const applied=Number(d.channelTagWidthPercent),pixels=Number(d.channelTagWidthPixels);
+    const info=$('rfChannelSizeActual');
+    if(Number.isFinite(applied)&&applied>=6&&applied<=40){
+      info.textContent='اندازه واقعی تگ در این خروجی: '+applied.toLocaleString('fa-IR')+'٪ عرض فیلم'+(pixels>0?' ('+pixels.toLocaleString('fa-IR')+' پیکسل)':'');
+      info.hidden=false;
+    }
+  }
+  const url=renderUrl('/ae-output/'+id+'.mp4');$('preview').src=url+'?v='+Date.now();$('preview').hidden=false;$('placeholder').hidden=true;$('preview').load();finishedVideoUrl=url;$('dl').hidden=false;setStatus('خروجی فیلم شما آماده است');setBusy(false);$('uploadProgress').hidden=true;}else if(d.state==='error'){clearInterval(timer);timer=null;setBusy(false);$('uploadProgress').hidden=true;} }catch(e){if(++errors>=4){clearInterval(timer);timer=null;setStatus('ارتباط با وضعیت رندر قطع شد: '+e.message);setBusy(false);$('uploadProgress').hidden=true;}}};await step();if(busy){timer=setInterval(step,2500)}}
+button.addEventListener('click',async()=>{setStatus('دکمه ساخت زده شد؛ در حال بررسی ورودی‌ها...');const f=file.files[0],reporterName=$('name').value.trim().replace(/^گزارشی\s+از\s*[:：]?\s*/, '').trim(),name=reporterName?'گزارشی از: '+reporterName:'';if(!f){setStatus('⚠ ابتدا از بخش «فیلم خبرنگار» فایل ویدیویی را انتخاب کن.');file.focus();return}if(rfTagMode==='reporter'&&!name){setStatus('⚠ متن خبرنگار خالی است.');$('name').focus();return}if(rfTagMode==='role'){if(!$('rfFullName').value.trim()){setStatus('⚠ نام و نام خانوادگی را وارد کنید.');$('rfFullName').focus();return}if(!$('rfRoleTitle').value.trim()){setStatus('⚠ سمت را وارد کنید.');$('rfRoleTitle').focus();return}try{await check()}catch(e){setStatus('❌ موتور محلی در دسترس نیست: '+e.message);return}if(!engineSupportsRole){syncChannelHelp();setStatus('❌ موتور فعلی قابلیت تگ نام و سمت ندارد؛ نسخه 0821 را نصب و موتور را دوباره اجرا کنید.');return}}if(rfTagMode==='channel'){try{await check()}catch(e){setStatus('❌ موتور محلی در دسترس نیست: '+e.message);return}if(!engineSupportsChannel){syncChannelHelp();setStatus('❌ موتور قدیمی هنوز فعال است؛ فایل ae-auto-server.js جدید را جایگزین کن و Start-RushFinder.cmd را دوباره اجرا کن.');return}}if(!engineReady){setStatus('اتصال اولیه آماده نبود؛ در حال بررسی مجدد موتور...');try{await check()}catch(e){setStatus('❌ ارتباط با سرور محلی برقرار نیست: '+e.message);return}if(!engineReady){setStatus('❌ پیش‌نیازها آماده نیستند. متن بالای صفحه را ببین.');return}}clearInterval(timer);setBusy(true);$('rfChannelSizeActual').hidden=true;finishedVideoUrl='';$('dl').hidden=true;$('preview').hidden=!file.files[0];$('previewLabel').textContent='پیش‌نمایش فیلم انتخاب‌شده؛ پس از موفقیت رندر، فایل نهایی نمایش داده می‌شود';$('uploadProgress').hidden=false;$('uploadProgress').value=0;try{setStatus('در حال شروع ارسال فیلم...');const job=await upload(f,name);setStatus('فیلم دریافت شد و در صف ساخت قرار گرفت.');await poll(job.id)}catch(e){setStatus('❌ '+e.message);setBusy(false);$('uploadProgress').hidden=true;}});
 window.addEventListener('error',e=>setStatus('خطای صفحه: '+e.message));window.addEventListener('unhandledrejection',e=>setStatus('خطای اجرا: '+(e.reason?.message||String(e.reason))));
 setStatus('آماده ساخت');check().catch(e=>setStatus('برای ساخت MP4 موتور ویندوز باید روشن باشد؛ Start-RushFinder.cmd را اجرا کن. ('+e.message+')'));
 
