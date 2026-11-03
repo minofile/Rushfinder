@@ -278,8 +278,8 @@ function scriptForRole(job){
  const script=`(function(){
 var folder=${jsxString(job.folder)},done=new File(folder+'/render.done'),error=new File(folder+'/render.error'),log=new File(folder+'/ae-render.log');
 var framesFolder=new Folder(folder+'/alpha-frames');if(!framesFolder.exists)framesFolder.create();
-function logIt(x){try{log.open('a');log.writeln('0824 ROLE | '+new Date().toString()+' | '+x);log.close();}catch(ignore){}}
-logIt('SCRIPT_ENTERED: JSX 0824 executing in After Effects');
+function logIt(x){try{log.open('a');log.writeln('0826 ROLE | '+new Date().toString()+' | '+x);log.close();}catch(ignore){}}
+logIt('SCRIPT_ENTERED: JSX 0826 executing in After Effects');
 try{
  app.beginSuppressDialogs();try{app.exitAfterLaunchAndEval=false;}catch(ignore){}
  var src=new File(${jsxString(roleTemplate)});if(!src.exists)throw Error('Role AEP template missing');
@@ -304,18 +304,35 @@ try{
  }
  logIt('FOOTAGE_RELINK_CHECK_DONE');
  logIt('COMP_SCAN_STARTED: items='+app.project.numItems);
- var comp=null;
+ var comp=null,comps=[];
  for(var i=1;i<=app.project.numItems;i++){
   logIt('COMP_ITEM_GET_BEGIN: index='+i);
   var item=app.project.item(i);
   logIt('COMP_ITEM_GET_OK: index='+i);
-  var itemName='';try{itemName=String(item.name);}catch(nameErr){logIt('COMP_ITEM_NAME_ERROR: index='+i+' '+nameErr);throw nameErr;}
+  var itemName='';try{itemName=String(item.name);}catch(nameErr){logIt('COMP_ITEM_NAME_ERROR: index='+i+' '+String(nameErr.message||'نام آیتم'));throw nameErr;}
   logIt('COMP_ITEM_NAME: index='+i+' name='+itemName.substring(0,120));
   var isComp=(item instanceof CompItem);
   logIt('COMP_ITEM_TYPE: index='+i+' isComp='+isComp);
-  if(isComp&&itemName.toLowerCase()==='tag 5'){comp=item;break;}
+  if(isComp){
+   comps.push(item);
+   // The supplied AEP may use a different spelling/spacing for the main comp.
+   if(itemName.toLowerCase().replace(/[^a-z0-9]/g,'')==='tag5')comp=item;
+  }
  }
- if(!comp)throw Error('ترکیب Tag 5 در پروژه تگ گزارش پیدا نشد.');
+ if(!comp){
+  var allCompNames=[];
+  for(var cj=0;cj<comps.length;cj++)allCompNames.push(String(comps[cj].name));
+  logIt('COMP_EXACT_MATCH_MISSING: candidates='+allCompNames.join(' | '));
+  if(comps.length===1){comp=comps[0];logIt('COMP_FALLBACK_SINGLE: '+comp.name);}
+  else{
+   var likely=[];
+   for(var cj=0;cj<comps.length;cj++){
+    if(/tag|تگ|گزارش/i.test(String(comps[cj].name)))likely.push(comps[cj]);
+   }
+   if(likely.length===1){comp=likely[0];logIt('COMP_FALLBACK_UNIQUE_NAME: '+comp.name);}
+  }
+ }
+ if(!comp)throw Error('کامپوزیشن تگ نام و سمت مشخص نشد. اسامی موجود: '+(comps.length?allCompNames.join(' | '):'هیچ CompItem در پروژه وجود ندارد')+'. لطفاً نام کامپوزیشن اصلی را بررسی کنید.');
  logIt('COMP_FOUND: '+comp.name+' '+comp.width+'x'+comp.height+' duration='+comp.duration);
  var layers=[],visited={};
  function collect(c){if(!c||visited[c.id])return;visited[c.id]=true;
@@ -424,9 +441,14 @@ try{
  else{var rendered=new File(target);if(!rendered.exists||rendered.length<1000)throw Error('فایل شفاف رندر ساخته نشد.');}
  done.open('w');done.write('ROLE_ALPHA_RENDERED');done.close();logIt('Render completed');
 }catch(e){
- var detail=''+e;
- try{if(e&&e.line)detail+=' | JSX line '+e.line;}catch(ignore){}
- logIt('ERROR '+detail);
+ // ExtendScript's Error object may not support implicit string concatenation.
+ // Always write an error marker so the single-worker queue can continue.
+ var detail='خطای اجرای اسکریپت تگ نام و سمت';
+ try{if(e && typeof e.message==='string' && e.message.length)detail=e.message;
+     else if(e && typeof e.description==='string' && e.description.length)detail=e.description;
+     else if(e && typeof e.toString==='function')detail=e.toString();}catch(ignore){}
+ try{if(e && typeof e.line==='number')detail+=' | JSX line '+e.line;}catch(ignore){}
+ logIt('ERROR_HANDLED: '+detail);
  try{
   var tmpErr=new File(folder+'/render.error.pending');
   if(tmpErr.open('w')){tmpErr.write(detail);tmpErr.close();
@@ -479,7 +501,7 @@ function channelTagSizePercent(){
   }catch(_ignored){}
   return 12;
 }
-function report(){return {afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0813",engineBuild:"0819-channel-size-control",channelTagWidthPercent:channelTagSizePercent(),channelTagControl:true,roleBuild:"0824-role-eval-watchdog",roleMediaMissing:missingRoleMedia(),roleTag:!!aeExe()&&!!ffmpegExe()&&fs.existsSync(roleTemplate),roleTemplateName:path.basename(roleTemplate),channelTag:!!ffmpegExe()&&fs.existsSync(path.join(root,'assets','news-tag','fori-channel-tag.png')),outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
+function report(){return {afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0813",engineBuild:"0819-channel-size-control",channelTagWidthPercent:channelTagSizePercent(),channelTagControl:true,roleBuild:"0826-role-comp-queue-recovery",roleMediaMissing:missingRoleMedia(),roleTag:!!aeExe()&&!!ffmpegExe()&&fs.existsSync(roleTemplate),roleTemplateName:path.basename(roleTemplate),channelTag:!!ffmpegExe()&&fs.existsSync(path.join(root,'assets','news-tag','fori-channel-tag.png')),outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
 // 0814: dedicated CHANNEL-tag render. The existing reporter After Effects path below
 // is intentionally unchanged. This mode uses the exact supplied transparent PNG.
 function renderChannelTag(job){
@@ -576,9 +598,13 @@ function runActive(job){if(job.mode==='channel'){renderChannelTag(job);return;}c
     const secondsIdle=Math.floor((Date.now()-fs.statSync(logPath).mtimeMs)/1000);
     const renderBegan=contents.indexOf('RENDER_STARTED:')>=0;
     const scriptEnded=contents.indexOf('SCRIPT_FINALLY_COMPLETED')>=0;
-    if(!renderBegan&&!scriptEnded&&secondsIdle>=90){
+    if(!renderBegan&&scriptEnded&&secondsIdle>=8){
      clearInterval(timer);
-     fail('اجرای اسکریپت تگ نام و سمت قبل از مرحله رندر متوقف شده است. پردازش After Effects با کد ۰ خارج شده، ولی خروجی یا گزارش پایان ساخته نشده. آخرین مرحله: '+lastLine+' | توقف گزارش: '+secondsIdle+' ثانیه. گزارش Get-Role-Render-Log.cmd را ارسال کنید.');return;
+     fail('اسکریپت تگ نام و سمت بدون ساخت خروجی پایان یافته و صف آزاد شد. آخرین مرحله: '+lastLine+' | گزارش خطا: Get-Role-Render-Log.cmd');return;
+    }
+    if(!renderBegan&&!scriptEnded&&secondsIdle>=30){
+     clearInterval(timer);
+     fail('اسکریپت تگ نام و سمت پیش از رندر متوقف شده است و صف آزاد شد. آخرین مرحله: '+lastLine+' | توقف گزارش: '+secondsIdle+' ثانیه.');return;
     }
    }catch(ignore){}
   }

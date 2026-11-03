@@ -2,10 +2,10 @@
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $base = 'http://127.0.0.1:18826'
 $probe = "$base/ae-api/check"
-$url = "$base/index.html?v=0825"
+$url = "$base/index.html?v=0826"
 $version = '0813'  # API compatibility; render engine build is checked separately
 $expectedBuild = '0819-channel-size-control'
-$expectedRoleBuild = '0824-role-eval-watchdog'
+$expectedRoleBuild = '0826-role-comp-queue-recovery'
 $expectedRoot = $root.Replace('\', '/').TrimEnd('/')
 
 function Read-Engine {
