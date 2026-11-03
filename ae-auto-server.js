@@ -278,8 +278,8 @@ function scriptForRole(job){
  const script=`(function(){
 var folder=${jsxString(job.folder)},done=new File(folder+'/render.done'),error=new File(folder+'/render.error'),log=new File(folder+'/ae-render.log');
 var framesFolder=new Folder(folder+'/alpha-frames');if(!framesFolder.exists)framesFolder.create();
-function logIt(x){try{log.open('a');log.writeln('0826 ROLE | '+new Date().toString()+' | '+x);log.close();}catch(ignore){}}
-logIt('SCRIPT_ENTERED: JSX 0826 executing in After Effects');
+function logIt(x){try{log.open('a');log.writeln('0827 ROLE | '+new Date().toString()+' | '+x);log.close();}catch(ignore){}}
+logIt('SCRIPT_ENTERED: JSX 0827 executing in After Effects');
 try{
  app.beginSuppressDialogs();try{app.exitAfterLaunchAndEval=false;}catch(ignore){}
  var src=new File(${jsxString(roleTemplate)});if(!src.exists)throw Error('Role AEP template missing');
@@ -351,7 +351,7 @@ try{
  logIt('TEXT_SCAN_DONE: '+layers.length+' text layers');
  if(!layers.length)throw Error('هیچ لایه متن قابل ویرایشی داخل Tag 5 یافت نشد.');
  var updatedName=0,updatedRole=0;
- function normalizeText(s){return String(s||'').replace(/\\s+/g,' ').trim();}
+ function normalizeText(s){return String(s||'').replace(/\\s+/g,' ').replace(/^\\s+|\\s+$/g,'');}
  function replaceText(item,newText){
   var p=item.prop;if(p.expressionEnabled)return false;
   var locked=item.layer.locked;if(locked)item.layer.locked=false;
@@ -501,7 +501,7 @@ function channelTagSizePercent(){
   }catch(_ignored){}
   return 12;
 }
-function report(){return {afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0813",engineBuild:"0819-channel-size-control",channelTagWidthPercent:channelTagSizePercent(),channelTagControl:true,roleBuild:"0826-role-comp-queue-recovery",roleMediaMissing:missingRoleMedia(),roleTag:!!aeExe()&&!!ffmpegExe()&&fs.existsSync(roleTemplate),roleTemplateName:path.basename(roleTemplate),channelTag:!!ffmpegExe()&&fs.existsSync(path.join(root,'assets','news-tag','fori-channel-tag.png')),outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
+function report(){return {afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0813",engineBuild:"0819-channel-size-control",channelTagWidthPercent:channelTagSizePercent(),channelTagControl:true,roleBuild:"0827-role-extendscript-trim-fix",roleMediaMissing:missingRoleMedia(),roleTag:!!aeExe()&&!!ffmpegExe()&&fs.existsSync(roleTemplate),roleTemplateName:path.basename(roleTemplate),channelTag:!!ffmpegExe()&&fs.existsSync(path.join(root,'assets','news-tag','fori-channel-tag.png')),outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
 // 0814: dedicated CHANNEL-tag render. The existing reporter After Effects path below
 // is intentionally unchanged. This mode uses the exact supplied transparent PNG.
 function renderChannelTag(job){
