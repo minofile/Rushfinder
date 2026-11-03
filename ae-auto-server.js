@@ -242,7 +242,7 @@ writeLog('0813 DIRECT_AE_RENDER_VALIDATED');
 const f=path.join(job.folder,'run.jsx');fs.writeFileSync(f,'\uFEFF'+script,'utf8');return f}
 
 function ffmpegExe(){for(const f of [path.join(root,'tools','ffmpeg.exe'),path.join(process.env.LOCALAPPDATA||'', 'RushFinder','tools','ffmpeg.exe'),path.join(root,'ffmpeg.exe'),path.join(process.env.LOCALAPPDATA||'', 'Microsoft','WinGet','Links','ffmpeg.exe'),'ffmpeg']){try{const r=cp.spawnSync(f,['-version'],{windowsHide:true,timeout:5000});if(r.status===0)return f}catch(e){}}return null}
-function report(){return {afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0813",channelTag:!!ffmpegExe()&&fs.existsSync(path.join(root,'assets','news-tag','fori-channel-tag.png')),outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
+function report(){return {afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0813",engineBuild:"0817-channel-8pct",channelTagWidthPercent:8,channelTag:!!ffmpegExe()&&fs.existsSync(path.join(root,'assets','news-tag','fori-channel-tag.png')),outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
 // 0814: dedicated CHANNEL-tag render. The existing reporter After Effects path below
 // is intentionally unchanged. This mode uses the exact supplied transparent PNG.
 function renderChannelTag(job){
@@ -258,7 +258,7 @@ function renderChannelTag(job){
   if(!ff)throw Error('FFmpeg پیدا نشد.');
   if(!fs.existsSync(logo))throw Error('تصویر تگ کانال خبرفوری موجود نیست.');
   const size=videoDimensions(ff,job.input);
-  const tagWidth=Math.max(2,Math.round(size.width*0.40/2)*2);
+  const tagWidth=Math.max(2,Math.round(size.width*0.08/2)*2);
   const padRight=Math.max(0,Math.round(size.width*0.025));
   const padBottom=Math.max(0,Math.round(size.height*0.075));
   const filter='[1:v]format=rgba,scale='+tagWidth+':-2:flags=lanczos,setsar=1[tag];'+

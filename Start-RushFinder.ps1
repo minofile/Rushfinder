@@ -1,9 +1,10 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $base = 'http://127.0.0.1:18826'
 $probe = "$base/ae-api/check"
-$url = "$base/index.html?v=0813"
-$version = '0813'
+$url = "$base/index.html?v=0817"
+$version = '0813'  # API compatibility; render engine build is checked separately
+$expectedBuild = '0817-channel-8pct'
 $expectedRoot = $root.Replace('\', '/').TrimEnd('/')
 
 function Read-Engine {
@@ -13,7 +14,7 @@ function Read-Engine {
 function Is-This-Engine($report) {
     if ($null -eq $report) { return $false }
     $actual = ([string]$report.installRoot).TrimEnd('/')
-    return ([string]$report.version -eq $version -and $actual -ieq $expectedRoot)
+    return ([string]$report.version -eq $version -and $actual -ieq $expectedRoot -and [string]$report.engineBuild -eq $expectedBuild -and [int]$report.channelTagWidthPercent -eq 8)
 }
 function Is-Port-Busy {
     $socket = New-Object System.Net.Sockets.TcpClient
@@ -26,12 +27,48 @@ function Is-Port-Busy {
     finally { $socket.Close() }
 }
 
+function Stop-Outdated-RushFinder($report) {
+    if ($null -eq $report) { return $false }
+    $actual = ([string]$report.installRoot).TrimEnd('/')
+    if ($actual -ine $expectedRoot -or [string]$report.version -ne '0813') { return $false }
+    try {
+        $listener = Get-NetTCPConnection -LocalPort 18826 -State Listen -ErrorAction Stop |
+            Where-Object { $_.LocalAddress -eq '127.0.0.1' } |
+            Select-Object -First 1
+        if ($null -eq $listener) { throw 'No RushFinder listener on 127.0.0.1:18826.' }
+        $ownerPid = [int]$listener.OwningProcess
+        $owner = Get-CimInstance Win32_Process -Filter "ProcessId=$ownerPid" -ErrorAction Stop
+        if ($null -eq $owner -or $owner.Name -ine 'node.exe' -or
+            [string]$owner.CommandLine -notmatch 'ae-auto-server[.]js') {
+            throw 'The port owner was not verified as the RushFinder Node.js process.'
+        }
+        Write-Host 'An outdated RushFinder engine from this folder was found. Restarting it...' -ForegroundColor Yellow
+        Stop-Process -Id $ownerPid -Force -ErrorAction Stop
+        for ($i = 0; $i -lt 30; $i++) {
+            Start-Sleep -Milliseconds 200
+            if (-not (Is-Port-Busy)) { return $true }
+        }
+        throw 'The old engine has not released port 18826.'
+    } catch {
+        Write-Host ('ERROR: Could not restart the outdated RushFinder engine: ' + $_.Exception.Message) -ForegroundColor Red
+        Write-Host 'Close the old RushFinder/Node process, then run Start-RushFinder.cmd again.'
+        return $false
+    }
+}
+
 if (-not (Test-Path -LiteralPath (Join-Path $root 'index.html') -PathType Leaf)) {
     Write-Host 'ERROR: index.html is missing from this folder.' -ForegroundColor Red
     exit 1
 }
 
 $report = Read-Engine
+if ($null -ne $report -and -not (Is-This-Engine $report)) {
+    $actual = ([string]$report.installRoot).TrimEnd('/')
+    if ($actual -ieq $expectedRoot -and [string]$report.version -eq '0813') {
+        if (-not (Stop-Outdated-RushFinder $report)) { exit 1 }
+        $report = $null
+    }
+}
 if (-not (Is-This-Engine $report)) {
     if (Is-Port-Busy) {
         Write-Host 'ERROR: Port 18826 is in use by another program or RushFinder copy.' -ForegroundColor Red
