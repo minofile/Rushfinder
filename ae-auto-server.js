@@ -278,8 +278,8 @@ function scriptForRole(job){
  const script=`(function(){
 var folder=${jsxString(job.folder)},done=new File(folder+'/render.done'),error=new File(folder+'/render.error'),log=new File(folder+'/ae-render.log');
 var framesFolder=new Folder(folder+'/alpha-frames');if(!framesFolder.exists)framesFolder.create();
-function logIt(x){try{log.open('a');log.writeln('0828 ROLE | '+new Date().toString()+' | '+x);log.close();}catch(ignore){}}
-logIt('SCRIPT_ENTERED: JSX 0828 executing in After Effects');
+function logIt(x){try{log.open('a');log.writeln('0829 ROLE | '+new Date().toString()+' | '+x);log.close();}catch(ignore){}}
+logIt('SCRIPT_ENTERED: JSX 0829 executing in After Effects');
 try{
  app.beginSuppressDialogs();try{app.exitAfterLaunchAndEval=false;}catch(ignore){}
  var src=new File(${jsxString(roleTemplate)});if(!src.exists)throw Error('Role AEP template missing');
@@ -353,34 +353,83 @@ try{
  var updatedName=0,updatedRole=0;
  function normalizeText(s){return String(s||'').replace(/\\s+/g,' ').replace(/^\\s+|\\s+$/g,'');}
  function replaceText(item,newText){
-  var p=item.prop;if(p.expressionEnabled)return false;
-  var locked=item.layer.locked;if(locked)item.layer.locked=false;
+  var p=item.prop;
+  var locked=!!item.layer.locked;
+  var expressionActive=false;
+  try{expressionActive=!!p.expressionEnabled;}catch(expressionReadError){
+   throw Error('وضعیت Expression در لایه '+String(item.layer.name)+' قابل خواندن نیست.');
+  }
+  if(locked)item.layer.locked=false;
   try{
+   // The supplied AEP has style-only Source Text expressions on the two
+   // placeholders. In 0828 we skipped expressionEnabled layers outright,
+   // leaving BOTH counters at zero. Temporarily disable only that Source Text
+   // expression, edit its underlying TextDocument, then restore the original
+   // expression without rewriting it or changing keyframed animations.
+   if(expressionActive){
+    logIt('TEXT_EXPRESSION_PAUSE_BEGIN: '+String(item.layer.name));
+    p.expressionEnabled=false;
+    if(p.expressionEnabled)throw Error('Source Text expression could not be paused');
+    logIt('TEXT_EXPRESSION_PAUSED: '+String(item.layer.name));
+   }
    var sampleTime=Math.max(0,Math.min(item.comp.duration*0.5,item.comp.duration-1/Math.max(1,item.comp.frameRate)));
    var oldRect=item.layer.sourceRectAtTime(sampleTime,false);
-   var oldFont=Number(p.value.fontSize)||50;
-   function edit(d,scale){d.text=newText;if(scale<1)d.fontSize=Number(d.fontSize)*scale;return d;}
+   var oldDoc=p.value;
+   if(!oldDoc)throw Error('Underlying TextDocument is missing in '+String(item.layer.name));
+   var oldFont=Number(oldDoc.fontSize)||50;
+   function edit(d,scale){
+    if(!d)throw Error('TextDocument keyframe is missing');
+    d.text=newText;
+    if(scale<1)d.fontSize=Number(d.fontSize)*scale;
+    return d;
+   }
    function update(scale){
     if(p.numKeys>0){for(var j=1;j<=p.numKeys;j++)p.setValueAtKey(j,edit(p.keyValue(j),scale));}
     else p.setValue(edit(p.value,scale));
    }
    update(1);
-   // Preserve template font, anchor, alignment and keyframed animations.
-   // Only reduce font on overlong names/titles; never enlarge it.
+   // Preserve original TextDocument style and all source-text keyframes.
+   // Shrink only when text overflows the original reserved width.
    if(oldRect.width>10){
     for(var n=0;n<7;n++){
      var newRect=item.layer.sourceRectAtTime(sampleTime,false);
      if(newRect.width<=oldRect.width*1.04)break;
      var ratio=Math.min(.96,.98*oldRect.width/newRect.width);
-     if(Number(p.value.fontSize)*ratio<Math.max(8,oldFont*.38)){
-      logIt('Long text kept at minimum legible size '+item.layer.name);break;
-     }
+     if(Number(p.value.fontSize)*ratio<Math.max(8,oldFont*.38))break;
      update(ratio);
     }
    }
-   logIt('Updated '+item.comp.name+'/'+item.layer.name+' = '+newText);
-   return true;
-  }finally{if(locked)item.layer.locked=true;}
+   // Validate the saved (non-expression) text before re-enabling the style
+   // expression. Never report success unless the source text really changed.
+   var storedText=normalizeText(p.value.text);
+   if(storedText!==normalizeText(newText))throw Error('TextDocument update was not stored for '+String(item.layer.name));
+   logIt('TEXT_SOURCE_UPDATED: layer='+String(item.layer.name)+' expressionWasEnabled='+expressionActive);
+  }finally{
+   if(expressionActive){
+    try{
+     p.expressionEnabled=true;
+     if(!p.expressionEnabled)throw Error('Expression did not re-enable');
+     logIt('TEXT_EXPRESSION_RESTORED: '+String(item.layer.name));
+    }catch(restoreError){
+     logIt('TEXT_EXPRESSION_RESTORE_FAILED: '+String(item.layer.name));
+     if(locked)item.layer.locked=true;
+     throw Error('Expression اصلی لایه '+String(item.layer.name)+' دوباره فعال نشد؛ رندر برای جلوگیری از خروجی اشتباه متوقف شد.');
+    }
+   }
+   if(locked)item.layer.locked=true;
+  }
+  // Verify the actual on-screen text, while the original style expression is
+  // active again. This catches templates whose expression overwrites the text.
+  var visible='';
+  try{visible=normalizeText(p.value.text);}catch(visibleError){
+   throw Error('متن نهایی لایه '+String(item.layer.name)+' قابل بررسی نیست.');
+  }
+  if(visible!==normalizeText(newText)){
+   logIt('TEXT_VISIBLE_MISMATCH: layer='+String(item.layer.name)+' actual='+visible.substring(0,100));
+   throw Error('Expression متن نهایی لایه '+String(item.layer.name)+' را بازنویسی کرده است؛ برای حفظ انیمیشن، رندر متوقف شد.');
+  }
+  logIt('TEXT_REPLACED_AND_VERIFIED: '+String(item.comp.name)+'/'+String(item.layer.name));
+  return true;
  }
  var candidateSummaries=[],unreadableLayers=0;
  for(var t=0;t<layers.length;t++){
@@ -434,7 +483,7 @@ try{
  if(updatedName<1||updatedRole<1){
   logIt('TEXT_NOT_MATCHED: '+candidateSummaries.join(' | ').substring(0,800));
  }
- if(updatedName<1||updatedRole<1)throw Error('هر دو متن نمونه قالب (گزارشگر فلانی / بررسی عوامل گرانی همه چیز) در لایه‌های قابل‌ویرایش Tag 5 پیدا نشدند. نام: '+updatedName+'، سمت: '+updatedRole+'؛ رندر بدون جایگزینی انجام نمی‌شود.');
+ if(updatedName<1||updatedRole<1)throw Error('جایگزینی دو متن «نام و نام خانوادگی» و «سمت» در قالب Comp 2 کامل نشد. نام: '+updatedName+'، سمت: '+updatedRole+'؛ خطا و جزئیات در گزارش ثبت شده است.');
  logIt('Both text fields replaced; name='+updatedName+' role='+updatedRole);
  // Reject missing active footage instead of producing a broken/misleading MP4.
  var missing=[];
@@ -554,7 +603,7 @@ function channelTagSizePercent(){
   }catch(_ignored){}
   return 12;
 }
-function report(){return {afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0813",engineBuild:"0819-channel-size-control",channelTagWidthPercent:channelTagSizePercent(),channelTagControl:true,roleBuild:"0828-role-text-read-recovery",roleMediaMissing:missingRoleMedia(),roleTag:!!aeExe()&&!!ffmpegExe()&&fs.existsSync(roleTemplate),roleTemplateName:path.basename(roleTemplate),channelTag:!!ffmpegExe()&&fs.existsSync(path.join(root,'assets','news-tag','fori-channel-tag.png')),outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
+function report(){return {afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0813",engineBuild:"0819-channel-size-control",channelTagWidthPercent:channelTagSizePercent(),channelTagControl:true,roleBuild:"0829-role-expression-edit-fix",roleMediaMissing:missingRoleMedia(),roleTag:!!aeExe()&&!!ffmpegExe()&&fs.existsSync(roleTemplate),roleTemplateName:path.basename(roleTemplate),channelTag:!!ffmpegExe()&&fs.existsSync(path.join(root,'assets','news-tag','fori-channel-tag.png')),outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
 // 0814: dedicated CHANNEL-tag render. The existing reporter After Effects path below
 // is intentionally unchanged. This mode uses the exact supplied transparent PNG.
 function renderChannelTag(job){
