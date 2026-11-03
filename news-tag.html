@@ -175,6 +175,71 @@ body,html,main{background:#edf4fc!important}
   position:relative!important;z-index:2!important;flex:0 0 auto!important;
   margin-top:12px!important;align-self:flex-start!important
 }
+
+/* RushFinder UI refinement — unified newsroom card, renderer untouched */
+.studio-frame{
+  margin-top:16px!important;
+  padding:10px!important;
+  border:1px solid #cfdef2!important;
+  border-radius:27px!important;
+  background:linear-gradient(145deg,#f6faff,#e7f1fd)!important;
+  box-shadow:0 18px 40px rgba(20,76,136,.095),0 2px 7px rgba(20,76,136,.035)!important;
+  overflow:hidden;
+}
+.studio-frame .workspace{
+  display:grid!important;
+  grid-template-columns:minmax(290px,.88fr) minmax(330px,1.12fr)!important;
+  gap:0!important;
+  margin:0!important;
+  background:#fff!important;
+  border:1px solid #dbe8f5!important;
+  border-radius:20px!important;
+  overflow:hidden!important;
+  align-items:stretch!important;
+}
+.studio-frame .workspace>.panel{
+  border:0!important;
+  border-radius:0!important;
+  background:#fff!important;
+  box-shadow:none!important;
+  padding:20px 22px!important;
+  min-width:0!important;
+}
+.studio-frame .workspace>.panel:first-child{border-left:1px solid #e1ebf7!important}
+.studio-frame .workspace>.panel>h3{
+  display:flex!important;align-items:center!important;gap:9px!important;
+  color:#14375e!important;font-size:15px!important;font-weight:800!important;
+  padding:0 0 13px!important;margin:0 0 16px!important;
+  border-bottom:1px solid #e8f0f9!important;
+}
+.studio-frame .workspace>.panel>h3 .studio-symbol{
+  width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;
+  border-radius:9px;background:#eaf4ff;color:#1269db;font-size:16px;
+}
+.studio-frame input:not([type=checkbox]){
+  background:#f8fbff!important;border:1px solid #d7e6f7!important;border-radius:11px!important;
+}
+.studio-frame input#name::placeholder{color:#7794b1;opacity:1}
+.studio-frame #liveState{
+  margin:11px 0 0!important;padding:12px 14px!important;
+  background:#f0f7ff!important;border:1px solid #d5e6f9!important;
+  color:#1d4c7a!important;font-size:12px!important;
+  border-radius:12px!important;text-align:right!important;
+}
+.studio-frame #liveState.is-success{
+  background:#ecfaf5!important;border-color:#ccefe0!important;color:#137455!important;
+  font-weight:800!important;font-size:13px!important;
+}
+.studio-frame .workspace>.panel:has(#preview) #preview:not([hidden]){
+  width:100%!important;height:auto!important;max-height:430px!important;
+  min-height:0!important;aspect-ratio:16/9!important;
+  border-radius:13px!important;object-fit:contain!important;
+}
+@media(max-width:850px){
+  .studio-frame .workspace{grid-template-columns:1fr!important}
+  .studio-frame .workspace>.panel:first-child{border-left:0!important;border-bottom:1px solid #e1ebf7!important}
+  .studio-frame .workspace>.panel{padding:17px!important}
+}
 </style></head><body><main>
 <section class="hero"><h2>استودیو تگ خبر</h2><p class="hero-desc">خبرگزاری و مدل را انتخاب کن؛ فیلمت را اضافه کن و خروجی بگیر.</p></section>
 <section class="panel" style="margin-top:16px">
@@ -206,7 +271,7 @@ body,html,main{background:#edf4fc!important}
 <section class="studio-frame"><div class="workspace">
 <section class="panel"><h3><span class="studio-symbol">✎</span> تنظیمات ویدیو</h3>
 <label for="file">فیلم خبرنگار</label><input id="file" type="file" accept="video/*" required><small id="fileInfo" hidden></small>
-<label for="name">متن روی تگ</label><input id="name" value="گزارشی از ریحانه ایاز">
+<label for="name">نام گزارشگر</label><input id="name" type="text" placeholder="نام گزارشگر را وارد کنید" autocomplete="off" required>
 <button id="go" type="button">▶ ساخت فیلم MP4</button>
 <progress id="uploadProgress" max="100" value="0" hidden></progress>
 <div id="liveState">آماده ساخت</div>
@@ -238,7 +303,7 @@ const showEngineHelp=(visible)=>{
 };
 let timer=null,busy=false,engineReady=false;
 const status=$('status'),button=$('go'),file=$('file');
-const setStatus=(message)=>{status.textContent='نسخه 0813 | '+new Date().toLocaleTimeString('fa-IR')+' | '+message;$('liveState').textContent='وضعیت لحظه‌ای: '+message;console.log('[RushFinder AE]',message);document.getElementById('status').textContent=message};
+const setStatus=(message)=>{const done=message==='خروجی فیلم شما آماده است';const live=$('liveState');live.textContent=done?message:'وضعیت لحظه‌ای: '+message;live.classList.toggle('is-success',done);status.textContent=message;console.log('[RushFinder AE]',message);};
 const setBusy=(value)=>{busy=value;button.disabled=value;file.disabled=value;$('name').disabled=value};
 async function check(){try{const r=await fetch(renderUrl('/ae-api/check'),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();if(d.version!=='0813')throw Error('سرور قدیمی پاسخ داده است؛ پنجره های سرور قدیمی را ببندید.');engineReady=!!(d.afterEffects&&d.ffmpeg&&d.project&&d.assetsReady);$('preflight').textContent='وضعیت موتور محلی\nAfter Effects: '+(d.afterEffects?'✓ شناسایی شد':'✗ پیدا نشد')+'\nرندر در After Effects: '+(d.afterEffects?'✓ آماده':'✗ پیدا نشد')+'\nFFmpeg: '+(d.ffmpeg?'✓ شناسایی شد':'✗ پیدا نشد')+'\nپروژه اصلی: '+(d.project?'✓ موجود است':'✗ پیدا نشد')+'\nقالب AEP: '+(d.templateName||'نامشخص')+'\nتصاویر اصلی: '+(d.assetsReady?'✓ کامل':'✗ ناقص')+'\nموتور آماده: '+(engineReady?'بله':'خیر');if(!busy)button.disabled=false;showEngineHelp(!engineReady);return d;}catch(e){engineReady=false;button.disabled=false;showEngineHelp(true);$('preflight').textContent='اتصال به موتور رندر ویندوز برقرار نشد. '+(openedFromFile?'index.html مستقیم از فایل باز شده است. Start-RushFinder.cmd را اجرا کنید تا همین index.html از موتور محلی باز شود.':runningLocally?'موتور را با Start-RushFinder.cmd روشن کنید.':'موتور محلی را با Start-RushFinder.cmd روی همین رایانه اجرا کنید و مجوز شبکه محلی را بررسی کنید.')+'\nجزئیات: '+e.message;throw e;}}
 $('test').addEventListener('click',async()=>{setStatus('در حال بررسی ارتباط با موتور...');try{await check();setStatus(engineReady?'✓ ارتباط برقرار شد؛ اکنون فیلم و نام را وارد کنید.':'برخی ابزارها آماده نیستند؛ وضعیت بالای صفحه را بررسی کنید.')}catch(e){setStatus('خطا: '+e.message)}});
@@ -271,7 +336,7 @@ let localPreviewURL=null;file.addEventListener('change',()=>{if(localPreviewURL)
      document.body.appendChild(saveLink);
      saveLink.click();
      saveLink.remove();
-     setStatus('✓ دانلود MP4 شروع شد؛ شما همچنان در صفحه تگ خبر هستید.');
+     setStatus('خروجی فیلم شما آماده است');
      window.setTimeout(()=>URL.revokeObjectURL(objectUrl),60000);
      objectUrl=null;
    }catch(e){
@@ -284,7 +349,7 @@ let localPreviewURL=null;file.addEventListener('change',()=>{if(localPreviewURL)
    }
  });
  function upload(f,name){return new Promise((resolve,reject)=>{const xhr=new XMLHttpRequest();xhr.open('POST',renderUrl('/ae-api/create?name='+encodeURIComponent(name)+'&filename='+encodeURIComponent(f.name)));xhr.setRequestHeader('Content-Type','application/octet-stream');xhr.timeout=120000;xhr.upload.onprogress=e=>{if(e.lengthComputable){const pct=Math.round(100*e.loaded/e.total);$('uploadProgress').value=pct;setStatus('در حال ارسال فیلم به موتور محلی: '+pct+'٪')}};xhr.onerror=()=>reject(Error('ارسال فیلم با خطای ارتباطی روبه‌رو شد.'));xhr.ontimeout=()=>reject(Error('ارسال فیلم بیش از دو دقیقه طول کشید.'));xhr.onload=()=>{let result;try{result=JSON.parse(xhr.responseText)}catch{reject(Error('پاسخ نامعتبر سرور: HTTP '+xhr.status));return}if(xhr.status<200||xhr.status>=300){reject(Error(result.error||'HTTP '+xhr.status));return}resolve(result)};xhr.send(f)})}
-async function poll(id){let errors=0;const step=async()=>{try{const r=await fetch(renderUrl('/ae-api/status?id='+encodeURIComponent(id)),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();errors=0;setStatus(d.state==='error'?'خطا: '+(d.message||'رندر ناموفق بود'):(d.state==='done'?'ساخت تمام شد':'در حال ساخت: '+(d.state||'در انتظار')));if(d.state==='done'){clearInterval(timer);timer=null;const url=renderUrl('/ae-output/'+id+'.mp4');$('preview').src=url+'?v='+Date.now();$('preview').hidden=false;$('placeholder').hidden=true;$('preview').load();finishedVideoUrl=url;$('dl').hidden=false;setStatus('✓ خروجی MP4 آماده است و در پوشه RushFinder-Exports ذخیره شده؛ پیش‌نمایش اینجاست.');setBusy(false);$('uploadProgress').hidden=true;}else if(d.state==='error'){clearInterval(timer);timer=null;setBusy(false);$('uploadProgress').hidden=true;} }catch(e){if(++errors>=4){clearInterval(timer);timer=null;setStatus('ارتباط با وضعیت رندر قطع شد: '+e.message);setBusy(false);$('uploadProgress').hidden=true;}}};await step();if(busy){timer=setInterval(step,2500)}}
+async function poll(id){let errors=0;const step=async()=>{try{const r=await fetch(renderUrl('/ae-api/status?id='+encodeURIComponent(id)),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();errors=0;setStatus(d.state==='error'?'خطا: '+(d.message||'رندر ناموفق بود'):(d.state==='done'?'ساخت تمام شد':'در حال ساخت: '+(d.state||'در انتظار')));if(d.state==='done'){clearInterval(timer);timer=null;const url=renderUrl('/ae-output/'+id+'.mp4');$('preview').src=url+'?v='+Date.now();$('preview').hidden=false;$('placeholder').hidden=true;$('preview').load();finishedVideoUrl=url;$('dl').hidden=false;setStatus('خروجی فیلم شما آماده است');setBusy(false);$('uploadProgress').hidden=true;}else if(d.state==='error'){clearInterval(timer);timer=null;setBusy(false);$('uploadProgress').hidden=true;} }catch(e){if(++errors>=4){clearInterval(timer);timer=null;setStatus('ارتباط با وضعیت رندر قطع شد: '+e.message);setBusy(false);$('uploadProgress').hidden=true;}}};await step();if(busy){timer=setInterval(step,2500)}}
 button.addEventListener('click',async()=>{setStatus('دکمه ساخت زده شد؛ در حال بررسی ورودی‌ها...');const f=file.files[0],name=$('name').value.trim();if(!f){setStatus('⚠ ابتدا از بخش «فیلم خبرنگار» فایل ویدیویی را انتخاب کن.');file.focus();return}if(!name){setStatus('⚠ متن خبرنگار خالی است.');$('name').focus();return}if(!engineReady){setStatus('اتصال اولیه آماده نبود؛ در حال بررسی مجدد موتور...');try{await check()}catch(e){setStatus('❌ ارتباط با سرور محلی برقرار نیست: '+e.message);return}if(!engineReady){setStatus('❌ پیش‌نیازها آماده نیستند. متن بالای صفحه را ببین.');return}}clearInterval(timer);setBusy(true);finishedVideoUrl='';$('dl').hidden=true;$('preview').hidden=!file.files[0];$('previewLabel').textContent='پیش‌نمایش فیلم انتخاب‌شده؛ پس از موفقیت رندر، فایل نهایی نمایش داده می‌شود';$('uploadProgress').hidden=false;$('uploadProgress').value=0;try{setStatus('در حال شروع ارسال فیلم...');const job=await upload(f,name);setStatus('فیلم دریافت شد. کار شماره '+job.id+' در صف رندر است.');await poll(job.id)}catch(e){setStatus('❌ '+e.message);setBusy(false);$('uploadProgress').hidden=true;}});
 window.addEventListener('error',e=>setStatus('خطای صفحه: '+e.message));window.addEventListener('unhandledrejection',e=>setStatus('خطای اجرا: '+(e.reason?.message||String(e.reason))));
 setStatus('آماده ساخت');check().catch(e=>setStatus('برای ساخت MP4 موتور ویندوز باید روشن باشد؛ Start-RushFinder.cmd را اجرا کن. ('+e.message+')'));
