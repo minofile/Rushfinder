@@ -240,6 +240,50 @@ body,html,main{background:#edf4fc!important}
   .studio-frame .workspace>.panel:first-child{border-left:0!important;border-bottom:1px solid #e1ebf7!important}
   .studio-frame .workspace>.panel{padding:17px!important}
 }
+
+/* 0813 final preview layout: use the entire left pane, preserve video aspect ratio. */
+@media (min-width: 851px) {
+  .studio-frame .workspace { min-height: 555px !important; align-items: stretch !important; }
+  .studio-frame .workspace > .panel:has(#preview) {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    min-height: 0 !important;
+  }
+  .studio-frame .workspace > .panel:has(#preview) #placeholder:not([hidden]),
+  .studio-frame .workspace > .panel:has(#preview) #preview:not([hidden]) {
+    flex: 1 1 auto !important;
+    align-self: stretch !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 375px !important;
+    max-height: none !important;
+    margin: 0 !important;
+    aspect-ratio: auto !important;
+    border-radius: 15px !important;
+  }
+  .studio-frame .workspace > .panel:has(#preview) #preview:not([hidden]) {
+    background: #0b2342 !important;
+    object-fit: contain !important;
+  }
+  .studio-frame .workspace > .panel:has(#preview) #dl:not([hidden]) {
+    flex: 0 0 auto !important;
+    margin-top: 12px !important;
+  }
+}
+@media (max-width: 850px) {
+  .studio-frame .workspace { min-height: 0 !important; }
+  .studio-frame .workspace > .panel:has(#preview) #placeholder:not([hidden]),
+  .studio-frame .workspace > .panel:has(#preview) #preview:not([hidden]) {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 260px !important;
+    max-height: none !important;
+    aspect-ratio: 16 / 9 !important;
+    object-fit: contain !important;
+    margin: 0 !important;
+  }
+}
 </style></head><body><main>
 <section class="hero"><h2>استودیو تگ خبر</h2><p class="hero-desc">خبرگزاری و مدل را انتخاب کن؛ فیلمت را اضافه کن و خروجی بگیر.</p></section>
 <section class="panel" style="margin-top:16px">
@@ -272,7 +316,7 @@ body,html,main{background:#edf4fc!important}
 <section class="panel"><h3><span class="studio-symbol">✎</span> تنظیمات ویدیو</h3>
 <label for="file">فیلم خبرنگار</label><input id="file" type="file" accept="video/*" required><small id="fileInfo" hidden></small>
 <label for="name">نام گزارشگر</label><input id="name" type="text" placeholder="نام گزارشگر را وارد کنید" autocomplete="off" required>
-<button id="go" type="button">▶ ساخت فیلم MP4</button>
+<button id="go" type="button">▶ ساخت فیلم</button>
 <progress id="uploadProgress" max="100" value="0" hidden></progress>
 <div id="liveState">آماده ساخت</div>
 <div id="localEngineHelp" class="engine-connection-help" hidden role="status">
@@ -280,7 +324,7 @@ body,html,main{background:#edf4fc!important}
 فرم تگ خبر در همین index.html باز است. برای ساخت MP4، موتور رندر باید روی ویندوز روشن باشد: فایل <b>Start-RushFinder.cmd</b> را از پوشه پروژه اجرا کنید، سپس از صفحه index.html که باز می‌شود به «تگ خبر» برگردید. اگر مرورگر درخواست مجوز شبکه محلی داد، آن را بررسی و در صورت اطمینان مجاز کنید.
 <a href="http://127.0.0.1:18826/index.html?v=0813#news-tag" target="_top" rel="noopener noreferrer">باز کردن همان index.html روی سرور محلی، در بخش تگ خبر</a>
 </div>
-<details class="details"><summary>جزئیات فنی</summary><pre id="preflight">در حال بررسی موتور خروجی...</pre><button id="test" type="button">بررسی اتصال</button><pre id="status">آماده ساخت فیلم</pre></details>
+<div id="rfInternalDiagnostics" hidden aria-hidden="true" inert><pre id="preflight">در حال بررسی موتور خروجی...</pre><button id="test" type="button" tabindex="-1">بررسی اتصال</button><pre id="status">آماده ساخت فیلم</pre></div>
 </section>
 <section class="panel"><h3><span class="studio-symbol">▷</span> پیش‌نمایش خروجی</h3>
 <p id="previewLabel" hidden></p>
