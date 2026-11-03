@@ -245,17 +245,64 @@ const f=path.join(job.folder,'run.jsx');fs.writeFileSync(f,'\uFEFF'+script,'utf8
 // 0820: standalone name + role template. Do not modify the reporter-tag AEP,
 // reporter text algorithm, channel filter, or any of their rendering options.
 const roleTemplate=path.join(root,'ae-original','تگ گزارش.aep');
+
+// 0822: Read the ACTUAL external-media paths stored in the supplied AEP.
+// Check existing paths and a portable role-assets directory; never invent replacement artwork.
+function roleMediaFiles(){
+ if(!fs.existsSync(roleTemplate))return [];
+ const data=fs.readFileSync(roleTemplate).toString('utf8');
+ const entries=[];const seen=new Set();
+ const pathPattern=/"fullpath":"((?:\\.|[^"\\])+)"/g;
+ let match;
+ while((match=pathPattern.exec(data))!==null){
+  let original;
+  try{original=JSON.parse('"'+match[1]+'"');}catch(_e){continue;}
+  if(!/\.(?:png|jpe?g|tiff?|bmp|psd|mov|mp4|avi)$/i.test(original))continue;
+  const name=path.win32.basename(original);
+  const key=name.toLocaleLowerCase();
+  if(seen.has(key))continue;
+  seen.add(key);
+  const choices=[original,path.join(root,'ae-original','role-assets',name),path.join(root,'ae-original',name)];
+  const available=choices.find(p=>{try{return fs.statSync(p).isFile()}catch(_e){return false}})||null;
+  entries.push({name,original,available});
+ }
+ return entries;
+}
+function missingRoleMedia(){return roleMediaFiles().filter(a=>!a.available).map(a=>a.name)}
+function roleMediaHelp(){return 'قالب «تگ گزارش.aep» به فایل‌های تصویری همراهش نیاز دارد: '+missingRoleMedia().join('، ')+'. فایل‌های اصلی را در پوشه ae-original/role-assets قرار دهید و دوباره تلاش کنید.'}
+
 function scriptForRole(job){
  if(!fs.existsSync(roleTemplate))throw Error('فایل قالب تگ نام و سمت پیدا نشد: ae-original/تگ گزارش.aep');
+ const relinkFiles=roleMediaFiles().filter(x=>!!x.available).map(x=>({name:x.name,file:x.available}));
+ if(missingRoleMedia().length)throw Error(roleMediaHelp());
  const script=`(function(){
 var folder=${jsxString(job.folder)},done=new File(folder+'/render.done'),error=new File(folder+'/render.error'),log=new File(folder+'/ae-render.log');
 var framesFolder=new Folder(folder+'/alpha-frames');if(!framesFolder.exists)framesFolder.create();
-function logIt(x){try{log.open('a');log.writeln('0820 ROLE | '+new Date().toString()+' | '+x);log.close();}catch(ignore){}}
+function logIt(x){try{log.open('a');log.writeln('0822 ROLE | '+new Date().toString()+' | '+x);log.close();}catch(ignore){}}
+logIt('SCRIPT_ENTERED: jsx is executing in After Effects');
 try{
  app.beginSuppressDialogs();try{app.exitAfterLaunchAndEval=true;}catch(ignore){}
  var src=new File(${jsxString(roleTemplate)});if(!src.exists)throw Error('Role AEP template missing');
+ logIt('OPEN_STARTED: '+src.fsName);
  app.open(src);
+ logIt('OPEN_RETURNED');
  if(!app.project||!app.project.file)throw Error('After Effects could not load role AEP');
+ // Relink original files from ae-original/role-assets when the AEP's old Downloads paths no longer exist.
+ var roleRelink=${JSON.stringify(relinkFiles)};
+ for(var ri=1;ri<=app.project.numItems;ri++){
+  var it=app.project.item(ri);
+  if(!(it instanceof FootageItem))continue;
+  var missing=false;
+  try{missing=(it.mainSource instanceof FileSource)&&(!it.file||!it.file.exists)}catch(ignore){}
+  if(!missing)continue;
+  for(var rj=0;rj<roleRelink.length;rj++){
+   var rp=roleRelink[rj],link=new File(rp.file);
+   if(link.exists&&String(it.name).toLowerCase()===String(rp.name).toLowerCase()){
+    it.replace(link);logIt('RELINKED '+rp.name);break;
+   }
+  }
+ }
+ logIt('FOOTAGE_RELINK_CHECK_DONE');
  var comp=null;
  for(var i=1;i<=app.project.numItems;i++){
   var item=app.project.item(i);
@@ -410,7 +457,7 @@ function channelTagSizePercent(){
   }catch(_ignored){}
   return 12;
 }
-function report(){return {afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0813",engineBuild:"0819-channel-size-control",channelTagWidthPercent:channelTagSizePercent(),channelTagControl:true,roleBuild:"0821-name-role-active",roleTag:!!aeExe()&&!!ffmpegExe()&&fs.existsSync(roleTemplate),roleTemplateName:path.basename(roleTemplate),channelTag:!!ffmpegExe()&&fs.existsSync(path.join(root,'assets','news-tag','fori-channel-tag.png')),outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
+function report(){return {afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0813",engineBuild:"0819-channel-size-control",channelTagWidthPercent:channelTagSizePercent(),channelTagControl:true,roleBuild:"0822-role-media-diagnostics",roleMediaMissing:missingRoleMedia(),roleTag:!!aeExe()&&!!ffmpegExe()&&fs.existsSync(roleTemplate),roleTemplateName:path.basename(roleTemplate),channelTag:!!ffmpegExe()&&fs.existsSync(path.join(root,'assets','news-tag','fori-channel-tag.png')),outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
 // 0814: dedicated CHANNEL-tag render. The existing reporter After Effects path below
 // is intentionally unchanged. This mode uses the exact supplied transparent PNG.
 function renderChannelTag(job){
@@ -487,7 +534,15 @@ function runActive(job){if(job.mode==='channel'){renderChannelTag(job);return;}c
     const file=fs.readdirSync(job.folder).filter(n=>/^tag-alpha-source\.(mov|avi)$/i.test(n)).map(n=>path.join(job.folder,n)).find(p=>fs.statSync(p).size>0);
     if(file){message+='\nفایل خروجی آلفا: '+(fs.statSync(file).size/1048576).toFixed(1)+' مگابایت';}
   }catch(e){}
-  if(elapsed>=90&&!fs.existsSync(logPath)){clearInterval(timer);fail('After Effects فرمان اسکریپت را اجرا نکرد. در نسخه 0778 خطای راه‌اندازی با گزارش ثبت می‌شود. After Effects فرمان جدید را نپذیرفت؛ اجرای خودکار نشست قبلی را بررسی کنید.');return}
+  if(elapsed>=90&&!fs.existsSync(logPath)){
+   clearInterval(timer);
+   if(job.mode==='role'){
+    const launchLog=path.join(job.folder,'worker-launch.log');
+    let detail='';try{detail=fs.readFileSync(launchLog,'utf8').slice(-1200)}catch(_e){}
+    fail('اسکریپت «تگ نام و سمت» در After Effects شروع نشده است. فایل تگ گزارش.aep را یک‌بار در افتر باز کنید و پیام‌های مربوط به فایل‌های گمشده یا افزونه‌ها را بررسی کنید. گزارش راه‌اندازی: '+launchLog+(detail?' | '+detail:''));
+   }else fail('After Effects فرمان اسکریپت را اجرا نکرد. در نسخه 0778 خطای راه‌اندازی با گزارش ثبت می‌شود. After Effects فرمان جدید را نپذیرفت؛ اجرای خودکار نشست قبلی را بررسی کنید.');
+   return;
+  }
   if(elapsed>=300)message+='\n⚠ پنج دقیقه گذشته است؛ اگر اندازه فایل آلفا افزایش نمی‌یابد، پنجره After Effects را بررسی کنید.';
   if(elapsed>=1200){clearInterval(timer);fail('رندر After Effects پس از ۲۰ دقیقه به پایان نرسید. آخرین وضعیت: '+message);return}
   job.message=message;
@@ -700,6 +755,7 @@ if(u.pathname==='/ae-api/role-create' && req.method==='POST'){
  const roleTitle=(u.searchParams.get('roleTitle')||'').trim();
  if(!fullName||fullName.length>100||!roleTitle||roleTitle.length>100)
   return respond(res,400,{error:'نام و نام خانوادگی و سمت باید هر کدام بین ۱ تا ۱۰۰ حرف باشند.'});
+ if(missingRoleMedia().length)return respond(res,503,{error:roleMediaHelp(),missingRoleMedia:missingRoleMedia()});
  if(!aeExe()||!ffmpegExe()||!fs.existsSync(roleTemplate))
   return respond(res,503,{error:'برای تگ نام و سمت، After Effects، FFmpeg و فایل ae-original/تگ گزارش.aep لازم است.'});
  const id=crypto.randomUUID(),folder=path.join(work,id);fs.mkdirSync(folder,{recursive:true});
