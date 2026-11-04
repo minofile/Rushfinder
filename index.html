@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fa" dir="rtl">
-<head><meta name="rushfinder-web-build" content="0840">
+<head><meta name="rushfinder-web-build" content="0841">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#f6f9fd">
@@ -5071,7 +5071,7 @@ body.rf-news-tag-is-open #homeState{
     panel=document.createElement('section');panel.id='rfNewsTagPage';panel.setAttribute('aria-label','تگ خبر');
     const frame=document.createElement('iframe');frame.title='تگ خبر';frame.loading='eager';
     frame.setAttribute('data-source','embedded-in-index-0836');
-    frame.srcdoc=tagDocument;
+    frame.src='news-tag.html?v=0841';
     panel.appendChild(frame);document.body.appendChild(panel);
   }
   function bounds(){
@@ -5084,7 +5084,11 @@ body.rf-news-tag-is-open #homeState{
   }
   btn.addEventListener('click',()=>{
     bounds();document.querySelectorAll('.sidebar .nav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
-    document.querySelectorAll('#rfInfoPage,#rfVideoCutPage').forEach(p=>p.classList.remove('rf-visible'));
+    document.getElementById('rfInfoPage')?.classList.remove('rf-visible');
+    document.getElementById('rfVideoCutPage')?.classList.remove('rf-visible','rf-open');
+    document.getElementById('rfCompressPage')?.classList.remove('rf-visible');
+    document.getElementById('rfCalendarPage')?.classList.remove('rf-open','rf-selected');
+    document.getElementById('rfSettingsPage')?.classList.remove('active');
     document.body.classList.remove('rf-info-is-open','rf-company-view');
     document.getElementById('rfCompanyPanel')?.classList.remove('rf-company-on');
     document.getElementById('rfCompanyPanel')?.style.removeProperty('display');
@@ -5131,7 +5135,7 @@ function init(){
  const after=nav.querySelector('#rfVideoCutNav'),before=nav.querySelector('#rfInfoNav');
  if(after)after.insertAdjacentElement('afterend',btn);else if(before)before.insertAdjacentElement('beforebegin',btn);else nav.append(btn);
  const panel=document.createElement('section');panel.id='rfCompressPage';panel.setAttribute('aria-label','کم‌حجم‌کننده ویدئو');
- const frame=document.createElement('iframe');frame.title='کم‌حجم‌کننده ویدئو';frame.loading='lazy';frame.src='video-compress.html?embedded=1&v=0840';panel.appendChild(frame);document.body.appendChild(panel);
+ const frame=document.createElement('iframe');frame.title='کم‌حجم‌کننده ویدئو';frame.loading='lazy';frame.src='video-compress.html?embedded=1&v=0841';panel.appendChild(frame);document.body.appendChild(panel);
  function bounds(){
   const side=document.querySelector('.sidebar'),top=document.querySelector('.app > .top')||document.querySelector('.top');
   const zoom=parseFloat(getComputedStyle(document.documentElement).zoom)||1;
