@@ -22,3 +22,6 @@ Move-Old-RushFinder-Outputs.cmd
 Clean-Completed-Render-Temp.ps1
 Clean-Completed-Render-Temp.cmd
 README-0802-FA.txt
+
+# RF0838: video-compress.html and assets/ffmpeg/ are PUBLIC STATIC assets.
+# Keep these included in the deployment. Video files selected by users never reach Vercel.

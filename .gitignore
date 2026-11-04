@@ -24,3 +24,8 @@ node_modules/
 Thumbs.db
 Desktop.ini
 *~
+
+# RF0838: commit /video-compress.html and /assets/ffmpeg/ so Vercel can serve them.
+
+# Never commit local access secrets.
+.rushfinder-secret

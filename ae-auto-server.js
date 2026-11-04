@@ -3,7 +3,7 @@
 const http=require('http'),fs=require('fs'),path=require('path'),os=require('os'),cp=require('child_process'),crypto=require('crypto');
 // 0806: never generate large working files or final videos inside the GitHub project.
 // Both directories live in the current Windows user's home folder.
-const root=__dirname,port=18826;
+const root=__dirname,port=18827;
 const dataRoot=path.join(os.homedir(),'RushFinder-Cache');
 const work=path.join(dataRoot,'ae-jobs');
 const exportDir=path.join(os.homedir(),'RushFinder-Exports');
@@ -1145,11 +1145,10 @@ const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=
 // 0800: the public website can talk only to this local engine, on the same Windows PC.
 // Explicitly allow the official hosted site; do not expose the rendering API to arbitrary sites.
 const trustedWebOrigins=new Set([
- 'https://rushfinder.vercel.app',
- 'http://127.0.0.1:18826',
- 'http://localhost:18826'
+ 'http://127.0.0.1:18827',
+ 'http://localhost:18827'
 ]);
-const trustedHostnames=new Set(['127.0.0.1:18826','localhost:18826']);
+const trustedHostnames=new Set(['127.0.0.1:18827','localhost:18827']);
 http.createServer((req,res)=>{
  if(!trustedHostnames.has(req.headers.host))return respond(res,403,{error:'Host not allowed'});
  let u;try{u=new URL(req.url,'http://127.0.0.1')}catch{return respond(res,400,{error:'Invalid URL'})}

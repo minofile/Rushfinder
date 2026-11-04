@@ -1,8 +1,8 @@
-﻿$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
-$base = 'http://127.0.0.1:18826'
+$base = 'http://127.0.0.1:18827'
 $probe = "$base/ae-api/check"
-$url = "$base/index.html?v=0833"
+$url = "$base/index.html?v=0837"
 $version = '0813'  # API compatibility; render engine build is checked separately
 $expectedBuild = '0819-channel-size-control'
 $expectedRoleBuild = '0829-role-expression-edit-fix'
@@ -16,12 +16,12 @@ function Read-Engine {
 function Is-This-Engine($report) {
     if ($null -eq $report) { return $false }
     $actual = ([string]$report.installRoot).TrimEnd('/')
-    return ([string]$report.version -eq $version -and $actual -ieq $expectedRoot -and [string]$report.engineBuild -eq $expectedBuild -and [string]$report.roleBuild -eq $expectedRoleBuild -and $report.roleTag -eq $true -and [string]$report.mashhadBuild -eq $expectedMashhadBuild -and $report.mashhadTag -eq $true)
+    return ([string]$report.version -eq $version -and $actual -ieq $expectedRoot -and [string]$report.engineBuild -eq $expectedBuild -and [string]$report.roleBuild -eq $expectedRoleBuild -and [string]$report.mashhadBuild -eq $expectedMashhadBuild)
 }
 function Is-Port-Busy {
     $socket = New-Object System.Net.Sockets.TcpClient
     try {
-        $async = $socket.BeginConnect('127.0.0.1', 18826, $null, $null)
+        $async = $socket.BeginConnect('127.0.0.1', 18827, $null, $null)
         if (-not $async.AsyncWaitHandle.WaitOne(500)) { return $false }
         $socket.EndConnect($async)
         return $true
@@ -34,10 +34,10 @@ function Stop-Outdated-RushFinder($report) {
     $actual = ([string]$report.installRoot).TrimEnd('/')
     if ($actual -ine $expectedRoot -or [string]$report.version -ne '0813') { return $false }
     try {
-        $listener = Get-NetTCPConnection -LocalPort 18826 -State Listen -ErrorAction Stop |
+        $listener = Get-NetTCPConnection -LocalPort 18827 -State Listen -ErrorAction Stop |
             Where-Object { $_.LocalAddress -eq '127.0.0.1' } |
             Select-Object -First 1
-        if ($null -eq $listener) { throw 'No RushFinder listener on 127.0.0.1:18826.' }
+        if ($null -eq $listener) { throw 'No RushFinder listener on 127.0.0.1:18827.' }
         $ownerPid = [int]$listener.OwningProcess
         $owner = Get-CimInstance Win32_Process -Filter "ProcessId=$ownerPid" -ErrorAction Stop
         if ($null -eq $owner -or $owner.Name -ine 'node.exe' -or
@@ -50,7 +50,7 @@ function Stop-Outdated-RushFinder($report) {
             Start-Sleep -Milliseconds 200
             if (-not (Is-Port-Busy)) { return $true }
         }
-        throw 'The old engine has not released port 18826.'
+        throw 'The old engine has not released port 18827.'
     } catch {
         Write-Host ('ERROR: Could not restart the outdated RushFinder engine: ' + $_.Exception.Message) -ForegroundColor Red
         Write-Host 'Close the old RushFinder/Node process, then run Start-RushFinder.cmd again.'
@@ -60,6 +60,10 @@ function Stop-Outdated-RushFinder($report) {
 
 if (-not (Test-Path -LiteralPath (Join-Path $root 'index.html') -PathType Leaf)) {
     Write-Host 'ERROR: index.html is missing from this folder.' -ForegroundColor Red
+    exit 1
+}
+if (-not (Test-Path -LiteralPath (Join-Path $root 'video-compress.html') -PathType Leaf)) {
+    Write-Host 'ERROR: video-compress.html is missing. Extract the full RushFinder 0837 ZIP into one folder.' -ForegroundColor Red
     exit 1
 }
 
@@ -73,8 +77,12 @@ if ($null -ne $report -and -not (Is-This-Engine $report)) {
 }
 if (-not (Is-This-Engine $report)) {
     if (Is-Port-Busy) {
-        Write-Host 'ERROR: Port 18826 is in use by another program or RushFinder copy.' -ForegroundColor Red
-        Write-Host 'Close the old RushFinder engine and start this folder again.'
+        Write-Host 'ERROR: Port 18827 is in use by another program or RushFinder copy.' -ForegroundColor Red
+        if ($null -ne $report -and [string]$report.installRoot) {
+            Write-Host ('Currently running folder: ' + [string]$report.installRoot) -ForegroundColor Yellow
+            Write-Host ('Requested new folder: ' + $expectedRoot) -ForegroundColor Yellow
+        }
+        Write-Host 'Close the old RushFinder engine (or restart Windows), then launch Start-RushFinder.cmd in this new folder.'
         exit 1
     }
     $node = Get-Command node.exe -ErrorAction SilentlyContinue
