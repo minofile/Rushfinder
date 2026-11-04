@@ -242,6 +242,240 @@ writeLog('0813 DIRECT_AE_RENDER_VALIDATED');
 const f=path.join(job.folder,'run.jsx');fs.writeFileSync(f,'\uFEFF'+script,'utf8');return f}
 
 
+// 0830: isolated Akhbar Mashhad reporter/name+role rendering. Fori remains untouched.
+const mashhadTemplate=path.join(root,'ae-original','اخبار مشهد.aep');
+function scriptForMashhad(job){
+// Runs on the *installed* After Effects engine; never paints a substitute plate.
+// Ensure the three linked images exist under exactly the names embedded in the AEP.
+const requiredAssets=['تگ copy.png','akhbare mashhad.png','Micropho4.png'];
+const missingAssets=requiredAssets.filter(name=>!fs.existsSync(path.join(root,'ae-original','mashhad-assets',name)));
+if(missingAssets.length)throw Error('Missing original After Effects images: '+missingAssets.join(', '));
+const assetFiles=requiredAssets.map(name=>path.join(root,'ae-original','mashhad-assets',name).replace(/\\/g,'/'));
+const script=`(function(){
+var folder=${jsxString(job.folder)};var framesFolder=new Folder(folder+'/alpha-frames');if(!framesFolder.exists)framesFolder.create();var result=new File(folder+'/render.done');var error=new File(folder+'/render.error');var log=new File(folder+'/ae-render.log');
+function writeLog(s){try{log.open('a');log.writeln(new Date().toString()+' | '+s);log.close();}catch(ignore){}}
+function safe(v,d){return (v===undefined||v===null)?d:v;}
+try{
+app.beginSuppressDialogs();
+try{app.exitAfterLaunchAndEval=true;}catch(ignore){}
+writeLog('0809: isolated After Effects worker started; opening MASHHAD AEP');
+var requestedProject=new File(${jsxString(mashhadTemplate)});
+if(!requestedProject.exists)throw Error('Original AEP not found: '+requestedProject.fsName);
+app.open(requestedProject);
+if(!app.project||!app.project.file)throw Error('After Effects did not load the AEP');
+writeLog('PROJECT_OPENED: '+app.project.file.fsName);
+var comp=null;for(var i=1;i<=app.project.numItems;i++){var it=app.project.item(i);if(it instanceof CompItem&&it.name.toLowerCase().replace(/[^a-z0-9]/g,'').indexOf('tag2')>=0){comp=it;break;}}
+if(!comp){var names=[];for(var ci=1;ci<=app.project.numItems;ci++){var c=app.project.item(ci);if(c instanceof CompItem)names.push(c.name);}throw Error('No tag2 composition in supplied AEP. Compositions: '+names.join(' | '));}
+writeLog('COMPOSITION_SELECTED: '+comp.name+' | '+comp.width+'x'+comp.height+' duration='+comp.duration);
+var visited={};var textEntries=[];
+function collectText(c){if(!c||visited[c.id])return;visited[c.id]=true;for(var j=1;j<=c.numLayers;j++){var lyr=c.layer(j);try{if(lyr.property('ADBE Text Properties')&&lyr.property('ADBE Text Properties').property('ADBE Text Document'))textEntries.push({layer:lyr,comp:c});}catch(ignore){}try{if(lyr.source instanceof CompItem)collectText(lyr.source);}catch(ignore){}}}
+collectText(comp);if(!textEntries.length)throw Error('Editable text layer not found in tag2');
+// Only replace the reporter text in the MASHHAD AEP. Never edit @AkhbareFori or graphic layers.
+var picked=null;
+for(var t=0;t<textEntries.length;t++){
+ try{
+  var sample=String(textEntries[t].layer.property('ADBE Text Properties').property('ADBE Text Document').value.text||'');
+  writeLog('Found text layer '+textEntries[t].comp.name+'/'+textEntries[t].layer.name+' = '+sample.substring(0,120));
+  if(sample.indexOf('گزارش')>=0&&sample.indexOf('@')<0){picked=textEntries[t];break;}
+ }catch(ignore){}
+}
+// In some original AEP variants the reporter area is intentionally blank.
+ // Try a uniquely named reporter layer, then a uniquely empty text layer.
+ if(!picked){
+   var named=[];
+   for(var ni=0;ni<textEntries.length;ni++){
+     var lName=String(textEntries[ni].layer.name||'');
+     var tContent=String(textEntries[ni].layer.property('ADBE Text Properties').property('ADBE Text Document').value.text||'');
+     if(tContent.indexOf('@')<0 && /خبرنگار|گزارش|reporter|reportername|name field/i.test(lName))named.push(textEntries[ni]);
+   }
+   if(named.length===1){picked=named[0];writeLog('Selected uniquely named reporter text layer: '+picked.layer.name);}
+ }
+ if(!picked){
+   var empty=[];
+   for(var ei=0;ei<textEntries.length;ei++){
+     var tx=String(textEntries[ei].layer.property('ADBE Text Properties').property('ADBE Text Document').value.text||'');
+     if(!tx.replace(/\\s/g,''))empty.push(textEntries[ei]);
+   }
+   if(empty.length===1){picked=empty[0];writeLog('Selected unique blank reporter text slot: '+picked.layer.name);}
+ }
+ if(!picked)throw Error('Reporter text layer is ambiguous: please name it Reporter or خبرنگار in the AEP. No other text has been modified.');
+var textLayer=picked.layer;var textComp=picked.comp;
+if(!textLayer.enabled)throw Error('Original reporter text layer is disabled in the AEP');
+var reporterLocked=textLayer.locked;
+if(reporterLocked)textLayer.locked=false;
+writeLog('REPORTER_LAYER_SELECTED: '+textLayer.name+' | comp: '+textComp.name);
+// 0813: keep every reporter name centered in the ORIGINAL white name plate.
+// Record the template's visible text center before replacing its placeholder.
+// This center travels correctly with the existing tag animation and parent comps.
+var textProp=textLayer.property('ADBE Text Properties').property('ADBE Text Document');
+// The Mashhad template may have a style-only Source Text expression.
+var mashhadExpr=false;try{mashhadExpr=!!textProp.expressionEnabled;if(mashhadExpr)textProp.expressionEnabled=false;}catch(ignore){}
+
+var centerAt=Math.max(0,Math.min(textComp.duration*0.5,textComp.duration-1/Math.max(1,textComp.frameRate)));
+var originalRect=textLayer.sourceRectAtTime(centerAt,false);
+if(!(originalRect.width>1 && originalRect.height>1))throw Error('Reporter placeholder has no visible bounds to locate its white box center.');
+var fixedCenterX=originalRect.left+originalRect.width/2;
+var fixedCenterY=originalRect.top+originalRect.height/2;
+// The original placeholder fits the plate. Use its width as a safe limit
+// so longer input can shrink, but NEVER enlarge shorter names.
+var maxTextWidth=originalRect.width*1.02;
+var initialDoc=textProp.value;
+var initialFont=Number(initialDoc.fontSize)||50;
+var minimumFont=Math.max(8,initialFont*0.32);
+function setReporterText(scale){
+ function editDoc(d){
+  d.text=${jsxString(job.name)};
+  d.justification=ParagraphJustification.CENTER_JUSTIFY;
+  if(scale<1)d.fontSize=Number(d.fontSize)*scale;
+  return d;
+ }
+ if(textProp.numKeys>0){
+  for(var ki=1;ki<=textProp.numKeys;ki++)
+   textProp.setValueAtKey(ki,editDoc(textProp.keyValue(ki)));
+ }else textProp.setValue(editDoc(textProp.value));
+}
+setReporterText(1);
+var updatedRect=textLayer.sourceRectAtTime(centerAt,false);
+// Only point-text needs a transform compensation. Paragraph/box text is
+// already centered by CENTER_JUSTIFY within its existing authored text box.
+var isBoxText=!!textProp.value.boxText;
+if(!isBoxText){
+ for(var shrink=0;shrink<8 && updatedRect.width>maxTextWidth;shrink++){
+  var ratio=Math.min(0.96,0.98*maxTextWidth/updatedRect.width);
+  if(Number(textProp.value.fontSize)*ratio<minimumFont)
+   throw Error('Reporter name is too long to fit legibly inside the white plate.');
+  setReporterText(ratio);
+  updatedRect=textLayer.sourceRectAtTime(centerAt,false);
+ }
+ if(updatedRect.width>maxTextWidth*1.01)
+  throw Error('Reporter text still exceeds its white plate after fitting.');
+ // Moving Anchor Point by the measured change in glyph center keeps the
+ // ORIGINAL comp-space center while preserving Position keyframes, parents,
+ // scale, rotation, masks and all original animation.
+ var dx=(updatedRect.left+updatedRect.width/2)-fixedCenterX;
+ var dy=(updatedRect.top+updatedRect.height/2)-fixedCenterY;
+ var anchorProp=textLayer.property('ADBE Transform Group').property('ADBE Anchor Point');
+ if(anchorProp.expressionEnabled)
+  throw Error('Reporter Anchor Point uses an expression; automated centering needs a separate safe layout.');
+ function shiftAnchor(v){
+  var a=v.slice(0);a[0]+=dx;a[1]+=dy;return a;
+ }
+ if(anchorProp.numKeys>0){
+  for(var ak=1;ak<=anchorProp.numKeys;ak++)
+   anchorProp.setValueAtKey(ak,shiftAnchor(anchorProp.keyValue(ak)));
+ }else anchorProp.setValue(shiftAnchor(anchorProp.value));
+ writeLog('0813 REPORTER_CENTERED: center='+fixedCenterX+','+fixedCenterY+' width='+updatedRect.width+' max='+maxTextWidth+' offset='+dx+','+dy+' anchor adjusted');
+}else{
+ writeLog('0813 REPORTER_CENTERED_BOX_TEXT: center alignment inside existing text box');
+}
+if(mashhadExpr)try{textProp.expressionEnabled=true;}catch(ignore){}
+writeLog('MASHHAD_REPORTER_TEXT_CHANGED: '+String(textProp.value.text).substring(0,120));
+// Do not assign renderQueue.rendering: read-only property in ExtendScript.
+var assets=${JSON.stringify(assetFiles)};
+for(var a=1;a<=app.project.numItems;a++){
+ var foot=app.project.item(a);
+ try{
+  if(!(foot instanceof FootageItem)||!(foot.mainSource instanceof FileSource))continue;
+  // Always relink known original graphics to the delivered package, not paths
+  // from the machine on which the template AEP was authored.
+  for(var k=0;k<assets.length;k++){
+   var candidate=new File(assets[k]);
+   if(candidate.name===foot.name){
+    if(!candidate.exists)throw Error('Missing source image '+candidate.fsName);
+    foot.replace(candidate);
+    writeLog('Original graphics linked: '+foot.name+' -> '+candidate.fsName);
+    break;
+   }
+  }
+ }catch(relinkError){writeLog('Relink warning '+foot.name+': '+relinkError.toString());}
+}
+// Prevent incomplete videos: all three original PNG sources must resolve.
+var missingFootage=[];
+for(var check=1;check<=app.project.numItems;check++){
+ var footage=app.project.item(check);
+ try{
+  if(!(footage instanceof FootageItem)||!(footage.mainSource instanceof FileSource))continue;
+  if(!/\\.png$/i.test(footage.name))continue;
+  if(!footage.file||!footage.file.exists)missingFootage.push(footage.name);
+ }catch(checkProblem){writeLog('Asset validation warning: '+checkProblem.toString());}
+}
+if(missingFootage.length)throw Error('AEP required PNG footage could not be relinked: '+missingFootage.join(', '));
+writeLog('All referenced original PNG graphics found. Reporter text updated; logo remains unchanged.');
+// 0813: only reporter text formatting and (for point text) its own anchor
+ // are adjusted for visual centering; all original plate, logo, movement,
+ // Position keyframes, scale, masks and linked graphic assets remain unchanged.
+ writeLog('0813 REPORTER_NAME_CENTERED_IN_WHITE_PLATE');
+ writeLog('ORIGINAL_ARTWORK_AND_ANIMATION_PRESERVED: yes');
+if(reporterLocked)textLayer.locked=true;
+// 0807: save the edited AEP AFTER configuring its transparent render queue.\n// The original template remains untouched.\nfor(var q=app.project.renderQueue.numItems;q>=1;q--)app.project.renderQueue.item(q).remove();
+var rq=app.project.renderQueue.items.add(comp);var om=rq.outputModule(1);
+// Output Module settings such as Format/Channels/Color may be read-only.
+// Apply an installed Alpha template; never try to write read-only settings.
+var templates=om.templates;writeLog('Available output templates: '+templates.join(' | '));
+var candidates=[];for(var z=0;z<templates.length;z++)if(templates[z]==='Lossless with Alpha')candidates.push(templates[z]);
+for(var z=0;z<templates.length;z++)if(/alpha/i.test(templates[z])&&candidates.join('|').indexOf(templates[z])<0)candidates.push(templates[z]);
+if(!candidates.length)throw Error('No Alpha output template is installed. Available: '+templates.join(', '));
+// Render queue settings are saved in the edited project for aerender.exe.
+// This separates the scripted edit stage from the background rendering stage.
+var prepared=false;
+for(var attempt=0;attempt<candidates.length;attempt++){
+ try{
+  om.applyTemplate(candidates[attempt]);
+  var st=om.getSettings(GetSettingsFormat.STRING);
+  var fmt=String(st['Format']||'');writeLog('Transparent output template '+candidates[attempt]+' format='+fmt+' channels='+st['Channels']);
+  var channels=String(st['Channels']||'');
+  if(channels && !/alpha|rgba/i.test(channels)){
+    writeLog('Rejected template without alpha: '+candidates[attempt]+' channels='+channels);
+    continue;
+  }
+  var seq=/png|sequence|tiff|targa|exr/i.test(fmt);
+  var ext=seq?'.png':(/quicktime|mov/i.test(fmt)?'.mov':'.avi');
+  var target=seq?(framesFolder.fsName+'/tag-[#####]'+ext):(folder+'/tag-alpha-source'+ext);
+  om.file=new File(target);
+  rq.render=true;
+  var editedProject=new File(${jsxString(path.join(exportDir,'RushFinder-Edited-'+job.id+'.aep'))});
+  app.project.save(editedProject);
+  writeLog('EDITED_AEP_SAVED: '+editedProject.fsName+' -> '+target);
+  if(!editedProject.exists || editedProject.length<10000)throw Error('Edited AEP was not saved correctly');
+  prepared=true;
+  break;
+ }catch(setupError){writeLog('Template preparation warning '+setupError.toString());}
+}
+if(!prepared)throw Error('Could not configure a transparent render output for the Mashhad project.');
+// 0811: Regression fix. Render in the same After Effects process that opened
+// and edited the AEP. The split edit/aerender flow in 0807-0809 yielded only
+// the green logo on the user's Windows machine despite successfully relinking
+// all PNG assets. Do not mark a job ready until real alpha output exists.
+writeLog('0813 DIRECT_AE_RENDER_BEGIN');
+app.project.renderQueue.render();
+writeLog('0813 DIRECT_AE_RENDER_END status='+rq.status+' DONE='+RQItemStatus.DONE);
+if(rq.status!==RQItemStatus.DONE)throw Error('After Effects render queue did not complete. Status='+rq.status);
+var finishedFile=om.file;
+if(seq){
+ var made=framesFolder.getFiles(function(f){return f instanceof File&&/\\.png$/i.test(f.name);});
+ if(made.length<3)throw Error('AE finished but PNG alpha frames are missing: '+made.length);
+ writeLog('0813 OUTPUT_PNG_COUNT='+made.length);
+}else if(!finishedFile.exists || finishedFile.length<1000){
+ throw Error('AE finished but alpha master movie is missing: '+finishedFile.fsName);
+}else{
+ writeLog('0813 OUTPUT_ALPHA_SIZE='+finishedFile.length+' FILE='+finishedFile.fsName);
+}
+result.open('w');result.write('ALPHA_RENDERED');result.close();
+writeLog('0813 DIRECT_AE_RENDER_VALIDATED');
+}catch(e){writeLog('ERROR '+e.toString());error.open('w');error.write(e.toString());error.close();}finally{
+ try{app.endSuppressDialogs(false)}catch(ignore){}
+ // Close only the current project; leave the running After Effects application alive.
+ // The user need not manually close the window before the next job.
+ try{writeLog('Closing the After Effects worker automatically');
+   if(app.project)app.project.close(CloseOptions.DO_NOT_SAVE_CHANGES);
+ }catch(closeError){writeLog('Project close: '+closeError.toString());}
+ writeLog('AE script finished; next job can be scheduled.');
+}
+})();`;
+const f=path.join(job.folder,'run.jsx');fs.writeFileSync(f,'\uFEFF'+script,'utf8');return f}
+
+
+
 // 0820: standalone name + role template. Do not modify the reporter-tag AEP,
 // reporter text algorithm, channel filter, or any of their rendering options.
 const roleTemplate=path.join(root,'ae-original','تگ گزارش.aep');
@@ -603,21 +837,24 @@ function channelTagSizePercent(){
   }catch(_ignored){}
   return 12;
 }
-function report(){return {afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0813",engineBuild:"0819-channel-size-control",channelTagWidthPercent:channelTagSizePercent(),channelTagControl:true,roleBuild:"0829-role-expression-edit-fix",roleMediaMissing:missingRoleMedia(),roleTag:!!aeExe()&&!!ffmpegExe()&&fs.existsSync(roleTemplate),roleTemplateName:path.basename(roleTemplate),channelTag:!!ffmpegExe()&&fs.existsSync(path.join(root,'assets','news-tag','fori-channel-tag.png')),outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
+function missingMashhadAssets(){return ['تگ copy.png','akhbare mashhad.png','Micropho4.png'].filter(name=>!fs.existsSync(path.join(root,'ae-original','mashhad-assets',name)));}
+function mashhadAssetsReady(){return fs.existsSync(mashhadTemplate)&&missingMashhadAssets().length===0;}
+function report(){return {mashhadTag:!!aeExe()&&!!ffmpegExe()&&mashhadAssetsReady()&&fs.existsSync(path.join(root,'assets','news-tag','mashhad-channel-tag.png')),mashhadBuild:'0830-mashhad-three-models',mashhadTemplateName:path.basename(mashhadTemplate),mashhadMediaMissing:missingMashhadAssets(),afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0813",engineBuild:"0819-channel-size-control",channelTagWidthPercent:channelTagSizePercent(),channelTagControl:true,roleBuild:"0829-role-expression-edit-fix",roleMediaMissing:missingRoleMedia(),roleTag:!!aeExe()&&!!ffmpegExe()&&fs.existsSync(roleTemplate),roleTemplateName:path.basename(roleTemplate),channelTag:!!ffmpegExe()&&fs.existsSync(path.join(root,'assets','news-tag','fori-channel-tag.png')),outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
 // 0814: dedicated CHANNEL-tag render. The existing reporter After Effects path below
 // is intentionally unchanged. This mode uses the exact supplied transparent PNG.
 function renderChannelTag(job){
- const logo=path.join(root,'assets','news-tag','fori-channel-tag.png');
+ const agencyLabel=job.mode==='mashhad-channel'?'اخبار مشهد':'خبرفوری';
+ const logo=path.join(root,'assets','news-tag',job.mode==='mashhad-channel'?'mashhad-channel-tag.png':'fori-channel-tag.png');
  let finished=false;
  const fail=error=>{
   if(finished)return;
   finished=true;job.state='error';
-  job.message='ساخت تگ کانال خبرفوری ناموفق بود: '+String(error);
+  job.message='ساخت تگ کانال '+agencyLabel+' ناموفق بود: '+String(error);
  };
  try{
   const ff=ffmpegExe();
   if(!ff)throw Error('FFmpeg پیدا نشد.');
-  if(!fs.existsSync(logo))throw Error('تصویر تگ کانال خبرفوری موجود نیست.');
+  if(!fs.existsSync(logo))throw Error('تصویر تگ کانال '+agencyLabel+' موجود نیست.');
   const size=videoDimensions(ff,job.input);
   const tagPercent=Number(job.channelTagPercent);
   if(!Number.isInteger(tagPercent)||tagPercent<6||tagPercent>40)throw Error('اندازه تگ کانال باید از ۶ تا ۴۰ درصد باشد.');
@@ -633,7 +870,7 @@ function renderChannelTag(job){
   const args=['-hide_banner','-y','-i',job.input,'-loop','1','-framerate','25','-i',logo,
    '-filter_complex',filter,'-map','[v]','-map','0:a?',
    '-c:v','libx264','-preset','medium','-crf','18','-c:a','aac','-movflags','+faststart',output];
-  job.state='rendering';job.message='در حال قرار دادن تگ کانال خبرفوری روی فیلم...';
+  job.state='rendering';job.message='در حال قرار دادن تگ کانال '+agencyLabel+' روی فیلم...';
   const proc=cp.spawn(ff,args,{windowsHide:true});
   let ffLog='';
   proc.stderr.on('data',data=>{ffLog=(ffLog+data.toString()).slice(-5000)});
@@ -642,7 +879,7 @@ function renderChannelTag(job){
    if(finished)return;
    if(code!==0||!fs.existsSync(output)||fs.statSync(output).size<1000)
     return fail('FFmpeg: '+ffLog.slice(-1600));
-   finished=true;job.state='done';job.message='تگ کانال خبرفوری با اندازه '+job.channelTagWidthPercent+'٪ (عرض '+job.channelTagWidthPixels+' پیکسل) آماده است.';
+   finished=true;job.state='done';job.message='تگ کانال '+agencyLabel+' با اندازه '+job.channelTagWidthPercent+'٪ (عرض '+job.channelTagWidthPixels+' پیکسل) آماده است.';
    fs.rm(job.folder,{recursive:true,force:true,maxRetries:4,retryDelay:1000},
     error=>{if(error)console.warn('Channel temp cleanup failed:',error.message)});
   });
@@ -650,7 +887,7 @@ function renderChannelTag(job){
 }
 
 // 0811: Direct After Effects render, without a second aerender process.
-function runActive(job){if(job.mode==='channel'){renderChannelTag(job);return;}const fail=e=>{job.state='error';let tail='';try{const f=path.join(job.folder,'ae-render.log');if(fs.existsSync(f))tail=fs.readFileSync(f,'utf8').split(/\r?\n/).filter(Boolean).slice(-10).join('\n').slice(-2500);}catch(ignore){}job.message=String(e)+(tail?'\nآخرین گزارش واقعی افتر افکت:\n'+tail:'\nگزارش افتر افکت هنوز ایجاد نشده است.');};(async()=>{try{job.state='rendering';job.message='مرحله ۱/۳: بازکردن AEP، اصلاح متن و رندر شفاف در خود After Effects...';const exe=aeExe();if(!exe)throw Error('After Effects در Program Files/Adobe پیدا نشد.');if(!ffmpegExe())throw Error('FFmpeg پیدا نشد. فایل ffmpeg.exe مخصوص ویندوز را در پوشه tools کنار سایت قرار بدهید، یا FFmpeg را در PATH نصب کنید.');const script=job.mode==='role'?scriptForRole(job):scriptFor(job);job.message='مرحله ۱/۳: پروژه اصلی در After Effects در حال آماده‌سازی و رندر است.';// Launch AE directly as in the last functioning releases. PowerShell Start-Process
+function runActive(job){if(job.mode==='channel'||job.mode==='mashhad-channel'){renderChannelTag(job);return;}const fail=e=>{job.state='error';let tail='';try{const f=path.join(job.folder,'ae-render.log');if(fs.existsSync(f))tail=fs.readFileSync(f,'utf8').split(/\r?\n/).filter(Boolean).slice(-10).join('\n').slice(-2500);}catch(ignore){}job.message=String(e)+(tail?'\nآخرین گزارش واقعی افتر افکت:\n'+tail:'\nگزارش افتر افکت هنوز ایجاد نشده است.');};(async()=>{try{job.state='rendering';job.message='مرحله ۱/۳: بازکردن AEP، اصلاح متن و رندر شفاف در خود After Effects...';const exe=aeExe();if(!exe)throw Error('After Effects در Program Files/Adobe پیدا نشد.');if(!ffmpegExe())throw Error('FFmpeg پیدا نشد. فایل ffmpeg.exe مخصوص ویندوز را در پوشه tools کنار سایت قرار بدهید، یا FFmpeg را در PATH نصب کنید.');const script=job.mode==='role'?scriptForRole(job):((job.mode==='mashhad-reporter'||job.mode==='mashhad-role')?scriptForMashhad(job):scriptFor(job));job.message='مرحله ۱/۳: پروژه اصلی در After Effects در حال آماده‌سازی و رندر است.';// Launch AE directly as in the last functioning releases. PowerShell Start-Process
  // occasionally loses the JSX -r argument and prevents script startup.
  // -m starts a separate AE instance: never inject the script into a user's
  // already-running After Effects session. -noui requests a hidden editing
@@ -935,6 +1172,33 @@ http.createServer((req,res)=>{
  if(u.pathname==='/ae-api/check')return respond(res,200,report());
 // 0814: channel mode only. The existing /ae-api/create reporter route remains intact.
 // 0820: isolated role model; reporter and channel routes remain unchanged.
+// 0830: isolated Mashhad three-mode workflow; no changes to Fori routes.
+if(u.pathname==='/ae-api/mashhad-create' && req.method==='POST'){
+ const mode=u.searchParams.get('mode')||'reporter';
+ if(!['reporter','channel','role'].includes(mode))return respond(res,400,{error:'مدل تگ اخبار مشهد معتبر نیست.'});
+ const fullName=(u.searchParams.get('fullName')||'').trim();
+ const roleTitle=(u.searchParams.get('roleTitle')||'').trim();
+ const name=(u.searchParams.get('name')||'').trim();
+ if(mode==='reporter'&&(!name||name.length>140))return respond(res,400,{error:'نام خبرنگار را وارد کنید.'});
+ if(mode==='role'&&(!fullName||!roleTitle||fullName.length>90||roleTitle.length>90))return respond(res,400,{error:'نام و نام خانوادگی و سمت معتبر لازم است.'});
+ if(!ffmpegExe()||(mode!=='channel'&&!aeExe())||(mode!=='channel'&&!mashhadAssetsReady()))
+  return respond(res,503,{error:'موتور یا تصاویر اصلی تگ اخبار مشهد آماده نیستند. وضعیت /ae-api/check را بررسی کنید.',mashhadMediaMissing:missingMashhadAssets()});
+ if(mode==='channel'&&!fs.existsSync(path.join(root,'assets','news-tag','mashhad-channel-tag.png')))
+  return respond(res,503,{error:'تصویر تگ کانال اخبار مشهد پیدا نشد.'});
+ const id=crypto.randomUUID(),folder=path.join(work,id);fs.mkdirSync(folder,{recursive:true});
+ const ext=(path.extname(u.searchParams.get('filename')||'').toLowerCase().match(/^\.(mp4|mov|webm|m4v|avi)$/)||[])[0]||'.mp4';
+ const percent=Number(u.searchParams.get('tagPercent')||channelTagSizePercent());
+ if(mode==='channel'&&(!Number.isInteger(percent)||percent<6||percent>40))return respond(res,400,{error:'اندازه تگ کانال باید بین ۶ و ۴۰ باشد.'});
+ const text=mode==='role'?'گزارشی از: '+fullName+' | '+roleTitle:name;
+ const job={id,folder,agency:'mashhad',mode:'mashhad-'+mode,name:text,fullName,roleTitle,
+   channelTagPercent:percent,input:path.join(folder,'source-video'+ext),state:'uploading',message:'در حال دریافت فیلم اخبار مشهد...'};
+ jobs.set(id,job);let total=0;const file=fs.createWriteStream(job.input);
+ req.on('data',c=>{total+=c.length;if(total>1024*1024*1024){req.destroy();file.destroy();}});
+ req.pipe(file);
+ file.on('finish',()=>{job.state='queued';job.message='فیلم اخبار مشهد در صف پردازش قرار گرفت.';respond(res,200,{id});run(job)});
+ req.on('error',()=>{job.state='error';job.message='آپلود فیلم متوقف شد.'});
+ return;
+}
 if(u.pathname==='/ae-api/role-create' && req.method==='POST'){
  const fullName=(u.searchParams.get('fullName')||'').trim();
  const roleTitle=(u.searchParams.get('roleTitle')||'').trim();
@@ -973,6 +1237,6 @@ if(u.pathname==='/ae-api/channel-create' && req.method==='POST'){
 }
 if(u.pathname==='/ae-api/create' && req.method==='POST'){
 const name=(u.searchParams.get('name')||'').trim();if(!name||name.length>140)return respond(res,400,{error:'نام باید بین یک تا ۱۴۰ حرف باشد.'});if(!aeExe()||!ffmpegExe()||!fs.existsSync(template)||!['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(n=>fs.existsSync(path.join(root,'ae-original',n))))return respond(res,503,{error:'پیش‌نیاز ناقص: '+(!aeExe()?'After Effects ':'')+(!aeExe()||!fs.existsSync(path.join(path.dirname(aeExe()||''),'aerender.exe'))?'aerender ':'')+(!ffmpegExe()?'FFmpeg ':'')+(!fs.existsSync(template)?'AEP ':'')+(!['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(n=>fs.existsSync(path.join(root,'ae-original',n)))?'PNG original assets ':'')});const id=crypto.randomUUID(),folder=path.join(work,id);fs.mkdirSync(folder,{recursive:true});const job={id,folder,name,input:path.join(folder,'source-video'+(path.extname(u.searchParams.get('filename')||'').toLowerCase().match(/^\.(mp4|mov|webm|m4v|avi)$/)?.[0]||'.mp4')),state:'uploading',message:'دریافت فیلم...'};jobs.set(id,job);let total=0;const f=fs.createWriteStream(job.input);req.on('data',c=>{total+=c.length;if(total>1024*1024*1024){req.destroy();f.destroy()}});req.pipe(f);f.on('finish',()=>{job.state='queued';job.message='در صف رندر...';respond(res,200,{id});run(job)});req.on('error',()=>{job.state='error';job.message='آپلود فیلم متوقف شد.'});return;}
-if(u.pathname==='/ae-api/status'){const j=jobs.get(u.searchParams.get('id'));if(!j)return respond(res,200,{state:'error',message:'پردازش پیدا نشد.'});return respond(res,200,{id:j.id,state:j.state,message:j.message,channelTagWidthPercent:j.mode==='channel'?j.channelTagWidthPercent:null,channelTagWidthPixels:j.mode==='channel'?j.channelTagWidthPixels:null});}
+if(u.pathname==='/ae-api/status'){const j=jobs.get(u.searchParams.get('id'));if(!j)return respond(res,200,{state:'error',message:'پردازش پیدا نشد.'});return respond(res,200,{id:j.id,state:j.state,message:j.message,channelTagWidthPercent:(j.mode==='channel'||j.mode==='mashhad-channel')?j.channelTagWidthPercent:null,channelTagWidthPixels:(j.mode==='channel'||j.mode==='mashhad-channel')?j.channelTagWidthPixels:null});}
 let file;try{if(u.pathname.startsWith('/ae-output/')){const id=path.basename(u.pathname,'.mp4');if(!/^[a-f0-9-]{36}$/.test(id))throw Error();file=path.join(exportDir,id+'.mp4')}else{if(u.pathname.startsWith('/ae-jobs')||u.pathname.startsWith('/ae-original')||u.pathname.startsWith('/tools/'))throw Error();file=path.resolve(root,'.'+decodeURIComponent(u.pathname));if(!file.startsWith(root+path.sep))throw Error()}}catch{return respond(res,403,{error:'Forbidden'})}if(fs.existsSync(file)&&fs.statSync(file).isDirectory())file=path.join(file,'index.html');fs.stat(file,(err,s)=>{if(err||!s.isFile()){res.writeHead(404);res.end('Not found');return}let start=0,end=s.size-1,code=200,headers={'Content-Type':types[path.extname(file).toLowerCase()]||'application/octet-stream','Cache-Control':'no-store','Accept-Ranges':'bytes'};if(req.headers.range){const m=/bytes=(\d+)-(\d*)/.exec(req.headers.range);if(m){start=Number(m[1]);end=m[2]?Number(m[2]):end;if(start>end||start>=s.size){res.writeHead(416);res.end();return}code=206;headers['Content-Range']=`bytes ${start}-${end}/${s.size}`}}headers['Content-Length']=end-start+1;res.writeHead(code,headers);fs.createReadStream(file,{start,end}).pipe(res)})
 }).listen(port,'127.0.0.1',()=>console.log('RushFinder 0813: http://127.0.0.1:'+port+'/index.html'));
