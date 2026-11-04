@@ -2,7 +2,7 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $base = 'http://127.0.0.1:18827'
 $probe = "$base/ae-api/check"
-$url = "$base/index.html?v=0837"
+# The website is opened by Start-RushFinder.cmd; this script only manages the local renderer.
 $version = '0813'  # API compatibility; render engine build is checked separately
 $expectedBuild = '0819-channel-size-control'
 $expectedRoleBuild = '0829-role-expression-edit-fix'
@@ -110,12 +110,5 @@ if (-not (Is-This-Engine $report)) {
         exit 1
     }
 }
-Write-Host 'Opening RushFinder index.html in the default browser...'
-try {
-    Start-Process -FilePath $url -ErrorAction Stop
-} catch {
-    Write-Host ('ERROR: The browser could not be opened: ' + $_.Exception.Message) -ForegroundColor Red
-    Write-Host ('Open manually: ' + $url)
-    exit 1
-}
+Write-Host 'RushFinder local renderer is ready. The official website was opened by Start-RushFinder.cmd.'
 exit 0
