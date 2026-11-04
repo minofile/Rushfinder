@@ -1,4 +1,4 @@
-<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>استودیو تگ خبر | RushFinder 0833</title><style>
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>استودیو تگ خبر | RushFinder 0835</title><style>
 :root{--ink:#123251;--blue:#1269e8;--line:#dbe8f6;--soft:#f3f8ff}
 *{box-sizing:border-box}[hidden]{display:none!important}
 body{background:transparent;direction:rtl;color:var(--ink);font-family:"Vazir",Tahoma,"Segoe UI",sans-serif;max-width:1120px;margin:0 auto;padding:8px 10px}
@@ -723,6 +723,24 @@ body[data-rf-agency="mashhad"] .mode-grid button.rf-card-role.active .rf-radio-m
 body[data-rf-agency="mashhad"] .mode-grid button.rf-channel-mode .mode-visual{
   background:#fff url("assets/news-tag/mashhad-channel-tag.png") center/contain no-repeat!important;
 }
+</style>
+<style id="rf0835-mashhad-role-disabled">
+/* 0835: only name-and-role card is temporarily unavailable for Akhbar Mashhad. */
+body[data-rf-agency="mashhad"] .mode-grid .mode-item[data-rf-mode="role"]:disabled {
+  opacity:.52!important;
+  filter:grayscale(.45)!important;
+  cursor:not-allowed!important;
+  box-shadow:none!important;
+}
+body[data-rf-agency="mashhad"] .mode-grid .mode-item[data-rf-mode="role"]:disabled::after {
+  content:"فعلاً غیرفعال";
+  display:block;
+  font-size:10px;
+  font-weight:700;
+  color:#835f28;
+  text-align:center;
+  line-height:1.1;
+}
 </style></head><body><main>
 <section class="hero"><h2>استودیو تگ خبر</h2><p class="hero-desc">خبرگزاری و مدل را انتخاب کن؛ فیلمت را اضافه کن و خروجی بگیر.</p></section>
 <section class="panel" style="margin-top:16px">
@@ -733,9 +751,9 @@ body[data-rf-agency="mashhad"] .mode-grid button.rf-channel-mode .mode-visual{
     <select id="agency" aria-label="انتخاب خبرگزاری">
       <option value="fori" selected>خبرفوری</option>
       <option value="mashhad">اخبار مشهد</option>
-      <option value="farda">خبرفردا</option>
-      <option value="jaryan">جریان</option>
-      <option value="hamseda">هم‌صدا</option>
+      <option value="farda" disabled>خبرفردا (به‌زودی)</option>
+      <option value="jaryan" disabled>جریان (به‌زودی)</option>
+      <option value="hamseda" disabled>هم‌صدا (به‌زودی)</option>
     </select>
   </div>
   <div class="agency-status" id="agencyStatus" hidden>قالب فعال</div>
@@ -830,9 +848,24 @@ const status=$('status'),button=$('go'),file=$('file');
 let rfTagMode='reporter';
 const roleCard=document.querySelector('.mode-item[data-rf-mode="role"]');
 if(roleCard){roleCard.disabled=false;roleCard.classList.remove('disabled');roleCard.removeAttribute('aria-disabled');roleCard.title='تگ نام و سمت فعال است';}
+
+// 0835: restrict name-and-role for Mashhad only; other agency templates are untouched.
+function rfSyncMashhadRoleAvailability(){
+  if(!roleCard)return;
+  const disabled=agencyIsMashhad();
+  roleCard.disabled=disabled;
+  roleCard.classList.toggle('disabled',disabled);
+  roleCard.setAttribute('aria-disabled',String(disabled));
+  roleCard.title=disabled?'تگ نام و سمت اخبار مشهد فعلاً غیرفعال است':'تگ نام و سمت فعال است';
+  if(disabled&&rfTagMode==='role'&&!busy){
+    const reporterCard=document.querySelector('.mode-item[data-rf-mode="reporter"]');
+    if(reporterCard)reporterCard.click();
+  }
+}
+
 for(const tile of document.querySelectorAll('.mode-item[data-rf-mode]')){
  tile.addEventListener('click',()=>{
-  if(busy)return;
+  if(busy||tile.disabled||(agencyIsMashhad()&&tile.dataset.rfMode==='role'))return;
   rfTagMode=tile.dataset.rfMode;
   for(const item of document.querySelectorAll('.mode-item[data-rf-mode]')){
    const active=item.dataset.rfMode===rfTagMode;
@@ -852,7 +885,7 @@ for(const tile of document.querySelectorAll('.mode-item[data-rf-mode]')){
  });
 }
 const setStatus=(message)=>{const done=message==='خروجی فیلم شما آماده است';const live=$('liveState');live.textContent=done?message:'وضعیت لحظه‌ای: '+message;live.classList.toggle('is-success',done);status.textContent=message;console.log('[RushFinder AE]',message);};
-const setBusy=(value)=>{busy=value;button.disabled=value;file.disabled=value;$('name').disabled=value;$('rfFullName').disabled=value;$('rfRoleTitle').disabled=value;channelSizeSlider.disabled=value};
+const setBusy=(value)=>{busy=value;button.disabled=value;file.disabled=value;$('name').disabled=value;$('rfFullName').disabled=value;$('rfRoleTitle').disabled=value;channelSizeSlider.disabled=value;$('agency').disabled=value};
 async function check(){try{const r=await fetch(renderUrl('/ae-api/check'),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();if(d.version!=='0813')throw Error('سرور قدیمی پاسخ داده است؛ پنجره های سرور قدیمی را ببندید.');engineReady=!!(d.afterEffects&&d.ffmpeg&&d.project&&d.assetsReady);engineSupportsChannel=d.channelTag===true&&d.channelTagControl===true&&d.engineBuild==="0819-channel-size-control";engineSupportsRole=d.roleTag===true&&d.roleBuild==="0829-role-expression-edit-fix";engineSupportsMashhad=d.mashhadTag===true&&d.mashhadBuild==="0830-mashhad-three-models";roleMissingMedia=Array.isArray(d.roleMediaMissing)?d.roleMediaMissing:[];
   if(!sizeChangedByUser&&Number.isInteger(d.channelTagWidthPercent))setChannelPercent(d.channelTagWidthPercent);
   syncChannelHelp();$('preflight').textContent='وضعیت موتور محلی\nAfter Effects: '+(d.afterEffects?'✓ شناسایی شد':'✗ پیدا نشد')+'\nرندر در After Effects: '+(d.afterEffects?'✓ آماده':'✗ پیدا نشد')+'\nFFmpeg: '+(d.ffmpeg?'✓ شناسایی شد':'✗ پیدا نشد')+'\nپروژه اصلی: '+(d.project?'✓ موجود است':'✗ پیدا نشد')+'\nقالب AEP: '+(d.templateName||'نامشخص')+'\nتصاویر اصلی: '+(d.assetsReady?'✓ کامل':'✗ ناقص')+'\nموتور آماده: '+(engineReady?'بله':'خیر');if(!busy)button.disabled=false;showEngineHelp(!engineReady);return d;}catch(e){engineReady=false;engineSupportsChannel=false;engineSupportsRole=false;engineSupportsMashhad=false;syncChannelHelp();button.disabled=false;showEngineHelp(true);$('preflight').textContent='اتصال به موتور رندر ویندوز برقرار نشد. '+(openedFromFile?'index.html مستقیم از فایل باز شده است. Start-RushFinder.cmd را اجرا کنید تا همین index.html از موتور محلی باز شود.':runningLocally?'موتور را با Start-RushFinder.cmd روشن کنید.':'موتور محلی را با Start-RushFinder.cmd روی همین رایانه اجرا کنید و مجوز شبکه محلی را بررسی کنید.')+'\nجزئیات: '+e.message;throw e;}}
@@ -918,8 +951,9 @@ setStatus('آماده ساخت');check().catch(e=>setStatus('برای ساخت M
 (function(){const a=document.getElementById('agency'),btn=document.getElementById('go'),badge=document.getElementById('agencyStatus'),note=document.querySelector('.dropdown-helper');
 function update(){const mashhad=a.value==='mashhad',ok=a.value==='fori'||mashhad;
  document.body.dataset.rfAgency=a.value;
+ rfSyncMashhadRoleAvailability();
  const heroTitle=document.querySelector('.hero h2');if(heroTitle)heroTitle.textContent=mashhad?'استودیو تگ اخبار مشهد':'استودیو تگ خبر';
- document.title=mashhad?'اخبار مشهد | RushFinder 0833':'استودیو تگ خبر | RushFinder 0833';
+ document.title=mashhad?'اخبار مشهد | RushFinder 0835':'استودیو تگ خبر | RushFinder 0835';
  badge.textContent=ok?'● قالب فعال':'○ قالب هنوز اضافه نشده';
  badge.style.color=ok?'#0b835b':'#a26a23';badge.style.background=ok?'#e6f9f1':'#fff5df';
  btn.disabled=!ok||busy;
