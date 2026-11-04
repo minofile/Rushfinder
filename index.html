@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fa" dir="rtl">
-<head><meta name="rushfinder-web-build" content="0838">
+<head><meta name="rushfinder-web-build" content="0839">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#f6f9fd">
@@ -5113,7 +5113,7 @@ if(location.protocol==='file:'){
  probe.src='http://127.0.0.1:18827/favicon.ico?probe=0837&t='+Date.now();
 }
 </script>
-<!-- RushFinder 0838: High-quality, browser-only video compressor for local and public hosts. -->
+<!-- RushFinder 0839: Web compressor reads large videos without copying source to WASM memory. -->
 <style id="rf0836-compress-css">
 #rfCompressPage{display:none;position:fixed;top:var(--rf536-header-height,68px);bottom:0;left:0;right:var(--rf536-sidebar-width,210px);z-index:2147483001;background:#f2f7ff;overflow:hidden}
 #rfCompressPage.rf-visible{display:block!important}
@@ -5123,7 +5123,7 @@ if(location.protocol==='file:'){
 </style>
 <script id="rf0836-compress-nav">
 (function(){'use strict';
-// RF 0838: compressor visible on web and local pages. Video data never leaves the browser.
+// RF 0839: Web compressor processes video locally, without server uploads.
 
 function init(){
  const nav=document.querySelector('.sidebar .nav');if(!nav||document.getElementById('rfCompressNav'))return;
@@ -5131,7 +5131,7 @@ function init(){
  const after=nav.querySelector('#rfVideoCutNav'),before=nav.querySelector('#rfInfoNav');
  if(after)after.insertAdjacentElement('afterend',btn);else if(before)before.insertAdjacentElement('beforebegin',btn);else nav.append(btn);
  const panel=document.createElement('section');panel.id='rfCompressPage';panel.setAttribute('aria-label','کم‌حجم‌کننده ویدئو');
- const frame=document.createElement('iframe');frame.title='کم‌حجم‌کننده ویدئو';frame.loading='lazy';frame.src='video-compress.html?embedded=1';panel.appendChild(frame);document.body.appendChild(panel);
+ const frame=document.createElement('iframe');frame.title='کم‌حجم‌کننده ویدئو';frame.loading='lazy';frame.src='video-compress.html?embedded=1&v=0839';panel.appendChild(frame);document.body.appendChild(panel);
  function bounds(){
   const side=document.querySelector('.sidebar'),top=document.querySelector('.app > .top')||document.querySelector('.top');
   const zoom=parseFloat(getComputedStyle(document.documentElement).zoom)||1;

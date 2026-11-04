@@ -10,6 +10,7 @@
 :root{--ink:#153657;--blue:#126be4;--sub:#62809e;--line:#d8e6f5;--bg:#f2f7ff}
 *{box-sizing:border-box}html{background:var(--bg)}body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:RFVazir,Tahoma,sans-serif;line-height:1.9}
 main{width:min(1150px,100%);margin:auto;padding:24px 26px 70px}.hero{border:1px solid #c9defa;border-radius:23px;background:linear-gradient(110deg,#0b315f,#1267cc 73%,#348feb);color:white;padding:25px 29px;display:flex;align-items:center;gap:20px;box-shadow:0 12px 25px #1f69ac19}.hero-icon{width:69px;height:69px;flex:0 0 69px;display:grid;place-items:center;background:#ffffff23;border:1px solid #ffffff60;border-radius:20px;font-size:34px}.hero h1{font-size:26px;margin:0 0 4px}.hero p{margin:0;color:#d7e9ff;font-size:13px;line-height:2}.hero a{color:white}.work{display:grid;grid-template-columns:minmax(300px,1fr) minmax(280px,.95fr);gap:18px;margin-top:20px}.panel{background:white;border:1px solid var(--line);border-radius:21px;padding:23px;box-shadow:0 8px 24px #1b52860b}.panel h2{font-size:18px;margin:0 0 18px}.hint{color:var(--sub);font-size:12px;line-height:2}.drop{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;border:2px dashed #9fc3f4;background:#f6faff;border-radius:17px;padding:28px 18px;min-height:166px;text-align:center;cursor:pointer;transition:.15s}.drop:hover,.drop.drag{background:#e9f3ff;border-color:#287de6}.drop i{font-size:37px;font-style:normal}.drop b{color:#1856a1;font-size:15px}.drop small{font-size:11px;color:var(--sub)}.drop input{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}.file-name{font-size:13px;color:#274d73;overflow-wrap:anywhere;margin-top:13px}.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:13px}.stat{padding:11px 14px;border-radius:13px;background:#f1f7ff;border:1px solid #dfebfa}.stat small{display:block;color:#6f88a1;font-size:11px}.stat strong{display:block;font-size:17px;color:#124f94}.target-title{font-size:13px;font-weight:700;display:block;margin:5px 0 10px}.choices{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.chip{border:1px solid #d6e4f5;background:#f8fbff;color:#2b5986;border-radius:11px;padding:10px 2px;cursor:pointer;font-family:inherit;font-size:13px}.chip[aria-pressed=true]{background:#1570e2;color:white;border-color:#1570e2;box-shadow:0 6px 13px #1e7deb23}.custom{display:flex;gap:10px;align-items:center;margin:15px 0 10px;font-size:13px}.custom input{width:110px;min-width:0;border:1px solid #cddff1;border-radius:10px;padding:10px 12px;font:inherit;color:var(--ink);direction:ltr}.quality-modes{display:grid;gap:10px;margin:15px 0}.quality-mode{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border:1px solid #d6e4f5;border-radius:12px;background:#f8fbff;cursor:pointer}.quality-mode:has(input:checked){background:#eaf4ff;border-color:#62a3f6}.quality-mode input{margin-top:8px;accent-color:#126fe7}.quality-mode strong{display:block;font-size:13px;color:#18518e}.quality-mode small{display:block;font-size:11px;color:#62809e}.estimate{background:#f2f8ff;padding:10px 13px;border-radius:12px;border:1px solid #dfecfc;color:#486e96;font-size:12px;margin:14px 0}.submit{display:block;width:100%;border:0;border-radius:13px;padding:14px 18px;font:700 15px RFVazir,Tahoma,sans-serif;cursor:pointer;background:#126fe7;color:white;box-shadow:0 8px 18px #0873e533}.submit:disabled{opacity:.54;cursor:not-allowed}.progress-panel{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:19px;padding:22px;box-shadow:0 7px 20px #0c4c8c0d}.progress-panel[hidden]{display:none}.progress-top{display:flex;align-items:center;justify-content:space-between;gap:12px}.progress-top strong{font-size:15px}.progress-top span{font-size:13px;color:#446f9d}progress{display:block;width:100%;height:14px;margin:13px 0 4px;accent-color:#1476e9}.result{padding:16px;margin-top:15px;border:1px solid #b7e0cb;background:#effcf5;border-radius:14px}.result[hidden]{display:none}.result h3{margin:0 0 8px;color:#0b7956;font-size:17px}.result p{margin:3px 0 10px;font-size:13px}.result a{display:inline-flex;background:#078764;border-radius:12px;color:white;text-decoration:none;padding:10px 18px;font-weight:700;font-size:13px}.result.warning{border-color:#f0d3a5;background:#fff9ef}.result.warning h3{color:#8a590e}.result .bad{color:#a45616}.footnote{margin-top:16px;font-size:12px;color:#64809c;line-height:2}.preview{width:100%;aspect-ratio:16/9;object-fit:contain;background:#092445;border-radius:14px;margin-top:12px}.preview[hidden]{display:none}.error{color:#a83239!important}.spinner{display:inline-block;width:13px;height:13px;border:2px solid #b2d4ff;border-top-color:#186bd3;border-radius:50%;animation:rotate .7s linear infinite;vertical-align:middle;margin-inline-end:4px}@keyframes rotate{to{transform:rotate(360deg)}}
+.error-details{margin-top:14px;border:1px solid #e5bec1;background:#fff8f8;border-radius:12px;padding:12px;font-size:12px}.error-details[hidden]{display:none}.error-details summary{cursor:pointer;color:#952a34;font-weight:bold}.error-details pre{white-space:pre-wrap;word-break:break-word;direction:ltr;text-align:left;max-height:210px;overflow:auto;font:11px/1.7 Consolas,monospace;color:#79343b;background:#fff;padding:8px;border:1px solid #f4d7d7;border-radius:8px}.error-details button{border:1px solid #e4babe;border-radius:8px;padding:6px 12px;background:white;color:#8e2733;cursor:pointer;font:inherit}
 @media(max-width:780px){main{padding:13px 12px 50px}.work{grid-template-columns:1fr}.panel{padding:17px}.hero{padding:19px 18px;gap:13px}.hero-icon{width:48px;height:48px;flex-basis:48px;font-size:26px}.hero h1{font-size:20px}.hero p{font-size:11px}.choices{gap:5px}.chip{padding:10px 0;font-size:12px}}
 </style>
 
@@ -24,7 +25,7 @@ main{width:min(1150px,100%);margin:auto;padding:24px 26px 70px}.hero{border:1px 
     <div id="fileName" class="file-name">هنوز فایلی انتخاب نشده است.</div>
     <div class="stats"><div class="stat"><small>حجم فایل اصلی</small><strong id="originalSize">—</strong></div><div class="stat"><small>مدت ویدئو</small><strong id="videoDuration">—</strong></div></div>
     <video id="preview" class="preview" controls playsinline preload="metadata" hidden></video>
-    <p class="hint">ویدئو به Vercel یا سرور دیگری ارسال نمی‌شود؛ فقط موتور FFmpeg از سایت دریافت و پردازش روی دستگاه شما انجام می‌شود. برای فایل‌های بزرگ، حافظه و توان پردازشی مهم است.</p>
+    <p class="hint">ویدئو به Vercel یا سرور دیگری ارسال نمی‌شود؛ فقط موتور FFmpeg از سایت دریافت و پردازش روی دستگاه شما انجام می‌شود. برای فایل‌های بزرگ، پردازش ممکن است به حافظه و زمان بیشتری نیاز داشته باشد. نسخه 0839 ویدئو را بدون کپی کامل در حافظه باز می‌کند.</p>
    </section>
    <section class="panel"><h2>۲. تنظیمات کیفیت و حجم</h2>
     <label class="target-title">حجم دلخواه چقدر باشد؟ (هدف اختیاری، نه تضمینی)</label>
@@ -39,7 +40,7 @@ main{width:min(1150px,100%);margin:auto;padding:24px 26px 70px}.hero{border:1px 
     <div class="footnote">در این نسخه کیفیت قربانی حجم انتخابی نمی‌شود: تصویر هرگز کوچک یا نرخ فریم کم نمی‌شود و بیت‌ریت اجباری ندارد. خروجی معمولاً MP4 است؛ اگر کدک صوتی با MP4 سازگار نباشد، MKV ساخته می‌شود. حجم ۳۰ مگابایت تضمین‌شده نیست. برای کیفیت دقیقاً یکسان، گزینه «کاملاً بدون افت کیفیت» را بزنید.</div>
    </section>
   </div>
-  <section class="progress-panel" id="progressPanel" hidden aria-live="polite"><div class="progress-top"><strong id="status">در حال آماده‌سازی…</strong><span id="percentage">۰٪</span></div><progress id="progress" max="100" value="0"></progress><p class="hint" id="stageHint">این صفحه را تا پایان پردازش باز نگه دارید.</p></section>
+  <section class="progress-panel" id="progressPanel" hidden aria-live="polite"><div class="progress-top"><strong id="status">در حال آماده‌سازی…</strong><span id="percentage">۰٪</span></div><progress id="progress" max="100" value="0"></progress><p class="hint" id="stageHint">این صفحه را تا پایان پردازش باز نگه دارید.</p><details id="errorDetails" class="error-details" hidden><summary>جزئیات خطا (برای عیب‌یابی)</summary><p>در این بخش تنها گزارش فنی داخل مرورگر نمایش داده می‌شود؛ چیزی به سرور ارسال نمی‌شود.</p><pre id="errorText"></pre><button type="button" id="copyError">کپی متن خطا</button></details></section>
   <section class="result" id="result" hidden aria-live="polite"><h3 id="resultTitle">فایل آماده است</h3><p id="resultText"></p><a id="download" download>⬇ دریافت فایل</a></section>
 </main>
 <script src="assets/ffmpeg/ffmpeg.js"></script>
@@ -47,6 +48,18 @@ main{width:min(1150px,100%);margin:auto;padding:24px 26px 70px}.hero{border:1px 
 (()=>{'use strict';
 const el=id=>document.getElementById(id);
 const fileInput=el('file'),choices=el('choices'),custom=el('customMb'),progress=el('progress'),progressPanel=el('progressPanel');
+const diagnosticLines=[];const diag=(s)=>{diagnosticLines.push(String(s));if(diagnosticLines.length>70)diagnosticLines.shift()};
+el('copyError').addEventListener('click',()=>{const text=el('errorText').textContent;navigator.clipboard?.writeText(text).catch(()=>{prompt('گزارش خطا را کپی کنید:',text)})||prompt('گزارش خطا را کپی کنید:',text)});
+function exposeError(error,stage){
+ const msg=String(error?.message||error||'خطای ناشناخته');
+ const log=diagnosticLines.slice(-35).join('\n');
+ el('errorText').textContent='RushFinder web 0839\nمرحله: '+stage+'\nخطا: '+msg+'\n\nFFmpeg logs:\n'+(log||'گزارشی ثبت نشده است.');
+ el('errorDetails').hidden=false;
+ const likelyMemory=/memory|allocation|out of|oom|abort|grow/i.test(msg+' '+log);
+ if(likelyMemory){return 'مرورگر هنگام پردازش با محدودیت حافظه مواجه شده است. برنامه‌های دیگر را ببندید یا ویدئوی کوچک‌تر امتحان کنید. جزئیات خطا پایین صفحه است.'}
+ if(/network|fetch|load|import|wasm|worker|404|failed to/i.test(msg))return 'موتور FFmpeg در مرورگر بارگذاری نشد. فایل‌های assets/ffmpeg را در انتشار Vercel و اتصال اینترنت بررسی کنید. جزئیات خطا پایین صفحه است.';
+ return 'پردازش این ویدئو با خطا متوقف شد. برای دیدن دلیل فنی و ارسال تصویر آن، «جزئیات خطا» را باز کنید.';
+}
 const fa=v=>String(v).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
 const sizeText=bytes=>(bytes/1000000).toLocaleString('fa-IR',{maximumFractionDigits:2})+' MB';
 const numberFromInput=v=>Number(String(v).replace(/[۰-۹]/g,c=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(c)).replace(/[٠-٩]/g,c=>'٠١٢٣٤٥٦٧٨٩'.indexOf(c)));
@@ -66,6 +79,7 @@ function updateTarget(){
 choices.addEventListener('click',e=>{const b=e.target.closest('button[data-mb]');if(b&&!active){custom.value=b.dataset.mb;updateTarget()}});
 custom.addEventListener('input',updateTarget);
 function setFile(f){if(active||!f)return;
+ el('errorDetails').hidden=true;diagnosticLines.length=0;
  if(previewUrl)URL.revokeObjectURL(previewUrl);cleanupDownload();videoFile=f;
  el('result').hidden=true;el('result').classList.remove('warning');progressPanel.hidden=true;
  el('originalSize').textContent=sizeText(f.size);el('videoDuration').textContent='در حال بررسی…';el('fileName').textContent=f.name;
@@ -119,22 +133,40 @@ el('start').addEventListener('click',async()=>{
  const targetBytes=mb*1000000;
  // If already below target, preserve every bit of the video and audio.
  // No FFmpeg worker, WebAssembly load, conversion, or network transfer is needed.
- if(f.size<targetBytes){
+ if(f.size<=targetBytes){
   progressPanel.hidden=true;
   result(f,f.name,'حجم فیلم اصلی '+sizeText(f.size)+' است و از هدف '+fa(mb)+' MB کمتر است؛ برای حفظ کامل کیفیت، فایل اصلی بدون هیچ تغییر یا بازکدگذاری تحویل داده شد.');
   return;
  }
- lock(true);el('result').hidden=true;showProgress(0,'در حال آماده‌سازی فیلم…');el('stageHint').textContent='فیلم روی دستگاه خودتان پردازش می‌شود؛ صفحه را نبندید.';
+ lock(true);diagnosticLines.length=0;el('errorDetails').hidden=true;el('result').hidden=true;showProgress(0,'در حال آماده‌سازی فیلم…');el('stageHint').textContent='فیلم روی دستگاه خودتان پردازش می‌شود؛ صفحه را نبندید.';
  let ff=null;
  try{
   if(!window.FFmpegWASM||!window.FFmpegWASM.FFmpeg)throw Error('موتور پردازش محلی بارگذاری نشد؛ پوشه assets/ffmpeg را بررسی کنید.');
-  ff=new FFmpegWASM.FFmpeg();ff.on('progress',({progress:p})=>{
+  ff=new FFmpegWASM.FFmpeg();ff.on('log',({type,message})=>diag((type||'')+': '+message));ff.on('progress',({progress:p})=>{
    if(Number.isFinite(p)&&p>=0&&p<=1)showProgress(Math.max(progress.value,progressBase+p*progressSpan));
   });
-  showProgress(1,'در حال بارگذاری موتور فشرده‌سازی…');
+  showProgress(1,'در حال بارگذاری موتور فشرده‌سازی (فقط یک بار در هر اجرا)…');
+  diag('Loading local FFmpeg core and wasm.');
   await ff.load({coreURL:new URL('assets/ffmpeg/ffmpeg-core.js',location.href).href,wasmURL:new URL('assets/ffmpeg/ffmpeg-core.wasm',location.href).href});
-  const extension=(f.name.match(/\.([a-z0-9]{1,6})$/i)||[])[1]||'mp4',input='source.'+extension.toLowerCase();
-  showProgress(5,'در حال خواندن فایل داخل مرورگر…');await ff.writeFile(input,new Uint8Array(await f.arrayBuffer()));
+  // WORKERFS reads the browser File lazily. A 256 MB movie is no longer copied
+  // to a second 256 MB array and then into FFmpeg's in-memory filesystem.
+  let input='';
+  showProgress(5,'در حال اتصال فیلم به موتور پردازش، بدون کپی کامل فایل…');
+  try{
+   await ff.createDir('/rushfinder-input');
+   const mounted=await ff.mount('WORKERFS',{files:[f]},'/rushfinder-input');
+   if(mounted!==true)throw Error('WORKERFS returned '+mounted);
+   input='/rushfinder-input/'+f.name;
+   diag('Input via WORKERFS; no full ArrayBuffer copy.');
+  }catch(mountErr){
+   diag('WORKERFS mount failed: '+String(mountErr));
+   if(f.size>96*1048576)throw Error('امکان خواندن مستقیم فایل حجیم در این مرورگر وجود ندارد (WORKERFS). '+String(mountErr));
+   // Small-file-only compatibility fallback, never for large files.
+   const extension=(f.name.match(/\.([a-z0-9]{1,6})$/i)||[])[1]||'mp4';
+   input='source.'+extension.toLowerCase();
+   showProgress(5,'در حال خواندن فایل کم‌حجم در حافظه مرورگر…');
+   await ff.writeFile(input,new Uint8Array(await f.arrayBuffer()));
+  }
   const output=await processTo(ff,input,mode),outputSize=output.data.byteLength;
   // Never give back a larger, lower-quality file: return the unmodified original instead.
   const smaller=outputSize<f.size;
@@ -150,7 +182,7 @@ el('start').addEventListener('click',async()=>{
   note+=mode==='exact'?'صدا و تصویر بدون بازکدگذاری باقی ماندند. ':'رزولوشن و نرخ فریم کاهش نیافتند و صدای اصلی کپی شد؛ فشرده‌سازی تصویر با افت احتمالی نامحسوس انجام شد. ';
   note+=goalMet?'حجم فایل از هدف '+fa(mb)+' MB کمتر است.':'رسیدن به '+fa(mb)+' MB بدون فداکردن کیفیت ممکن نشد؛ برای حجم کمتر باید افت کیفیت را بپذیرید.';
   result(chosen,name,note,!goalMet);
- }catch(e){showProgress(progress.value,'❌ '+(e?.message||String(e)));notify('❌ '+(e?.message||String(e)),true);el('stageHint').textContent='ممکن است فرمت فایل پشتیبانی نشود یا حافظه مرورگر کافی نباشد.'}
+ }catch(e){diag('Fatal: '+String(e?.stack||e));const helpful=exposeError(e,'بارگذاری یا اجرای FFmpeg');showProgress(progress.value,'❌ '+helpful);notify('❌ '+helpful,true);el('stageHint').textContent='برای عیب‌یابی، بخش جزئیات خطا را باز کنید. هیچ ویدئویی به سرور ارسال نشده است.'}
  finally{if(ff)try{ff.terminate()}catch(_){}lock(false)}
 });
 window.addEventListener('beforeunload',()=>{if(downloadUrl)URL.revokeObjectURL(downloadUrl);if(previewUrl)URL.revokeObjectURL(previewUrl)});updateTarget();
