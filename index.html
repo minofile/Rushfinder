@@ -4424,7 +4424,18 @@ function play(f){
  document.getElementById('rfCompanyBackVideo').onclick=()=>{const v=area.querySelector('video');if(v)v.pause();if(companyPanel)companyPanel.classList.remove('rf229-playing');render()};
  const p=document.getElementById('rfCompanyPanel');if(p){p.scrollTop=0;requestAnimationFrame(()=>{p.scrollTop=0})}
 }
-window.rfShowCompanyRush=function(e){e?.stopPropagation();document.body.classList.add('rf-company-view');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.textContent.includes('راش‌های شرکت')));layout();panel().classList.add('rf-company-on');load()};
+window.rfShowCompanyRush=function(e){
+ // Close the news-tag iframe before opening the company archive. The news-tag
+ // overlay has a much higher z-index, and the capture handler below stops the
+ // event before the news-tag page's own document listener can close it.
+ e?.stopPropagation();
+ document.getElementById('rfNewsTagPage')?.classList.remove('rf-visible');
+ document.getElementById('rfNewsTagNav')?.classList.remove('active');
+ document.body.classList.remove('rf-news-tag-is-open');
+ document.body.classList.add('rf-company-view');
+ document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.textContent.includes('راش‌های شرکت')));
+ layout();panel().classList.add('rf-company-on');load();
+};
 window.rfConfigureCompanyArchive=function(httpsUrl){const u=new URL(httpsUrl);if(u.protocol!=='https:'&&!(rfLocalCompanyTest&&u.origin===location.origin&&u.protocol==='http:'))throw Error('HTTPS required');localStorage.setItem('rfCompanyHttpsApi',u.origin);if(document.body.classList.contains('rf-company-view')){layout();load()}};
 const companyNav=document.getElementById('rfCompanyNav');
 if(companyNav){companyNav.addEventListener('click',function(e){e.preventDefault();e.stopImmediatePropagation();window.rfShowCompanyRush(e);panel().classList.add('rf-company-on')},true)}
@@ -5075,7 +5086,10 @@ body.rf-news-tag-is-open #homeState{
   btn.addEventListener('click',()=>{
     bounds();document.querySelectorAll('.sidebar .nav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
     document.querySelectorAll('#rfInfoPage,#rfVideoCutPage').forEach(p=>p.classList.remove('rf-visible'));
-    document.body.classList.remove('rf-info-is-open');panel.classList.add('rf-visible');document.body.classList.add('rf-news-tag-is-open');
+    document.body.classList.remove('rf-info-is-open','rf-company-view');
+    document.getElementById('rfCompanyPanel')?.classList.remove('rf-company-on');
+    document.getElementById('rfCompanyPanel')?.style.removeProperty('display');
+    panel.classList.add('rf-visible');document.body.classList.add('rf-news-tag-is-open');
   });
   document.addEventListener('click',e=>{
     if(e.target.closest('#rfNewsTagNav'))return;
