@@ -2,10 +2,11 @@
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $base = 'http://127.0.0.1:18826'
 $probe = "$base/ae-api/check"
-$url = "$base/index.html?v=0829"
+$url = "$base/index.html?v=0833"
 $version = '0813'  # API compatibility; render engine build is checked separately
 $expectedBuild = '0819-channel-size-control'
 $expectedRoleBuild = '0829-role-expression-edit-fix'
+$expectedMashhadBuild = '0830-mashhad-three-models'  # Check the new Mashhad engine separately
 $expectedRoot = $root.Replace('\', '/').TrimEnd('/')
 
 function Read-Engine {
@@ -15,7 +16,7 @@ function Read-Engine {
 function Is-This-Engine($report) {
     if ($null -eq $report) { return $false }
     $actual = ([string]$report.installRoot).TrimEnd('/')
-    return ([string]$report.version -eq $version -and $actual -ieq $expectedRoot -and [string]$report.engineBuild -eq $expectedBuild -and [string]$report.roleBuild -eq $expectedRoleBuild -and $report.roleTag -eq $true)
+    return ([string]$report.version -eq $version -and $actual -ieq $expectedRoot -and [string]$report.engineBuild -eq $expectedBuild -and [string]$report.roleBuild -eq $expectedRoleBuild -and $report.roleTag -eq $true -and [string]$report.mashhadBuild -eq $expectedMashhadBuild -and $report.mashhadTag -eq $true)
 }
 function Is-Port-Busy {
     $socket = New-Object System.Net.Sockets.TcpClient
