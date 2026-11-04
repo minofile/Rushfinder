@@ -839,7 +839,7 @@ function channelTagSizePercent(){
 }
 function missingMashhadAssets(){return ['تگ copy.png','akhbare mashhad.png','Micropho4.png'].filter(name=>!fs.existsSync(path.join(root,'ae-original','mashhad-assets',name)));}
 function mashhadAssetsReady(){return fs.existsSync(mashhadTemplate)&&missingMashhadAssets().length===0;}
-function report(){return {mashhadTag:!!aeExe()&&!!ffmpegExe()&&mashhadAssetsReady()&&fs.existsSync(path.join(root,'assets','news-tag','mashhad-channel-tag.png')),mashhadBuild:'0830-mashhad-three-models',mashhadTemplateName:path.basename(mashhadTemplate),mashhadMediaMissing:missingMashhadAssets(),afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,version:"0813",engineBuild:"0819-channel-size-control",channelTagWidthPercent:channelTagSizePercent(),channelTagControl:true,roleBuild:"0829-role-expression-edit-fix",roleMediaMissing:missingRoleMedia(),roleTag:!!aeExe()&&!!ffmpegExe()&&fs.existsSync(roleTemplate),roleTemplateName:path.basename(roleTemplate),channelTag:!!ffmpegExe()&&fs.existsSync(path.join(root,'assets','news-tag','fori-channel-tag.png')),outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
+function report(){return {mashhadTag:!!aeExe()&&!!ffmpegExe()&&mashhadAssetsReady()&&fs.existsSync(path.join(root,'assets','news-tag','mashhad-channel-tag.png')),mashhadBuild:'0830-mashhad-three-models',mashhadTemplateName:path.basename(mashhadTemplate),mashhadMediaMissing:missingMashhadAssets(),afterEffects:!!aeExe(),backgroundRenderer:!!(aeExe()&&fs.existsSync(path.join(path.dirname(aeExe()),'aerender.exe'))),afterEffectsPath:aeExe()||'',ffmpeg:!!ffmpegExe(),ffmpegPath:ffmpegExe()||'',project:fs.existsSync(template),templateName:path.basename(template),assetsReady:['ت2گ copy.png','تگ copy.png','Micropho4.png'].every(name=>fs.existsSync(path.join(root,'ae-original',name))),local:true,webOriginAllowed:true,version:"0813",engineBuild:"0819-channel-size-control",channelTagWidthPercent:channelTagSizePercent(),channelTagControl:true,roleBuild:"0829-role-expression-edit-fix",roleMediaMissing:missingRoleMedia(),roleTag:!!aeExe()&&!!ffmpegExe()&&fs.existsSync(roleTemplate),roleTemplateName:path.basename(roleTemplate),channelTag:!!ffmpegExe()&&fs.existsSync(path.join(root,'assets','news-tag','fori-channel-tag.png')),outputFolder:exportDir,tempFolder:work,installRoot:root.replace(/\\/g,'/')}}
 // 0814: dedicated CHANNEL-tag render. The existing reporter After Effects path below
 // is intentionally unchanged. This mode uses the exact supplied transparent PNG.
 function renderChannelTag(job){
@@ -1146,7 +1146,8 @@ const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=
 // Explicitly allow the official hosted site; do not expose the rendering API to arbitrary sites.
 const trustedWebOrigins=new Set([
  'http://127.0.0.1:18827',
- 'http://localhost:18827'
+ 'http://localhost:18827',
+ 'https://rushfinder.vercel.app'
 ]);
 const trustedHostnames=new Set(['127.0.0.1:18827','localhost:18827']);
 http.createServer((req,res)=>{

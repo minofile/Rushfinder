@@ -2,7 +2,7 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $base = 'http://127.0.0.1:18827'
 $probe = "$base/ae-api/check"
-# The website is opened by Start-RushFinder.cmd; this script only manages the local renderer.
+$url = "$base/index.html?v=0843"
 $version = '0813'  # API compatibility; render engine build is checked separately
 $expectedBuild = '0819-channel-size-control'
 $expectedRoleBuild = '0829-role-expression-edit-fix'
@@ -16,7 +16,7 @@ function Read-Engine {
 function Is-This-Engine($report) {
     if ($null -eq $report) { return $false }
     $actual = ([string]$report.installRoot).TrimEnd('/')
-    return ([string]$report.version -eq $version -and $actual -ieq $expectedRoot -and [string]$report.engineBuild -eq $expectedBuild -and [string]$report.roleBuild -eq $expectedRoleBuild -and [string]$report.mashhadBuild -eq $expectedMashhadBuild)
+    return ([string]$report.version -eq $version -and $actual -ieq $expectedRoot -and [string]$report.engineBuild -eq $expectedBuild -and [string]$report.roleBuild -eq $expectedRoleBuild -and [string]$report.mashhadBuild -eq $expectedMashhadBuild -and $report.webOriginAllowed -eq $true)
 }
 function Is-Port-Busy {
     $socket = New-Object System.Net.Sockets.TcpClient
@@ -110,5 +110,12 @@ if (-not (Is-This-Engine $report)) {
         exit 1
     }
 }
-Write-Host 'RushFinder local renderer is ready. The official website was opened by Start-RushFinder.cmd.'
+Write-Host 'Opening RushFinder index.html in the default browser...'
+try {
+    Start-Process -FilePath $url -ErrorAction Stop
+} catch {
+    Write-Host ('ERROR: The browser could not be opened: ' + $_.Exception.Message) -ForegroundColor Red
+    Write-Host ('Open manually: ' + $url)
+    exit 1
+}
 exit 0

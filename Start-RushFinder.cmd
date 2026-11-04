@@ -1,8 +1,5 @@
 @echo off
 setlocal EnableExtensions
-rem Always open the official website when this launcher is run (including Windows Startup).
-rem The local engine starts separately below; a busy local port must not block the website.
-start "" "https://rushfinder.vercel.app/"
 cd /d "%~dp0"
 if not exist "index.html" (
   echo ERROR: index.html was not found. Extract the full RushFinder ZIP first.

@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fa" dir="rtl">
-<head><meta name="rushfinder-web-build" content="0841">
+<head><meta name="rushfinder-web-build" content="0843">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#f6f9fd">
@@ -5071,7 +5071,7 @@ body.rf-news-tag-is-open #homeState{
     panel=document.createElement('section');panel.id='rfNewsTagPage';panel.setAttribute('aria-label','تگ خبر');
     const frame=document.createElement('iframe');frame.title='تگ خبر';frame.loading='eager';
     frame.setAttribute('data-source','embedded-in-index-0836');
-    frame.src='news-tag.html?v=0841';
+    frame.src='news-tag.html?v=0843';
     panel.appendChild(frame);document.body.appendChild(panel);
   }
   function bounds(){
@@ -5112,9 +5112,9 @@ body.rf-news-tag-is-open #homeState{
 // switches to its working HTTP origin; otherwise the embedded UI still opens.
 if(location.protocol==='file:'){
  const probe=new Image();
- probe.onload=function(){location.replace('http://127.0.0.1:18827/index.html?v=0837'+location.hash)};
+ probe.onload=function(){location.replace('http://127.0.0.1:18827/index.html?v=0843'+location.hash)};
  probe.onerror=function(){};
- probe.src='http://127.0.0.1:18827/favicon.ico?probe=0837&t='+Date.now();
+ probe.src='http://127.0.0.1:18827/favicon.ico?probe=0843&t='+Date.now();
 }
 </script>
 <!-- RushFinder 0840: streamlined web compressor UI; keeps 0839 memory-saving engine. -->
@@ -5135,7 +5135,7 @@ function init(){
  const after=nav.querySelector('#rfVideoCutNav'),before=nav.querySelector('#rfInfoNav');
  if(after)after.insertAdjacentElement('afterend',btn);else if(before)before.insertAdjacentElement('beforebegin',btn);else nav.append(btn);
  const panel=document.createElement('section');panel.id='rfCompressPage';panel.setAttribute('aria-label','کم‌حجم‌کننده ویدئو');
- const frame=document.createElement('iframe');frame.title='کم‌حجم‌کننده ویدئو';frame.loading='lazy';frame.src='video-compress.html?embedded=1&v=0841';panel.appendChild(frame);document.body.appendChild(panel);
+ const frame=document.createElement('iframe');frame.title='کم‌حجم‌کننده ویدئو';frame.loading='lazy';frame.src='video-compress.html?embedded=1&v=0843';panel.appendChild(frame);document.body.appendChild(panel);
  function bounds(){
   const side=document.querySelector('.sidebar'),top=document.querySelector('.app > .top')||document.querySelector('.top');
   const zoom=parseFloat(getComputedStyle(document.documentElement).zoom)||1;
