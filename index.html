@@ -3201,6 +3201,112 @@ html body.rf-company-view #rfCompanyPanel.rf-company-on .rf-company-pagination {
 @font-face{font-family:Yekan;src:url('fonts/VAZIR-BOLD-UI.TTF') format('truetype');font-style:normal;font-weight:700 900;font-display:swap}
 html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([class*="fa-"]):not(.fa):not([class*="lucide"]):not([class*="icon-font"]),html body input,html body textarea,html body select,html body button {font-family:'RFVazir',Tahoma,sans-serif!important}
 </style>
+
+<!-- RushFinder 0900: ONLY the right sidebar navigation appearance is changed. -->
+<style id="rf0900-compact-sidebar-menu">
+/* Compact, simple menu rows like the supplied Timeo screenshot.
+   No page, service, route, brand, or non-sidebar settings are modified. */
+.sidebar .nav {
+  position: absolute !important;
+  top: 103px !important;
+  bottom: 82px !important;
+  right: 12px !important;
+  left: 12px !important;
+  width: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1px !important;
+  padding: 5px 0 3px !important;
+  margin-top: 0 !important;
+  border-top: 1px solid rgba(255,255,255,.075) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(172,196,223,.3) transparent;
+}
+.sidebar .nav button {
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex: 0 0 27px !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  direction: rtl !important;
+  gap: 8px !important;
+  height: 27px !important;
+  min-height: 27px !important;
+  width: calc(100% - 12px) !important;
+  margin: 1px 6px !important;
+  padding: 0 11px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #d9e5f6 !important;
+  text-align: right !important;
+  font-size: 10px !important;
+  line-height: 1.45 !important;
+  font-weight: 400 !important;
+}
+.sidebar .nav button i {
+  display: grid !important;
+  flex: 0 0 17px !important;
+  place-items: center !important;
+  width: 17px !important;
+  height: 17px !important;
+  font-size: 14px !important;
+  font-style: normal !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+}
+.sidebar .nav button svg {
+  flex: 0 0 17px !important;
+  width: 17px !important;
+  height: 17px !important;
+}
+.sidebar .nav button span { line-height: 1.45 !important; }
+.sidebar .nav button:not(.active):hover {
+  background: rgba(255,255,255,.065) !important;
+  color: #fff !important;
+}
+.sidebar .nav button.active,
+.sidebar .nav button.active:hover {
+  background: #2868ec !important;
+  color: #fff !important;
+  box-shadow: 0 5px 11px rgba(12,96,221,.16) !important;
+}
+/* Keep the existing collapsed-sidebar behavior on narrow desktop windows. */
+@media (min-width:621px) and (max-width:850px) {
+  .sidebar .nav { top: 86px !important; }
+  .sidebar .nav button {
+    width: 40px !important;
+    margin: 1px auto !important;
+    padding: 0 !important;
+    justify-content: center !important;
+  }
+}
+</style>
+
+<!-- RushFinder 0901: only thin separators and extra breathing room between sidebar menu rows. -->
+<style id="rf0901-sidebar-separators">
+.sidebar .nav { gap: 6px !important; }
+.sidebar .nav button { position: relative !important; }
+.sidebar .nav button::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  right: 12px;
+  left: 12px;
+  bottom: -5px;
+  height: 1px;
+  background: rgba(213, 229, 248, .17);
+}
+@media (min-width: 621px) and (max-width: 850px) {
+  .sidebar .nav button::after { right: 5px; left: 5px; }
+}
+</style>
 </head>
 <body>
 <aside class="sidebar">
