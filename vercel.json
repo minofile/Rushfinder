@@ -5,6 +5,9 @@
     },
     "api/avalai-image.js": {
       "maxDuration": 300
+    },
+    "api/smart-download.js": {
+      "maxDuration": 60
     }
   }
 }

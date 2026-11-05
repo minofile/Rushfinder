@@ -1,4 +1,4 @@
-<!doctype html> 
+<!doctype html>
 <html lang="fa" dir="rtl">
 <head><meta name="rushfinder-web-build" content="0903">
 <meta charset="utf-8">
@@ -5267,6 +5267,34 @@ function init(){
  if(location.hash==='#video-compress')btn.click();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+
+<!-- RushFinder 0907: independent in-site SmartEdit. Other pages unchanged. -->
+<style id="rf0906-smartedit-style">
+#rfSmartEditPage{display:none;position:fixed;top:var(--rf536-header-height,68px);right:var(--rf536-sidebar-width,210px);left:0;bottom:0;z-index:2147483015;background:#f1f6ff;overflow:hidden}
+#rfSmartEditPage.rf-visible{display:block}
+#rfSmartEditPage iframe{width:100%;height:100%;border:0;display:block;background:#f1f6ff}
+.sidebar .nav #rfSmartEditNav{display:flex;align-items:center;gap:9px;width:100%}
+</style>
+<script id="rf0907-smartedit-nav">
+(function(){'use strict';
+ function init(){const nav=document.querySelector('.sidebar .nav');if(!nav||document.getElementById('rfSmartEditNav'))return;
+ const btn=document.createElement('button');btn.type='button';btn.id='rfSmartEditNav';btn.innerHTML='<i>✦</i><span>تدوین</span>';
+ const after=nav.querySelector('#rfCompressNav')||nav.querySelector('#rfVideoCutNav');if(after)after.insertAdjacentElement('afterend',btn);else nav.appendChild(btn);
+ const panel=document.createElement('section');panel.id='rfSmartEditPage';panel.setAttribute('aria-label','تدوین');
+ const frame=document.createElement('iframe');frame.title='تدوین RushFinder';frame.src='smart-edit.html?embedded=1&v=0918';frame.setAttribute('allow','microphone');panel.appendChild(frame);document.body.appendChild(panel);
+ function bounds(){const side=document.querySelector('.sidebar'),head=document.querySelector('.app > .top')||document.querySelector('.top');const zoom=parseFloat(getComputedStyle(document.documentElement).zoom)||1;document.documentElement.style.setProperty('--rf536-sidebar-width',side&&getComputedStyle(side).display!=='none'?side.getBoundingClientRect().width/zoom+'px':'0px');document.documentElement.style.setProperty('--rf536-header-height',head?Math.max(0,head.getBoundingClientRect().bottom)/zoom+'px':'68px')}
+ btn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();bounds();
+ document.querySelectorAll('.sidebar .nav button').forEach(b=>b.classList.toggle('active',b===btn));
+ for(const id of ['rfNewsTagPage','rfInfoPage','rfCompressPage','rfVideoCutPage','rfCalendarPage','rfCompanyPanel','rfSettingsPage']){const p=document.getElementById(id);if(p)p.classList.remove('rf-visible','rf-open','rf-selected','rf-company-on','active')}
+ document.body.classList.remove('rf-news-tag-is-open','rf-info-is-open','rf-company-view');panel.classList.add('rf-visible');
+ try{history.replaceState(null,'','#smart-edit')}catch(e){}
+ },true);
+ document.addEventListener('click',e=>{const b=e.target.closest?.('.sidebar .nav button');if(b&&b!==btn){panel.classList.remove('rf-visible');btn.classList.remove('active')}},true);
+ window.addEventListener('resize',bounds);bounds();if(location.hash==='#smart-edit')btn.click();
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
 </body>
