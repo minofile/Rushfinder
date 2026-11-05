@@ -1,4 +1,4 @@
-<!doctype html> 
+<!doctype html>
 <html lang="fa" dir="rtl">
 <head><meta name="rushfinder-web-build" content="0903">
 <meta charset="utf-8">
@@ -3311,6 +3311,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <body>
 <aside class="sidebar">
 <div class="sidebrand sidebrand-final"><img src="assets/logos/rushfinder-sidebar-white.webp" alt="RushFinder"></div><nav class="nav"><button class="active"><i>▦</i><span>داشبورد</span></button>
+<button type="button" id="rfSmartEditNav"><i>✦</i><span>تدوین</span></button>
 <button type="button" id="rfCompanyNav"><i>▣</i><span>راش‌های شرکت</span></button><button><i>⚙</i><span>تنظیمات</span></button></nav>
 
 
@@ -5118,7 +5119,7 @@ body.rf-info-is-open #rfInfoPage iframe{
 <!-- RushFinder 606: sidebar ordering only; retain original buttons and event handlers -->
 <script id="rf606-sidebar-order">
 (function(){
- const order=['داشبورد','پیشنهاد راش','برش ویدیو','کم‌حجم‌کننده','اینفوگرافیک','موزیک','تقویم','نریشن','تگ خبر','راش‌های شرکت','تنظیمات'];
+ const order=['داشبورد','پیشنهاد راش','برش ویدیو','کم‌حجم‌کننده','تدوین','اینفوگرافیک','موزیک','تقویم','نریشن','تگ خبر','راش‌های شرکت','تنظیمات'];
  function label(b){return (b.querySelector('span')?.textContent||b.textContent||'').replace(/\s+/g,' ').trim().replace(/\u200c/g,'');}
  function sync(){
   const nav=document.querySelector('.nav');if(!nav)return;
@@ -5270,7 +5271,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 
-<!-- RushFinder 0907: independent in-site SmartEdit. Other pages unchanged. -->
+<!-- RushFinder 0920: permanently visible SmartEdit nav button and independent in-site editor. -->
 <style id="rf0906-smartedit-style">
 #rfSmartEditPage{display:none;position:fixed;top:var(--rf536-header-height,68px);right:var(--rf536-sidebar-width,210px);left:0;bottom:0;z-index:2147483015;background:#f1f6ff;overflow:hidden}
 #rfSmartEditPage.rf-visible{display:block}
@@ -5279,11 +5280,12 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 </style>
 <script id="rf0907-smartedit-nav">
 (function(){'use strict';
- function init(){const nav=document.querySelector('.sidebar .nav');if(!nav||document.getElementById('rfSmartEditNav'))return;
- const btn=document.createElement('button');btn.type='button';btn.id='rfSmartEditNav';btn.innerHTML='<i>✦</i><span>تدوین</span>';
- const after=nav.querySelector('#rfCompressNav')||nav.querySelector('#rfVideoCutNav');if(after)after.insertAdjacentElement('afterend',btn);else nav.appendChild(btn);
+ function init(){const nav=document.querySelector('.sidebar .nav');if(!nav)return;
+ let btn=nav.querySelector('#rfSmartEditNav');
+ if(!btn){btn=document.createElement('button');btn.type='button';btn.id='rfSmartEditNav';btn.innerHTML='<i>✦</i><span>تدوین</span>';nav.appendChild(btn);}
+ const after=nav.querySelector('#rfCompressNav')||nav.querySelector('#rfVideoCutNav');if(after)after.insertAdjacentElement('afterend',btn);
  const panel=document.createElement('section');panel.id='rfSmartEditPage';panel.setAttribute('aria-label','تدوین');
- const frame=document.createElement('iframe');frame.title='تدوین RushFinder';frame.src='smart-edit.html?embedded=1&v=0918';frame.setAttribute('allow','microphone');panel.appendChild(frame);document.body.appendChild(panel);
+ const frame=document.createElement('iframe');frame.title='تدوین RushFinder';frame.src='smart-edit.html?embedded=1&v=0920';frame.setAttribute('allow','microphone');panel.appendChild(frame);document.body.appendChild(panel);
  function bounds(){const side=document.querySelector('.sidebar'),head=document.querySelector('.app > .top')||document.querySelector('.top');const zoom=parseFloat(getComputedStyle(document.documentElement).zoom)||1;document.documentElement.style.setProperty('--rf536-sidebar-width',side&&getComputedStyle(side).display!=='none'?side.getBoundingClientRect().width/zoom+'px':'0px');document.documentElement.style.setProperty('--rf536-header-height',head?Math.max(0,head.getBoundingClientRect().bottom)/zoom+'px':'68px')}
  btn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();bounds();
  document.querySelectorAll('.sidebar .nav button').forEach(b=>b.classList.toggle('active',b===btn));
