@@ -25,13 +25,13 @@ function synchronize(t,playing){const active=bounds().filter(b=>t>=b.start-.03&&
  for(const key of ['music','voice']){const a=audioTracks[key];if(!a?.el)continue;const within=t>=a.offset&&t<a.offset+(a.out-a.in);const target=clamp(a.in+t-a.offset,a.in,Math.max(a.in,a.out-.03));if(within){try{if(Math.abs(a.el.currentTime-target)>.24)a.el.currentTime=target}catch(_e){}if(a.el._rfAudio)a.el._rfAudio.gain.gain.value=muted?0:a.volume;else a.el.volume=muted?0:a.volume;if(playing&&a.el.paused)a.el.play().catch(()=>{});else if(!playing&&!a.el.paused)a.el.pause();}else a.el.pause();}
 }
 function drawCover(el,alpha=1){if(!el)return;let w=el.videoWidth||el.naturalWidth||0,h=el.videoHeight||el.naturalHeight||0;if(!w||!h)return;const W=canvas.width,H=canvas.height;const scale=Math.max(W/w,H/h),tw=w*scale,th=h*scale;ctx.globalAlpha=alpha;try{ctx.drawImage(el,(W-tw)/2,(H-th)/2,tw,th)}catch(_e){}ctx.globalAlpha=1}
-function drawTextBlock(txt,yPct=.79){const W=canvas.width,H=canvas.height;const base=canvas.width>canvas.height?37:44;ctx.save();ctx.textAlign='center';ctx.direction='rtl';ctx.font=`bold ${base}px RFVazir, Tahoma, sans-serif`;const width=W*.86;const lines=[];let part='';for(const word of txt.split(/\s+/).filter(Boolean)){const candidate=part?part+' '+word:word;if(ctx.measureText(candidate).width>width&&part){lines.push(part);part=word}else part=candidate}if(part)lines.push(part);const displayed=lines.slice(0,4),lineH=base*1.4,boxH=displayed.length*lineH+27;const center=H*yPct;ctx.fillStyle='#061325cc';ctx.fillRect(W*.035,center-boxH/2,W*.93,boxH);ctx.fillStyle='#ffffff';ctx.shadowColor='#000';ctx.shadowBlur=7;displayed.forEach((line,i)=>ctx.fillText(line,W/2,center-boxH/2+lineH*(i+.75)));ctx.restore()}
+function drawTextBlock(txt,yPct=.79){const W=canvas.width,H=canvas.height;const base=canvas.width>canvas.height?37:44;ctx.save();ctx.textAlign='center';ctx.direction='rtl';ctx.font=`bold ${base}px RushVazir0923, Vazir, Tahoma, sans-serif`;const width=W*.86;const lines=[];let part='';for(const word of txt.split(/\s+/).filter(Boolean)){const candidate=part?part+' '+word:word;if(ctx.measureText(candidate).width>width&&part){lines.push(part);part=word}else part=candidate}if(part)lines.push(part);const displayed=lines.slice(0,4),lineH=base*1.4,boxH=displayed.length*lineH+27;const center=H*yPct;ctx.fillStyle='#061325cc';ctx.fillRect(W*.035,center-boxH/2,W*.93,boxH);ctx.fillStyle='#ffffff';ctx.shadowColor='#000';ctx.shadowBlur=7;displayed.forEach((line,i)=>ctx.fillText(line,W/2,center-boxH/2+lineH*(i+.75)));ctx.restore()}
 function paint(t){const W=canvas.width,H=canvas.height;ctx.clearRect(0,0,W,H);ctx.fillStyle='#05090f';ctx.fillRect(0,0,W,H);const active=bounds().filter(b=>t>=b.start&&t<b.end);if(active.length){const first=active[0];drawCover(first.clip.el,1);if(active.length>1){const second=active[1],k=clamp((t-second.start)/Math.max(.05,second.overlap),0,1);
   if(transition==='slide'){ctx.save();ctx.translate(W*(1-k),0);drawCover(second.clip.el,1);ctx.restore()}
   else if(transition==='zoom'){ctx.save();ctx.translate(W/2,H/2);const s=.72+.28*k;ctx.scale(s,s);ctx.translate(-W/2,-H/2);drawCover(second.clip.el,k);ctx.restore()}
   else if(transition==='wipe'){ctx.save();ctx.beginPath();ctx.rect(0,0,W*k,H);ctx.clip();drawCover(second.clip.el,1);ctx.restore()}
   else drawCover(second.clip.el,k);
- }}else if(clips.length===0){ctx.font='bold 30px Tahoma';ctx.fillStyle='#b5cce5';ctx.textAlign='center';ctx.fillText('راش‌ها را وارد کن و تدوین را شروع کن',W/2,H/2);ctx.font='18px Tahoma';ctx.fillStyle='#7693b7';ctx.fillText('پیش‌نمایش پروژه اینجا نمایش داده می‌شود',W/2,H/2+40)}else{ctx.font='18px Tahoma';ctx.fillStyle='#8096b2';ctx.textAlign='center';ctx.fillText('در حال آماده‌سازی فریم…',W/2,H/2)}
+ }}else if(clips.length===0){ctx.font='bold 30px RushVazir0923, Vazir, Tahoma, sans-serif';ctx.fillStyle='#b5cce5';ctx.textAlign='center';ctx.fillText('راش‌ها را وارد کن و تدوین را شروع کن',W/2,H/2);ctx.font='18px RushVazir0923, Vazir, Tahoma, sans-serif';ctx.fillStyle='#7693b7';ctx.fillText('پیش‌نمایش پروژه اینجا نمایش داده می‌شود',W/2,H/2+40)}else{ctx.font='18px RushVazir0923, Vazir, Tahoma, sans-serif';ctx.fillStyle='#8096b2';ctx.textAlign='center';ctx.fillText('در حال آماده‌سازی فریم…',W/2,H/2)}
  titles.filter(title=>t>=title.start&&t<title.start+title.length).forEach(title=>drawTextBlock(title.text));}
 function updateTimeUI(){const total=duration();$('time').textContent=`${fmt(playheadTime)} / ${fmt(total)}`;$('scrubFill').style.width=(total?clamp(playheadTime/total*100,0,100):0)+'%';$('playhead').style.left=(playheadTime*zoom+PADDING)+'px'}
 function seek(t){const was=isPlaying;if(was)stopPlayback();playheadTime=clamp(t,0,duration());synchronize(playheadTime,false);paint(playheadTime);updateTimeUI();if(was)startPlayback()}
@@ -402,5 +402,14 @@ $('exportBtn').onclick=async()=>{if(exporting)return;if(!clips.length)return ale
  }catch(e){console.error(e);exporting=false;stopPlayback();hideModal();alert('ساخت خروجی ممکن نشد: '+e.message)}};
 window.addEventListener('keydown',e=>{const editing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();return}if(editing)return;if(e.code==='Space'){e.preventDefault();isPlaying?stopPlayback():startPlayback()}if(e.key.toLowerCase()==='s'){e.preventDefault();split()}if(e.key==='Delete'||e.key==='Backspace')removeSelected()});
 window.addEventListener('beforeunload',()=>{for(const m of media.values())URL.revokeObjectURL(m.url);pauseAll()});
-renderAssets();renderTimeline();renderInspector();paint(0);status('آماده · برای تدوین از متن، تب ✦ تدوین از متن را انتخاب کن');
+renderAssets();renderTimeline();renderInspector();paint(0);
+// Canvas text is rasterized; repaint it once the remotely hosted Vazir font loads.
+if (document.fonts && document.fonts.load) {
+  Promise.all([
+    document.fonts.load('400 18px RushVazir0923', 'پیش‌نمایش پروژه'),
+    document.fonts.load('700 30px RushVazir0923', 'راش‌ها را وارد کن و تدوین را شروع کن')
+  ]).then(() => paint(playheadTime)).catch(() => {});
+  document.fonts.addEventListener?.('loadingdone', () => paint(playheadTime));
+}
+status('آماده · برای تدوین از متن، تب ✦ تدوین از متن را انتخاب کن');
 })();
