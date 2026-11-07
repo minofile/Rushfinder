@@ -18,7 +18,7 @@ async function rfSmartVideoLookup(req,res){
  recent.push(now);rfSmartCalls.set(addr,recent);
  if(rfSmartCalls.size>250)rfSmartCalls.clear();
  const search=new URL('https://www.googleapis.com/youtube/v3/search');
- Object.entries({part:'snippet',type:'video',q,maxResults:'5',videoEmbeddable:'true',safeSearch:'moderate',key}).forEach(([k,v])=>search.searchParams.set(k,v));
+ Object.entries({part:'snippet',type:'video',q,maxResults:'18',videoEmbeddable:'true',safeSearch:'moderate',key}).forEach(([k,v])=>search.searchParams.set(k,v));
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),9500);
  try{
   const result=await fetch(search,{signal:controller.signal,headers:{Accept:'application/json'}});
@@ -28,10 +28,24 @@ async function rfSmartVideoLookup(req,res){
    return rfSmartReply(res,502,{error:'خطای YouTube API: '+reason});
   }
   const hits=(body.items||[]).filter(x=>/^[A-Za-z0-9_-]{11}$/.test(x.id?.videoId||''));
-  return rfSmartReply(res,200,{query:q,items:hits.map(x=>({
+  // One cheap videos.list request helps avoid suggested cuts past a video's actual ending.
+  // Failure must not break search or reveal API credentials.
+  const timing=new Map();
+  try {
+   const details=new URL('https://www.googleapis.com/youtube/v3/videos');
+   Object.entries({part:'contentDetails,status',id:hits.map(x=>x.id.videoId).join(','),key}).forEach(([k,v])=>details.searchParams.set(k,v));
+   if(hits.length){const meta=await fetch(details,{signal:controller.signal});if(meta.ok){const detailBody=await meta.json();
+    for(const v of detailBody.items||[]){const iso=String(v.contentDetails?.duration||'');const match=iso.match(/^P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/);
+     const seconds=match?(+(match[1]||0)*86400+(+(match[2]||0))*3600+(+(match[3]||0))*60+(+(match[4]||0))):0;
+     timing.set(v.id,{seconds,embeddable:v.status?.embeddable!==false});
+    }
+   }}
+  }catch(_){}
+  return rfSmartReply(res,200,{query:q,items:hits.filter(x=>timing.get(x.id.videoId)?.embeddable!==false).map(x=>({
    id:x.id.videoId,title:String(x.snippet?.title||'بدون عنوان').slice(0,180),
    channel:String(x.snippet?.channelTitle||'').slice(0,90),
    thumbnail:String(x.snippet?.thumbnails?.medium?.url||x.snippet?.thumbnails?.default?.url||'').slice(0,300),
+   durationSeconds:timing.get(x.id.videoId)?.seconds||0,
    url:'https://www.youtube.com/watch?v='+x.id.videoId
   }))});
  }catch(err){return rfSmartReply(res,502,{error:'اتصال به یوتیوب ممکن نشد: '+(err.name==='AbortError'?'پایان زمان درخواست':'خطای شبکه')});}

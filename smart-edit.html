@@ -308,6 +308,18 @@ body .app select, body .app option, body .app label {
 .rf-cut-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:7px 0}.rf-cut-grid label{display:flex;flex-direction:column;gap:3px;font-size:10px;font-weight:700}.rf-cut-grid input{width:100%;min-width:0;border:1px solid #a8cbed;border-radius:7px;padding:6px;color:#284d71;background:white;font-size:11px}
 .rf-yt-result.rf-yt-unverified{border-inline-start:3px solid #e0a347}.rf-yt-result small{font-size:10px;color:#56708d}.rf-yt-result a{display:inline-block;margin-top:4px}.rf-yt-cut-inspector .rf-yt-actions button{flex:1 1 auto}
 </style>
+<style id="rf0927-preview-and-timeline-fixes">
+/* The export canvas and the embedded video occupy the SAME selected 16:9/1:1/9:16 frame. */
+.rf-preview-frame{position:relative;flex:none;overflow:hidden;background:#0e1725;border-radius:9px;box-shadow:0 10px 30px #1e41632f}
+.stage .rf-preview-frame canvas{width:100%!important;height:100%!important;display:block;max-width:none!important;max-height:none!important;box-shadow:none!important}
+.stage .rf-preview-frame .rf-yt-overlay{position:absolute;inset:0!important;display:flex;align-items:center;justify-content:center;background:#090e17;pointer-events:auto;padding:0!important}
+.stage .rf-preview-frame #rfYTPlayerHost{flex:0 0 auto;width:100%!important;max-width:100%!important;max-height:100%!important;height:auto!important;aspect-ratio:16/9;border:0!important;border-radius:0!important;background:#080b10;box-shadow:none!important;overflow:hidden}
+.stage .rf-preview-frame #rfYTPlayerHost iframe{display:block;width:100%!important;height:100%!important;border:0}
+.rf-yt-shadow{background:linear-gradient(115deg,#d9edff,#c0ddff)!important;border:1px dashed #498cd9!important;color:#165394!important;font-size:10px!important}
+.rf-yt-shadow.active{outline:2px solid #2173cc}
+.rf-yt-track .rf-yt-clip{font-size:10px}
+.rf-yt-status{white-space:pre-line}
+</style>
 </head><body>
 <div class="app">
 <header class="top">
@@ -330,15 +342,15 @@ body .app select, body .app option, body .app label {
 <div class="clip-settings-title">✎ تنظیمات کلیپ <span class="subtle" id="selectTag">چیزی انتخاب نشده</span></div>
 <div class="inspect-content" id="inspectorContent"><div class="empty">برای کات، کوتاه‌کردن یا تنظیم صدا، یک کلیپ را از تایم‌لاین انتخاب کن.</div></div>
 </aside>
-<section class="panel viewer"><div class="video-head"><strong>▷ پیش‌نمایش خروجی</strong><div class="row" style="flex:0 0 auto"><span class="subtle">کادر خروجی</span><select id="aspect" title="کادر خروجی"><option value="16:9">16:9 افقی</option><option value="9:16">9:16 عمودی</option><option value="1:1">1:1 مربعی</option></select></div></div><div class="stage" id="stage"><canvas aria-label="پیش‌نمایش تصویر" height="540" id="canvas" width="960"></canvas><div class="rf-yt-overlay" id="rfYTOverlay" hidden><div id="rfYTPlayerHost"></div></div></div><div class="player"><div class="controls"><span class="time" id="time">00:00 / 00:00</span><button class="iconbtn" id="back" title="۵ ثانیه عقب">⏪</button><button class="iconbtn" id="play" title="پخش / توقف">▶</button><button class="iconbtn" id="forward" title="۵ ثانیه جلو">⏩</button><button class="iconbtn" id="muteBtn" title="قطع صدای پیش‌نمایش">🔊</button></div><div class="progress-rail" id="scrubRail"><div id="scrubFill"></div></div></div></section>
+<section class="panel viewer"><div class="video-head"><strong>▷ پیش‌نمایش خروجی</strong><div class="row" style="flex:0 0 auto"><span class="subtle">کادر خروجی</span><select id="aspect" title="کادر خروجی"><option value="16:9">16:9 افقی</option><option value="9:16">9:16 عمودی</option><option value="1:1">1:1 مربعی</option></select></div></div><div class="stage" id="stage"><div class="rf-preview-frame" id="rfPreviewFrame"><canvas aria-label="پیش‌نمایش تصویر" height="540" id="canvas" width="960"></canvas><div class="rf-yt-overlay" id="rfYTOverlay" hidden><div id="rfYTPlayerHost"></div></div></div></div><div class="player"><div class="controls"><span class="time" id="time">00:00 / 00:00</span><button class="iconbtn" id="back" title="۵ ثانیه عقب">⏪</button><button class="iconbtn" id="play" title="پخش / توقف">▶</button><button class="iconbtn" id="forward" title="۵ ثانیه جلو">⏩</button><button class="iconbtn" id="muteBtn" title="قطع صدای پیش‌نمایش">🔊</button></div><div class="progress-rail" id="scrubRail"><div id="scrubFill"></div></div></div></section>
 <aside class="panel library"><div class="head"><span>✦ ابزار ویرایش هوشمند</span><span class="head-icon">▦</span></div><div class="tabs"><button class="tab" data-tab="media">رسانه‌ها</button><button class="tab" data-tab="text">تیتر روی فیلم</button><button class="tab" data-tab="audio">صدا</button><button class="tab active" data-tab="auto">✦ نریشن + متن</button></div>
 <div class="lib-content hidden" id="mediaTab"><label class="import" for="files">＋ افزودن راش و تصویر<br/><span class="small">فایل‌ها روی کامپیوتر باقی می‌مانند</span></label><input accept="video/*,image/*" class="file-input" id="files" multiple="" type="file"/><label class="import" for="folderFiles" style="margin-top:9px;background:#10263b">◧ جست‌وجو در پوشه راش‌های کامپیوتر<br/><span class="small">پوشه را خودت انتخاب می‌کنی</span></label><input class="file-input" directory="" id="folderFiles" multiple="" type="file" webkitdirectory=""/><div class="note" id="folderStatus"></div><div class="field" style="margin-top:11px"><label>افزودن فایل مجاز از لینک مستقیم MP4 (اختیاری)</label><input dir="ltr" id="directVideoUrl" placeholder="https://example.org/owned-footage.mp4" style="width:100%" type="url"/><label class="switchline" style="margin:7px 0"><input id="directRights" type="checkbox"/> حق استفاده از این فایل را دارم</label><button class="btn" id="addDirectVideo" style="width:100%" type="button">دریافت مستقیم و افزودن به پروژه</button><p class="note" id="directVideoStatus">فقط لینک مستقیم به فایل ویدئو، نه لینک صفحه یوتیوب، آپارات یا YTUltra. سرور ویدئو باید دانلود مرورگری (CORS) را مجاز کند. فایل به Vercel ارسال نمی‌شود.</p></div><div class="assets" id="assets"></div><div class="note">روی «افزودن» بزن یا فایل را روی نوار ویدئو بکش.</div></div>
 <div class="lib-content hidden" id="textTab"><div class="note smart-report">برای نوشتن متن روی فیلم از این ابزار استفاده کن. متن سناریوی تدوین به‌صورت خودکار روی خروجی نمایش داده نمی‌شود.</div><button class="btn primary" id="moveTextToScript" style="width:100%;white-space:normal" type="button">✦ تبدیل متن به تدوین هوشمند</button><div class="field"><label>متن روی تصویر</label><textarea id="titleText" placeholder="تیتر خبر یا جمله کوتاه…" rows="3"></textarea></div><button class="btn primary" id="addTitle" style="width:100%">＋ افزودن متن در نشانگر</button><p class="note">متن روی لایه بالای ویدئو قرار می‌گیرد و در خروجی هم دیده می‌شود.</p></div>
 <div class="lib-content hidden" id="audioTab"><label class="import" for="musicInput">♫ افزودن موسیقی</label><input accept="audio/*" class="file-input" id="musicInput" type="file"/><label class="import" for="voiceInput" style="margin-top:10px">🎙 انتخاب فایل نریشن</label><input accept="audio/*" class="file-input" id="voiceInput" type="file"/><button class="btn" id="autoMusic" style="width:100%;margin-top:10px">♫ ساخت موسیقی ساده خودکار</button><button class="btn" id="recordVoice" style="width:100%;margin-top:10px">● ضبط نریشن با میکروفون</button><p class="note">نریشن و موسیقی لایه‌های جداگانه دارند. ضبط میکروفون به مجوز مرورگر نیاز دارد.</p></div>
 <div class="lib-content" id="autoTab"><div class="narr-hero"><b>▤ نریشن و متن برای تدوین هوشمند</b><p>متن خبر را وارد کن؛ اگر نریشن هم بدهی، کات‌ها با طول صدا هماهنگ می‌شوند. راش واقعی از منابع مجاز دریافت می‌شود.</p></div><label class="voice-drop" for="autoVoiceInput">◉ انتخاب فایل نریشن · MP3 / WAV / M4A <input accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.webm" id="autoVoiceInput" type="file"/></label><div class="narr-selected" id="autoVoiceInfo">هنوز نریشنی انتخاب نشده است.</div><div class="field"><label>▤ متن روایت (فقط برای جست‌وجوی راش)</label><textarea class="side-script" id="script" placeholder="مثلاً: بارش باران در تهران موجب ترافیک شد. تیم‌های امدادی به محل اعزام شدند…" rows="6"></textarea></div><details id="rfYTPanel" class="rf-yt-panel">
 <summary>✂ برش خودکار YouTube بر اساس نریشن</summary>
-<p class="rf-yt-hint">متن را بخش‌بندی می‌کند، ویدئوهای پیشنهادی را جست‌وجو می‌کند و برای هر جمله چند برش مجازی روی تایم‌لاین می‌چیند. زمان شروع هر برش قابل تغییر است؛ صدای ویدئوها خاموش می‌ماند.</p>
-<button id="rfYTSearch" class="btn primary" type="button" style="width:100%;white-space:normal">✦ پیدا کردن و ساخت برش‌های پیشنهادی YouTube</button>
+<p class="rf-yt-hint">متن را بخش‌بندی می‌کند، ویدئوهای پیشنهادی را جست‌وجو می‌کند و برای هر جمله چند برش مجازی روی تایم‌لاین می‌چیند. زمان شروع هر برش قابل تغییر است؛ با دکمه پخش اصلی نیز قابل پیش‌نمایش‌اند. صدای ویدئوها خاموش می‌ماند.</p>
+<button id="rfYTSearch" class="btn primary" type="button" style="width:100%;white-space:normal">✦ پیدا کردن و چیدن کات‌های YouTube روی تایم‌لاین</button>
 <div id="rfYTStatus" class="rf-yt-hint rf-yt-status" role="status" aria-live="polite">جست‌وجو با کلید جداگانه YouTube مخصوص تدوین روی سرور انجام می‌شود.</div>
 <div id="rfYTResults" class="rf-yt-results"></div><div id="rfYTCutInspector" class="rf-yt-cut-inspector" aria-label="ویرایش زمان برش یوتیوب"></div>
 <div class="rf-yt-actions">
@@ -347,7 +359,7 @@ body .app select, body .app option, body .app label {
 <button type="button" id="rfYTClear" class="btn">پاک‌کردن ارجاع‌ها</button>
 </div>
 <button type="button" id="rfYTPlan" class="btn" style="width:100%;margin-top:7px">↓ دریافت طرح کات‌ها (JSON)</button>
-<p class="rf-yt-warning">برش‌های یوتیوب مجازی‌اند: بدون دانلود، بدون خروجی MP4. جست‌وجوی عنوان، خود صحنه را تحلیل نمی‌کند؛ نقطه‌های کات فقط پیشنهاد اولیه‌اند و ارتباط تصویر با خبر باید دستی بازبینی شود.</p>
+<p class="rf-yt-warning">کات‌های یوتیوب داخل نوار ویدئو پیش‌نمایش می‌شوند اما فایل واقعی نیستند و در خروجی MP4 نمی‌آیند. برای خروجی MP4 از دکمه «پیدا کردن راش و ساخت کات خودکار» با منابع مجاز استفاده کن. جست‌وجوی عنوان، خود صحنه را تحلیل نمی‌کند؛ نقطه‌های کات فقط پیشنهاد اولیه‌اند و ارتباط تصویر با خبر باید دستی بازبینی شود.</p>
 </details><div class="field"><label>▦ سبک و قالب ویدئو</label><select id="editStyle"><option value="news">خبری · سریع و واضح</option><option value="cinema">سینمایی · آرام‌تر</option><option value="social">شبکه اجتماعی · ریتم تند</option></select><div class="style-chips"><button aria-pressed="true" class="style-chip active" data-style-value="news" type="button">▤ خبر و گزارش</button><button aria-pressed="false" class="style-chip" data-style-value="cinema" type="button">◈ سینمایی</button><button aria-pressed="false" class="style-chip" data-style-value="social" type="button">✦ شبکه اجتماعی</button></div></div><div class="field"><label class="switchline"><input checked="" id="useOnline" type="checkbox"/> ⌕ جست‌وجوی خودکار ویدئو (مجاز)</label></div><label class="voice-drop" for="autoMusicInput" style="border-color:#4482aa">♫ انتخاب موسیقی دلخواه<input accept="audio/*,.mp3,.wav,.m4a,.ogg" id="autoMusicInput" type="file"/></label><div class="narr-selected" id="autoMusicInfo">اگر آهنگ انتخاب نکنی، موسیقی ساده و اختصاصی ساخته می‌شود.</div><div class="preset-group">
 <div class="preset-title">▧ انتخاب ترنزیشن <span>به کلیپ‌های مجاور اعمال می‌شود</span></div>
 <div class="transition-gallery" id="rfTransitions">
@@ -367,7 +379,7 @@ body .app select, body .app option, body .app label {
 </div>
 <div aria-labelledby="startGuideTitle" aria-modal="true" class="start-guide" hidden="" id="startGuide" role="dialog">
 <div class="start-guide-card">
-<span class="start-guide-badge">RushFinder SmartEdit 0913 · نسخه وب · تدوین خودکار</span>
+<span class="start-guide-badge">RushFinder SmartEdit 0927 · نسخه وب · تدوین خودکار</span>
 <h1 id="startGuideTitle">نریشن و متن بده، راش پیدا کن</h1>
 <p>متن خبر را بنویس و در صورت تمایل فایل نریشن را بده؛ برنامه راش‌های دارای مجوز را جست‌وجو می‌کند، تا حد امکان دریافت می‌کند و زیر نریشن با موسیقی و ترنزیشن می‌چیند. متن روی فیلم نمی‌آید.</p>
 <label for="guideVoice" style="display:block;margin-bottom:7px;font-weight:700">۱. فایل نریشن (اختیاری)</label>
@@ -383,8 +395,8 @@ body .app select, body .app option, body .app label {
 </div>
 </div>
 <div class="modal-back" id="exportModal"><div class="modal"><h2 id="modalTitle">ساخت خروجی ویدئو</h2><p id="modalText">ویدئو در مرورگر خودت و با سرعت واقعی پخش و ضبط می‌شود. تب را تا پایان باز نگه دار.</p><progress id="exportProgress" max="100" value="0"></progress><div class="actions"><button class="btn red" id="cancelExport">توقف خروجی</button><button class="btn primary hidden" id="downloadExport">دانلود فایل</button><button class="btn hidden" id="closeModal">بستن</button></div></div></div>
-<script src="smart-edit.js?v=0926"></script>
-<script src="smart-youtube.js?v=0926" defer></script>
+<script src="smart-edit.js?v=0927"></script>
+<script src="smart-youtube.js?v=0927" defer></script>
 <script>
 (()=>{
  const guide=document.getElementById('startGuide');

@@ -38,13 +38,25 @@ function seek(t){const was=isPlaying;if(was)stopPlayback();playheadTime=clamp(t,
 function tick(){if(!isPlaying)return;playheadTime=clamp((performance.now()-playClock)/1000,0,duration());synchronize(playheadTime,true);paint(playheadTime);updateTimeUI();if(exporting){const pct=duration()?playheadTime/duration()*100:0;$('exportProgress').value=pct;$('modalText').textContent=`در حال ساخت خروجی روی همین کامپیوتر... ${fa(Math.floor(pct))}٪ · ${fmt(playheadTime)} / ${fmt(duration())}`;}
  if(playheadTime>=duration()-.015){stopPlayback();if(exporting&&recorder&&recorder.state!=='inactive')recorder.stop();return}
  renderId=requestAnimationFrame(tick)}
-async function startPlayback(){if(!clips.length)return;ensureAudio();try{await audioCtx?.resume?.()}catch(_e){}if(playheadTime>=duration()-.05)playheadTime=0;isPlaying=true;playClock=performance.now()-playheadTime*1000;$('play').textContent='❚❚';synchronize(playheadTime,true);cancelAnimationFrame(renderId);renderId=requestAnimationFrame(tick)}
+async function startPlayback(){if(!clips.length)return;window.rfYTStopPreview?.();ensureAudio();try{await audioCtx?.resume?.()}catch(_e){}if(playheadTime>=duration()-.05)playheadTime=0;isPlaying=true;playClock=performance.now()-playheadTime*1000;$('play').textContent='❚❚';synchronize(playheadTime,true);cancelAnimationFrame(renderId);renderId=requestAnimationFrame(tick)}
 function stopPlayback(){isPlaying=false;cancelAnimationFrame(renderId);$('play').textContent='▶';pauseAll();}
 $('play').addEventListener('click',()=>isPlaying?stopPlayback():startPlayback());$('back').onclick=()=>seek(playheadTime-5);$('forward').onclick=()=>seek(playheadTime+5);$('muteBtn').onclick=()=>{muted=!muted;$('muteBtn').textContent=muted?'🔇':'🔊';synchronize(playheadTime,isPlaying)};
 $('scrubRail').addEventListener('click',e=>{const r=e.currentTarget.getBoundingClientRect();seek((e.clientX-r.left)/r.width*duration())});
-$('aspect').onchange=()=>{const ratio=$('aspect').value;if(ratio==='9:16'){canvas.width=540;canvas.height=960}else if(ratio==='1:1'){canvas.width=720;canvas.height=720}else{canvas.width=960;canvas.height=540}canvas.style.aspectRatio=`${canvas.width}/${canvas.height}`;paint(playheadTime)};
+function layoutPreviewFrame(){
+ const stage=$('stage'),frame=$('rfPreviewFrame');if(!stage||!frame)return;
+ const rect=stage.getBoundingClientRect(),cs=getComputedStyle(stage);
+ const freeW=Math.max(100,rect.width-(parseFloat(cs.paddingLeft)||0)-(parseFloat(cs.paddingRight)||0));
+ const freeH=Math.max(100,rect.height-(parseFloat(cs.paddingTop)||0)-(parseFloat(cs.paddingBottom)||0));
+ const r=canvas.width/canvas.height;
+ const width=Math.min(freeW,freeH*r),height=width/r;
+ frame.style.width=width+'px';frame.style.height=height+'px';
+}
+$('aspect').onchange=()=>{const ratio=$('aspect').value;if(ratio==='9:16'){canvas.width=540;canvas.height=960}else if(ratio==='1:1'){canvas.width=720;canvas.height=720}else{canvas.width=960;canvas.height=540}canvas.style.aspectRatio=`${canvas.width}/${canvas.height}`;layoutPreviewFrame();paint(playheadTime)};
+if(window.ResizeObserver)new ResizeObserver(layoutPreviewFrame).observe($('stage'));else window.addEventListener('resize',layoutPreviewFrame);
+requestAnimationFrame(layoutPreviewFrame);
+window.rfSmartEditHasClips=()=>clips.length>0;
 function pushClip(c){snapshot();clips.push(c);selected={type:'video',id:c.id};afterChange('کلیپ به تایم‌لاین اضافه شد')}
-function afterChange(msg){stopPlayback();playheadTime=clamp(playheadTime,0,duration());renderTimeline();renderInspector();paint(playheadTime);updateTimeUI();if(msg)status(msg)}
+function afterChange(msg){stopPlayback();if(clips.length)window.rfYTStopPreview?.();playheadTime=clamp(playheadTime,0,duration());renderTimeline();window.dispatchEvent(new Event('rfTimelineChanged'));renderInspector();paint(playheadTime);updateTimeUI();if(msg)status(msg)}
 function addMediaToTimeline(id){const m=media.get(id);if(!m)return;if(m.type==='audio'){setAudio('music',id);return}pushClip(createClip(m))}
 function metadata(file){return new Promise(resolve=>{const url=URL.createObjectURL(file),kind=file.type.startsWith('audio/')?'audio':file.type.startsWith('image/')?'image':'video';if(kind==='image'){const im=new Image();im.onload=()=>resolve({url,type:'image',duration:4,img:im,width:im.naturalWidth,height:im.naturalHeight});im.onerror=()=>resolve(null);im.src=url;}else{const el=document.createElement(kind==='audio'?'audio':'video');el.preload='metadata';const tm=setTimeout(()=>resolve(null),18000);el.onloadedmetadata=()=>{clearTimeout(tm);resolve({url,type:kind,duration:Number.isFinite(el.duration)?Math.min(100000,el.duration):10,width:el.videoWidth||0,height:el.videoHeight||0})};el.onerror=()=>{clearTimeout(tm);resolve(null)};el.src=url;el.load()}})}
 async function importFile(file,makeAudio=null){if(!file)return;status('در حال بررسی فایل '+file.name);const props=await metadata(file);if(!props){status('خواندن فایل ممکن نشد: '+file.name);return null}const id=uid(),m={id,file,name:file.name,...props,rfTopics:[],rfTitle:''};media.set(id,m);renderAssets();status('رسانه اضافه شد: '+file.name);if(makeAudio)setAudio(makeAudio,id);return m}
@@ -210,7 +222,7 @@ function searchQueries(lines){
   // Let each sentence contribute a topic before taking secondary topics.
   for(const line of lines){const q=topicQueries(line,context)[0];if(q&&!seen.has(q.toLowerCase())){list.push(q);seen.add(q.toLowerCase());}}
   for(const line of lines){for(const q of topicQueries(line,context).slice(1,3))if(!seen.has(q.toLowerCase())){list.push(q);seen.add(q.toLowerCase());}}
-  return list.slice(0,5).filter(Boolean);
+  return list.slice(0,8).filter(Boolean);
 }
 function searchPhrase(line){return topicQueries(line, $('script').value).slice(0,2).join(' ') || 'news';}
 // Export read-only query diagnostic for offline test only.
@@ -288,10 +300,10 @@ async function queryLicensed(scriptLines){
  if(!queries.length)return 'در متن، موضوع قابل جست‌وجو پیدا نشد. عبارت کوتاه انگلیسی یا نام محل/رویداد بنویس.';
  reports.push('موضوع‌های جست‌وجو: '+queries.join('، '));
  // Limit rate and number of searches; don't start many downloads simultaneously.
- for(const q of queries.slice(0,5)){
+ for(const q of queries.slice(0,8)){
   let added=0;
   for(const provider of providers){
-   if(providerUnavailable.has(provider)||added>=1||imported>=6)break;
+   if(providerUnavailable.has(provider)||added>=1||imported>=10)break;
    try{
     $('smartReport').textContent=`⌕ جست‌وجوی «${q}» در ${provider} · ${imported} راش وارد شده…`;
     const resp=await fetch('/api/smart-stock?provider='+encodeURIComponent(provider)+'&q='+encodeURIComponent(q),{headers:{Accept:'application/json'}});
@@ -300,7 +312,7 @@ async function queryLicensed(scriptLines){
     const hits=(data.videos||[]).slice(0,6);for(const h of hits)showOnline(h,q);
     if(!hits.length)continue;results+=hits.length;stage('download');
     for(const hit of hits.slice(0,4)){
-     if(imported>=6||added>=1)break;
+     if(imported>=10||added>=1)break;
      if(remoteImported.has((hit.source||'stock')+':'+hit.id))continue;
      try{const m=await importOnlineHit(hit,q);if(m){added++;imported++;reports.push('✓ «'+q+'»: '+m.name+' دریافت و به کتابخانه افزوده شد');}}
      catch(e){reports.push('«'+q+'»: '+String(e.message||e).slice(0,90))}
@@ -308,7 +320,7 @@ async function queryLicensed(scriptLines){
    }catch(e){reports.push('«'+q+'» / '+provider+': '+String(e.message||e).slice(0,85))}
   }
   if(!added)reports.push('«'+q+'»: فیلم قابل‌استفاده از منابع فعال دریافت نشد');
-  if(imported>=6)break;
+  if(imported>=10)break;
  }
  if(!imported)reports.push('هیچ فایل واقعی دریافت نشد؛ در نتیجه ویدئوی ساختگی یا نامرتبط جایگزین نمی‌شود.');
  if(providerUnavailable.size)reports.push('بعضی منابع کلید API ندارند و خودکار کنار گذاشته شدند: '+[...providerUnavailable].join(', '));
