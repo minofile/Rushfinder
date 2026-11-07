@@ -8,6 +8,23 @@
     },
     "api/smart-download.js": {
       "maxDuration": 60
+    },
+    "api/combined-music.js": {
+      "maxDuration": 60
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/audius-download",
+      "destination": "/api/combined-music?__rf_music_route=audius"
+    },
+    {
+      "source": "/api/music-download",
+      "destination": "/api/combined-music?__rf_music_route=freesound"
+    },
+    {
+      "source": "/api/appwrite-music",
+      "destination": "/api/combined-music?__rf_music_route=appwrite"
+    }
+  ]
 }
