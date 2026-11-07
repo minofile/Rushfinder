@@ -130,12 +130,14 @@ function reset(){stop();++S.playToken;S.items=[];S.selected=-1;S.duration=0;S.lo
 $('rfYTClear').addEventListener('click',reset);// Clear references explicitly; the original new-project confirmation remains untouched.
 function splitAt(at){const i=S.items.findIndex(it=>at>it.start+0.4&&at<it.start+it.duration-0.4);if(i<0)return message('برای تقسیم، نشانگر را داخل برش بگذار یا دکمه تقسیم وسط برش را بزن.',true);stop();const a=S.items[i],len=at-a.start;const b={...a,id:S.clipId++,start:at,duration:a.duration-len,sourceStart:a.sourceStart+len,sourceEnd:a.sourceStart+a.duration};a.duration=len;a.sourceEnd=a.sourceStart+len;S.items.splice(i+1,0,b);renderReferences();setSelection(i+1);message('برش مجازی در '+fmt(at)+' تقسیم شد؛ صدای ویدئوها خاموش است.')}
 $('rfYTSplit')?.addEventListener('click',()=>{const t=S.voice?.currentTime||0;const i=S.selected;const v=S.items[i];const at=S.active?t:v?v.start+v.duration/2:-1;splitAt(at)});
-$('rfYTPlan').onclick=()=>{if(!S.items.length)return message('هنوز برشی ساخته نشده.',true);const data={type:'RushFinder YouTube Virtual Cut Storyboard — not MP4',version:'0927',renderableMP4:false,voiceSeconds:S.duration,clips:S.items.map(it=>({sentence:it.sentence,query:it.query,timelineStart:it.start,timelineDuration:it.duration,sourceStart:it.sourceStart,sourceEnd:it.sourceEnd,source:it.options[it.optionIndex||0],verifiedByHuman:false}))};const u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download='RushFinder-0927-YouTube-Cut-Storyboard.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)};
+$('rfYTPlan').onclick=()=>{if(!S.items.length)return message('هنوز برشی ساخته نشده.',true);const data={type:'RushFinder YouTube Virtual Cut Storyboard — not MP4',version:'0928',renderableMP4:false,voiceSeconds:S.duration,clips:S.items.map(it=>({sentence:it.sentence,query:it.query,timelineStart:it.start,timelineDuration:it.duration,sourceStart:it.sourceStart,sourceEnd:it.sourceEnd,source:it.options[it.optionIndex||0],verifiedByHuman:false}))};const u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download='RushFinder-0928-YouTube-Cut-Storyboard.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)};
 // Embedded YouTube clips cannot be included in MediaRecorder MP4/WebM output.
 for(const b of [$('exportBtn'),$('rfExportSide')])b?.addEventListener('click',e=>{if(S.items.length&&!confirm('برش‌های یوتیوب فقط مجازی هستند و داخل خروجی MP4 یا WebM نمی‌آیند. ادامه می‌دهی؟')){e.preventDefault();e.stopImmediatePropagation()}},true);
 btn.onclick=async()=>{
  const text=$('script').value.trim();if(!text)return message('متن نریشن را وارد کن.',true);
  const parts=sentences(text);if(!parts.length)return message('متن کافی نیست.',true);
+ if(window.rfPrepareYoutubeOnly?.()===false)return;
+ $('rfYTPanel').open=true;
  btn.disabled=true;reset();message('در حال جست‌وجوی فیلم برای '+parts.length+' بخش نریشن…');
  try{
   let dur=S.voiceFile?await probeVoice(S.voiceFile):0;if(!dur)dur=parts.reduce((n,p)=>n+p.split(/\s+/).length,0)/2.3;
@@ -169,8 +171,10 @@ btn.onclick=async()=>{
  }catch(e){message('خطا: '+e.message,true)}finally{btn.disabled=false}
 };
 
+window.rfYTStartAutoEdit=()=>btn.onclick();
+window.rfYTReset=reset;
 window.rfYTStopPreview=()=>{stop();overlay.hidden=true};
 window.rfYTPreviewState=()=>({count:S.items.length,duration:S.duration,active:S.active,sourceCount:new Set(S.items.map(it=>it.options[it.optionIndex||0]?.id)).size});
-renderInspector();message('متن و نریشن را وارد کن؛ دکمه جست‌وجو برش‌های مجازی قابل تنظیم روی تایم‌لاین می‌چیند.');
+renderInspector();message('فقط YouTube: متن و نریشن را وارد کن و دکمه ساخت کات خودکار را بزن. ویکی‌مدیا و منابع استوک جست‌وجو نمی‌شوند.');
 window.addEventListener('beforeunload',()=>{stop();if(S.voiceURL)URL.revokeObjectURL(S.voiceURL)});
 })();

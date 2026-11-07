@@ -377,70 +377,29 @@ $('demoEdit').onclick=async()=>{
  $('quickEdit').click();
 };
 $('useOnline').checked=true;
+// 0928: Do not invoke licensed-stock providers from the automatic editor.
+// Only the YouTube reference/cut storyboard may be used by the primary auto-edit button.
 $('quickEdit').onclick=async()=>{
- if(exporting)return;
- if(location.protocol==='file:'){
-   $('smartReport').textContent='این صفحه با file:// باز شده؛ برای جست‌وجوی اینترنتی باید نسخه را با RUN-0912-LOCAL.cmd اجرا کنی یا روی Vercel منتشر کنی.';return;
+ const start=window.rfYTStartAutoEdit;
+ if(typeof start!=='function'){
+  $('smartReport').textContent='بخش YouTube بارگذاری نشده است. صفحه را تازه‌سازی کن؛ جست‌وجوی ویکی‌مدیا جایگزین نمی‌شود.';
+  return;
  }
- const voice=audioTracks.voice;
- // Narration is recommended; the script alone can create a silent preview with estimated timing.
- const haveVoice=Boolean(voice&&media.get(voice.mediaId)&&Number.isFinite(voice.out-voice.in)&&voice.out-voice.in>0);
- const script=$('script').value.trim();if(!script){alert('متن دقیق نریشن را وارد کن.');$('script').focus();return}
- const lines=linesFromScript(script);if(!lines.length)return;
- const estimatedSeconds=clamp(script.trim().split(/\s+/).length/2.3,8,360);
- const voiceSeconds=haveVoice?(voice.out-voice.in):estimatedSeconds;
- if(voiceSeconds>360){$('smartReport').textContent='مدت نریشن بیشتر از سقف آزمایشی ۶ دقیقه است؛ برای جلوگیری از فشار مرورگر فایل کوتاه‌تر انتخاب کن.';return;}
- const button=$('quickEdit'),report=$('smartReport');button.disabled=true;resetStages();stage('search');report.textContent='⌕ در حال جست‌وجوی راش‌های واقعی برای موضوع خبر…';
- try{
-  let plans=lines.map(line=>({line,rank:rankLocal(line)}));const generic=$('allowGeneric').checked;
-  const missing=plans.filter(p=>!p.rank.length||(!generic&&p.rank[0].score<=0));
-  let onlineReport='';if($('useOnline').checked){onlineReport=await queryLicensed(missing.length?missing.map(p=>p.line):lines);plans=lines.map(line=>({line,rank:rankLocal(line)}));}
-  let usable=plans.filter(p=>p.rank.length&&(p.rank[0].score>0||generic));
-  if(!usable.length){resetStages();report.textContent='راش قابل دریافت پیدا نشد؛ برای حفظ دقت خبر، تصویر نامرتبط جایگزین نمی‌کنم.\n'+onlineReport+'\nبرای نتایج بیشتر می‌توانی منبع Pexels/Pixabay را پس از فعال‌کردن کلید API انتخاب کنی یا پوشه راش خودت را معرفی کنی.';return}
-  // Cover the whole narration with estimated sentence-aligned shots; never put script on screen.
-  if(voiceSeconds>360){report.textContent='برای این نسخه آزمایشی طول تدوین باید حداکثر ۶ دقیقه باشد.';return}
-  const beats=narrationBeats(lines,voiceSeconds,$('editStyle').value);
-  const remaining=[...media.values()].filter(m=>m.type==='video'||m.type==='image');
-  if(!remaining.length){report.textContent='هیچ راش واقعی وارد نشده است. '+onlineReport;return}
-  stage('timeline');snapshot();stopPlayback();clips=[];titles=[];playheadTime=0;transition='fade';syncTransitionButtons();
-  const counts=new Map(),n=beats.length,overlap=.5;
-  const targetLength=(voiceSeconds+overlap*Math.max(0,n-1))/n;
-  const unmatched=[];
-  for(let i=0;i<n;i++){
-   const beat=beats[i],ranking=rankLocal(beat.line);
-   const relevant=ranking.filter(r=>r.score>0);
-   const pool=relevant.length?relevant:(generic?ranking:[]);
-   if(!pool.length){
-    // Reuse a previously topic-matched archival shot only for an unmatched sentence, with a warning.
-    const prior=clips.at(-1);const previous=prior&&media.get(prior.mediaId);
-    if(!previous){unmatched.push(beat.line);continue}
-    pool.push({m:previous,score:0});unmatched.push('راش قبلی به‌صورت آرشیوی تکرار شد: '+beat.line);
-   }
-   const ranked=pool.slice(0,Math.min(pool.length,Math.max(1,Math.ceil(pool.length*.7))));
-   const adequate=ranked.filter(r=>r.m.duration>=targetLength*.8);
-   const candidates=adequate.length?adequate:ranked;
-   const choice=candidates[i%candidates.length].m;
-   const use=counts.get(choice.id)||0;counts.set(choice.id,use+1);
-   const maxSeg=Math.max(.2,choice.duration-.08);
-   const seg=Math.min(targetLength,Math.max(.2,maxSeg));
-   const usableFrom=Math.max(0,choice.duration-seg);
-   // Prefer visible, moving sections rather than an arbitrary fixed starting position.
-   const sourceStart=usableFrom>0?await pickShotStart(choice,seg,use):0;
-   const c=createClip(choice,sourceStart,sourceStart+seg);
-   // Avoid speed-up or extreme slowdown; if media is short it may repeat.
-   c.speed=clamp(seg/targetLength,.125,1.0);
-   c.volume=0;clips.push(c);
-  }
-  if(!clips.length){resetStages();report.textContent='نریشن بارگذاری شد اما هنوز راش واقعی وارد نشده است.\n'+onlineReport+'\nمنبع و مجوز راش یا پوشه شخصی را بررسی کن.';return}
-  if(haveVoice){audioTracks.voice.offset=0;audioTracks.voice.volume=.96;}
-  selected=haveVoice?{type:'voice',id:'voice'}:{type:'video',id:clips[0].id};afterChange('راش‌های واقعی روی تایم‌لاین به ترتیب متن چیده شدند.');
-  if(!audioTracks.music){const music=await importFile(originalMusicFile(clamp(Math.ceil(voiceSeconds)+2,8,360)),'music');if(music)audioTracks.music.volume=.085}
-  if(audioTracks.music){audioTracks.music.offset=0;audioTracks.music.volume=Math.min(.13,audioTracks.music.volume);}
-  renderTimeline();
-  if(Math.abs(duration()-voiceSeconds)>2)unmatched.push('مدت راش‌ها دقیقاً با نریشن یکسان نشده است؛ انتهای تایم‌لاین را بازبینی کن.');
-  stage('done');report.textContent=`✓ ${haveVoice?'نریشن':'متن'} ${fmt(voiceSeconds)} با ${clips.length} برش واقعی روی تایم‌لاین قرار گرفت. موسیقی ${audioTracks.music?'اضافه شد':'اضافه نشده'} و ترنزیشن فعال است؛ صدای راش‌ها خاموش و متن روی ویدئو پنهان است.\n${!haveVoice?'⚠️ طول تدوین از روی تعداد کلمات تخمین زده شد؛ برای همگامی دقیق‌تر نریشن بده.\n':''}${unmatched.length?'هشدار: '+unmatched.length+' قسمت نیازمند بازبینی.\n':''}${onlineReport}\n⚠️ انتخاب زمان کات از حرکت و وضوح تصویر تخمین زده شده، نه تشخیص معنای واقعی صحنه. تصویرهای آرشیوی را پیش از انتشار با خبر و مجوز تطبیق بده.`;
-  seek(0);status(`${clips.length} راش در تدوین خودکار · آماده بازبینی`);
- }catch(e){resetStages();report.textContent='خطای تدوین خودکار: '+String(e.message||e);console.error(e)}finally{button.disabled=false}
+ return start();
+};
+// Before generating YouTube cuts, remove old source-specific timeline clips ONLY
+// after the user explicitly confirms; narration/music tracks remain untouched.
+window.rfPrepareYoutubeOnly=()=>{
+ if(exporting){$('smartReport').textContent='ابتدا خروجی در حال اجرا را تمام کن.';return false;}
+ if(clips.length||titles.length){
+  if(!confirm('برای شروع تدوین فقط با YouTube، کات‌های ویدئویی و متن‌های پروژه فعلی از تایم‌لاین پاک می‌شوند. نریشن و موسیقی باقی می‌مانند. ادامه؟'))return false;
+  snapshot();stopPlayback();clips=[];titles=[];selected=null;playheadTime=0;
+  afterChange('تایم‌لاین از کلیپ‌های قبلی پاک شد؛ آماده برش‌های YouTube');
+ }
+ $('onlineHits').replaceChildren();
+ sourceCredits.length=0;updateCredits();
+ $('smartReport').textContent='منبع خودکار فقط YouTube است. کات‌ها به‌صورت پیش‌نمایش مجازی روی نوار ویدئو قرار می‌گیرند؛ دانلود و MP4 از YouTube انجام نمی‌شود.';
+ return true;
 };
 $('downloadCredits').onclick=()=>{const list=sourceCredits.map((x,i)=>`${i+1}. ${x.source} | ${x.query} | ${x.license} | ${x.page}`).join('\n');saveFile(new Blob([list],{type:'text/plain;charset=utf-8'}),'RushFinder-Stock-Credits.txt')};
 
@@ -457,7 +416,7 @@ $('autoMusic').onclick=async()=>{status('در حال ساخت موسیقی سا�
 $('recordVoice').onclick=async()=>{if(micRecorder?.state==='recording'){micRecorder.stop();$('recordVoice').textContent='● ضبط نریشن با میکروفون';return}if(!navigator.mediaDevices?.getUserMedia)return alert('این مرورگر اجازه دسترسی به میکروفون را در حالت فعلی نمی‌دهد. می‌توانی فایل نریشن را انتخاب کنی.');try{micStream=await navigator.mediaDevices.getUserMedia({audio:true});const parts=[];micRecorder=new MediaRecorder(micStream);micRecorder.ondataavailable=e=>{if(e.data.size)parts.push(e.data)};micRecorder.onstop=async()=>{micStream.getTracks().forEach(t=>t.stop());const blob=new Blob(parts,{type:micRecorder.mimeType||'audio/webm'});const f=new File([blob],'Narration-'+Date.now()+'.webm',{type:blob.type});await importFile(f,'voice')};micRecorder.start();$('recordVoice').textContent='■ پایان ضبط نریشن';status('نریشن در حال ضبط است...')}catch(e){alert('ضبط میکروفون ممکن نشد: '+e.message)}};
 function saveFile(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000)}
 $('savePlan').onclick=()=>{const p={project:'RushFinder SmartEdit',version:1,aspect:$('aspect').value,transition,stockCredits:sourceCredits,assets:[...media.values()].map(m=>({id:m.id,name:m.name,type:m.type,duration:m.duration})),clips:clips.map(({id,mediaId,in:from,out,speed,volume})=>({id,mediaId,in:from,out,speed,volume})),titles,audio:Object.fromEntries(Object.entries(audioTracks).map(([k,v])=>[k,v?{mediaId:v.mediaId,volume:v.volume,offset:v.offset}:null]))};saveFile(new Blob([JSON.stringify(p,null,2)],{type:'application/json'}),'RushFinder-SmartEdit-Project.json');status('طرح پروژه JSON دانلود شد (فایل‌های اصلی همراه آن ذخیره نمی‌شوند)')};
-$('newProject').onclick=()=>{if(!confirm('پروژه فعلی پاک شود؟ فایل‌های روی کامپیوتر حذف نمی‌شوند.'))return;stopPlayback();clips=[];titles=[];media.forEach(m=>URL.revokeObjectURL(m.url));media.clear();remoteImported.clear();onlineSeen.clear();shotAnalysisCache.clear();sceneScanBudget=4;sourceCredits.length=0;updateCredits();resetStages();$('onlineHits').innerHTML='';audioTracks={music:null,voice:null};selected=null;history=[];playheadTime=0;renderAssets();afterChange('پروژه تازه آماده شد')};
+$('newProject').onclick=()=>{if(!confirm('پروژه فعلی پاک شود؟ فایل‌های روی کامپیوتر حذف نمی‌شوند.'))return;stopPlayback();clips=[];titles=[];media.forEach(m=>URL.revokeObjectURL(m.url));media.clear();remoteImported.clear();onlineSeen.clear();window.rfYTReset?.();shotAnalysisCache.clear();sceneScanBudget=4;sourceCredits.length=0;updateCredits();resetStages();$('onlineHits').innerHTML='';audioTracks={music:null,voice:null};selected=null;history=[];playheadTime=0;renderAssets();afterChange('پروژه تازه آماده شد')};
 function showModal(){ $('exportModal').classList.add('show');$('downloadExport').classList.add('hidden');$('closeModal').classList.add('hidden');$('cancelExport').classList.remove('hidden');$('exportProgress').value=0;}
 function hideModal(){ $('exportModal').classList.remove('show') }
 $('closeModal').onclick=hideModal;
