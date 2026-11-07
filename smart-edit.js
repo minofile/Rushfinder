@@ -47,7 +47,7 @@ function pushClip(c){snapshot();clips.push(c);selected={type:'video',id:c.id};af
 function afterChange(msg){stopPlayback();playheadTime=clamp(playheadTime,0,duration());renderTimeline();renderInspector();paint(playheadTime);updateTimeUI();if(msg)status(msg)}
 function addMediaToTimeline(id){const m=media.get(id);if(!m)return;if(m.type==='audio'){setAudio('music',id);return}pushClip(createClip(m))}
 function metadata(file){return new Promise(resolve=>{const url=URL.createObjectURL(file),kind=file.type.startsWith('audio/')?'audio':file.type.startsWith('image/')?'image':'video';if(kind==='image'){const im=new Image();im.onload=()=>resolve({url,type:'image',duration:4,img:im,width:im.naturalWidth,height:im.naturalHeight});im.onerror=()=>resolve(null);im.src=url;}else{const el=document.createElement(kind==='audio'?'audio':'video');el.preload='metadata';const tm=setTimeout(()=>resolve(null),18000);el.onloadedmetadata=()=>{clearTimeout(tm);resolve({url,type:kind,duration:Number.isFinite(el.duration)?Math.min(100000,el.duration):10,width:el.videoWidth||0,height:el.videoHeight||0})};el.onerror=()=>{clearTimeout(tm);resolve(null)};el.src=url;el.load()}})}
-async function importFile(file,makeAudio=null){if(!file)return;status('در حال بررسی فایل '+file.name);const props=await metadata(file);if(!props){status('خواندن فایل ممکن نشد: '+file.name);return null}const id=uid(),m={id,file,name:file.name,...props};media.set(id,m);renderAssets();status('رسانه اضافه شد: '+file.name);if(makeAudio)setAudio(makeAudio,id);return m}
+async function importFile(file,makeAudio=null){if(!file)return;status('در حال بررسی فایل '+file.name);const props=await metadata(file);if(!props){status('خواندن فایل ممکن نشد: '+file.name);return null}const id=uid(),m={id,file,name:file.name,...props,rfTopics:[],rfTitle:''};media.set(id,m);renderAssets();status('رسانه اضافه شد: '+file.name);if(makeAudio)setAudio(makeAudio,id);return m}
 $('files').onchange=async e=>{const fs=[...e.target.files];for(const file of fs)await importFile(file);e.target.value=''};
 $('musicInput').onchange=async e=>{await importFile(e.target.files[0],'music');e.target.value=''};
 $('voiceInput').onchange=async e=>{await importFile(e.target.files[0],'voice');e.target.value=''};
@@ -163,7 +163,7 @@ function norm(s){return String(s||'').toLowerCase().normalize('NFKC').replace(/[
 function terms(s){return [...new Set(norm(s).split(/\s+/).filter(w=>w.length>=3&&!EDIT_STOP.has(w)).flatMap(w=>[w,...(SYNONYMS[w]||[])]))]}
 function linesFromScript(script){return script.split(/[\n.!؟؛]+/).map(x=>x.trim()).filter(Boolean).slice(0,15)}
 function rankLocal(line){const ts=terms(line);return [...media.values()].filter(m=>m.type==='video'||m.type==='image').map(m=>{
- const name=norm(m.file?.webkitRelativePath||m.name);let score=0;for(const t of ts){if(name.split(' ').includes(t))score+=4;else if(name.includes(t))score+=2;}return {m,score};
+ const name=norm([m.file?.webkitRelativePath||m.name,m.rfTitle,...(m.rfTopics||[])].join(' '));let score=0;for(const t of ts){if(name.split(' ').includes(t))score+=5;else if(name.includes(t))score+=2;}return {m,score};
  }).sort((a,b)=>b.score-a.score||a.m.name.localeCompare(b.m.name))}
 // Search intent from Persian narration: short topical English terms, not entire sentences.
 // This is NOT a full translation/semantic search service; metadata matches are archival only.
@@ -216,6 +216,8 @@ function searchPhrase(line){return topicQueries(line, $('script').value).slice(0
 // Export read-only query diagnostic for offline test only.
 window.rfSmartSearchPreview=(text)=>searchQueries(linesFromScript(text));
 const onlineSeen=new Set();
+const shotAnalysisCache=new Map();let sceneScanBudget=4;
+
 const remoteImported=new Set();const sourceCredits=[];const autoStages=['search','download','timeline','done'];
 function stage(n){const i=autoStages.indexOf(n);document.querySelectorAll('.journey-item').forEach((el,j)=>{el.classList.toggle('done',j<i);el.classList.toggle('active',j===i)});$('autoProgress').style.width=String(Math.max(0,(i+1)*25))+'%'}
 function resetStages(){document.querySelectorAll('.journey-item').forEach(el=>el.classList.remove('active','done'));$('autoProgress').style.width='0%'}
@@ -223,15 +225,55 @@ function updateCredits(){const el=$('autoCredits');el.hidden=sourceCredits.lengt
 
 async function importOnlineHit(hit,q){
  if(remoteImported.has((hit.source||'stock')+':'+hit.id))return [...media.values()].find(m=>m.name.includes((hit.source||'Stock')+'-'+hit.id))||null;
- const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),25000);
+ const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),35000);
  try{
   let resp;try{resp=await fetch(hit.download,{mode:'cors',credentials:'omit',signal:ctrl.signal});if(!resp.ok)throw Error('HTTP '+resp.status)}catch(first){if(hit.source!=='Wikimedia')throw first;const u=hit.originalUrl||hit.download;if(!/^https:\/\/upload\.wikimedia\.org\//.test(u))throw first;resp=await fetch('/api/smart-download?url='+encodeURIComponent(u),{signal:ctrl.signal});if(!resp.ok)throw Error('دریافت راش مجاز از مسیر جایگزین ممکن نشد (HTTP '+resp.status+')')}
   const size=Number(resp.headers.get('content-length')||0);if(size>50e6)throw Error('این فایل آنلاین بیش از ۵۰ مگابایت است');
   const chunks=[];let total=0;const reader=resp.body?.getReader();if(!reader)throw Error('دریافت قطعه‌ای پشتیبانی نمی‌شود');
   while(true){const {value,done}=await reader.read();if(done)break;total+=value.byteLength;if(total>50e6){await reader.cancel();throw Error('حجم فایل آنلاین از حد مجاز بیشتر است')}chunks.push(value)}
   const ext=/webm/i.test(hit.mime||hit.download||'')?'webm':'mp4';const file=new File(chunks,`${hit.source||'Stock'}-${hit.id}-${norm(q).slice(0,45).replace(/\s+/g,'-')}.${ext}`,{type:ext==='webm'?'video/webm':'video/mp4'});
-  const m=await importFile(file);if(!m)throw Error('مرورگر نتوانست این فایل ویدئویی را بخواند');remoteImported.add((hit.source||'stock')+':'+hit.id);sourceCredits.push({source:hit.source||'Stock',query:q,page:hit.page||'',license:hit.license||'از صفحه منبع بررسی شود'});updateCredits();return m;
+  const m=await importFile(file);if(!m)throw Error('مرورگر نتوانست این فایل ویدئویی را بخواند');m.rfTopics=[q];m.rfTitle=hit.title||q;m.rfProvider=hit.source;m.rfLicense=hit.license||'';m.rfSourcePage=hit.page||'';remoteImported.add((hit.source||'stock')+':'+hit.id);sourceCredits.push({source:hit.source||'Stock',query:q,page:hit.page||'',license:hit.license||'از صفحه منبع بررسی شود'});updateCredits();return m;
  }finally{clearTimeout(timer)}
+}
+// 0926: choose frames with detail and some visual change within already licensed media.
+// This is a technical/visual heuristic, NOT semantic recognition of events in a video.
+function seekFrame(video,time,timeoutMs=1300){return new Promise(resolve=>{
+ let done=false,timer;const finish=ok=>{if(done)return;done=true;clearTimeout(timer);video.removeEventListener('seeked',okEvent);video.removeEventListener('error',errEvent);resolve(ok)};
+ const okEvent=()=>finish(true),errEvent=()=>finish(false);timer=setTimeout(()=>finish(false),timeoutMs);
+ video.addEventListener('seeked',okEvent,{once:true});video.addEventListener('error',errEvent,{once:true});
+ try{video.currentTime=Math.min(Math.max(0,time),Math.max(.05,(video.duration||time+1)-.1));}catch(_){finish(false)}
+})}
+function frameSignature(canvasCtx,video){
+ try{canvasCtx.drawImage(video,0,0,48,27);const d=canvasCtx.getImageData(0,0,48,27).data;let lum=0,sq=0,black=0;const pixels=new Uint8Array(1296);
+ for(let i=0;i<1296;i++){const p=i*4,v=(d[p]*3+d[p+1]*6+d[p+2])/10;pixels[i]=v;lum+=v;sq+=v*v;if(v<12)black++}
+ const mean=lum/1296,variation=Math.sqrt(Math.max(0,sq/1296-mean*mean));return {pixels,mean,variation,dark:black/1296};}catch(_){return null}
+}
+async function visualWindows(m,segment){
+ const v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='auto';v.src=m.url;v.style.display='none';
+ const cv=document.createElement('canvas');cv.width=48;cv.height=27;const c=cv.getContext('2d',{willReadFrequently:true});
+ try{if(!v.readyState)await new Promise((resolve,reject)=>{let timer=setTimeout(()=>reject(Error('metadata timeout')),3000);v.addEventListener('loadedmetadata',()=>{clearTimeout(timer);resolve()},{once:true});v.addEventListener('error',()=>{clearTimeout(timer);reject(Error('decode'))},{once:true});v.load()});
+ const max=Math.max(0,m.duration-segment-.16);if(max<.5)return [0];
+ const places=[.08,.3,.53,.75].map(x=>max*x);const scored=[];
+ for(const at of places){if(!await seekFrame(v,at+Math.min(.4,segment*.2)))continue;
+ const a=frameSignature(c,v);if(!a)continue;
+ if(!await seekFrame(v,Math.min(m.duration-.1,at+Math.min(1.1,segment*.7))))continue;
+ const b=frameSignature(c,v);if(!b)continue;
+ let diff=0;for(let i=0;i<a.pixels.length;i+=5)diff+=Math.abs(a.pixels[i]-b.pixels[i]);diff/=Math.ceil(a.pixels.length/5);
+ // Sharpness proxy = luma variation; exclude dark transitions. Slight motion preference.
+ const score=a.variation*.3+b.variation*.3+Math.min(30,diff)*1.4-(a.dark+b.dark)*35;
+ scored.push({at,score});}
+ return scored.sort((a,b)=>b.score-a.score).map(x=>x.at);
+ }finally{v.pause();v.removeAttribute('src');v.load()}
+}
+async function pickShotStart(m,segment,usage){
+ const maximum=Math.max(0,m.duration-segment-.08);if(maximum<.3||m.type!=='video')return 0;
+ const key=m.id+':'+Math.round(segment);let positions=shotAnalysisCache.get(key);
+ if(!positions&&sceneScanBudget>0){sceneScanBudget--;
+  try{positions=await Promise.race([visualWindows(m,segment),new Promise((_,reject)=>setTimeout(()=>reject(Error('scene timeout')),8000))]);}catch(_){positions=[]}
+  shotAnalysisCache.set(key,positions);
+ }
+ if(positions?.length)return Math.min(maximum,positions[usage%positions.length]);
+ return Math.min(maximum,(maximum*(.12+(usage*0.27)%0.75)));
 }
 function showOnline(hit,query){const root=$('onlineHits');const hitKey=(hit.source||'stock')+':'+hit.id;if(onlineSeen.has(hitKey))return;onlineSeen.add(hitKey);const div=document.createElement('div');div.className='online-hit';div.innerHTML=`<img loading="lazy" alt="پیش‌نمایش راش آرشیوی" src="${escapeText(hit.poster||'')}"><div class="hintline">راش آرشیوی: ${escapeText(query)} · ${fmt(hit.duration||0)} · ${escapeText(hit.creator||hit.source||'Stock')} · مجوز: ${escapeText(hit.license||'مجوز در صفحه منبع بررسی شود')}</div><div class="row"><button class="btn" type="button">دریافت و افزودن</button><a target="_blank" rel="noopener noreferrer" href="${escapeText(hit.page)}">منبع و مجوز</a></div><div class="hintline online-detail"></div>`;
  root.appendChild(div);const button=div.querySelector('button'),info=div.querySelector('.online-detail');button.onclick=async()=>{button.disabled=true;info.textContent='در حال دریافت مستقیم ویدئو روی کامپیوتر…';try{
@@ -240,27 +282,36 @@ function showOnline(hit,query){const root=$('onlineHits');const hitKey=(hit.sour
  button.disabled=false};return div;}
 async function queryLicensed(scriptLines){
  $('onlineHits').innerHTML='';onlineSeen.clear();
- const reports=[],queries=searchQueries(scriptLines);const provider=$('licensedSource').value;
- let imported=0,results=0;
- if(!queries.length)return 'متن حاوی عبارت قابل جست‌وجو نبود؛ یک موضوع کوتاه بنویس.';
+ const reports=[],queries=searchQueries(scriptLines),selected=$('licensedSource').value;
+ const providers=selected==='auto'?['commons','pexels','pixabay']:[selected];
+ let imported=0,results=0,providerUnavailable=new Set();
+ if(!queries.length)return 'در متن، موضوع قابل جست‌وجو پیدا نشد. عبارت کوتاه انگلیسی یا نام محل/رویداد بنویس.';
  reports.push('موضوع‌های جست‌وجو: '+queries.join('، '));
- for(const q of queries){
-  try{
-   const resp=await fetch('/api/smart-stock?provider='+encodeURIComponent(provider)+'&q='+encodeURIComponent(q),{headers:{Accept:'application/json'}});
-   const data=await resp.json().catch(()=>({}));if(!resp.ok)throw Error(data.error||'HTTP '+resp.status);
-   const hits=(data.videos||[]).slice(0,6);for(const h of hits)showOnline(h,q);
-   if(!hits.length){reports.push('«'+q+'»: ویدئوی آرشیوی با شرایط دانلود یافت نشد');continue}
-   results+=hits.length;stage('download');let added=0;
-   for(const hit of hits){if(added>=2||imported>=6)break;
-    if(remoteImported.has((hit.source||'stock')+':'+hit.id))continue;
-    try{const m=await importOnlineHit(hit,q);if(m){added++;imported++;reports.push('«'+q+'»: '+m.name+' وارد شد');}}
-    catch(e){reports.push('«'+q+'»: دریافت فایل ممکن نشد ('+String(e.message||e).slice(0,85)+')')}
-   }
-   if(added===0)reports.push('«'+q+'»: نتیجه پیدا شد اما مرورگر نتوانست آن را دریافت یا پخش کند');
-   if(imported>=6)break;
-  }catch(e){reports.push('«'+q+'»: خطای جست‌وجو ('+String(e.message||e).slice(0,110)+')')}
+ // Limit rate and number of searches; don't start many downloads simultaneously.
+ for(const q of queries.slice(0,5)){
+  let added=0;
+  for(const provider of providers){
+   if(providerUnavailable.has(provider)||added>=1||imported>=6)break;
+   try{
+    $('smartReport').textContent=`⌕ جست‌وجوی «${q}» در ${provider} · ${imported} راش وارد شده…`;
+    const resp=await fetch('/api/smart-stock?provider='+encodeURIComponent(provider)+'&q='+encodeURIComponent(q),{headers:{Accept:'application/json'}});
+    const data=await resp.json().catch(()=>({}));
+    if(!resp.ok){if(resp.status===503){providerUnavailable.add(provider);continue}throw Error(data.error||'HTTP '+resp.status)}
+    const hits=(data.videos||[]).slice(0,6);for(const h of hits)showOnline(h,q);
+    if(!hits.length)continue;results+=hits.length;stage('download');
+    for(const hit of hits.slice(0,4)){
+     if(imported>=6||added>=1)break;
+     if(remoteImported.has((hit.source||'stock')+':'+hit.id))continue;
+     try{const m=await importOnlineHit(hit,q);if(m){added++;imported++;reports.push('✓ «'+q+'»: '+m.name+' دریافت و به کتابخانه افزوده شد');}}
+     catch(e){reports.push('«'+q+'»: '+String(e.message||e).slice(0,90))}
+    }
+   }catch(e){reports.push('«'+q+'» / '+provider+': '+String(e.message||e).slice(0,85))}
+  }
+  if(!added)reports.push('«'+q+'»: فیلم قابل‌استفاده از منابع فعال دریافت نشد');
+  if(imported>=6)break;
  }
- if(!results)reports.push('آرشیو عمومی ممکن است برای این موضوع ویدئوی کم‌حجم و دارای مجوز نداشته باشد؛ این به معنی نبودن فیلم در اینترنت نیست.');
+ if(!imported)reports.push('هیچ فایل واقعی دریافت نشد؛ در نتیجه ویدئوی ساختگی یا نامرتبط جایگزین نمی‌شود.');
+ if(providerUnavailable.size)reports.push('بعضی منابع کلید API ندارند و خودکار کنار گذاشته شدند: '+[...providerUnavailable].join(', '));
  return reports.join('\n');
 }
 // Search and preview are separate from downloading YouTube/Aparat videos.
@@ -320,12 +371,13 @@ $('quickEdit').onclick=async()=>{
    $('smartReport').textContent='این صفحه با file:// باز شده؛ برای جست‌وجوی اینترنتی باید نسخه را با RUN-0912-LOCAL.cmd اجرا کنی یا روی Vercel منتشر کنی.';return;
  }
  const voice=audioTracks.voice;
- if(!voice||!media.get(voice.mediaId)||!Number.isFinite(voice.out-voice.in)||voice.out-voice.in<=0){
-   $('smartReport').textContent='اول فایل نریشن MP3 یا WAV را از کادر بالای متن انتخاب کن؛ بدون طول صدا زمان‌بندی قابل انجام نیست.';return;
- }
+ // Narration is recommended; the script alone can create a silent preview with estimated timing.
+ const haveVoice=Boolean(voice&&media.get(voice.mediaId)&&Number.isFinite(voice.out-voice.in)&&voice.out-voice.in>0);
  const script=$('script').value.trim();if(!script){alert('متن دقیق نریشن را وارد کن.');$('script').focus();return}
  const lines=linesFromScript(script);if(!lines.length)return;
- if(voice.out-voice.in>360){$('smartReport').textContent='مدت نریشن بیشتر از سقف آزمایشی ۶ دقیقه است؛ برای جلوگیری از فشار مرورگر فایل کوتاه‌تر انتخاب کن.';return;}
+ const estimatedSeconds=clamp(script.trim().split(/\s+/).length/2.3,8,360);
+ const voiceSeconds=haveVoice?(voice.out-voice.in):estimatedSeconds;
+ if(voiceSeconds>360){$('smartReport').textContent='مدت نریشن بیشتر از سقف آزمایشی ۶ دقیقه است؛ برای جلوگیری از فشار مرورگر فایل کوتاه‌تر انتخاب کن.';return;}
  const button=$('quickEdit'),report=$('smartReport');button.disabled=true;resetStages();stage('search');report.textContent='⌕ در حال جست‌وجوی راش‌های واقعی برای موضوع خبر…';
  try{
   let plans=lines.map(line=>({line,rank:rankLocal(line)}));const generic=$('allowGeneric').checked;
@@ -334,8 +386,7 @@ $('quickEdit').onclick=async()=>{
   let usable=plans.filter(p=>p.rank.length&&(p.rank[0].score>0||generic));
   if(!usable.length){resetStages();report.textContent='راش قابل دریافت پیدا نشد؛ برای حفظ دقت خبر، تصویر نامرتبط جایگزین نمی‌کنم.\n'+onlineReport+'\nبرای نتایج بیشتر می‌توانی منبع Pexels/Pixabay را پس از فعال‌کردن کلید API انتخاب کنی یا پوشه راش خودت را معرفی کنی.';return}
   // Cover the whole narration with estimated sentence-aligned shots; never put script on screen.
-  const voiceSeconds=voice.out-voice.in;
-  if(voiceSeconds>360){report.textContent='برای این نسخه آزمایشی طول نریشن باید حداکثر ۶ دقیقه باشد.';return}
+  if(voiceSeconds>360){report.textContent='برای این نسخه آزمایشی طول تدوین باید حداکثر ۶ دقیقه باشد.';return}
   const beats=narrationBeats(lines,voiceSeconds,$('editStyle').value);
   const remaining=[...media.values()].filter(m=>m.type==='video'||m.type==='image');
   if(!remaining.length){report.textContent='هیچ راش واقعی وارد نشده است. '+onlineReport;return}
@@ -347,7 +398,12 @@ $('quickEdit').onclick=async()=>{
    const beat=beats[i],ranking=rankLocal(beat.line);
    const relevant=ranking.filter(r=>r.score>0);
    const pool=relevant.length?relevant:(generic?ranking:[]);
-   if(!pool.length){unmatched.push(beat.line);continue}
+   if(!pool.length){
+    // Reuse a previously topic-matched archival shot only for an unmatched sentence, with a warning.
+    const prior=clips.at(-1);const previous=prior&&media.get(prior.mediaId);
+    if(!previous){unmatched.push(beat.line);continue}
+    pool.push({m:previous,score:0});unmatched.push('راش قبلی به‌صورت آرشیوی تکرار شد: '+beat.line);
+   }
    const ranked=pool.slice(0,Math.min(pool.length,Math.max(1,Math.ceil(pool.length*.7))));
    const adequate=ranked.filter(r=>r.m.duration>=targetLength*.8);
    const candidates=adequate.length?adequate:ranked;
@@ -356,20 +412,21 @@ $('quickEdit').onclick=async()=>{
    const maxSeg=Math.max(.2,choice.duration-.08);
    const seg=Math.min(targetLength,Math.max(.2,maxSeg));
    const usableFrom=Math.max(0,choice.duration-seg);
-   const sourceStart=usableFrom>0?((use*3.73)%usableFrom):0;
+   // Prefer visible, moving sections rather than an arbitrary fixed starting position.
+   const sourceStart=usableFrom>0?await pickShotStart(choice,seg,use):0;
    const c=createClip(choice,sourceStart,sourceStart+seg);
    // Avoid speed-up or extreme slowdown; if media is short it may repeat.
    c.speed=clamp(seg/targetLength,.125,1.0);
-   c.volume=.02;clips.push(c);
+   c.volume=0;clips.push(c);
   }
   if(!clips.length){resetStages();report.textContent='نریشن بارگذاری شد اما هنوز راش واقعی وارد نشده است.\n'+onlineReport+'\nمنبع و مجوز راش یا پوشه شخصی را بررسی کن.';return}
-  audioTracks.voice.offset=0;audioTracks.voice.volume=.96;
-  selected={type:'voice',id:'voice'};afterChange('راش‌ها مطابق مدت نریشن روی تایم‌لاین چیده شدند.');
+  if(haveVoice){audioTracks.voice.offset=0;audioTracks.voice.volume=.96;}
+  selected=haveVoice?{type:'voice',id:'voice'}:{type:'video',id:clips[0].id};afterChange('راش‌های واقعی روی تایم‌لاین به ترتیب متن چیده شدند.');
   if(!audioTracks.music){const music=await importFile(originalMusicFile(clamp(Math.ceil(voiceSeconds)+2,8,360)),'music');if(music)audioTracks.music.volume=.085}
   if(audioTracks.music){audioTracks.music.offset=0;audioTracks.music.volume=Math.min(.13,audioTracks.music.volume);}
   renderTimeline();
   if(Math.abs(duration()-voiceSeconds)>2)unmatched.push('مدت راش‌ها دقیقاً با نریشن یکسان نشده است؛ انتهای تایم‌لاین را بازبینی کن.');
-  stage('done');report.textContent=`✓ نریشن ${fmt(voiceSeconds)} با ${clips.length} برش روی تایم‌لاین قرار گرفت. موسیقی ${audioTracks.music?'اضافه شد':'اضافه نشده'}، ترنزیشن محو فعال است؛ متن روی ویدئو نمی‌آید.\n${unmatched.length?'هشدار: '+unmatched.length+' بخش بدون تطابق دقیق یا نیازمند بازبینی.\n':''}${onlineReport}\n⚠️ هماهنگی جمله‌ها تخمینی است؛ راش‌های آرشیوی لزوماً رویداد خبر را نشان نمی‌دهند. مجوز و دقت تصاویر را بازبینی کن.`;
+  stage('done');report.textContent=`✓ ${haveVoice?'نریشن':'متن'} ${fmt(voiceSeconds)} با ${clips.length} برش واقعی روی تایم‌لاین قرار گرفت. موسیقی ${audioTracks.music?'اضافه شد':'اضافه نشده'} و ترنزیشن فعال است؛ صدای راش‌ها خاموش و متن روی ویدئو پنهان است.\n${!haveVoice?'⚠️ طول تدوین از روی تعداد کلمات تخمین زده شد؛ برای همگامی دقیق‌تر نریشن بده.\n':''}${unmatched.length?'هشدار: '+unmatched.length+' قسمت نیازمند بازبینی.\n':''}${onlineReport}\n⚠️ انتخاب زمان کات از حرکت و وضوح تصویر تخمین زده شده، نه تشخیص معنای واقعی صحنه. تصویرهای آرشیوی را پیش از انتشار با خبر و مجوز تطبیق بده.`;
   seek(0);status(`${clips.length} راش در تدوین خودکار · آماده بازبینی`);
  }catch(e){resetStages();report.textContent='خطای تدوین خودکار: '+String(e.message||e);console.error(e)}finally{button.disabled=false}
 };
@@ -388,7 +445,7 @@ $('autoMusic').onclick=async()=>{status('در حال ساخت موسیقی سا�
 $('recordVoice').onclick=async()=>{if(micRecorder?.state==='recording'){micRecorder.stop();$('recordVoice').textContent='● ضبط نریشن با میکروفون';return}if(!navigator.mediaDevices?.getUserMedia)return alert('این مرورگر اجازه دسترسی به میکروفون را در حالت فعلی نمی‌دهد. می‌توانی فایل نریشن را انتخاب کنی.');try{micStream=await navigator.mediaDevices.getUserMedia({audio:true});const parts=[];micRecorder=new MediaRecorder(micStream);micRecorder.ondataavailable=e=>{if(e.data.size)parts.push(e.data)};micRecorder.onstop=async()=>{micStream.getTracks().forEach(t=>t.stop());const blob=new Blob(parts,{type:micRecorder.mimeType||'audio/webm'});const f=new File([blob],'Narration-'+Date.now()+'.webm',{type:blob.type});await importFile(f,'voice')};micRecorder.start();$('recordVoice').textContent='■ پایان ضبط نریشن';status('نریشن در حال ضبط است...')}catch(e){alert('ضبط میکروفون ممکن نشد: '+e.message)}};
 function saveFile(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000)}
 $('savePlan').onclick=()=>{const p={project:'RushFinder SmartEdit',version:1,aspect:$('aspect').value,transition,stockCredits:sourceCredits,assets:[...media.values()].map(m=>({id:m.id,name:m.name,type:m.type,duration:m.duration})),clips:clips.map(({id,mediaId,in:from,out,speed,volume})=>({id,mediaId,in:from,out,speed,volume})),titles,audio:Object.fromEntries(Object.entries(audioTracks).map(([k,v])=>[k,v?{mediaId:v.mediaId,volume:v.volume,offset:v.offset}:null]))};saveFile(new Blob([JSON.stringify(p,null,2)],{type:'application/json'}),'RushFinder-SmartEdit-Project.json');status('طرح پروژه JSON دانلود شد (فایل‌های اصلی همراه آن ذخیره نمی‌شوند)')};
-$('newProject').onclick=()=>{if(!confirm('پروژه فعلی پاک شود؟ فایل‌های روی کامپیوتر حذف نمی‌شوند.'))return;stopPlayback();clips=[];titles=[];media.forEach(m=>URL.revokeObjectURL(m.url));media.clear();remoteImported.clear();onlineSeen.clear();sourceCredits.length=0;updateCredits();resetStages();$('onlineHits').innerHTML='';audioTracks={music:null,voice:null};selected=null;history=[];playheadTime=0;renderAssets();afterChange('پروژه تازه آماده شد')};
+$('newProject').onclick=()=>{if(!confirm('پروژه فعلی پاک شود؟ فایل‌های روی کامپیوتر حذف نمی‌شوند.'))return;stopPlayback();clips=[];titles=[];media.forEach(m=>URL.revokeObjectURL(m.url));media.clear();remoteImported.clear();onlineSeen.clear();shotAnalysisCache.clear();sceneScanBudget=4;sourceCredits.length=0;updateCredits();resetStages();$('onlineHits').innerHTML='';audioTracks={music:null,voice:null};selected=null;history=[];playheadTime=0;renderAssets();afterChange('پروژه تازه آماده شد')};
 function showModal(){ $('exportModal').classList.add('show');$('downloadExport').classList.add('hidden');$('closeModal').classList.add('hidden');$('cancelExport').classList.remove('hidden');$('exportProgress').value=0;}
 function hideModal(){ $('exportModal').classList.remove('show') }
 $('closeModal').onclick=hideModal;

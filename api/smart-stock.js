@@ -50,8 +50,8 @@ module.exports=async function handler(req,res){
   }
   let videos;
   if(provider==='commons')videos=data.videos||[];
-  else if(provider==='pixabay')videos=(data.hits||[]).slice(0,3).map(v=>({id:Number(v.id),source:'Pixabay',page:v.pageURL,poster:v.videos?.medium?.thumbnail||v.videos?.small?.thumbnail||'',duration:Number(v.duration)||0,creator:v.user||'',download:v.videos?.small?.url||v.videos?.medium?.url||null}));
-  else videos=(data.videos||[]).slice(0,3).map(v=>{const files=(v.video_files||[]).filter(f=>f.file_type==='video/mp4'&&/^https:\/\//.test(f.link));const f=files.sort((a,b)=>Math.abs((a.width||1280)-1280)-Math.abs((b.width||1280)-1280))[0];return {id:Number(v.id),source:'Pexels',page:v.url,poster:v.image,duration:v.duration,creator:v.user?.name||'',download:f?.link||null}});
+  else if(provider==='pixabay')videos=(data.hits||[]).slice(0,3).map(v=>({id:Number(v.id),title:v.tags||q,source:'Pixabay',page:v.pageURL,poster:v.videos?.medium?.thumbnail||v.videos?.small?.thumbnail||'',duration:Number(v.duration)||0,creator:v.user||'',download:v.videos?.small?.url||v.videos?.medium?.url||null}));
+  else videos=(data.videos||[]).slice(0,3).map(v=>{const files=(v.video_files||[]).filter(f=>f.file_type==='video/mp4'&&/^https:\/\//.test(f.link));const f=files.sort((a,b)=>Math.abs((a.width||1280)-1280)-Math.abs((b.width||1280)-1280))[0];return {id:Number(v.id),title:q,source:'Pexels',page:v.url,poster:v.image,duration:v.duration,creator:v.user?.name||'',download:f?.link||null}});
   videos=videos.filter(v=>Number.isFinite(v.id)&&v.id>0&&/^https:\/\//.test(v.page)&&/^https:\/\//.test(v.download));
   const payload={videos,source:provider==='commons'?'Wikimedia Commons':provider==='pixabay'?'Pixabay':'Pexels',query:q};if(cache.size>300){for(const [k,v] of cache)if(now-v.at>86400000)cache.delete(k)}cache.set(cacheId,{at:now,payload});
   res.setHeader('Cache-Control','public, max-age=60, s-maxage=3600');return res.status(200).json(payload);
