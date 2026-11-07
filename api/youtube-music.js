@@ -1,6 +1,25 @@
 // RushFinder 0924: independent, server-only SmartEdit lookup.
 // Reuse this EXISTING API function to stay under the Hobby 12-functions cap.
 const rfSmartCalls=new Map();
+
+// Chapters come ONLY from video-owner-provided timestamps in a YouTube description.
+// They are useful location hints, NOT visual scene recognition or proof of accuracy.
+function rfSmartChapters(description, seconds){
+ const lines=String(description||'').split(/\r?\n/), hits=[];
+ const rx=/^\s*(?:[-•*]\s*)?(?:\[|\()?((?:\d{1,2}:)?\d{1,3}:\d{2})(?:\]|\))?\s*(?:[-–—:|]\s*)?(.{3,110})$/;
+ for(const line of lines){
+  const m=line.match(rx);if(!m)continue;
+  const bits=m[1].split(':').map(Number);
+  if(bits.some(n=>!Number.isFinite(n))||bits[bits.length-1]>=60)continue;
+  const at=bits.reduce((sum,n)=>sum*60+n,0),title=m[2].trim();
+  if(at<0||at>=seconds||!title||hits.length>=45)continue;
+  if(hits.length&&at<=hits[hits.length-1].start)continue;
+  hits.push({start:at,title:title.slice(0,100)});
+ }
+ if(hits.length<2)return [];
+ return hits.map((c,i)=>({title:c.title,start:c.start,end:i+1<hits.length?hits[i+1].start:seconds})).filter(c=>c.end-c.start>=4);
+}
+
 // SmartEdit 0930: server-side narration-to-metadata relevance planner; no new Vercel function.
 
 function rfSmartReply(res,code,object){
@@ -16,7 +35,7 @@ async function rfSmartVideoLookup(req,res){
  // Per-instance throttle is best-effort only; protect quota with authenticated use in production.
  const addr=String(req.headers['x-forwarded-for']||req.socket?.remoteAddress||'unknown').split(',')[0].slice(0,100);
  const now=Date.now(),recent=(rfSmartCalls.get(addr)||[]).filter(t=>t>now-3600000);
- if(recent.length>=16)return rfSmartReply(res,429,{error:'محدودیت جست‌وجوی آزمایشی این ساعت پر شده است.'});
+ if(recent.length>=48)return rfSmartReply(res,429,{error:'محدودیت جست‌وجوی آزمایشی این ساعت پر شده است.'});
  recent.push(now);rfSmartCalls.set(addr,recent);
  if(rfSmartCalls.size>250)rfSmartCalls.clear();
  const search=new URL('https://www.googleapis.com/youtube/v3/search');
@@ -43,11 +62,11 @@ async function rfSmartVideoLookup(req,res){
   const timing=new Map();
   try {
    const details=new URL('https://www.googleapis.com/youtube/v3/videos');
-   Object.entries({part:'contentDetails,status',id:hits.map(x=>x.id.videoId).join(','),key}).forEach(([k,v])=>details.searchParams.set(k,v));
+   Object.entries({part:'contentDetails,status,snippet',id:hits.map(x=>x.id.videoId).join(','),key}).forEach(([k,v])=>details.searchParams.set(k,v));
    if(hits.length){const meta=await fetch(details,{signal:controller.signal});if(meta.ok){const detailBody=await meta.json();
     for(const v of detailBody.items||[]){const iso=String(v.contentDetails?.duration||'');const match=iso.match(/^P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/);
      const seconds=match?(+(match[1]||0)*86400+(+(match[2]||0))*3600+(+(match[3]||0))*60+(+(match[4]||0))):0;
-     timing.set(v.id,{seconds,embeddable:v.status?.embeddable!==false});
+     timing.set(v.id,{seconds,embeddable:v.status?.embeddable!==false,description:String(v.snippet?.description||'').slice(0,5000)});
     }
    }}
   }catch(_){}
@@ -56,7 +75,8 @@ async function rfSmartVideoLookup(req,res){
    channel:String(x.snippet?.channelTitle||'').slice(0,90),
    thumbnail:String(x.snippet?.thumbnails?.medium?.url||x.snippet?.thumbnails?.default?.url||'').slice(0,300),
    durationSeconds:timing.get(x.id.videoId)?.seconds||0,
-   description:String(x.snippet?.description||'').slice(0,350),
+   description:String(timing.get(x.id.videoId)?.description||x.snippet?.description||'').slice(0,700),
+   chapters:rfSmartChapters(timing.get(x.id.videoId)?.description||'',timing.get(x.id.videoId)?.seconds||0),
    url:'https://www.youtube.com/watch?v='+x.id.videoId
   }))});
  }catch(err){return rfSmartReply(res,502,{error:'اتصال به یوتیوب ممکن نشد: '+(err.name==='AbortError'?'پایان زمان درخواست':'خطای شبکه')});}
