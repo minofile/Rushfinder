@@ -323,6 +323,19 @@ body .app select, body .app option, body .app label {
 .rf-yt-shadow.active{outline:2px solid #2173cc}
 .rf-yt-track .rf-yt-clip{font-size:10px}
 .rf-yt-status{white-space:pre-line}
+
+/* SmartEdit 0931: Premiere-style track enable/disable. Controls stay outside the YouTube iframe. */
+.track-labels{width:168px!important;flex-basis:168px!important}
+.rf-layer-label{padding:4px 6px!important;gap:4px!important;min-width:0;direction:rtl}
+.rf-layer-label>span:first-child{font-size:14px!important;flex:0 0 16px}
+.rf-layer-name{font-size:10px!important;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:inherit!important}
+.rf-layer-btn{flex:0 0 28px;min-width:28px;height:28px;line-height:1;border:1px solid #bed7ef;background:#eaf5ff;color:#1558a1;border-radius:7px;padding:0;display:grid;place-items:center;cursor:pointer;font:16px Tahoma,sans-serif}
+.rf-layer-btn:hover{background:#d4e9ff;border-color:#69a5e7}
+.rf-layer-btn[aria-pressed="false"]{color:#64748b;background:#e2e8f0;border-color:#cbd5e1;opacity:.9}
+.track.rf-layer-off .clip,.track.rf-layer-off .rf-yt-clip{opacity:.35;filter:grayscale(1)}
+.track.rf-layer-off{background-color:#eef1f6!important}
+.rf-yt-overlay[hidden]{display:none!important}
+
 </style>
 </head><body>
 <div class="app">
@@ -377,7 +390,7 @@ body .app select, body .app option, body .app label {
 </aside>
 </section>
 <section class="bottom"><div class="toolrow"><div class="toolset"><strong style="font-size:12px">▤ تایم‌لاین و برش دستی</strong><button class="btn" id="split" title="برش از محل نشانگر (S)">✂ تقسیم</button><button class="btn" id="remove" title="حذف کلیپ انتخاب‌شده">🗑 حذف</button><button class="btn" id="undo" title="بازگردانی Ctrl+Z">↶ بازگشت</button><button class="btn" id="transition" title="ترنزیشن بین کلیپ‌ها">◇ ترنزیشن: محو</button></div><div class="toolset"><span class="subtle">بزرگ‌نمایی تایم‌لاین</span><input class="zoom" id="zoom" max="115" min="18" type="range" value="44"/><span class="tag" id="zoomValue">44px/s</span></div></div>
-<div class="timeline-wrap"><div class="track-labels"><div class="ruler-label">زمان</div><div class="track-label"><span>▣</span> متن‌ها</div><div class="track-label"><span>▰</span> ویدئو / راش</div><div class="track-label rf-yt-label"><span>▶</span> کات YouTube</div><div class="track-label"><span>♫</span> موسیقی</div><div class="track-label"><span>♬</span> نریشن</div><div class="track-label"><span>◇</span> ترنزیشن</div></div><div class="tracks-scroller" id="scroll"><div class="timeline-base" id="timeline"><div class="ruler" id="ruler"></div><div class="track" id="titleTrack"><div class="drop-hint">لایه متن</div></div><div class="track" id="videoTrack"><div class="drop-hint">کات‌های YouTube اینجا چیده می‌شوند</div></div><div class="track rf-yt-track" id="rfYTTrack"><div class="drop-hint">کات‌های پیش‌نمایش YouTube</div></div><div class="track" id="musicTrack"><div class="drop-hint">لایه موسیقی</div></div><div class="track" id="voiceTrack"><div class="drop-hint">لایه نریشن</div></div><div class="playhead" id="playhead"></div><div class="track" id="transitionTrack"><div class="drop-hint">ترنزیشن‌ها بین نماها نمایش داده می‌شوند</div></div></div></div></div>
+<div class="timeline-wrap"><div class="track-labels"><div class="ruler-label">زمان</div><div class="track-label rf-layer-label"><span>▣</span><span class="rf-layer-name">متن‌ها</span><button type="button" class="rf-layer-btn" data-rf-layer="title" aria-label="خاموش کردن تصویر لایه متن‌ها" aria-pressed="true" title="چشم: نمایش/پنهان کردن لایه متن">◉</button></div><div class="track-label rf-layer-label"><span>▰</span><span class="rf-layer-name">ویدئو / راش</span><button type="button" class="rf-layer-btn" data-rf-layer="video" aria-label="خاموش کردن تصویر لایه راش" aria-pressed="true" title="چشم: خاموش/روشن کردن تصویر راش، بدون حذف کلیپ">◉</button></div><div class="track-label rf-layer-label rf-yt-label"><span>▶</span><span class="rf-layer-name">کات YouTube</span><button type="button" class="rf-layer-btn" data-rf-layer="youtube" aria-label="خاموش کردن پیش‌نمایش کات‌های یوتیوب" aria-pressed="true" title="چشم: خاموش/روشن کردن پیش‌نمایش YouTube">◉</button></div><div class="track-label rf-layer-label"><span>♫</span><span class="rf-layer-name">موسیقی</span><button type="button" class="rf-layer-btn rf-layer-audio" data-rf-layer="music" aria-label="قطع صدای موسیقی" aria-pressed="true" title="بلندگو: قطع/وصل صدای موسیقی">🔊</button></div><div class="track-label rf-layer-label"><span>♬</span><span class="rf-layer-name">نریشن</span><button type="button" class="rf-layer-btn rf-layer-audio" data-rf-layer="voice" aria-label="قطع صدای نریشن" aria-pressed="true" title="بلندگو: قطع/وصل صدای نریشن">🔊</button></div><div class="track-label"><span>◇</span> ترنزیشن</div></div><div class="tracks-scroller" id="scroll"><div class="timeline-base" id="timeline"><div class="ruler" id="ruler"></div><div class="track" id="titleTrack"><div class="drop-hint">لایه متن</div></div><div class="track" id="videoTrack"><div class="drop-hint">کات‌های YouTube اینجا چیده می‌شوند</div></div><div class="track rf-yt-track" id="rfYTTrack"><div class="drop-hint">کات‌های پیش‌نمایش YouTube</div></div><div class="track" id="musicTrack"><div class="drop-hint">لایه موسیقی</div></div><div class="track" id="voiceTrack"><div class="drop-hint">لایه نریشن</div></div><div class="playhead" id="playhead"></div><div class="track" id="transitionTrack"><div class="drop-hint">ترنزیشن‌ها بین نماها نمایش داده می‌شوند</div></div></div></div></div>
 <div class="statusbar"><span id="status">آماده · برای شروع چند راش وارد کن</span><span><b>تدوین محلی</b> · بدون آپلود فیلم · میانبر: <span class="kbd">Space</span> پخش <span class="kbd">S</span> تقسیم <span class="kbd">Ctrl+Z</span> بازگشت</span></div>
 </section>
 </div>
@@ -399,8 +412,8 @@ body .app select, body .app option, body .app label {
 </div>
 </div>
 <div class="modal-back" id="exportModal"><div class="modal"><h2 id="modalTitle">ساخت خروجی ویدئو</h2><p id="modalText">ویدئو در مرورگر خودت و با سرعت واقعی پخش و ضبط می‌شود. تب را تا پایان باز نگه دار.</p><progress id="exportProgress" max="100" value="0"></progress><div class="actions"><button class="btn red" id="cancelExport">توقف خروجی</button><button class="btn primary hidden" id="downloadExport">دانلود فایل</button><button class="btn hidden" id="closeModal">بستن</button></div></div></div>
-<script src="smart-edit.js?v=0930"></script>
-<script src="smart-youtube.js?v=0930" defer></script>
+<script src="smart-edit.js?v=0931"></script>
+<script src="smart-youtube.js?v=0931" defer></script>
 <script>
 (()=>{
  const guide=document.getElementById('startGuide');

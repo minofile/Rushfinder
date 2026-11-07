@@ -3,7 +3,9 @@
 const $=id=>document.getElementById(id), out=(el,s)=>{if(el)el.textContent=s};
 const btn=$('rfYTSearch'), status=$('rfYTStatus'), results=$('rfYTResults'), track=$('rfYTTrack');
 const overlay=$('rfYTOverlay'), host=$('rfYTPlayerHost'), inspector=$('rfYTCutInspector');
-const S={items:[],gaps:[],selected:-1,player:null,apiReady:false,videoId:'',loadedClip:-1,voiceFile:null,voiceURL:null,voice:null,duration:0,active:false,timer:null,playToken:0,clipId:1,startPerf:0,lastTime:0};
+const S={items:[],gaps:[],selected:-1,player:null,apiReady:false,videoId:'',loadedClip:-1,voiceFile:null,voiceURL:null,voice:null,duration:0,active:false,timer:null,playToken:0,clipId:1,startPerf:0,lastTime:0,nativeControls:false};
+function rfYtEnabled(){return window.rfTrackState?.youtube!==false}
+
 const fmt=n=>{n=Math.max(0,Number(n)||0);return `${String(Math.floor(n/60)).padStart(2,'0')}:${String(Math.floor(n%60)).padStart(2,'0')}`};
 const safe=s=>String(s||'').slice(0,180), clamp=(n,min,max)=>Math.min(max,Math.max(min,Number(n)||0));
 function message(s,err=false){out(status,s);status.style.color=err?'#a53a44':'#426580'}
@@ -122,7 +124,7 @@ $('guideVoice')?.addEventListener('change',e=>attachVoice(e.target.files?.[0]),t
 function selectedItem(){return S.items[S.selected]}
 function setSelection(i,activate=true){if(i<0||!S.items[i])return;S.selected=i;renderTrack();renderInspector();updateClock(S.items[i].start);if(activate){stop();showClip(i,false,0)}}
 function renderTrack(){
- track.replaceChildren();const px=Number($('zoom')?.value||44),realClips=!!window.rfSmartEditHasClips?.();
+ track.replaceChildren();track.classList.toggle('rf-layer-off',!rfYtEnabled());const px=Number($('zoom')?.value||44),realClips=!!window.rfSmartEditHasClips?.();
  const videoTrack=$('videoTrack');videoTrack?.querySelectorAll('.rf-yt-shadow').forEach(el=>el.remove());
  $('timeline').style.minWidth=Math.max(880,Math.ceil(36+Math.max(S.duration,durationTotal())*px+90))+'px';
  S.gaps.forEach(g=>{const b=document.createElement('div');b.className='rf-yt-gap';b.style.left=(36+g.start*px)+'px';b.style.width=Math.max(34,g.duration*px-2)+'px';b.textContent='⚠ راش مرتبط پیدا نشد · '+safe(g.sentence).slice(0,55);b.title='این بخش خالی است تا فیلم نامرتبط روی نریشن قرار نگیرد: '+g.sentence;track.appendChild(b)});
@@ -162,10 +164,22 @@ function renderReferences(){results.replaceChildren();S.items.forEach((item,i)=>
 $('zoom')?.addEventListener('input',renderTrack);window.addEventListener('rfTimelineChanged',renderTrack);
 function ensurePlayer(){if(window.YT?.Player)return Promise.resolve();if(!document.querySelector('script[data-rfyt]')){const el=document.createElement('script');el.async=true;el.dataset.rfyt='1';el.src='https://www.youtube.com/iframe_api';document.head.appendChild(el)}return new Promise((resolve,reject)=>{const expire=Date.now()+13000;const timer=setInterval(()=>{if(window.YT?.Player){clearInterval(timer);resolve()}else if(Date.now()>expire){clearInterval(timer);reject(new Error('پخش‌کننده یوتیوب بارگذاری نشد؛ اینترنت یا محدودیت نمایش ویدئو را بررسی کن.'))}},160)})}
 // IFrame events, not direct media decoding; no extraction or re-encoding of YouTube frames.
-async function showClip(index,playing=false,elapsed=0){const it=S.items[index];if(!it)return;S.selected=index;renderTrack();renderInspector();overlay.hidden=false;const token=++S.playToken;
+async function showClip(index,playing=false,elapsed=0){const it=S.items[index];if(!it)return;S.selected=index;renderTrack();renderInspector();if(!rfYtEnabled()){overlay.hidden=true;return}overlay.hidden=false;const token=++S.playToken;
  try{await ensurePlayer();if(token!==S.playToken)return;const opt=it.options[it.optionIndex||0];const sec=clamp(it.sourceStart+elapsed,0,86400),end=it.sourceStart+it.duration;
   const args={videoId:opt.id,startSeconds:sec,endSeconds:end};
-  if(!S.player){host.replaceChildren();const el=document.createElement('div');el.id='rfYTPlayerSlot';host.appendChild(el);S.player=new YT.Player(el.id,{width:'640',height:'360',videoId:opt.id,playerVars:{playsinline:1,controls:1,rel:0,origin:location.origin},events:{onReady:e=>{e.target.mute();if(playing)e.target.loadVideoById(args);else e.target.cueVideoById(args)},onStateChange:e=>{if(e.target.isMuted&&!e.target.isMuted())e.target.mute()},onError:()=>{stop();message('این ویدئو قابلیت پخش تعبیه‌شده ندارد؛ منبع دیگری انتخاب کن.',true)},onAutoplayBlocked:()=>{stop();message('مرورگر پخش خودکار YouTube را مسدود کرد؛ روی ▶ داخل خود پخش‌کننده بزن.',true)}}})}
+  if(!S.player){host.replaceChildren();const el=document.createElement('div');el.id='rfYTPlayerSlot';host.appendChild(el);S.player=new YT.Player(el.id,{width:'640',height:'360',videoId:opt.id,playerVars:{playsinline:1,controls:S.nativeControls?1:0,rel:0,origin:location.origin},events:{onReady:e=>{e.target.mute();if(playing)e.target.loadVideoById(args);else e.target.cueVideoById(args)},onStateChange:e=>{if(e.target.isMuted&&!e.target.isMuted())e.target.mute()},onError:()=>{stop();message('این ویدئو قابلیت پخش تعبیه‌شده ندارد؛ منبع دیگری انتخاب کن.',true)},onAutoplayBlocked:()=>{
+ stop();
+ // Official YouTube controls are restored only if the browser blocks programmatic autoplay.
+ // This provides the required native play button without obscuring or modifying YouTube branding.
+ if(!S.nativeControls){
+  S.nativeControls=true;
+  try{S.player?.destroy?.()}catch(_){}
+  S.player=null;S.loadedClip=-1;
+  const ix=Math.max(0,S.selected);
+  showClip(ix,false,0);
+ }
+ message('مرورگر پخش خودکار را مسدود کرد؛ کنترل‌های رسمی یوتیوب فعال شدند. ▶ داخل ویدئو را بزن.',true)
+}}})}
   else {S.player.mute();if(playing)S.player.loadVideoById(args);else S.player.cueVideoById(args)}
   S.videoId=opt.id;S.loadedClip=index;if(playing)message('در حال پیش‌نمایش برش '+(index+1)+' با صدای ویدئوی خاموش و نریشن اصلی.');
  }catch(err){message(err.message,true)}
@@ -189,12 +203,13 @@ function seekVirtual(t){
 }
 function playbackTick(){
  if(!S.active)return;
+ if(S.voice)S.voice.muted=window.rfTrackState?.voice===false;
  const t=currentTime(),total=Math.max(S.duration,durationTotal());updateClock(t);
  try{S.player?.mute?.()}catch(_){}
  const ix=S.items.findIndex(x=>t>=x.start&&t<x.start+x.duration);
  if(ix<0){overlay.hidden=true;if(S.loadedClip!==-1){try{S.player?.pauseVideo?.()}catch(_){}S.loadedClip=-1}}
- if(ix>=0&&(ix!==S.selected||S.loadedClip===-1))showClip(ix,true,t-S.items[ix].start);
- if(ix>=0&&ix===S.selected&&S.player?.getCurrentTime){const cur=S.player.getCurrentTime();const target=S.items[ix].sourceStart+(t-S.items[ix].start);
+ if(ix>=0&&rfYtEnabled()&&(ix!==S.selected||S.loadedClip===-1))showClip(ix,true,t-S.items[ix].start);
+ if(ix>=0&&rfYtEnabled()&&ix===S.selected&&S.player?.getCurrentTime){const cur=S.player.getCurrentTime();const target=S.items[ix].sourceStart+(t-S.items[ix].start);
   if(Number.isFinite(cur)&&cur>0&&Math.abs(cur-target)>2.3)S.player.seekTo(target,true);
  }
  if(t>=total-.05){stop();updateClock(total)}
@@ -206,8 +221,8 @@ function start(at=0){
  S.startPerf=performance.now()-at*1000;S.active=true;S.selected=-1;
  $('play').textContent='❚❚';updateClock(at);
  // Start narration on the user gesture BEFORE awaiting loading YouTube's IFrame API.
- if(S.voiceFile&&S.voice){try{S.voice.currentTime=at;S.voice.play().catch(e=>{message('پخش نریشن مسدود شد: '+e.message,true);stop()})}catch(e){message(e.message,true)}}
- showClip(ix,true,at-S.items[ix].start);
+ if(S.voiceFile&&S.voice){try{S.voice.muted=window.rfTrackState?.voice===false;S.voice.currentTime=at;S.voice.play().catch(e=>{message('پخش نریشن مسدود شد: '+e.message,true);stop()})}catch(e){message(e.message,true)}}
+ if(rfYtEnabled())showClip(ix,true,at-S.items[ix].start);else overlay.hidden=true;
  S.timer=setInterval(playbackTick,160);
 }
 $('rfYTPlay').addEventListener('click',()=>S.active?stop():start(0));$('rfYTPause').addEventListener('click',()=>stop());
@@ -277,6 +292,14 @@ btn.onclick=async()=>{
  }catch(e){message('تدوین ناتمام ماند؛ کات‌های قبلی حفظ شدند. '+(e?.message||String(e)),true)}finally{btn.disabled=false}
 };
 
+window.rfYTSetVisibility=enabled=>{
+ ++S.playToken;
+ if(!enabled){overlay.hidden=true;S.loadedClip=-1;try{S.player?.pauseVideo?.()}catch(_){}return}
+ if(!S.items.length)return;
+ const at=S.active?currentTime():S.lastTime;
+ const ix=S.items.findIndex(it=>at>=it.start&&at<it.start+it.duration);
+ if(ix>=0)showClip(ix,S.active,at-S.items[ix].start);
+};
 window.rfYTStartAutoEdit=()=>btn.onclick();
 window.rfYTReset=reset;
 window.rfYTStopPreview=()=>{stop();overlay.hidden=true};
