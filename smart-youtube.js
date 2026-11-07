@@ -7,6 +7,38 @@ const S={items:[],selected:-1,player:null,apiReady:false,videoId:'',loadedClip:-
 const fmt=n=>{n=Math.max(0,Number(n)||0);return `${String(Math.floor(n/60)).padStart(2,'0')}:${String(Math.floor(n%60)).padStart(2,'0')}`};
 const safe=s=>String(s||'').slice(0,180), clamp=(n,min,max)=>Math.min(max,Math.max(min,Number(n)||0));
 function message(s,err=false){out(status,s);status.style.color=err?'#a53a44':'#426580'}
+// Normalize legacy /api errors that may be strings, objects, or Google error envelopes.
+function rfYTApiError(data,httpStatus){
+ const raw=data?.error??data?.message??data?.detail??null;
+ let note='';
+ if(typeof raw==='string')note=raw;
+ else if(raw&&typeof raw==='object'){
+  note=String(raw.message||raw.error?.message||raw.errors?.[0]?.message||raw.errors?.[0]?.reason||raw.status||raw.code||'');
+ }
+ const code=String(data?.code||raw?.status||raw?.errors?.[0]?.reason||'');
+ const extra=String(data?.hint||'');
+ const all=(note+' '+code).toLowerCase();
+ if(/quotaexceeded|dailylimitexceeded|quota exceeded/.test(all))note='سهمیه روزانه YouTube Data API تمام شده. سهمیه پروژه Google Cloud را بررسی کن.';
+ else if(/keyinvalid|api key not valid|invalid api key|api_key_invalid/.test(all))note='کلید YouTube مخصوص تدوین معتبر نیست. مقدار YOUTUBE_SMARTEDIT_API_KEY در Vercel را بررسی کن.';
+ else if(/accessnotconfigured|service_disabled|api has not been used|api.*disabled|api_key_service_blocked/.test(all))note='YouTube Data API v3 برای پروژه این کلید فعال نیست یا محدودیت کلید مانع دسترسی شده است.';
+ else if(/referer|ip.*block|requests from.*blocked|permission_denied|forbidden/.test(all))note='کلید YouTube اجازه این درخواست سروری را ندارد. Application restrictions و API restrictions را بررسی کن.';
+ else if(httpStatus===429)note=note||'محدودیت تعداد جست‌وجوها فعال شده؛ کمی بعد دوباره امتحان کن.';
+ else if(httpStatus===503)note=note||'تنظیم کلید سروری یا سرویس YouTube آماده نیست.';
+ if(!note)note='پاسخ نامعتبر از سرور تدوین دریافت شد.';
+ note=(note+' '+extra).trim().replace(/AIza[0-9A-Za-z_-]{20,}/g,'[کلید مخفی]').slice(0,360);
+ return 'HTTP '+httpStatus+' · '+note;
+}
+async function rfYTLookup(query){
+ let resp;
+ try{resp=await fetch('/api/youtube-music?mode=smartedit&q='+encodeURIComponent(query),{headers:{Accept:'application/json'}})}
+ catch(_){throw new Error('اتصال مرورگر به API تدوین برقرار نشد. اتصال اینترنت و وضعیت Vercel را بررسی کن.')}
+ let data;
+ try{data=await resp.json()}
+ catch(_){throw new Error('پاسخ سرور JSON نیست (HTTP '+resp.status+'). وضعیت Deployment و مسیر api/youtube-music.js را بررسی کن.')}
+ if(!resp.ok)throw new Error(rfYTApiError(data,resp.status));
+ if(!data||!Array.isArray(data.items))throw new Error('پاسخ API ناقص است؛ آرایه items دریافت نشد. فایل api/youtube-music.js را هم با نسخه اصلاحیه جایگزین کن.');
+ return data.items;
+}
 function durationTotal(){return S.items.length?Math.max(...S.items.map(x=>x.start+x.duration)):0}
 function updateClock(t){
  S.lastTime=Math.max(0,t);
@@ -130,15 +162,14 @@ function reset(){stop();++S.playToken;S.items=[];S.selected=-1;S.duration=0;S.lo
 $('rfYTClear').addEventListener('click',reset);// Clear references explicitly; the original new-project confirmation remains untouched.
 function splitAt(at){const i=S.items.findIndex(it=>at>it.start+0.4&&at<it.start+it.duration-0.4);if(i<0)return message('برای تقسیم، نشانگر را داخل برش بگذار یا دکمه تقسیم وسط برش را بزن.',true);stop();const a=S.items[i],len=at-a.start;const b={...a,id:S.clipId++,start:at,duration:a.duration-len,sourceStart:a.sourceStart+len,sourceEnd:a.sourceStart+a.duration};a.duration=len;a.sourceEnd=a.sourceStart+len;S.items.splice(i+1,0,b);renderReferences();setSelection(i+1);message('برش مجازی در '+fmt(at)+' تقسیم شد؛ صدای ویدئوها خاموش است.')}
 $('rfYTSplit')?.addEventListener('click',()=>{const t=S.voice?.currentTime||0;const i=S.selected;const v=S.items[i];const at=S.active?t:v?v.start+v.duration/2:-1;splitAt(at)});
-$('rfYTPlan').onclick=()=>{if(!S.items.length)return message('هنوز برشی ساخته نشده.',true);const data={type:'RushFinder YouTube Virtual Cut Storyboard — not MP4',version:'0928',renderableMP4:false,voiceSeconds:S.duration,clips:S.items.map(it=>({sentence:it.sentence,query:it.query,timelineStart:it.start,timelineDuration:it.duration,sourceStart:it.sourceStart,sourceEnd:it.sourceEnd,source:it.options[it.optionIndex||0],verifiedByHuman:false}))};const u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download='RushFinder-0928-YouTube-Cut-Storyboard.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)};
+$('rfYTPlan').onclick=()=>{if(!S.items.length)return message('هنوز برشی ساخته نشده.',true);const data={type:'RushFinder YouTube Virtual Cut Storyboard — not MP4',version:'0929',renderableMP4:false,voiceSeconds:S.duration,clips:S.items.map(it=>({sentence:it.sentence,query:it.query,timelineStart:it.start,timelineDuration:it.duration,sourceStart:it.sourceStart,sourceEnd:it.sourceEnd,source:it.options[it.optionIndex||0],verifiedByHuman:false}))};const u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download='RushFinder-0929-YouTube-Cut-Storyboard.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)};
 // Embedded YouTube clips cannot be included in MediaRecorder MP4/WebM output.
 for(const b of [$('exportBtn'),$('rfExportSide')])b?.addEventListener('click',e=>{if(S.items.length&&!confirm('برش‌های یوتیوب فقط مجازی هستند و داخل خروجی MP4 یا WebM نمی‌آیند. ادامه می‌دهی؟')){e.preventDefault();e.stopImmediatePropagation()}},true);
 btn.onclick=async()=>{
  const text=$('script').value.trim();if(!text)return message('متن نریشن را وارد کن.',true);
  const parts=sentences(text);if(!parts.length)return message('متن کافی نیست.',true);
- if(window.rfPrepareYoutubeOnly?.()===false)return;
  $('rfYTPanel').open=true;
- btn.disabled=true;reset();message('در حال جست‌وجوی فیلم برای '+parts.length+' بخش نریشن…');
+ btn.disabled=true;stop();message('در حال بررسی اتصال YouTube و جست‌وجوی فیلم برای '+parts.length+' بخش نریشن… کات‌های قبلی تا موفقیت جست‌وجو حفظ می‌شوند.');
  try{
   let dur=S.voiceFile?await probeVoice(S.voiceFile):0;if(!dur)dur=parts.reduce((n,p)=>n+p.split(/\s+/).length,0)/2.3;
   dur=clamp(dur,5,420);const steps=beats(parts,dur),suggested=[],errors=[],cache=new Map();let requests=0;
@@ -146,10 +177,11 @@ btn.onclick=async()=>{
    const query=searchQuery(parts[i]);message('جست‌وجوی موضوع '+(i+1)+' از '+parts.length+' · '+query);
    let options=cache.get(query)||[];
    if(!cache.has(query)&&requests<12){requests++;
-    try{const resp=await fetch('/api/youtube-music?mode=smartedit&q='+encodeURIComponent(query),{headers:{Accept:'application/json'}});
-     const data=await resp.json();if(!resp.ok)throw Error(data.error||'HTTP '+resp.status);
-     options=sortedOptions(data.items||[],query)
-    }catch(e){errors.push('بخش '+(i+1)+': '+e.message)}
+    // A failing API should stop immediately; don't waste quota on 11 more requests.
+    let found;
+    try{found=await rfYTLookup(query)}
+    catch(e){throw new Error('جست‌وجوی بخش '+(i+1)+' متوقف شد: '+e.message)}
+    options=sortedOptions(found,query);
     cache.set(query,options);
    }
    if(!options.length){errors.push('برای بخش '+(i+1)+' فیلمی پیدا نشد.');continue}
@@ -165,10 +197,16 @@ btn.onclick=async()=>{
     suggested.push({id:S.clipId++,sentence:parts[i],query,start:beat.start+c*piece,duration:piece,sourceStart,sourceEnd:sourceStart+piece,options,optionIndex:chosen,unverified:v.rank<=0});
    }
   }
-  S.items=suggested;S.duration=dur;S.selected=suggested.length?0:-1;renderReferences();updateClock(0);
-  if(suggested.length)await showClip(0,false,0);
-  message('✓ '+suggested.length+' کات قابل پخش روی نوار ویدئو چیده شد؛ '+requests+' جست‌وجو و حداکثر '+Math.max(0,...[...cache.values()].map(x=>x.length))+' منبع برای هر موضوع. روی ▶ اصلی بزن. ⚠ این کات‌ها مجازی‌اند، دانلود یا MP4 نمی‌شوند. '+(errors.length?'بعضی بخش‌ها نتیجه نداشتند: '+errors.slice(0,3).join(' | '):''),!suggested.length);
- }catch(e){message('خطا: '+e.message,true)}finally{btn.disabled=false}
+  if(!suggested.length){
+   message('هیچ نتیجه قابل پخش پیدا نشد؛ '+requests+' جست‌وجو انجام شد. کات‌های قبلی حفظ شدند. متن جست‌وجو یا محدودیت‌های جست‌وجوی یوتیوب را بررسی کن.',true);
+   return;
+  }
+  // Only replace the previous edit AFTER new suggestions have been found.
+  if(window.rfPrepareYoutubeOnly?.()===false){message('جایگزینی لغو شد؛ کات‌های قبلی حفظ شدند.');return}
+  reset();S.items=suggested;S.duration=dur;S.selected=0;renderReferences();updateClock(0);
+  await showClip(0,false,0);
+  message('✓ '+suggested.length+' کات پیشنهادی یوتیوب روی نوار چیده شد؛ '+requests+' جست‌وجو. روی ▶ اصلی بزن. کات‌ها مجازی‌اند و داخل MP4 نیستند. '+(errors.length?errors.slice(0,2).join(' | '):''),false);
+ }catch(e){message('جست‌وجوی یوتیوب ناموفق بود؛ کات‌های قبلی حفظ شدند. '+(e?.message||String(e)),true)}finally{btn.disabled=false}
 };
 
 window.rfYTStartAutoEdit=()=>btn.onclick();
