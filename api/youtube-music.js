@@ -135,13 +135,25 @@ async function rfSmartEditVision(req,res){
  JSON.stringify(segments)
  ].join('\n');
  try{
-  const result=await rfGeminiGenerate([{fileData:{fileUri:'https://www.youtube.com/watch?v='+id,mimeType:'video/*'}},{text:prompt}],{timeoutMs:55000});
+  // YouTube URL is a special Gemini video input; the official API example omits mimeType.
+  // Let Gemini resolve the public video's MIME type rather than forcing 'video/*'.
+  const result=await rfGeminiGenerate([{fileData:{fileUri:'https://www.youtube.com/watch?v='+id}},{text:prompt}],{timeoutMs:55000});
   const allowed=new Map(segments.map(x=>[x.index,x]));
   const matches=(Array.isArray(result?.matches)?result.matches:[]).filter(x=>allowed.has(x.index)).map(x=>({
    index:x.index,start:Number(x.start),end:Number(x.end),confidence:Number(x.confidence),visualEvidence:String(x.visualEvidence||'').slice(0,180)
   })).filter(x=>Number.isFinite(x.start)&&Number.isFinite(x.end)&&x.start>=0&&x.end>x.start+.4&&(!duration||x.end<=duration+.5)&&x.confidence>=.65&&x.visualEvidence.length>=8).slice(0,12);
   return rfSmartReply(res,200,{ai:true,method:'gemini_video_frames',videoId:id,matches});
- }catch(e){const msg=String(e.message||'');return rfSmartReply(res,502,{error:/GEMINI_HTTP_429/.test(msg)?'سهمیه Gemini برای تحلیل تصویر تمام شده است.':'جمنای نتوانست تصویر این ویدیو را تحلیل کند.',code:'GEMINI_VISUAL_UNAVAILABLE'});}
+ }catch(e){
+  const detail=rfSafeAIError(e),raw=String(e?.message||'');
+  const exhausted=/GEMINI_HTTP_429|RESOURCE_EXHAUSTED|quota/i.test(raw);
+  const denied=/GEMINI_HTTP_401|GEMINI_HTTP_403|UNAUTHENTICATED|PERMISSION_DENIED/i.test(raw);
+  const unavailable=/GEMINI_HTTP_404|NOT_FOUND/i.test(raw);
+  // Never send raw upstream messages, user text, video tokens or API credentials to the browser.
+  return rfSmartReply(res,exhausted?429:502,{
+   error:'Gemini در بررسی لینک یوتیوب ناموفق بود: '+detail+'؛ در صورت دسترسی مجاز به ویدیو، بررسی فریم‌های محلی ممکن است.',
+   code:exhausted?'GEMINI_VIDEO_QUOTA':denied?'GEMINI_VIDEO_AUTH':unavailable?'GEMINI_VIDEO_MODEL':'GEMINI_VIDEO_INPUT_UNAVAILABLE'
+  });
+ }
 }
 async function rfSmartEditTranscribe(req,res){
  if(!rfGeminiRateCheck(req,'voice'))return rfSmartReply(res,429,{error:'سقف تبدیل نریشن این ساعت پر شده است.'});
@@ -163,6 +175,7 @@ function rfSafeAIError(err){
  const message=String(err?.message||err||'');
  if(/429|quota|RESOURCE_EXHAUSTED/i.test(message))return 'سهمیه یا محدودیت تعداد درخواست‌های سرویس هوش مصنوعی پر شده است';
  if(/401|403|PERMISSION_DENIED|UNAUTHENTICATED/i.test(message))return 'مجوز یا کلید API معتبر نیست یا دسترسی مدل غیرفعال است';
+ if(/GEMINI_HTTP_400|INVALID_ARGUMENT/i.test(message))return 'ورودی لینک ویدیو برای مدل فعلی پذیرفته نشد (HTTP 400)';
  if(/404|NOT_FOUND/i.test(message))return 'مدل انتخاب‌شده در API موجود نیست';
  if(/AbortError|timeout/i.test(message))return 'زمان پاسخ درخواست به پایان رسید';
  if(/BAD_JSON|Unexpected token|JSON/i.test(message))return 'پاسخ مدل ساختار JSON معتبر ندارد';

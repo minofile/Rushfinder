@@ -55,34 +55,48 @@ async function transcribe(file){
 }
 async function lookupYoutube(q){return (await json('/api/youtube-music?mode=smartedit&q='+encodeURIComponent(q))).items||[]}
 async function lookupAparat(q){return (await json('/api/youtube-music?mode=smartedit-aparat&q='+encodeURIComponent(q))).items||[]}
+// The public YouTube URL input can fail even when Gemini text generation works.
+// In that case, inspect actual FFmpeg-extracted frames of an accessible, authorized
+// source video. Never convert a metadata match into an unverified cut.
 async function inspectYT(v,segment,index,beat){
- const j=await post('/api/youtube-music?mode=smartedit-vision',{
-  videoId:v.id,videoDuration:v.durationSeconds||0,
-  segments:[{index,text:segment,seconds:Math.min(60,beat.duration)}]
- });
- if(j.method!=='gemini_video_frames')return null;
- const m=(j.matches||[]).find(x=>x.index===index&&x.confidence>=.65);
- if(!m)return null;
- const dur=Math.min(beat.duration,Number(m.end)-Number(m.start));
- return dur>=.5?{start:beat.start,duration:dur,sourceStart:Number(m.start),provider:'youtube',videoId:v.id,sentence:segment,confidence:m.confidence,visualEvidence:m.visualEvidence}:null;
+ let direct;
+ try{
+  const j=await post('/api/youtube-music?mode=smartedit-vision',{
+   videoId:v.id,videoDuration:v.durationSeconds||0,
+   segments:[{index,text:segment,seconds:Math.min(60,beat.duration)}]
+  });
+  if(j.method!=='gemini_video_frames')return null;
+  const m=(j.matches||[]).find(x=>x.index===index&&x.confidence>=.65);
+  if(!m)return null; // Semantic non-match is not a transport failure.
+  const dur=Math.min(beat.duration,Number(m.end)-Number(m.start));
+  return dur>=.5?{start:beat.start,duration:dur,sourceStart:Number(m.start),provider:'youtube',videoId:v.id,sentence:segment,confidence:m.confidence,visualEvidence:m.visualEvidence}:null;
+ }catch(e){direct=e}
+ // A quota/key/model error affects frame inference too. Do not make another paid
+ // Gemini request, or pretend the source footage was inspected.
+ const message=String(direct?.message||direct);
+ if(/سهمیه|محدودیت تعداد درخواست|کلید API|دسترسی مدل|مدل انتخاب‌شده|مدل فعلی.*موجود نیست/i.test(message))throw direct;
+ say('تحلیل مستقیم یوتیوب ناموفق بود؛ بررسی فریم‌های واقعی ویدیوی مجاز…');
+ try{return await inspectFrames(v,segment,beat,'youtube')}
+ catch(ferr){throw Error('تحلیل مستقیم: '+message+' | بررسی فریم‌های محلی: '+String(ferr?.message||ferr))}
 }
-async function inspectAparat(v,segment,beat){
- const j=await post(worker+'/frames',{provider:'aparat',videoId:v.id,rightsConfirmed:true});
+async function inspectFrames(v,segment,beat,provider){
+ const j=await post(worker+'/frames',{provider,videoId:v.id,rightsConfirmed:true});
  const analyzed=await post('/api/youtube-music?mode=smartedit-frames',{
   frames:j.frames,text:segment,seconds:beat.duration
  });
  if(analyzed.method!=='gemini_aparat_frames'||!analyzed.matches?.length)return null;
  let m=analyzed.matches[0];
- // Refine timestamps around the visually selected part for more accurate cuts.
+ // A second pass samples a smaller window around the observed region.
  try{
-  const r=await post(worker+'/frames',{provider:'aparat',videoId:v.id,rightsConfirmed:true,
-    around:(Number(m.start)+Number(m.end))/2,window:24});
+  const r=await post(worker+'/frames',{provider,videoId:v.id,rightsConfirmed:true,
+   around:(Number(m.start)+Number(m.end))/2,window:24});
   const refined=await post('/api/youtube-music?mode=smartedit-frames',{frames:r.frames,text:segment,seconds:beat.duration});
   if(refined.matches?.length)m=refined.matches[0];
- }catch(_e){} // coarse verified timestamp is still retained
+ }catch(_e){} // Retain only the previously verified coarse result.
  const dur=Math.min(beat.duration,seconds(m.end)-seconds(m.start));
- return dur>=.5?{start:beat.start,duration:dur,sourceStart:seconds(m.start),provider:'aparat',videoId:v.id,sentence:segment,confidence:m.confidence,visualEvidence:m.visualEvidence}:null;
+ return dur>=.5?{start:beat.start,duration:dur,sourceStart:seconds(m.start),provider,videoId:v.id,sentence:segment,confidence:m.confidence,visualEvidence:m.visualEvidence}:null;
 }
+async function inspectAparat(v,segment,beat){return inspectFrames(v,segment,beat,'aparat')}
 function wait(ms){return new Promise(r=>setTimeout(r,ms))}
 async function render(cuts){
  const started=await post(worker+'/jobs',{clips:cuts,rightsConfirmed:true});
