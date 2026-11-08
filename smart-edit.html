@@ -394,15 +394,15 @@ body .app select, body .app option, body .app label {
 <div class="lib-content hidden" id="audioTab"><label class="import" for="musicInput">♫ افزودن موسیقی</label><input accept="audio/*" class="file-input" id="musicInput" type="file"/><label class="import" for="voiceInput" style="margin-top:10px">🎙 انتخاب فایل نریشن</label><input accept="audio/*" class="file-input" id="voiceInput" type="file"/><button class="btn" id="autoMusic" style="width:100%;margin-top:10px">♫ ساخت موسیقی ساده خودکار</button><button class="btn" id="recordVoice" style="width:100%;margin-top:10px">● ضبط نریشن با میکروفون</button><p class="note">نریشن و موسیقی لایه‌های جداگانه دارند. ضبط میکروفون به مجوز مرورگر نیاز دارد.</p></div>
 <div class="lib-content" id="autoTab"><label class="voice-drop" for="autoVoiceInput">◉ انتخاب فایل نریشن · MP3 / WAV / M4A <input accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.webm" id="autoVoiceInput" type="file"/></label><div class="narr-selected" id="autoVoiceInfo">هنوز نریشنی انتخاب نشده است.</div><div class="field"><label>▤ متن نریشن (در صورت داشتن فایل صوتی کوتاه، اختیاری)</label><textarea class="side-script" id="script" placeholder="مثلاً: بارش باران در تهران موجب ترافیک شد. تیم‌های امدادی به محل اعزام شدند…" rows="6"></textarea>
 <div class="section" id="rfClaudeMotionPanel" style="margin:12px 0;padding:12px;border:1px solid #d9e5fa;border-radius:12px;background:#f8fbff">
- <div class="rf-ai-heading"><h3 style="font-size:14px;margin:0">✦ ساخت با  هوش  مصنوعی</h3><span class="rf-ai-online"><i></i> موتور فعال: Claude</span></div>
+ <div class="rf-ai-heading"><h3 style="font-size:14px;margin:0">✦ ساخت موشن‌گرافیک با هوش مصنوعی</h3><span class="rf-ai-online"><i></i> موتور فعال: Claude</span></div>
  <div class="rf-ai-provider" role="group" aria-label="انتخاب موتور هوش مصنوعی">
-  <button class="rf-ai-provider-btn is-active" id="rfClaudeProvider" type="button" aria-pressed="true" title="موتور فعال ساخت سناریو و موشن‌گرافیک"><span class="rf-ai-mark rf-ai-claude">✳</span><span class="rf-ai-name">Claude</span><span class="rf-ai-state">فعال</span></button>
+  <button class="rf-ai-provider-btn is-active" id="rfClaudeProvider" type="button" aria-pressed="true" title="موتور فعال ساخت سناریو و موشن‌گرافیک"><span class="rf-ai-mark rf-ai-claude">✳</span><span class="rf-ai-name">Groq / Claude</span><span class="rf-ai-state">در حال بررسی</span></button>
   <button class="rf-ai-provider-btn is-disabled" id="rfChatGPTProvider" type="button" disabled aria-disabled="true" title="اتصال ChatGPT در نسخه بعدی فعال می‌شود"><span class="rf-ai-mark rf-ai-chatgpt">◎</span><span class="rf-ai-name">ChatGPT</span><span class="rf-ai-coming">به‌زودی</span><span class="rf-ai-lock" aria-hidden="true">🔒</span></button>
  </div>
  <div class="field"><label for="rfMotionStyle">سبک موشن</label><select id="rfMotionStyle"><option value="news">خبرنگاری حرفه‌ای</option><option value="documentary">مستند سینمایی</option><option value="minimal">مینیمال و داده‌محور</option><option value="energetic">پر انرژی و مدرن</option></select></div>
  <div class="field"><label for="rfMotionDuration">مدت تقریبی (ثانیه)</label><input id="rfMotionDuration" type="number" min="10" max="300" value="45"/></div>
  <div class="row" style="margin-top:8px"><button class="btn primary" id="rfClaudeGenerate" type="button">✦ طراحی و چیدن صحنه‌ها</button><button class="btn" id="rfClaudeSavePlan" type="button" disabled>ذخیره سناریو</button></div>
- <div id="rfClaudeMotionStatus" class="note" aria-live="polite">آماده دریافت متن یا نریشن · نیازمند ANTHROPIC_API_KEY در Vercel</div>
+ <div id="rfClaudeMotionStatus" class="note" aria-live="polite">برای تولید صحنه‌ها، کلید Groq یا Claude در Vercel لازم است.</div>
  <div id="rfClaudeSceneList" style="display:grid;gap:6px;margin-top:8px"></div>
 </div></div><details id="rfYTPanel" class="rf-yt-panel" open>
 <summary>✂ برش خودکار YouTube بر اساس نریشن</summary>
@@ -465,7 +465,7 @@ body .app select, body .app option, body .app label {
 <script src="smart-edit.js?v=0937"></script>
 <script src="smart-youtube.js?v=0937" defer></script>
 <script src="smart-autocut.js?v=0939" defer></script>
-<script src="claude-motion-editor.js?v=0943" defer></script>
+<script src="claude-motion-editor.js?v=0946" defer></script>
 <script>
 (()=>{
  const guide=document.getElementById('startGuide');
