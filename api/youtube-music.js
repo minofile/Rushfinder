@@ -1,5 +1,213 @@
-import {rfAIComplete, configuredAIProviders, RFAIUnavailable} from "../lib/ai-failover.mjs";
-import {vecteezyConfigured,searchVecteezy,resolveVecteezyDownload,workerAccess} from "../lib/vecteezy.mjs";
+import {timingSafeEqual} from "node:crypto";
+// 0941: self-contained Vercel functions. All server-only helpers live in this
+// function file to avoid dependency tracing/runtime module-resolution failures.
+// Keep lib/*.mjs as documented originals for maintenance/testing; API functions
+// below do NOT import these relative files at runtime.
+const {rfAIComplete,configuredAIProviders,RFAIUnavailable}=(()=>{
+// RushFinder 0938. Server-only AI text router: OpenAI -> Claude -> Gemini.
+// No credentials or upstream response bodies are exposed to the browser.
+const ROUTE = ['openai', 'claude', 'gemini'];
+const modelCache = {name: '', checked: 0};
+
+function configuredAIProviders(env=process.env) {
+  return ROUTE.filter(name => !!keyFor(name, env));
+}
+function keyFor(provider, env) {
+  if(provider==='openai') return env.OPENAI_API_KEY || '';
+  if(provider==='claude') return env.ANTHROPIC_API_KEY || '';
+  return env.GEMINI_API_KEY || env.GOOGLE_GEMINI_API_KEY || env.GOOGLE_API_KEY || '';
+}
+function codeFor(e) {
+  if(e?.name==='AbortError' || /TIMEOUT|timed out|abort/i.test(String(e?.message || '')))return 'TIMEOUT';
+  if(e?.status===429 || /RESOURCE_EXHAUSTED|quota/i.test(String(e?.code||'')))return 'QUOTA';
+  if(e?.status===401 || e?.status===403)return 'AUTH';
+  if(e?.status===404)return 'MODEL_UNAVAILABLE';
+  if(e?.status>=500)return 'SERVICE_ERROR';
+  if(e?.status>=400)return 'REQUEST_REJECTED';
+  if(/JSON|SCHEMA|EMPTY_RESPONSE|BAD_RESPONSE/.test(String(e?.code||e?.message||'')))return 'BAD_RESPONSE';
+  return 'NETWORK_ERROR';
+}
+class RFAIUnavailable extends Error {
+  constructor(attempts) {
+    super('هیچ‌کدام از سرویس‌های OpenAI، Claude و Gemini پاسخ معتبر ندادند. کلیدها، شارژ API و مدل‌های انتخابی را در Vercel بررسی کن.');
+    this.name='RFAIUnavailable'; this.attempts=attempts; this.code='AI_PROVIDERS_UNAVAILABLE';
+  }
+}
+function upstreamError(provider, status, code='') {
+  const err=new Error(provider+' HTTP '+status);
+  err.status=status;err.code=code;return err;
+}
+async function requestJSON(url,options,timeoutMs) {
+  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),timeoutMs);
+  try {
+    const response=await fetch(url,{...options,signal:controller.signal,redirect:'error'});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw upstreamError(new URL(url).hostname,response.status,String(data?.error?.status||data?.error?.type||data?.error?.code||''));
+    return data;
+  }finally {clearTimeout(timer)}
+}
+function extractOpenAIText(data) {
+  if(typeof data.output_text==='string' && data.output_text.trim())return data.output_text;
+  return (Array.isArray(data.output)?data.output:[]).flatMap(o=>o.content||[])
+   .filter(p=>p.type==='output_text').map(p=>p.text||'').join('\n').trim();
+}
+function jsonFromText(value) {
+  const s=String(value||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');
+  try{return JSON.parse(s)}catch(_){const a=s.indexOf('{'),b=s.lastIndexOf('}');if(a<0||b<=a)throw Object.assign(new Error('BAD_RESPONSE JSON'),{code:'BAD_RESPONSE'});return JSON.parse(s.slice(a,b+1))}
+}
+function normalizeResult(text,schema) {
+  if(!String(text||'').trim())throw Object.assign(new Error('EMPTY_RESPONSE'),{code:'EMPTY_RESPONSE'});
+  if(!schema)return {text:String(text).trim()};
+  let obj;
+  try{obj=jsonFromText(text)}catch{throw Object.assign(new Error('BAD_RESPONSE JSON'),{code:'BAD_RESPONSE'})}
+  const expected=Object.keys(schema.properties||{});
+  if(!obj || typeof obj!=='object' || Array.isArray(obj) || expected.some(k=>!(k in obj) || (schema.properties[k]?.type==='array' && !Array.isArray(obj[k]))))
+   throw Object.assign(new Error('BAD_RESPONSE SCHEMA'),{code:'BAD_RESPONSE'});
+  return {text:JSON.stringify(obj),json:obj};
+}
+async function openAI({instructions,input,schema,name,maxOutputTokens,timeoutMs},env) {
+  const model=env.SMARTEDIT_OPENAI_MODEL||env.OPENAI_MODEL||'gpt-5.4-mini';
+  const body={model,instructions,input,max_output_tokens:maxOutputTokens};
+  if(schema)body.text={format:{type:'json_schema',name,strict:true,schema}};
+  const data=await requestJSON('https://api.openai.com/v1/responses',{
+   method:'POST',headers:{Authorization:'Bearer '+env.OPENAI_API_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)
+  },timeoutMs);
+  return {provider:'openai',model,...normalizeResult(extractOpenAIText(data),schema)};
+}
+async function claude({instructions,input,schema,maxOutputTokens,timeoutMs},env) {
+  const model=env.SMARTEDIT_CLAUDE_MODEL||env.CLAUDE_MODEL||'claude-haiku-5-5';
+  const sys=instructions+(schema?'\nReturn ONLY one valid JSON object with the requested fields. No markdown or explanation.':'');
+  const data=await requestJSON('https://api.anthropic.com/v1/messages',{
+   method:'POST',headers:{'x-api-key':env.ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01','Content-Type':'application/json'},
+   body:JSON.stringify({model,max_tokens:maxOutputTokens,system:sys,messages:[{role:'user',content:input}]})
+  },timeoutMs);
+  const text=(data.content||[]).filter(c=>c.type==='text').map(c=>c.text||'').join('\n');
+  return {provider:'claude',model,...normalizeResult(text,schema)};
+}
+async function geminiModel(env,timeoutMs) {
+  const preferred=String(env.GEMINI_TEXT_MODEL||env.SMARTEDIT_GEMINI_MODEL||'').trim();
+  if(preferred && !/^gemini-[a-zA-Z0-9.-]+$/.test(preferred))throw Object.assign(new Error('BAD_MODEL'),{code:'BAD_MODEL'});
+  if(preferred)return preferred;
+  if(modelCache.name&&Date.now()-modelCache.checked<600000)return modelCache.name;
+  const key=keyFor('gemini',env);
+  const data=await requestJSON('https://generativelanguage.googleapis.com/v1beta/models?pageSize=100',{
+   headers:{'x-goog-api-key':key,Accept:'application/json'}
+  },Math.min(timeoutMs,7000));
+  const models=(data.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')).map(m=>String(m.name||'').replace(/^models\//,''));
+  const ordered=['gemini-3.8-flash','gemini-3.7-flash','gemini-3.6-flash','gemini-3.5-flash','gemini-2.5-flash'];
+  const selected=ordered.find(m=>models.includes(m))||models.find(m=>/^gemini-[\d.]+-flash$/.test(m));
+  if(!selected)throw Object.assign(new Error('BAD_MODEL'),{code:'BAD_MODEL'});
+  modelCache.name=selected;modelCache.checked=Date.now();return selected;
+}
+async function gemini({instructions,input,schema,maxOutputTokens,timeoutMs},env) {
+  const model=await geminiModel(env,timeoutMs);
+  const text=instructions+(schema?'\nReturn ONLY valid JSON, with the exact field names requested.':'')+'\n\n'+input;
+  const response=await requestJSON('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent',{
+   method:'POST',headers:{'x-goog-api-key':keyFor('gemini',env),'Content-Type':'application/json'},
+   body:JSON.stringify({contents:[{role:'user',parts:[{text}]}],generationConfig:{maxOutputTokens, ...(schema?{responseMimeType:'application/json'}:{})}})
+  },timeoutMs);
+  const output=(response.candidates||[]).flatMap(c=>c.content?.parts||[]).map(p=>p.text||'').join('\n');
+  return {provider:'gemini',model,...normalizeResult(output,schema)};
+}
+/** Fail over on unavailable, exhausted, unauthorized, timed-out, or malformed provider responses.
+ * Never retries the same provider blindly; charges can occur for failed provider calls.
+ */
+async function rfAIComplete({instructions,input,schema,name='rushfinder_json',maxOutputTokens=2500,timeoutMs=14500},{env=process.env}={}) {
+  if(typeof instructions!=='string'||!instructions.trim()||typeof input!=='string'||!input.trim())throw new Error('AI_INPUT_INVALID');
+  const active=configuredAIProviders(env);
+  if(!active.length)throw new RFAIUnavailable([]);
+  const attempts=[];
+  const args={instructions,input,schema,name,maxOutputTokens,timeoutMs};
+  for(const provider of active) {
+    try {
+      const fn={openai:openAI,claude,gemini}[provider];
+      const result=await fn(args,env);
+      return {...result,attempts};
+    }catch(e){attempts.push({provider,reason:codeFor(e)});}
+  }
+  throw new RFAIUnavailable(attempts);
+}
+return {rfAIComplete,configuredAIProviders,RFAIUnavailable};
+})();
+
+const {vecteezyConfigured,searchVecteezy,resolveVecteezyDownload,workerAccess}=(()=>{
+// Official Vecteezy developer API adapter. No scraping, browser keys, or guesses about license rights.
+// Docs: https://www.vecteezy.com/api-docs/index.html
+
+const LIMIT=10;
+const idOk=id=>/^\d{1,15}$/.test(String(id||''));
+const text=(v,n=180)=>String(v??'').slice(0,n);
+const asURL=value=>{try{const url=new URL(String(value||''));return url.protocol==='https:'?url.href:''}catch{return ''}};
+const field=(obj,...names)=>names.reduce((v,n)=>v??obj?.[n],undefined);
+const cache=new Map();
+function vecteezyConfigured(){return Boolean(process.env.VECTEEZY_API_KEY&&process.env.VECTEEZY_ACCOUNT_ID)}
+function workerAccess(token){
+ const expected=process.env.RUSHFINDER_WORKER_SHARED_KEY||'';
+ if(!expected||!token||typeof token!=='string')return false;
+ const a=Buffer.from(expected),b=Buffer.from(token);
+ return a.length===b.length&&timingSafeEqual(a,b);
+}
+function apiURL(route){
+ const base=process.env.VECTEEZY_API_BASE_URL||'https://www.vecteezy.com';
+ const url=new URL(base);
+ if(url.protocol!=='https:'||!(url.hostname==='vecteezy.com'||url.hostname.endsWith('.vecteezy.com'))||url.username||url.password||url.port)throw Error('VECTEEZY_API_BASE_URL باید دامنه رسمی Vecteezy باشد');
+ return new URL('/v2/'+encodeURIComponent(process.env.VECTEEZY_ACCOUNT_ID)+route,url);
+}
+async function request(url){
+ const controller=new AbortController(),t=setTimeout(()=>controller.abort(),12000);
+ try{
+  const r=await fetch(url,{signal:controller.signal,headers:{Authorization:'Bearer '+process.env.VECTEEZY_API_KEY,'X-API-Key':process.env.VECTEEZY_API_KEY,Accept:'application/json'}});
+  const body=await r.json().catch(()=>({}));
+  if(!r.ok){const e=new Error('Vecteezy API: '+r.status+' '+text(body?.error?.message||body?.message||'',100));e.status=r.status;throw e;}
+  return body;
+ }finally{clearTimeout(t)}
+}
+function normalize(raw){
+ const x=raw?.resource||raw;
+ const id=String(field(x,'id','resource_id')||'');
+ if(!idOk(id))return null;
+ const type=text(field(x,'content_type','type','resource_type')||'video',40).toLowerCase();
+ if(type&&!/(video|footage)/.test(type))return null;
+ const title=text(field(x,'title','name','description')||'Vecteezy footage');
+ const thumb=field(x,'thumbnail_url','thumbnail','preview_image_url')||x?.previews?.[0]?.url||x?.preview?.url||'';
+ const url=asURL(field(x,'url','page_url','permalink')||'');
+ const license=text(field(x,'license','license_type')||'unverified',40);
+ return {id,provider:'vecteezy',title,thumbnail:asURL(thumb?.url||thumb),url:url||'https://www.vecteezy.com/video/'+id,
+   durationSeconds:Number(field(x,'duration','duration_seconds')||0),license,description:text(x?.description||'',300)};
+}
+async function searchVecteezy(query){
+ if(!vecteezyConfigured()){const e=new Error('برای جست‌وجوی Vecteezy، VECTEEZY_API_KEY و VECTEEZY_ACCOUNT_ID را در Vercel تنظیم کن.');e.status=503;throw e;}
+ const q=text(query,90).trim();if(q.length<2){const e=new Error('عبارت جست‌وجوی Vecteezy کوتاه است.');e.status=400;throw e;}
+ const key=q.toLowerCase(),old=cache.get(key);
+ if(old&&Date.now()-old.at<3600000)return old.result;
+ const url=apiURL('/resources');
+ // Search parameter names can be adjusted for an API account's version.
+ url.searchParams.set(process.env.VECTEEZY_QUERY_PARAM||'qterm',q);
+ url.searchParams.set('content_type','video');url.searchParams.set('per_page',String(LIMIT));
+ const body=await request(url);
+ const list=Array.isArray(body)?body:field(body,'resources','items','results')||body?.data?.resources||body?.data?.items||body?.data||[];
+ if(!Array.isArray(list))throw Error('قالب پاسخ API ویتیزی شناخته نشد؛ تنظیمات حساب API را بررسی کن.');
+ const result={query:q,provider:'vecteezy',items:list.map(normalize).filter(Boolean).slice(0,LIMIT)};
+ cache.set(key,{at:Date.now(),result});if(cache.size>70)cache.delete(cache.keys().next().value);
+ return result;
+}
+function pickDownloadUrl(b){
+ const values=[b?.download_url,b?.url,b?.download?.url,b?.download?.download_url,b?.data?.url,
+  b?.data?.download_url,b?.resource_download?.url,b?.links?.download,b?.file?.url];
+ for(const val of values){const u=asURL(val);if(u)return u}
+ return '';
+}
+async function resolveVecteezyDownload(id){
+ if(!vecteezyConfigured())throw Error('Vecteezy API not configured');
+ if(!idOk(id))throw Error('Invalid Vecteezy resource id');
+ const body=await request(apiURL('/resources/'+id+'/download'));
+ const url=pickDownloadUrl(body);
+ if(!url)throw Error('Vecteezy download response has no direct file URL; verify API account permissions and schema.');
+ return {url};
+}
+return {vecteezyConfigured,searchVecteezy,resolveVecteezyDownload,workerAccess};
+})();
+
 // RushFinder 0924: independent, server-only SmartEdit lookup.
 // Reuse this EXISTING API function to stay under the Hobby 12-functions cap.
 const rfSmartCalls=new Map();
@@ -370,7 +578,7 @@ async function rfVecteezyDownload(req,res){
 
 // Search-only integration with the official YouTube Data API.
 // Playback uses the official embedded player; no audio extraction or MP3 conversion.
-export default async function handler(req,res){
+async function rfRouteHandler(req,res){
  res.setHeader('Cache-Control','s-maxage=300, stale-while-revalidate=600');
  if(req.query.mode==='smartedit-config'&&req.method==='GET')return rfSmartEditConfig(req,res);
  if(req.query.mode==='smartedit-vecteezy'&&req.method==='GET')return rfVecteezySearch(req,res);
@@ -394,4 +602,15 @@ export default async function handler(req,res){
   const data=(j.items||[]).filter(x=>/^[a-zA-Z0-9_-]{11}$/.test(x.id?.videoId||'')).map(x=>({id:x.id.videoId,title:x.snippet?.title||'',artist:x.snippet?.channelTitle||'',thumbnail:x.snippet?.thumbnails?.medium?.url||'',source:'YouTube',url:'https://www.youtube.com/watch?v='+x.id.videoId}));
   return res.status(200).json({data,total:data.length});
  }catch{return res.status(502).json({error:'اتصال به یوتیوب برقرار نشد'});}
+}
+
+// 0941: Never emit a generic Vercel HTML error for an unexpected request-time
+// exception. The frontend expects JSON and can surface a stable error code.
+export default async function handler(req,res){
+ try{return await rfRouteHandler(req,res)}
+ catch(e){
+  console.error('[RushFinder 0941 API]',String(e?.name||'Error').slice(0,60));
+  if(res.headersSent)throw e;
+  return rfSmartReply(res,500,{error:'خطای داخلی API تدوین هوشمند؛ Runtime Logs نسخه فعلی را بررسی کن.',code:'SMARTEDIT_SERVER_ERROR'});
+ }
 }
