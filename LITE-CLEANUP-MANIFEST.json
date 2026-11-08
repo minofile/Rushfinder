@@ -1,0 +1,750 @@
+{
+ "format": 1,
+ "files": [
+  {
+   "path": "README-0802-FA.txt",
+   "sha256": "a4b238f21dded95cfe0894dfebf5c531f8d9f65d10ee85a08a47b9ad18ff986f"
+  },
+  {
+   "path": "README-0803-FA.txt",
+   "sha256": "16d1d7ff8e9d6e8fa58fdae5f621f85570f4bf8475489c484cbba9a060043c65"
+  },
+  {
+   "path": "README-0804-FA.txt",
+   "sha256": "bcf2e4f1ac22ec660bf078f689d1e95ab60fde65cd0f0bd0377c4130304a9ef8"
+  },
+  {
+   "path": "README-0805-FA.txt",
+   "sha256": "3fadf942d8da3bf866264d262839a666a24b2cd059d43ec115ba8a1b841a9f31"
+  },
+  {
+   "path": "README-0806-FA.txt",
+   "sha256": "164ae737a202e1eef8bc5ab1479adc904d3c95e795acbc233c013101868ce659"
+  },
+  {
+   "path": "README-0812-FA.txt",
+   "sha256": "127e96a0856bd4d8a3f4203bad81cec6ad317a88cd1c01c5dcfafe0e4e46fb8f"
+  },
+  {
+   "path": "README-0813-FA.txt",
+   "sha256": "d9361b0560bd6870b9d9ec00a8edb40476a12b176f42e6eda0832c9e0142ef3b"
+  },
+  {
+   "path": "README-0814-Channel-FA.txt",
+   "sha256": "74ba3c2ab01c89543b13932dbf4055a05bc8925d79824032d20bb2a1566b10bf"
+  },
+  {
+   "path": "README-0814-FA.txt",
+   "sha256": "8030bfdbf4e2ed259d70106f09ca6f544c8702355621e1dd8e04b5c0d7280fc8"
+  },
+  {
+   "path": "README-0814-Mode-Cards-FA.txt",
+   "sha256": "6dd6d3d6e47eb9b9b720e97cfc6d040572f32b570f50c39b695abbe72c8ba6b4"
+  },
+  {
+   "path": "README-0815-FA.txt",
+   "sha256": "5b6bf67b7de30a26682adb7846e4faa89a6645381fd8b9d69e60cd27dabdbd56"
+  },
+  {
+   "path": "README-0816-FA.txt",
+   "sha256": "ec5a31f4d182b4486e5e265a6a37f2f1f61eb2594e43e12e908d62b74921c759"
+  },
+  {
+   "path": "README-0817-FA.txt",
+   "sha256": "ae2bce624847fa13b1904715a9e657157a45e883486554be66f27e688ca46c0d"
+  },
+  {
+   "path": "README-0818-FA.txt",
+   "sha256": "e3de149b9eb290417ae6a042ad9e3efea1686fe3a2373cbf86b637d18d4b1c7a"
+  },
+  {
+   "path": "README-0819-FA.txt",
+   "sha256": "5f6401b440cb592349ce6ddebf29adc4d78e88e6befd0dc076ffa6880534ffe0"
+  },
+  {
+   "path": "README-0820-FA.txt",
+   "sha256": "7574f20ecc2bc84bfaae4a0329627e1396c7f2b99cabf514ff3e3b8bc3baebe0"
+  },
+  {
+   "path": "README-0821-FA.txt",
+   "sha256": "924d7c248f97fb3134fd4c1f9bda4005ed6f668bbe949f1216e651d39cdc3e23"
+  },
+  {
+   "path": "README-0822-FA.txt",
+   "sha256": "25d3367b37b84bf593b8d5a6cdd4872e2195324be700d9717a724461ef8047a3"
+  },
+  {
+   "path": "README-0823-FA.txt",
+   "sha256": "ccfa01d0b5c6d88423536c92e65da342062b68af3355824a10a45455d8b50f2a"
+  },
+  {
+   "path": "README-0824-FA.txt",
+   "sha256": "aded732b711ad9da70bcee88bfcb13006e5f021618c781ee8ff4b9c485d91636"
+  },
+  {
+   "path": "README-0825-FA.txt",
+   "sha256": "e1eab297edb8b618a22fd3a30a15b8df011fec6545364b57d1fe16c50405075b"
+  },
+  {
+   "path": "README-0826-FA.txt",
+   "sha256": "d0b3f544ca1d45c5284561f9344c1991bba2a65df2ee9aad90b9f00d2b267ae7"
+  },
+  {
+   "path": "README-0827-FA.txt",
+   "sha256": "73bfb88b9fe8d18e46e66948492acd83435bc7834c8561cd379e589cee49ff0d"
+  },
+  {
+   "path": "README-0828-FA.txt",
+   "sha256": "7dd5a15c3605dee066105a56cd8156f9c0dd9451fcf43c35b761a16ccb39cc87"
+  },
+  {
+   "path": "README-0829-FA.txt",
+   "sha256": "89c158e131aed47aa05556bc359ea41e58240e80feb7f0a1adc4e7e2f073a91f"
+  },
+  {
+   "path": "README-0830-FA.txt",
+   "sha256": "4fd3894f92a7d761584cea618eba853e4c974e964197952c07796b9e71f68dc3"
+  },
+  {
+   "path": "README-0831-FA.txt",
+   "sha256": "0568b958e07a410b4bf2a6d2e4f6854ed34e8874d53574ea33356efc61d63f8c"
+  },
+  {
+   "path": "README-0832.txt",
+   "sha256": "78b2aec9e58ceeb3a69d70fa15a6713f8dd1bedc046c4155096e533507df4dcc"
+  },
+  {
+   "path": "README-0833-FA.txt",
+   "sha256": "192a2bc34a0dcf77e09e02c72b04287f1f39360aef06645f0cd65920a3094adc"
+  },
+  {
+   "path": "README-0834-FA.txt",
+   "sha256": "740c78e6faa274d435e82a664cf353c8c63ccc0f3082482a908b92e453cdb20a"
+  },
+  {
+   "path": "README-0835-FA.txt",
+   "sha256": "0b4e6661ede471a3929acff07e2e5ae322519ee07c9cd5b756f110645015a0e9"
+  },
+  {
+   "path": "README-0836-Compress-FA.txt",
+   "sha256": "3d963a3041fa85cc8979bdb2ca235c7ec5adf737bb757026579074db58bb3e39"
+  },
+  {
+   "path": "README-0836-Launcher-Fix-FA.txt",
+   "sha256": "1c576b4c58af6ce7d08484691837929f7f89d6ce04ad734e6cf14674b0291ba8"
+  },
+  {
+   "path": "README-0836-OFFLINE-18827-FA.txt",
+   "sha256": "97043ffef78a929e3367c3ef9cb47e11207a5dac9b8ed81b5959c1f4ad7123f7"
+  },
+  {
+   "path": "README-0836-Offline-Test-FA.txt",
+   "sha256": "0b202ada5b022eb12aaec843ac65da0c769eaa8ac03adedb62884f45d12f69b4"
+  },
+  {
+   "path": "README-0837-Quality-FA.txt",
+   "sha256": "d97a82a0821b672c09a91830c5e84dfff3e981f399b0f20f6539748a6fe41264"
+  },
+  {
+   "path": "README-0838-WEB-FA.md",
+   "sha256": "7d1e4193a61c3a6a824988608e62886e439a5e73bb7179b2f6ff22a045fbc07d"
+  },
+  {
+   "path": "README-0839-WEB-FA.md",
+   "sha256": "310c7f651ffa2bf1051195374076d76689cd0c3df364764ea7f818ede0e9e1b2"
+  },
+  {
+   "path": "README-0840-WEB-FA.md",
+   "sha256": "5a05c50e9925da7ac28e5c2ac6b67256c745386566796c856036289730809b10"
+  },
+  {
+   "path": "README-0841-WEB-FA.md",
+   "sha256": "0c9d2755aa998cb6cf1641225ff69fc98a927a5aca01dc48a53eb58bea92a973"
+  },
+  {
+   "path": "README-0842-Startup-FA.md",
+   "sha256": "ced03ddbc50652fa19b1edfaf1e5d718a7ca67c518ace9196e36699c505b0366"
+  },
+  {
+   "path": "README-0843-WEB-FA.md",
+   "sha256": "885e79688999468ccf1fe8f309dd185174a5b2fc193d02c1aef396593c24000a"
+  },
+  {
+   "path": "README-0906-SMARTEDIT-FA.md",
+   "sha256": "2dcac1c44edef7b82807c43b5a765a1c8e8033ad4f40d15380dd79acf6646a59"
+  },
+  {
+   "path": "README-0907-SMARTEDIT-FA.md",
+   "sha256": "31343db5fa9e10c3f009ba3743226ea67059d552b1d0a0210de32137e25047f0"
+  },
+  {
+   "path": "README-0908-FA.md",
+   "sha256": "8202dbd99109dcd5faa70af00c2feaca05e194ae721f7ee6ef012c0b3a24f961"
+  },
+  {
+   "path": "README-0911-FA.md",
+   "sha256": "d928d465f3c1bc351af727cd57fe5a287f3dc2c31d0ad415af20c20c6e560854"
+  },
+  {
+   "path": "README-0912-FA.md",
+   "sha256": "8796ae1df80143c2529578e65bb1fdb9b8dfe6bdded6bb3fa18df827c74cf548"
+  },
+  {
+   "path": "README-0913-FA.md",
+   "sha256": "2afd27dfc89fb185c8c430412c4e6613ed7b0a6385586e05251bcf07be67401f"
+  },
+  {
+   "path": "README-0918-WEB-FA.md",
+   "sha256": "a773c498735aa16dd42b358270e831c6b2da5ede1a1a113ae4bdafc7e4a8707a"
+  },
+  {
+   "path": "README-0920-FA.txt",
+   "sha256": "312a8cc969e851d352f1af1ca550cba8b79c83ccc1a2687a9fae9ae7b6e6fbdf"
+  },
+  {
+   "path": "README-0921-FA.md",
+   "sha256": "cd9c98fa87da6e9f100a418a5e37973374ef5c404edfa7015761ddc84e8bbe06"
+  },
+  {
+   "path": "README-0922-FA.md",
+   "sha256": "a1d2d65eabf1d9794cfd8f9bef1cdfc42ec37aa5127b70d61efecf4d84f9ec84"
+  },
+  {
+   "path": "README-0923-FA.md",
+   "sha256": "15744e146256d5e6471d1ca3d4d86d2886ea211249b713815aa2757ed9e6d4b8"
+  },
+  {
+   "path": "README-0924-FA.md",
+   "sha256": "0111c4801a5383395c9ebf4d35abebb7a6b283e7de32157de552981ef9076ee1"
+  },
+  {
+   "path": "README-0926-FA.md",
+   "sha256": "34fea49cd421ff01ac72296889e4a29e8aee0a98e7a9933af01ccc3a3114faac"
+  },
+  {
+   "path": "README-0928-FA.md",
+   "sha256": "090a4dbd34bbf4538b2dbfe44325014f4163a8ab25d23cbc20b1a4acc9c05d35"
+  },
+  {
+   "path": "README-0929-FA.md",
+   "sha256": "d77e2430e0ee901350cc3c695ee0213b201392a925fb99f03d51cdcf1caf56fd"
+  },
+  {
+   "path": "README-0930-FA.md",
+   "sha256": "f79f408315f3578eb42081194e37d4a000ea3a0b7d452ff49aea385f8a4a12cc"
+  },
+  {
+   "path": "README-0931-FA.md",
+   "sha256": "0d77f078283c09663ad09dbbd861de3e559d35be9ba354557aa77e14d7b8403e"
+  },
+  {
+   "path": "README-0932-FA.md",
+   "sha256": "3103383e4c0ddd2101490014eee86f3e5adca24e3f6ec38509ce2083f1b4c6ff"
+  },
+  {
+   "path": "README-0933-GEMINI-FA.md",
+   "sha256": "5c4fcdb85c0728179ff8cdb7ee0ad64e6bb6c6829b4992f4b18bc75efce27680"
+  },
+  {
+   "path": "README-0934-FULL-AUTOCUT-FA.md",
+   "sha256": "fec68a8b7675b48c7c9ab067ec0ffeb6ae3290485d35ed897903d303cf29b8de"
+  },
+  {
+   "path": "README-0935-ERROR-FIX-FA.md",
+   "sha256": "7c362113683418bb298244dee5d2df05e61b6de66959c7a8763eb2701c193b7e"
+  },
+  {
+   "path": "README-0936.md",
+   "sha256": "e5094f9b8ab1b6d282a95c841ad90388f0794b6125aef33066e23b2d476d02bd"
+  },
+  {
+   "path": "README-0937-FA.md",
+   "sha256": "cc55e90711afae7402ee01b885113a0685e307667f32a18aefc8e8c39534e47d"
+  },
+  {
+   "path": "README-0939-VECTEEZY-FA.md",
+   "sha256": "18f333d2ce2e06f95449b27d2be1982e435be6517dff151f951bb0f71e1c49d5"
+  },
+  {
+   "path": "README-0940-FIX-FA.md",
+   "sha256": "159d7e2c696a3a503e9956c65c93e62258ddc9bee84dceda7608e075da361350"
+  },
+  {
+   "path": "README-FA-0814-Channel-Fix.txt",
+   "sha256": "cb7683792f3784987f901d6148920ea46d262c480f2174f440c1f6002f44b886"
+  },
+  {
+   "path": "README-FA.txt",
+   "sha256": "794e1891e5814b2b31ef0179243e161507d97f6c61cbe9506366d863964f950f"
+  },
+  {
+   "path": "README-UI-Update-FA.txt",
+   "sha256": "1b942ddc8186b15ddca1d404f73a73401d156a7cb629d0cf702e0e637e84c136"
+  },
+  {
+   "path": "ae-original/Adobe After Effects Auto-Save/tag1-source auto-save 1.aep",
+   "sha256": "6fac6b9b7bdabb7c0d1d8961d1ba82fda97f8f45094f23dd050932b10b242369"
+  },
+  {
+   "path": "ae-original/Adobe After Effects Auto-Save/tag1-source auto-save 2.aep",
+   "sha256": "039a44ef20daa1417b83d3997643187dd46689c15edf910569b4ad4b224e713b"
+  },
+  {
+   "path": "ae-original/Adobe After Effects Auto-Save/tag1-source auto-save 3.aep",
+   "sha256": "dda0a5b41ff1c3c96137d13ef309d20701060c4b30a7697e8eea587dddb9bd9c"
+  },
+  {
+   "path": "ae-original/Adobe After Effects Auto-Save/tag1-source auto-save 4.aep",
+   "sha256": "5c8030aa6ab91cb8b57366f5ef83088026b9d61b47dabf0a479f7b5f1c9cabd4"
+  },
+  {
+   "path": "ae-original/Adobe After Effects Auto-Save/tag1-source auto-save 5.aep",
+   "sha256": "2efe58eef315f7555731b728fe94864b7bf0312057833e3d0920e74e8e598f5b"
+  },
+  {
+   "path": "assets/calendar/khabarfori-daily-template.png",
+   "sha256": "3f71495964970c46a6b1a8b2f41dc37d8919b51739e9772bd5774c3a4612b22b"
+  },
+  {
+   "path": "assets/calendar/mashhad-daily-template.png",
+   "sha256": "ae238e838f4821231a236ba4d81d257c037c53b214324c85f637fe0fc7c206d6"
+  },
+  {
+   "path": "assets/calendar/provinces-daily-template.png",
+   "sha256": "5e5d90d8ee33641ff1f51d579d1cc36edef70e17cf31b654509419570a270992"
+  },
+  {
+   "path": "assets/calendar/seda-daily-template.png",
+   "sha256": "aa9228e653dadb53a06e7f84b977abb93117e65219d951377c32863295413bd3"
+  },
+  {
+   "path": "assets/logos/rushfinder-color.png",
+   "sha256": "7176701bb80b3ff3b301a00dab0982f9d6eeedcd9ab2b232b77c8811aaf844a5"
+  },
+  {
+   "path": "assets/logos/rushfinder-sidebar-white.png",
+   "sha256": "7e249a4f03363446c3c8ad5e9b64245b1e64d9862a654e249ba0bb3ae9b63668"
+  },
+  {
+   "path": "assets/logos/sources/aparat.png",
+   "sha256": "78e3df1165e6594927efb9a867e315f98c8159ebadb33dd83f155064ef34d96c"
+  },
+  {
+   "path": "assets/logos/sources/pixabay.png",
+   "sha256": "b1979fef46702a8485b27dbe1255f8e30ea7115e65932431d212db350ae01485"
+  },
+  {
+   "path": "assets/logos/sources/vecteezy.png",
+   "sha256": "cc7d4c411e2108861979a509c23fedf0a95e8f5274d757567a003009d48a44f1"
+  },
+  {
+   "path": "assets/logos/sources/youtube.png",
+   "sha256": "c4356051d6aeef074697329d9b2900edaccec91eaeb50ee43e57cd69cfa9866e"
+  },
+  {
+   "path": "assets/music-categories/calm.jpg",
+   "sha256": "6b91badbac6b8b303912caf7e84e2c374ab42d46f27e890b553e31eb47aadb30"
+  },
+  {
+   "path": "assets/music-categories/cinematic.jpg",
+   "sha256": "1f4b63aed90a535d10e40f25c0f7a7e6685d4b621dca42ed42f516767504ab2c"
+  },
+  {
+   "path": "assets/music-categories/documentary.jpg",
+   "sha256": "5ab5ce0b23c39fe25f29bed892388bb360a5f086b12db5253d52f0d6611abde8"
+  },
+  {
+   "path": "assets/music-categories/dramatic.jpg",
+   "sha256": "f012a87f7e612ed635765b2c2073b2d83e9fc63adb669fadefebcdb382b31927"
+  },
+  {
+   "path": "assets/music-categories/energy.jpg",
+   "sha256": "7bea78286dd931aba9d6267a5e71710592afc4640cd49c6602bf7315acf1a658"
+  },
+  {
+   "path": "assets/music-categories/epic.jpg",
+   "sha256": "ee14639decb6ba987e37dba4c29b3f4d1038775e395821f3c4b0268e4c4aa2fc"
+  },
+  {
+   "path": "assets/music-categories/exciting.jpg",
+   "sha256": "531f8276d4c9b1975cafcd5858bb0a7b5c791fe20eb6314d66e7284eab120442"
+  },
+  {
+   "path": "assets/music-categories/news.jpg",
+   "sha256": "e87d7503b4fa8ba58e648d313910c027aa46b908ba8f1285a0e9fd22a4211e32"
+  },
+  {
+   "path": "assets/music-categories/political.jpg",
+   "sha256": "b8dfa3d9862ae3b0f8319bebc1f97229796225b16c180261222806186ccfdb0a"
+  },
+  {
+   "path": "assets/music-categories/sad.jpg",
+   "sha256": "7abfa40c17d210becec9dd23d6c0bf4a4b3600f0f4fb040fe1139ac521f58345"
+  },
+  {
+   "path": "assets/music-categories/sport.jpg",
+   "sha256": "a748d39708186c2d11f1648cd27bd3fa4b299d2cb851878c859e8b5816dab9bb"
+  },
+  {
+   "path": "assets/music-categories/technology.jpg",
+   "sha256": "8ed5a0a2cd805b634bb6ed7bf3db78687df0e66734fa19d8765119eb60dd5811"
+  },
+  {
+   "path": "assets/music-covers/action.svg",
+   "sha256": "3a04235d170817baf903b9866b0750eaab7631235b5f996cc1d0ef5c6db2a26d"
+  },
+  {
+   "path": "assets/music-covers/calm.svg",
+   "sha256": "4bb38e8ce8640807f9f7faece9d98e0f9a7d57ea87e8c76681971238807719a3"
+  },
+  {
+   "path": "assets/music-covers/cinema.svg",
+   "sha256": "72c6b1abf17e8e4540c057cc761ad1e95196f27bc762090696462f4de59ab88a"
+  },
+  {
+   "path": "assets/music-covers/documentary.svg",
+   "sha256": "c7bb06abe8d7c77603d001ab15c2d18401773d158591132aed2688e72cb74638"
+  },
+  {
+   "path": "assets/music-covers/drama.svg",
+   "sha256": "123a4349936d72148a92a2bf773180dcee856edccc4e3bba48782e145e7a6531"
+  },
+  {
+   "path": "assets/music-covers/energy.svg",
+   "sha256": "bbdcd1b4370024d58d091f45bf11c1b95408772e3f0ba2728609b9f461889a2f"
+  },
+  {
+   "path": "assets/music-covers/epic.svg",
+   "sha256": "6461628b736f22e223e1b091e6ede4a6e2bde52491093484d329f8b1af8285e0"
+  },
+  {
+   "path": "assets/music-covers/news.svg",
+   "sha256": "1261c23974380afa50d3d14dccdd511bb6511aa311e1f75084becf051dfa26aa"
+  },
+  {
+   "path": "assets/music-covers/political.svg",
+   "sha256": "9f48ba7e25cef4497728200d0f81cadf0a225ee6707986578917103b586093fc"
+  },
+  {
+   "path": "assets/music-covers/sad.svg",
+   "sha256": "ec22c885e2fda573f4708f137146a63952431578bf891ccb89a2851f443de1c5"
+  },
+  {
+   "path": "assets/music-covers/sports.svg",
+   "sha256": "07fe592ef22e1e996933f73f3766a113c29a83ef04f508fe4388a0ae6de9af20"
+  },
+  {
+   "path": "assets/music-covers/technology.svg",
+   "sha256": "2afff5869a07744370830595eb69699144048c8c794663d6af7c32c91929cabb"
+  },
+  {
+   "path": "assets/music-news-neon.webp",
+   "sha256": "2b2894f11ab20a5652343d045dd47cc08b241a8691e0de3d9b3cbdbf28f386db"
+  },
+  {
+   "path": "assets/music-v0116/calm.jpg",
+   "sha256": "d717697599a13c4f98fa238f8750b70ac1d57a9310d8f1c0aab8ce08bc0a0dc9"
+  },
+  {
+   "path": "assets/music-v0116/cinematic.jpg",
+   "sha256": "010bc43bc83e7ed6a7c432d92e627f7dfce865e6b2f3b364dd4942f04ac75cb4"
+  },
+  {
+   "path": "assets/music-v0116/documentary.jpg",
+   "sha256": "160dfce3ad34024ce36b687faeb6a2078e5b36f6bd34f25533dd18bfc309462b"
+  },
+  {
+   "path": "assets/music-v0116/dramatic.jpg",
+   "sha256": "a2cf6e8f6e1ab0fc2c6383a091c2d31f69f853fc236e13bc9d0383169a264e6c"
+  },
+  {
+   "path": "assets/music-v0116/energy.jpg",
+   "sha256": "395a6d1fb65550b6e5e2629eab1b19c2ec76090e06fd1e698c8ecca5ae0e4b29"
+  },
+  {
+   "path": "assets/music-v0116/epic.jpg",
+   "sha256": "b25d1dffcee72eac0668575a9b30af849fb465844c7ba1bd8de584f7bcd6b5cc"
+  },
+  {
+   "path": "assets/music-v0116/exciting.jpg",
+   "sha256": "4fa86b2d966e631232afdd9e608ca8f9a0b8abf8d62914f197989d1ab1bd77b9"
+  },
+  {
+   "path": "assets/music-v0116/news.jpg",
+   "sha256": "13bd66ff091873cf699d43e722717963e7bae7a31573c97570452d5a667b2450"
+  },
+  {
+   "path": "assets/music-v0116/political.jpg",
+   "sha256": "01c95f25e184a681d8c9bca31422c0b2d93bc38649f9e56433023f51b3a99bf8"
+  },
+  {
+   "path": "assets/music-v0116/sad.jpg",
+   "sha256": "de1b64a1b2c9e7b62b9c53bc5f777b440b29c250ffa1553a129a4ad84a678727"
+  },
+  {
+   "path": "assets/music-v0116/sport.jpg",
+   "sha256": "611dd5a352a4c46397bf07743a1052b826576ae87a2107092468675f82416130"
+  },
+  {
+   "path": "assets/music-v0116/technology.jpg",
+   "sha256": "ef3fd5cd5f1291ecb6bb4b348bcc762a915f8e73d9c2952a2f16b75dc0192467"
+  },
+  {
+   "path": "assets/music-v0117/calm.webp",
+   "sha256": "522998903ef0a5e2d2997df1866cc41be38efad27c718aa35769bbbb4f399147"
+  },
+  {
+   "path": "assets/music-v0117/cinematic.webp",
+   "sha256": "65a2649bee75bf02b5fbbba4ef0c155c4c1334da90a0f1ec3b7a911115e891ee"
+  },
+  {
+   "path": "assets/music-v0117/documentary.webp",
+   "sha256": "f8d8376b0b3770b6822f919866f981e69b86af8a94750f890e5df43996002b53"
+  },
+  {
+   "path": "assets/music-v0117/dramatic.webp",
+   "sha256": "8b3703c101f3980bcaa7b1d19157222a62d5e7e0ad8915401a2863af105d1b5b"
+  },
+  {
+   "path": "assets/music-v0117/energy.webp",
+   "sha256": "87d894ec86975f6970e917f50a70dba1ef48e1377b6dd9027e2a0e454cdde24f"
+  },
+  {
+   "path": "assets/music-v0117/epic.webp",
+   "sha256": "49da9e3ef59197153ad451fad1b631e377d15b50cdef1054397a55344b27f117"
+  },
+  {
+   "path": "assets/music-v0117/exciting.webp",
+   "sha256": "58cbedc2018efb3f62ec2e63fc1b92fe8d3c18c94d2403b1e5ef3f869f15878b"
+  },
+  {
+   "path": "assets/music-v0117/news.webp",
+   "sha256": "ae57a4e3c90cd10aa1e44e25ac4e37082346ddc553ed1da8362b62e1173a5276"
+  },
+  {
+   "path": "assets/music-v0117/political.webp",
+   "sha256": "c4e9b46cf197c87eb13cbd7444d2daf46bde2904c6efc75293a7bd120cdf31c6"
+  },
+  {
+   "path": "assets/music-v0117/sad.webp",
+   "sha256": "13268ceaef2cc640a5836c2cd97683ec613f84bde8981194d54312af8c41a008"
+  },
+  {
+   "path": "assets/music-v0117/sport.webp",
+   "sha256": "2a416f4cb4ee3d79b3e04e4fd5b1bcfc03ef41c566b70af40092406680131f2b"
+  },
+  {
+   "path": "assets/music-v0117/technology.webp",
+   "sha256": "4eaf754db465b180444164e54f471a07701ac2de689884f05167a405221f1814"
+  },
+  {
+   "path": "assets/music-v0118/calm.webp",
+   "sha256": "e1e9ba74dff8a6c59371feefdf2bea69fbc48157a8e5fb645067acf23f8a6732"
+  },
+  {
+   "path": "assets/music-v0118/cinematic.webp",
+   "sha256": "03a59a6180a8f0a228c2e324d075787e45321b26a305a7f2a75de7f9f3b08ff5"
+  },
+  {
+   "path": "assets/music-v0118/documentary.webp",
+   "sha256": "389b9d1e0ac5292b210676e11bf22d6b780104207c670557fb3d8e43ec2757fb"
+  },
+  {
+   "path": "assets/music-v0118/dramatic.webp",
+   "sha256": "bdedd10192a7b44a2935c62ae7ced957bd51b9af1c28ea124bf8278cd55fcd47"
+  },
+  {
+   "path": "assets/music-v0118/energy.webp",
+   "sha256": "09b24234b5b140cb5dc70592ea1dbe11c6418893fa9caa8dfbdc03d9327f89b7"
+  },
+  {
+   "path": "assets/music-v0118/epic.webp",
+   "sha256": "4a66673c2b95b2ad7f8e5b6d0b28e7894ad0d2588ca45ac15e1e71d127aa5022"
+  },
+  {
+   "path": "assets/music-v0118/exciting.webp",
+   "sha256": "b36d3d2f191f54fdc146a52d81e6113b6bba97cd9a0a44dc8c4c0e1d620599e5"
+  },
+  {
+   "path": "assets/music-v0118/news.webp",
+   "sha256": "22d4c1cdebf41c478bf0fe5c74debbe9cf12d6cde5c9bd12a731069ecd2b57a9"
+  },
+  {
+   "path": "assets/music-v0118/political.webp",
+   "sha256": "ca9bfd632e0cb958494ac9b97feb092097b01c4762282888624d25ca8a5456e6"
+  },
+  {
+   "path": "assets/music-v0118/sad.webp",
+   "sha256": "69e431313c084bbf054806c280a90e2d1d460507f26b6011e2260bc1d76806ce"
+  },
+  {
+   "path": "assets/music-v0118/sport.webp",
+   "sha256": "1a0f6e563b903a999620c3f83ca0ff1fbec40995307a0e0e4e5c96e0de33caab"
+  },
+  {
+   "path": "assets/music-v0118/technology.webp",
+   "sha256": "debef15d00050f427565455a2df911bec2c435f941c841c5c971130d84de61c2"
+  },
+  {
+   "path": "assets/music-v0126/cat1.webp",
+   "sha256": "f269136d4aad554249bc285c7bc124566cfa1518baabe4c1688f26ba24f54f60"
+  },
+  {
+   "path": "assets/music-v0126/cat10.webp",
+   "sha256": "e42c9e992efe0199814346fafcbaf3f1784fcdfda1f0741e87154db6aa47ef2b"
+  },
+  {
+   "path": "assets/music-v0126/cat11.webp",
+   "sha256": "d936ed5737d76e481c0f5707654481de03908b70df17bcdeae03731e459c6939"
+  },
+  {
+   "path": "assets/music-v0126/cat12.webp",
+   "sha256": "37ca8476a9a3cc295be1c8cc88b5ece9ae6e27fe6887076c575fa706dafced13"
+  },
+  {
+   "path": "assets/music-v0126/cat2.webp",
+   "sha256": "1ac51b68bdfe8e3bafae887ab47cca396397fb6bc80fe1bb13a5193cf13180c9"
+  },
+  {
+   "path": "assets/music-v0126/cat3.webp",
+   "sha256": "5b03c610ee8c1f49ceb965dd6e539b35c311263a4053c8f76f79435a3b651f95"
+  },
+  {
+   "path": "assets/music-v0126/cat4.webp",
+   "sha256": "8d7d2ce9dcd7311330490440ba72d34a4aa21a0773a0c4844e70318f5fe2944c"
+  },
+  {
+   "path": "assets/music-v0126/cat5.webp",
+   "sha256": "3816f5ee5878b3a1fc5f3c4fd6bb3d60b91a46dc3060b7fc5a2c4505b7650a5d"
+  },
+  {
+   "path": "assets/music-v0126/cat6.webp",
+   "sha256": "f66cdbb874526b4f3fe082dcbb16b91a84dcdda167bd3779745e028c825f8d90"
+  },
+  {
+   "path": "assets/music-v0126/cat7.webp",
+   "sha256": "127bd3b9d32667c57c61150fe61d93631c6ac96883101847527a39ba0d7152df"
+  },
+  {
+   "path": "assets/music-v0126/cat8.webp",
+   "sha256": "868c6d7422a1995976afb065d9456b04a0688593c68ee79aeff2f4a599555dc2"
+  },
+  {
+   "path": "assets/music-v0126/cat9.webp",
+   "sha256": "b3bd0582f45021a4648f1e3c0e25a467e5e98a848b7d946f803fc07d2b9898ef"
+  },
+  {
+   "path": "assets/music-v0126/track1.webp",
+   "sha256": "eabaa25d34322f258f2f138b8d8a843a0dea6390082efcf4a016e96431971bdd"
+  },
+  {
+   "path": "assets/music-v0126/track2.webp",
+   "sha256": "b920b60b70d3574fd26590c4e4e7bb869b77868330478dc0eb303a68356c2c5d"
+  },
+  {
+   "path": "assets/music-v0126/track3.webp",
+   "sha256": "5d05cfc4c24c5dea310dc067fbef25ed79901012f666f6180e6d3503d2ba9607"
+  },
+  {
+   "path": "assets/music-v0126/track4.webp",
+   "sha256": "4cd889b22adfb9460dbd6068291a5a28873620c575f7b33902567ba685903cbd"
+  },
+  {
+   "path": "assets/music-v0126/track5.webp",
+   "sha256": "8d4b7878af50594134097a5ea34cd97c303c075ec8d30f14fb17260b085b792f"
+  },
+  {
+   "path": "assets/music-v0126/track6.webp",
+   "sha256": "15aac4b67678df3e4ab7f45aa6331cd1b200c76b448ea1fd2865b7f53d53fee5"
+  },
+  {
+   "path": "assets/music-v0126/track7.webp",
+   "sha256": "ad79231d2b185f38b3ad9beade0d931759fe41bd031838f7cb1ca59b3617e898"
+  },
+  {
+   "path": "assets/music-v0126/track8.webp",
+   "sha256": "a1bc24c8d299768d7e82c796a88f5584a5f21670e23a6ea68131f0734745e979"
+  },
+  {
+   "path": "assets/music-v0153/news-1.webp",
+   "sha256": "899fdd03c328c451c2de3569cfd869aaff02de5878351a97e3d6d4cfda0cfdef"
+  },
+  {
+   "path": "assets/music-v0153/news-2.webp",
+   "sha256": "e8e80bed0dcec793656b9fc80026fade2402d3e2f802985786eb49f2ade7bb19"
+  },
+  {
+   "path": "assets/music-v0153/news-3.webp",
+   "sha256": "d9d1694481391e9a990f9fbe5de88e1c01d7657b77ab9e07f26c2cdd1100a2cf"
+  },
+  {
+   "path": "assets/music-v0153/news-4.webp",
+   "sha256": "d7b85e46bcbbc9a17796266defb8052e639892696fdef274518b7c440cf17728"
+  },
+  {
+   "path": "assets/music-v0153/news-5.webp",
+   "sha256": "f8092a55ccb12e058c4a277ce53a5a6e76927ad166db6d735f2ac8c5f888cc5a"
+  },
+  {
+   "path": "assets/music-v0153/news-6.webp",
+   "sha256": "d8f0d252b26badc44fcad6755ff31e787e14ee7d7a7de6e1b6ee1a11ce6d29f6"
+  },
+  {
+   "path": "assets/music-v0153/news-7.webp",
+   "sha256": "3440a437a36e4152daaf93af4d86900abaffea29af64c54087299b42ba0d1cac"
+  },
+  {
+   "path": "assets/music-v0153/news-8.webp",
+   "sha256": "a1d0c7c52a9df4feaae2fbfd6c394bcc185b9beb2f8c4dd6f16735241c28d413"
+  },
+  {
+   "path": "assets/music-v0154/news-1.webp",
+   "sha256": "c32ea0d5b7b250c47f94c3d2638fe74a8205915320d46657502ecba354a1f5b1"
+  },
+  {
+   "path": "assets/music-v0154/news-2.webp",
+   "sha256": "74ae67c4454c03e47fe0fb6c08564c5ee17ed73bdd60a362e525f7db23109fa6"
+  },
+  {
+   "path": "assets/music-v0154/news-3.webp",
+   "sha256": "8e71e850fb696c094df2f41e90dc554a1cf6323d0205a4844a057285ffeb96b6"
+  },
+  {
+   "path": "assets/music-v0154/news-4.webp",
+   "sha256": "a85202462da23753a6309fc436641c3631705d6561792f911e17daef40be01ce"
+  },
+  {
+   "path": "assets/music-v0154/news-5.webp",
+   "sha256": "aecd3026cf9ed38e3e0fd3ce48be9db2f66464f3ce9fdc0b203384b62d6ab785"
+  },
+  {
+   "path": "assets/music-v0154/news-6.webp",
+   "sha256": "d0a4802ed8655f1f4d762e0adbbdc768d3ab8353367baac11d6af527283c749f"
+  },
+  {
+   "path": "assets/music-v0154/news-7.webp",
+   "sha256": "0635ac4c35f493e7f6a0d27fb44fd01250ae02cbd7798b0f831252610a91a23a"
+  },
+  {
+   "path": "assets/music-v0154/news-8.webp",
+   "sha256": "92968bc6e77061a9b6e96ec842c52e3ad30bf1bdc6bf1d9ca01c18a3713a160d"
+  },
+  {
+   "path": "assets/rushfinder-logo.png",
+   "sha256": "7176701bb80b3ff3b301a00dab0982f9d6eeedcd9ab2b232b77c8811aaf844a5"
+  },
+  {
+   "path": "assets/sidebar-mountain-v059.jpg",
+   "sha256": "0fdf6341ec5ba0c8d0365ae6f5867348089b3d568c8d67def005e3f2ba94b16d"
+  },
+  {
+   "path": "assets/sidebar-mountain.png",
+   "sha256": "5c5f91a58038c82fa79583928114c7445e54f60a00c55914b3ae953cd5f64046"
+  },
+  {
+   "path": "tools/PUT-FFMPEG-EXE-HERE.txt",
+   "sha256": "00e6176f23f4d1168fc99cf95dd883544b69e5768934ded0f63ac20799a836ef"
+  }
+ ],
+ "notes": "Files matching original upload only; secrets and fonts are never deleted by this script."
+}
