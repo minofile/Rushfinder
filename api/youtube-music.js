@@ -158,6 +158,17 @@ async function rfSmartEditTranscribe(req,res){
  }catch(_){return rfSmartReply(res,502,{error:'تبدیل نریشن به متن با جمنای ناموفق بود؛ متن را دستی وارد کن.'})}
 }
 
+// Report actionable AI failure categories without exposing keys, URLs or user text.
+function rfSafeAIError(err){
+ const message=String(err?.message||err||'');
+ if(/429|quota|RESOURCE_EXHAUSTED/i.test(message))return 'سهمیه یا محدودیت تعداد درخواست‌های سرویس هوش مصنوعی پر شده است';
+ if(/401|403|PERMISSION_DENIED|UNAUTHENTICATED/i.test(message))return 'مجوز یا کلید API معتبر نیست یا دسترسی مدل غیرفعال است';
+ if(/404|NOT_FOUND/i.test(message))return 'مدل انتخاب‌شده در API موجود نیست';
+ if(/AbortError|timeout/i.test(message))return 'زمان پاسخ درخواست به پایان رسید';
+ if(/BAD_JSON|Unexpected token|JSON/i.test(message))return 'پاسخ مدل ساختار JSON معتبر ندارد';
+ if(/GEMINI_NOT_CONFIGURED/i.test(message))return 'GEMINI_API_KEY در Vercel تعریف نشده است';
+ return 'ارتباط با سرویس یا دریافت پاسخ معتبر انجام نشد';
+}
 // Optional AI plan/validation. No private API keys are ever sent to the browser.
 // Critical: the AI receives the narration TEXT and public video metadata, not video frames/audio.
 async function rfSmartEditAnalyze(req,res){
@@ -194,7 +205,7 @@ async function rfSmartEditAnalyze(req,res){
    const allowed=new Map(candidates.map(x=>[x.index,new Set(x.options.map(o=>o.id))]));
    const matches=(Array.isArray(response?.matches)?response.matches:[]).filter(x=>Number.isInteger(x?.index)&&allowed.has(x.index)).map(x=>({index:x.index,ids:(Array.isArray(x.ids)?x.ids:[]).filter(id=>allowed.get(x.index).has(id)).slice(0,4),reason:String(x.reason||'').slice(0,150)}));
    return rfSmartReply(res,200,{ai:true,provider:'gemini',matches});
-  }catch(_){if(!openAI&&!openRouter)return rfSmartReply(res,502,{error:'اتصال Gemini یا سهمیه آن برای تحلیل متن برقرار نیست.',code:'GEMINI_UNAVAILABLE'});}
+  }catch(e){if(!openAI&&!openRouter)return rfSmartReply(res,502,{error:'Gemini برای تحلیل متن پاسخ نداد: '+rfSafeAIError(e),code:'GEMINI_UNAVAILABLE'});}
  }
  const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),12000);
  try{
@@ -219,7 +230,7 @@ async function rfSmartEditAnalyze(req,res){
   const allowed=new Map(candidates.map(x=>[x.index,new Set(x.options.map(o=>o.id))]));
   const matches=(Array.isArray(data?.matches)?data.matches:[]).filter(x=>Number.isInteger(x?.index)&&allowed.has(x.index)).map(x=>({index:x.index,ids:(Array.isArray(x.ids)?x.ids:[]).filter(id=>allowed.get(x.index).has(id)).slice(0,4),reason:String(x.reason||'').slice(0,150)}));
   return rfSmartReply(res,200,{ai:true,matches});
- }catch(e){return rfSmartReply(res,502,{error:'تطبیق هوشمند پاسخ نداد؛ از فیلتر محافظه‌کارانه استفاده می‌شود.',code:'AI_UNAVAILABLE'});}finally{clearTimeout(timer)}
+ }catch(e){return rfSmartReply(res,502,{error:'سرویس جایگزین تحلیل متن ('+(openAI?'OpenAI':'OpenRouter')+') پاسخ نداد: '+rfSafeAIError(e),code:'AI_UNAVAILABLE'});}finally{clearTimeout(timer)}
 }
 
 

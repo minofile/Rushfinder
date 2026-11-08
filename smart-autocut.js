@@ -98,6 +98,12 @@ async function render(cuts){
  throw Error('زمان دریافت ویدیوها تمام شد؛ وضعیت پنجره Media Worker را بررسی کن.');
 }
 function terms(text){return String(text).replace(/[،؛:«»؟.!\n]/g,' ').split(/\s+/).filter(x=>x.length>2).slice(0,7).join(' ').slice(0,75)}
+// A failed AI query planner must not stop the whole editing session.
+// These are search words only, never evidence for selecting a video scene.
+function fallbackSearchQuery(text){
+ const common=new Set(['برای','است','بود','شد','شده','های','این','آن','ویدیو','فیلم','تصاویر','خبر','تازه','گفت','کرد','کرده','مورد','بیشتر','درحال','درباره','روی','از','که','به','در','با','را','تا','و','یا']);
+ return String(text||'').replace(/[،؛:«»؟.!\n\r]/g,' ').split(/\s+/).map(x=>x.trim()).filter(x=>x.length>=3&&!common.has(x)).slice(0,8).join(' ').slice(0,90);
+}
 function youtubeOptions(videos,anchors){
  const toks=(anchors||[]).map(x=>String(x).toLowerCase()).filter(x=>x.length>3);
  return videos.filter(v=>/^[A-Za-z0-9_-]{11}$/.test(v.id||''))
@@ -123,14 +129,22 @@ async function run(){
   const parts=split(text);if(!parts.length)throw Error('نریشن بخش‌بندی نشد.');
   const d=await audioLength(voice)||parts.reduce((n,p)=>n+p.split(/\s+/).length,0)/2.3;
   const dur=clamp(d,3,1200),beats=timings(parts,dur);
-  say('Gemini در حال تحلیل '+parts.length+' بخش نریشن…');
-  const plan=await post('/api/youtube-music?mode=smartedit-analyze',{
-   task:'plan',segments:parts.map((t,index)=>({index,text:t}))
-  });
+  let plan={segments:[]},planWarning='';
+  if(mode!=='aparat'){
+   say('Gemini در حال تحلیل '+parts.length+' بخش نریشن…');
+   try{
+    plan=await post('/api/youtube-music?mode=smartedit-analyze',{
+     task:'plan',segments:parts.map((t,index)=>({index,text:t}))
+    });
+   }catch(e){
+    planWarning=String(e.message||e);
+    say('تحلیل اولیه پاسخ نداد؛ جست‌وجو با کلمات متن ادامه پیدا می‌کند. صحنه‌ها همچنان باید با Gemini تأیید شوند.');
+   }
+  }
   const plans=new Map((plan.segments||[]).map(x=>[x.index,x]));
   const candidates=[];
   for(let i=0;i<parts.length;i++){
-   const ai=plans.get(i),q=String(ai?.query||'').trim(),apaQ=terms(parts[i]);
+   const ai=plans.get(i),q=String(ai?.query||fallbackSearchQuery(parts[i])).trim(),apaQ=terms(parts[i]);
    if(!q&&mode==='youtube'){
     candidates.push({youtube:[],aparat:[],query:'',anchors:[]});continue;
    }
@@ -151,26 +165,31 @@ async function run(){
    candidates:candidates.map((g,index)=>({index,options:g.youtube}))
   }).catch(()=>null);
   const judged=new Map((judgements?.matches||[]).map(x=>[x.index,new Set(x.ids||[])]));
-  const cuts=[],missing=[];
+  const cuts=[],missing=[],inspectionErrors=[];
   for(let i=0;i<parts.length;i++){
    const g=candidates[i],beat=beats[i];say('Gemini در حال دیدن محتوای تصویری بخش '+(i+1)+'/'+parts.length+'…');
    let hit=null;
    const youtubeChoices=judgements?g.youtube.filter(v=>judged.get(i)?.has(v.id)):g.youtube.slice(0,1);
    for(const v of youtubeChoices.slice(0,2)){
-    try{hit=await inspectYT(v,parts[i],i,beat);if(hit)break}catch(e){console.warn('YouTube vision',e.message)}
+    try{hit=await inspectYT(v,parts[i],i,beat);if(hit)break}catch(e){inspectionErrors.push('YouTube: '+String(e.message||e));console.warn('YouTube vision',e.message)}
    }
    if(!hit){for(const v of g.aparat.slice(0,2)){
-    try{hit=await inspectAparat(v,parts[i],beat);if(hit)break}catch(e){console.warn('Aparat vision',e.message)}
+    try{hit=await inspectAparat(v,parts[i],beat);if(hit)break}catch(e){inspectionErrors.push('Aparat: '+String(e.message||e));console.warn('Aparat vision',e.message)}
    }}
    if(hit)cuts.push(hit);else missing.push(i+1);
   }
-  if(!cuts.length)throw Error('هیچ صحنه مرتبط با نریشن از تصویر ویدیوها تأیید نشد؛ کات ساختگی ایجاد نمی‌کنیم.');
+  if(!cuts.length){
+   const found=candidates.some(g=>g.youtube.length||g.aparat.length);
+   if(inspectionErrors.length)throw Error('هیچ کات واقعی تأیید نشد. خطای بررسی تصویر: '+inspectionErrors[0].slice(0,220));
+   if(!found)throw Error('هیچ ویدیوی مناسبی در منابع انتخاب‌شده پیدا نشد؛ کات ساختگی ایجاد نمی‌کنیم. '+(planWarning?'تحلیل اولیه: '+planWarning.slice(0,110):''));
+   throw Error('Gemini هیچ صحنه مرتبطی را در تصویر ویدیوهای پیدا‌شده تأیید نکرد؛ کات ساختگی ایجاد نمی‌کنیم.');
+  }
   say('Gemini '+cuts.length+' صحنه تأیید کرد؛ در حال دریافت فایل‌های مجاز و برش واقعی…');
   const real=await render(cuts);
   say('در حال انتقال کلیپ‌های واقعی به تایم‌لاین RushFinder…');
   const n=await window.rfApplyRealAutoCutClips(real,dur);
   window.rfYTReset?.();
-  say('✓ '+n+' کلیپ واقعی در نوار ویدیو قرار گرفت. '+(missing.length?'بخش‌های '+missing.join('، ')+' تصویر تأییدشده ندارند و خالی ماندند.':'همه بخش‌ها بررسی شدند.')+' خروجی را از دکمه «خروجی ویدیو» بگیر.');
+  say('✓ '+n+' کلیپ واقعی در نوار ویدیو قرار گرفت. '+(missing.length?'بخش‌های '+missing.join('، ')+' تصویر تأییدشده ندارند و خالی ماندند.':'همه بخش‌ها بررسی شدند.')+(planWarning?' (جست‌وجوی اولیه بدون برنامه‌ریز Gemini انجام شد.)':'')+' خروجی را از دکمه «خروجی ویدیو» بگیر.');
  }catch(e){say('تدوین خودکار متوقف شد: '+String(e.message||e),true)}
  finally{button.disabled=false}
 }
