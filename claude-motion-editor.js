@@ -35,6 +35,16 @@ $('rfClaudeGenerate')?.addEventListener('click',async()=>{
   $('rfClaudeSavePlan').disabled=false;
  }catch(e){status('خطا در ساخت خودکار: '+e.message)}finally{btn.disabled=false;}
 });
+$('rfSaveEditableMotion')?.addEventListener('click',()=>{
+ try{const d=window.rfExportEditableMotionProject?.();if(d)status('پروژه قابل ویرایش ذخیره شد. فایل نریشن را جداگانه نگه دار.');}
+ catch(e){status('ذخیره پروژه: '+e.message)}
+});
+$('rfLoadEditableMotion')?.addEventListener('click',()=>$('rfOpenEditableMotionFile')?.click());
+$('rfOpenEditableMotionFile')?.addEventListener('change',async e=>{
+ const file=e.target.files?.[0];if(!file)return;
+ try{status('در حال بازکردن پروژه موشن…');const n=await window.rfImportEditableMotionProject(file);status('✓ '+n+' صحنه پروژه باز شد؛ برای ویرایش روی نوار انتخاب کن.');}
+ catch(error){status('بازکردن پروژه ممکن نشد: '+error.message)}finally{e.target.value='';}
+});
 $('rfClaudeSavePlan')?.addEventListener('click',()=>{
  if(!lastPlan)return;
  const blob=new Blob([JSON.stringify(lastPlan,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob);

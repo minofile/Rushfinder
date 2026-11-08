@@ -49,6 +49,10 @@ function drawTextBlock(txt,yPct=.79){const W=canvas.width,H=canvas.height;const 
 // These graphic elements are illustrative, not verified footage or geographical data.
 function drawMotionExtras(b,t,opacity=1){
  const m=media.get(b.clip.mediaId),scene=m?.rfMotion;if(!scene)return;
+ if(window.RFMotionRenderer?.draw){
+   window.RFMotionRenderer.draw({ctx,canvas,scene,elapsed:Math.max(0,t-b.start),duration:b.duration,opacity});
+   return;
+ }
  const W=canvas.width,H=canvas.height,elapsed=Math.max(0,t-b.start),sec=Math.max(.5,b.duration);
  const u=clamp(elapsed/sec,0,1),enter=clamp(elapsed/.8,0,1),exit=clamp((sec-elapsed)/.55,0,1);
  const smooth=x=>x*x*(3-2*x),e=smooth(enter),alpha=opacity*e*exit;
@@ -94,7 +98,10 @@ function paint(t){const W=canvas.width,H=canvas.height;ctx.clearRect(0,0,W,H);ct
   else{drawCover(second.clip.el,k);drawMotionExtras(second,t,k)}
  }}else if(rfLayerState.video===false){/* Video track disabled: intentionally blank background. */}else if(clips.length===0){ctx.font='bold 30px RushVazir0923, Vazir, Tahoma, sans-serif';ctx.fillStyle='#b5cce5';ctx.textAlign='center';ctx.fillText('راش‌ها را وارد کن و تدوین را شروع کن',W/2,H/2);ctx.font='18px RushVazir0923, Vazir, Tahoma, sans-serif';ctx.fillStyle='#7693b7';ctx.fillText('پیش‌نمایش پروژه اینجا نمایش داده می‌شود',W/2,H/2+40)}else{ctx.font='18px RushVazir0923, Vazir, Tahoma, sans-serif';ctx.fillStyle='#8096b2';ctx.textAlign='center';ctx.fillText('در حال آماده‌سازی فریم…',W/2,H/2)}
  if(rfLayerState.title!==false)titles.filter(title=>t>=title.start&&t<title.start+title.length).forEach(title=>{
-  if(title.rfMotion){const pct=clamp((t-title.start)/.65,0,1);ctx.save();ctx.globalAlpha=pct;ctx.translate(0,(1-pct)*26);drawTextBlock(title.text,.75);ctx.restore();}
+  if(title.rfMotion){const m=media.get(title.rfMediaId),scene=m?.rfMotion;
+   if(window.RFMotionRenderer?.drawHeading)window.RFMotionRenderer.drawHeading({ctx,canvas,title:title.text,scene,elapsed:t-title.start,duration:title.length});
+   else {const pct=clamp((t-title.start)/.65,0,1);ctx.save();ctx.globalAlpha=pct;ctx.translate(0,(1-pct)*26);drawTextBlock(title.text,.75);ctx.restore();}
+  }
   else drawTextBlock(title.text);
  });}
 function updateTimeUI(){const total=duration();$('time').textContent=`${fmt(playheadTime)} / ${fmt(total)}`;$('scrubFill').style.width=(total?clamp(playheadTime/total*100,0,100):0)+'%';$('playhead').style.left=(playheadTime*zoom+PADDING)+'px'}
@@ -266,7 +273,7 @@ function renderTimeline(){const d=duration(),width=Math.max(880,Math.ceil((d+4)*
  if(name==='video'){for(const b of bounds()){const m=media.get(b.clip.mediaId);nodes.push({id:b.clip.id,type:name,from:b.start,len:b.duration,label:m?.name||'راش'})}}
  else if(name==='title'){for(const t of titles)nodes.push({id:t.id,type:name,from:t.start,len:t.length,label:t.text})}
  else {const a=audioTracks[name];if(a){nodes.push({id:name,type:name,from:a.offset,len:a.out-a.in,label:media.get(a.mediaId)?.name||name})}}
- for(const data of nodes){had=true;const item=document.createElement('div');item.className=`clip ${name==='video'?(media.get(clips.find(c=>c.id===data.id)?.mediaId)?.type==='image'?'image-clip':'video-clip'):name+'-clip'}`;item.classList.toggle('active',selected?.type===data.type&&selected?.id===data.id);item.style.left=(PADDING+data.from*zoom)+'px';item.style.width=Math.max(28,data.len*zoom-2)+'px';item.textContent=data.label;item.title=`${data.label} — ${fmt(data.len)}`;item.draggable=name==='video';item.dataset.id=data.id;const badge=document.createElement('span');badge.className='duration-chip';badge.textContent=fmt(data.len);item.appendChild(badge);item.addEventListener('click',e=>{e.stopPropagation();selected={type:name,id:data.id};renderTimeline();renderInspector()});if(name==='video'){item.addEventListener('dragstart',e=>e.dataTransfer.setData('text/plain','clip:'+data.id));}row.appendChild(item)}row.classList.toggle('has-content',had);if(!had){const hint=document.createElement('div');hint.className='drop-hint';hint.textContent={video:'راش‌ها را از کتابخانه اینجا بکش',title:'لایه متن',music:'موسیقی زمینه',voice:'نریشن'}[name];row.appendChild(hint)}}
+ for(const data of nodes){had=true;const item=document.createElement('div');item.className=`clip ${name==='video'?(media.get(clips.find(c=>c.id===data.id)?.mediaId)?.type==='image'?'image-clip':'video-clip'):name+'-clip'}`;item.classList.toggle('active',selected?.type===data.type&&selected?.id===data.id);item.style.left=(PADDING+data.from*zoom)+'px';item.style.width=Math.max(28,data.len*zoom-2)+'px';item.textContent=data.label;item.title=`${data.label} — ${fmt(data.len)}`;item.draggable=name==='video';item.dataset.id=data.id;const badge=document.createElement('span');badge.className='duration-chip';badge.textContent=fmt(data.len);item.appendChild(badge);item.addEventListener('click',e=>{e.stopPropagation();selected={type:name,id:data.id};renderTimeline();renderInspector();if(!isPlaying)seek(data.from+Math.min(.8,data.len*.15));});if(name==='video'){item.addEventListener('dragstart',e=>e.dataTransfer.setData('text/plain','clip:'+data.id));}row.appendChild(item)}row.classList.toggle('has-content',had);if(!had){const hint=document.createElement('div');hint.className='drop-hint';hint.textContent={video:'راش‌ها را از کتابخانه اینجا بکش',title:'لایه متن',music:'موسیقی زمینه',voice:'نریشن'}[name];row.appendChild(hint)}}
 
  // Show each applied transition on its own timeline row.
  const tr=$('transitionTrack');if(tr){tr.innerHTML='';const bs=bounds();
@@ -306,9 +313,25 @@ function renderInspector(){const r=$('inspectorContent');if(!selected){$('select
  if(selected.type==='video'){const c=clips.find(c=>c.id===selected.id);if(!c){selected=null;return renderInspector()}const m=media.get(c.mediaId);r.innerHTML=`<div class="section"><h3>${escapeText(m.name)}</h3><div class="tag">${m.type==='image'?'عکس':'ویدئو'} · ${fmt(clipLength(c))}</div>${inspectorField('شروع از ثانیه فایل اصلی',`<input id="inVal" type="number" step="0.1" min="0" max="${(c.out-.1).toFixed(2)}" value="${c.in.toFixed(2)}">`)}${inspectorField('پایان در ثانیه فایل اصلی',`<input id="outVal" type="number" step="0.1" min="${(c.in+.1).toFixed(2)}" max="${m.duration.toFixed(2)}" value="${c.out.toFixed(2)}">`)}${inspectorField('سرعت پخش',`<select id="speedVal"><option value=".5">نیم‌برابر (0.5×)</option><option value="1">معمولی (1×)</option><option value="1.5">تند (1.5×)</option><option value="2">دوبرابر (2×)</option></select>`)}${m.type==='video'?inspectorField('صدای راش (درصد)',`<input id="clipVolume" type="range" min="0" max="100" value="${Math.round((c.volume??.85)*100)}">`):''}<button class="btn primary" id="trimSave" style="width:100%">اعمال تغییرات</button></div><div class="section"><h3>کارهای سریع</h3><div class="line"><button class="btn" id="copyClip">تکثیر کلیپ</button><button class="btn red" id="delClip">حذف</button></div></div>`;
  if(m.rfMotion){
     const fx=m.rfMotion,ex=escapeText;
-    r.insertAdjacentHTML('afterbegin',`<div class="section"><h3>✦ موشن‌گرافیک قابل ویرایش</h3>${inspectorField('توضیح صحنه',`<textarea id="rfMotionVisual" rows="3">${ex(fx.visual||'')}</textarea>`)}${inspectorField('رنگ موشن',`<input id="rfMotionAccent" type="color" value="${/^#[0-9a-fA-F]{6}$/.test(fx.accent||'')?fx.accent:'#26b4dc'}">`)}${inspectorField('نوع حرکت',`<select id="rfMotionKind"><option value="fade">محو</option><option value="slide">اسلاید</option><option value="zoom">زوم</option></select>`)}<button class="btn primary" type="button" id="rfMotionUpdate" style="width:100%">ذخیره تغییرات موشن</button></div>`);
+    r.insertAdjacentHTML('afterbegin',`<div class="section"><h3>✦ تدوین موشن مستند (لایه‌های قابل ویرایش)</h3>
+   ${inspectorField('شرح تصویری',`<textarea id="rfMotionVisual" rows="2">${ex(fx.visual||'')}</textarea>`)}
+   ${inspectorField('نوع صحنه',`<select id="rfMotionType"><option value="title">مقدمه و عنوان</option><option value="map">نقشه شماتیک متحرک</option><option value="data">نمودار متحرک</option><option value="timeline">خط زمانی</option><option value="quote">متن سند یا نقل‌قول</option><option value="document">سند آرشیوی نمایشی</option><option value="closing">جمع‌بندی</option></select>`)}
+   ${inspectorField('متن یا برچسب کمکی',`<input id="rfMotionCaption" value="${ex(fx.caption||'')}">`)}
+   ${inspectorField('مکان / نام روی نقشه',`<input id="rfMotionLocation" value="${ex(fx.location||'')}">`)}
+   ${inspectorField('عدد تأییدشده (اختیاری)',`<input id="rfMotionMetric" value="${ex(fx.metric||'')}" placeholder="مثلاً ۳۰٪؛ اگر در نریشن نیست، خالی بگذار">`)}
+   ${inspectorField('رنگ موشن',`<input id="rfMotionAccent" type="color" value="${/^#[0-9a-fA-F]{6}$/.test(fx.accent||'')?fx.accent:'#e34a4f'}">`)}
+   ${inspectorField('نوع حرکت',`<select id="rfMotionKind"><option value="fade">محو</option><option value="slide">اسلاید</option><option value="zoom">زوم</option></select>`)}
+   ${inspectorField('اندازه تیتر',`<input id="rfMotionFont" type="range" min="70" max="130" value="${Math.round((fx.fontScale||1)*100)}">`)}
+   <button class="btn primary" type="button" id="rfMotionUpdate" style="width:100%">ذخیره و پیش‌نمایش تغییرات</button></div>`);
     $('rfMotionKind').value=['fade','slide','zoom'].includes(fx.motionKind)?fx.motionKind:'fade';
-    $('rfMotionUpdate').onclick=()=>{snapshot();fx.visual=$('rfMotionVisual').value.trim().slice(0,180);fx.accent=$('rfMotionAccent').value;fx.motionKind=$('rfMotionKind').value;afterChange('موشن و توضیح صحنه ویرایش شد')};
+    $('rfMotionType').value=fx.type||'title';
+    $('rfMotionUpdate').onclick=()=>{snapshot();fx.visual=$('rfMotionVisual').value.trim().slice(0,180);
+      fx.caption=$('rfMotionCaption').value.trim().slice(0,160);
+      fx.location=$('rfMotionLocation').value.trim().slice(0,90);
+      fx.metric=$('rfMotionMetric').value.trim().slice(0,40);
+      fx.accent=$('rfMotionAccent').value;fx.motionKind=$('rfMotionKind').value;
+      fx.type=$('rfMotionType').value;fx.fontScale=+$('rfMotionFont').value/100;
+      afterChange('صحنه مستند بروزرسانی شد؛ روی پیش‌نمایش و خروجی اعمال می‌شود');};
    }
    $('speedVal').value=String(c.speed);$('trimSave').onclick=()=>{const a=+$('inVal').value,b=+$('outVal').value,s=+$('speedVal').value;if(!(a>=0&&b>a+.05&&b<=m.duration+.01))return alert('زمان شروع و پایان معتبر نیست.');snapshot();c.in=a;c.out=b;c.speed=s;c.volume=$('clipVolume')? +$('clipVolume').value/100 : (c.volume??.85);afterChange('برش و سرعت ذخیره شد')};$('copyClip').onclick=()=>{snapshot();const ix=clips.findIndex(x=>x.id===c.id);const copy=createClip(m,c.in,c.out,c.speed);clips.splice(ix+1,0,copy);selected={type:'video',id:copy.id};afterChange('کلیپ کپی شد')};$('delClip').onclick=removeSelected;
  }else if(selected.type==='title'){const t=titles.find(x=>x.id===selected.id);if(!t){selected=null;return renderInspector()}r.innerHTML=`<div class="section"><h3>متن روی تصویر</h3>${inspectorField('عبارت',`<textarea id="overlayText" rows="4">${escapeText(t.text)}</textarea>`)}${inspectorField('شروع (ثانیه)',`<input id="titleStart" type="number" step="0.1" value="${t.start.toFixed(1)}">`)}${inspectorField('مدت نمایش (ثانیه)',`<input id="titleDuration" type="number" min=".4" step="0.1" value="${t.length.toFixed(1)}">`)}<button class="btn primary" id="saveTitle" style="width:100%">ثبت تغییرات</button></div><button class="btn red" id="delClip">حذف متن</button>`;$('saveTitle').onclick=()=>{snapshot();t.text=$('overlayText').value.trim();t.start=clamp(+$('titleStart').value,0,duration());t.length=clamp(+$('titleDuration').value,.4,40);afterChange('متن و زمان آن ویرایش شد')};$('delClip').onclick=removeSelected;
@@ -596,17 +619,23 @@ $('exportBtn').onclick=async()=>{if(exporting)return;if(!clips.length)return ale
  }catch(e){console.error(e);exporting=false;stopPlayback();hideModal();alert('ساخت خروجی ممکن نشد: '+e.message)}};
 // 0947: AI storyboard -> actual editable, animated timeline, automatically in one call.
 // Only schematic graphics and text are generated here; this is not footage/photoreal video generation.
-window.rfCreateClaudeMotionProject=async function(plan){
+window.rfCreateClaudeMotionProject=async function(plan,options={}){
  if(!plan||!Array.isArray(plan.scenes)||!plan.scenes.length)throw Error('سناریوی صحنه معتبر نیست');
  if(exporting)throw Error('ابتدا خروجی در حال ساخت را تمام کن.');
- const existing=clips.length||titles.length;
- if(existing&&!confirm('صحنه‌های جدید به انتهای تایم‌لاین موجود اضافه شوند؟'))return 0;
+ const replace=Boolean(options.replace);
+ const existing=replace?0:(clips.length||titles.length);
+ // New AI scenes append automatically; the previous edit remains available via Undo.
  const prepared=[];
- const colors=['#21b7d6','#3d80e6','#a874dd','#24af9b','#e6a34b','#ff6f72'];
- const styleName=String(document.getElementById('rfMotionStyle')?.value||'news');
+ const colors=['#e34951','#c93641','#d95543','#ef7059','#b7394a','#ef6248'];
+ const styleName=String(document.getElementById('rfMotionStyle')?.value||'documentary');
+ const inputTotal=plan.scenes.slice(0,18).reduce((n,x)=>n+Math.max(2,Number(x.duration)||5),0);
+ const voiceSeconds=audioTracks.voice?.out||0;
+ // Match scene lengths to the narration file when one was imported. Text alone uses the AI timings.
+ const normalizeToVoice=voiceSeconds>=8&&voiceSeconds<=300;
+ const timeScale=normalizeToVoice?voiceSeconds/inputTotal:1;
  try{
   for(let i=0;i<Math.min(18,plan.scenes.length);i++){
-   const scene=plan.scenes[i],sec=clamp(Number(scene.duration)||5,2,20),accent=colors[i%colors.length];
+   const scene=plan.scenes[i],sec=clamp((Number(scene.duration)||5)*timeScale,1.2,55),accent=colors[i%colors.length];
    // PNG avoids SVG foreignObject/image security restrictions that caused missing clips.
    const cv=document.createElement('canvas');cv.width=1280;cv.height=720;
    const g=cv.getContext('2d');if(!g)throw Error('مرورگر از ساخت تصاویر پشتیبانی نمی‌کند');
@@ -623,18 +652,26 @@ window.rfCreateClaudeMotionProject=async function(plan){
    const m=await importFile(file);
    if(!m||m.type!=='image')throw Error('تصویر صحنه '+(i+1)+' بارگذاری نشد');
    m.duration=sec;
-   m.rfMotion={type:String(scene.type||'title'),visual:String(scene.visual||'').slice(0,180),motionKind:/slide/i.test(scene.motion||'')?'slide':/zoom/i.test(scene.motion||'')?'zoom':'fade',accent,style:styleName,sceneIndex:i+1};
+   const safeType=window.RFMotionRenderer?.types?.includes(scene.type)?scene.type:'title';
+   m.rfMotion={type:safeType,visual:String(scene.visual||'').slice(0,180),
+     caption:String(scene.caption||scene.narration||'').slice(0,160),
+     location:String(scene.location||'').slice(0,90),metric:String(scene.metric||'').slice(0,40),
+     milestones:Array.isArray(scene.milestones)?scene.milestones.slice(0,4):[],
+     motionKind:/slide/i.test(scene.motion||'')?'slide':/zoom/i.test(scene.motion||'')?'zoom':'fade',
+     accent:String(scene.accent||'').match(/^#[0-9a-fA-F]{6}$/)?scene.accent:accent,
+     style:styleName,sceneIndex:i+1,fontScale:1,titleY:.24};
    const c=createClip(m,0,sec,1);
    prepared.push({clip:c,headline:String(scene.title||'صحنه خبری').slice(0,100),seconds:sec,media:m});
   }
   // Make the whole storyboard a single undo action and keep prior clips if any scene failed.
-  snapshot();stopPlayback();if(!existing){transition='cut';syncTransitionButtons()}
+  snapshot();stopPlayback();if(replace){clips=[];titles=[];selected=null;playheadTime=0;}
+  if(!existing){transition='cut';syncTransitionButtons()}
   const oldCount=clips.length;
   for(const item of prepared)clips.push(item.clip);
   const bs=bounds();
   for(let i=0;i<prepared.length;i++){
    const b=bs[oldCount+i],item=prepared[i];
-   titles.push({id:uid(),text:item.headline,start:b.start,length:b.duration,rfMotion:true});
+   titles.push({id:uid(),text:item.headline,start:b.start,length:b.duration,rfMotion:true,rfMediaId:item.media.id});
   }
   selected=prepared[0]?{type:'video',id:prepared[0].clip.id}:null;
   playheadTime=bs[oldCount]?.start||0;
@@ -642,6 +679,33 @@ window.rfCreateClaudeMotionProject=async function(plan){
   window.rfLastMotionCreation={count:prepared.length,seconds:prepared.reduce((n,x)=>n+x.seconds,0)};
   return prepared.length;
  }catch(error){for(const item of prepared){media.delete(item.media.id);URL.revokeObjectURL(item.media.url)}renderAssets();throw error;}
+};
+// Save/reopen editable motion compositions (JSON). Audio files must be reattached locally.
+window.rfExportEditableMotionProject=()=>{
+ const bs=bounds(),scenes=[];
+ for(const b of bs){const m=media.get(b.clip.mediaId);if(!m?.rfMotion)continue;
+  const t=titles.find(x=>x.rfMediaId===m.id);
+  scenes.push({...m.rfMotion,title:t?.text||'صحنه',duration:b.duration,visual:m.rfMotion.visual||''});}
+ if(!scenes.length)throw Error('ابتدا پروژه موشن بساز.');
+ const json={format:'RushFinderEditableMotion',version:1,savedAt:new Date().toISOString(),
+  projectTitle:document.getElementById('projectName')?.value||'موشن‌گرافیک',scenes,
+  notice:'رسانه‌ها و فایل‌های نریشن محلی در این JSON ذخیره نمی‌شوند؛ پس از بازکردن دوباره واردشان کنید.'};
+ saveFile(new Blob([JSON.stringify(json,null,2)],{type:'application/json'}),'RushFinder-Motion-Editable.json');
+ return json;
+};
+window.rfImportEditableMotionProject=async file=>{
+ const json=JSON.parse(await file.text());
+ if(json?.format!=='RushFinderEditableMotion'||!Array.isArray(json.scenes)||!json.scenes.length||json.scenes.length>18)throw Error('فرمت پروژه قابل قبول نیست.');
+ const result=await window.rfCreateClaudeMotionProject({scenes:json.scenes},{replace:true});
+ if(!result)throw Error('واردکردن پروژه انجام نشد.');
+ // Reapply edited per-scene fields after generating the media backgrounds.
+ const latest=clips.filter(c=>media.get(c.mediaId)?.rfMotion).slice(-result);
+ latest.forEach((c,i)=>{const m=media.get(c.mediaId),s=json.scenes[i];
+  m.rfMotion={...m.rfMotion,...s,type:window.RFMotionRenderer?.types?.includes(s.type)?s.type:'title',
+   accent:/^#[0-9a-fA-F]{6}$/.test(s.accent||'')?s.accent:m.rfMotion.accent};
+  const title=titles.find(t=>t.rfMediaId===m.id);if(title)title.text=String(s.title||'صحنه');});
+ afterChange('پروژه موشن قابل ویرایش باز شد. برای نریشن، فایل صوتی را دوباره انتخاب کن.');
+ return result;
 };
 // Basic diagnostics for end-to-end tests; no keys or private data.
 window.rfMotionTimelineSummary=()=>({video:clips.length,motion:clips.filter(c=>media.get(c.mediaId)?.rfMotion).length,titles:titles.length,duration:duration()});
