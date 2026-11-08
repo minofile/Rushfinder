@@ -401,7 +401,7 @@ body .app select, body .app option, body .app label {
  </div>
  <div class="field"><label for="rfMotionStyle">سبک موشن</label><select id="rfMotionStyle"><option value="news">خبرنگاری حرفه‌ای</option><option value="documentary">مستند سینمایی</option><option value="minimal">مینیمال و داده‌محور</option><option value="energetic">پر انرژی و مدرن</option></select></div>
  <div class="field"><label for="rfMotionDuration">مدت تقریبی (ثانیه)</label><input id="rfMotionDuration" type="number" min="10" max="300" value="45"/></div>
- <div class="row" style="margin-top:8px"><button class="btn primary" id="rfClaudeGenerate" type="button">✦ طراحی و چیدن صحنه‌ها</button><button class="btn" id="rfClaudeSavePlan" type="button" disabled>ذخیره سناریو</button></div>
+ <div class="row" style="margin-top:8px"><button class="btn primary" id="rfClaudeGenerate" type="button">✦ ساخت خودکار و افزودن به تایم‌لاین</button><button class="btn" id="rfClaudeSavePlan" type="button" disabled>دریافت سناریو JSON</button></div>
  <div id="rfClaudeMotionStatus" class="note" aria-live="polite">برای تولید صحنه‌ها، کلید Groq یا Claude در Vercel لازم است.</div>
  <div id="rfClaudeSceneList" style="display:grid;gap:6px;margin-top:8px"></div>
 </div></div><details id="rfYTPanel" class="rf-yt-panel" open>
@@ -462,10 +462,10 @@ body .app select, body .app option, body .app label {
 </div>
 </div>
 <div class="modal-back" id="exportModal"><div class="modal"><h2 id="modalTitle">ساخت خروجی ویدئو</h2><p id="modalText">ویدئو در مرورگر خودت و با سرعت واقعی پخش و ضبط می‌شود. تب را تا پایان باز نگه دار.</p><progress id="exportProgress" max="100" value="0"></progress><div class="actions"><button class="btn red" id="cancelExport">توقف خروجی</button><button class="btn primary hidden" id="downloadExport">دانلود فایل</button><button class="btn hidden" id="closeModal">بستن</button></div></div></div>
-<script src="smart-edit.js?v=0937"></script>
+<script src="smart-edit.js?v=0947"></script>
 <script src="smart-youtube.js?v=0937" defer></script>
 <script src="smart-autocut.js?v=0939" defer></script>
-<script src="claude-motion-editor.js?v=0946" defer></script>
+<script src="claude-motion-editor.js?v=0947" defer></script>
 <script>
 (()=>{
  const guide=document.getElementById('startGuide');

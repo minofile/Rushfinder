@@ -29,7 +29,7 @@ const fmt=t=>`${pad(Math.floor(Math.max(0,t)/60))}:${pad(Math.floor(Math.max(0,t
 const clamp=(x,min,max)=>Math.max(min,Math.min(max,x));
 const escapeText=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const status=s=>{$('status').textContent=s};
-function snapshot(){history.push({clips:clips.map(c=>({id:c.id,mediaId:c.mediaId,in:c.in,out:c.out,speed:c.speed})),titles:titles.map(t=>({...t})),audios:Object.fromEntries(Object.entries(audioTracks).map(([k,v])=>[k,v?{mediaId:v.mediaId,volume:v.volume,offset:v.offset,in:v.in,out:v.out}:null])),selected:selected?{...selected}:null,transition});if(history.length>25)history.shift()}
+function snapshot(){history.push({clips:clips.map(c=>({id:c.id,mediaId:c.mediaId,in:c.in,out:c.out,speed:c.speed})),titles:titles.map(t=>({...t})),audios:Object.fromEntries(Object.entries(audioTracks).map(([k,v])=>[k,v?{mediaId:v.mediaId,volume:v.volume,offset:v.offset,in:v.in,out:v.out}:null])),selected:selected?{...selected}:null,transition,motionStates:Object.fromEntries([...media.entries()].filter(([,m])=>m.rfMotion).map(([id,m])=>[id,{...m.rfMotion}]))});if(history.length>25)history.shift()}
 function createClip(m,from=0,to=null,speed=1){const c={id:uid(),mediaId:m.id,in:from,out:to??m.duration,speed,volume:0};makeClipEl(c);return c}
 function makeClipEl(c){const m=media.get(c.mediaId);if(!m)return;if(m.type==='video'){let v=document.createElement('video');v.src=m.url;v.preload='auto';v.playsInline=true;v.crossOrigin='anonymous';v.muted=true;c.el=v;attachAudio(v,0)}else if(m.type==='image')c.el=m.img}
 function ensureAudio(){if(audioCtx)return;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audioCtx=new AC();audioDest=audioCtx.createMediaStreamDestination();clips.forEach(c=>{if(c.el?.tagName==='VIDEO')attachAudio(c.el,0)});Object.values(audioTracks).forEach(t=>{if(t?.el)attachAudio(t.el,t.volume)})}
@@ -45,13 +45,58 @@ function synchronize(t,playing){const active=bounds().filter(b=>t>=b.start-.03&&
 }
 function drawCover(el,alpha=1){if(!el)return;let w=el.videoWidth||el.naturalWidth||0,h=el.videoHeight||el.naturalHeight||0;if(!w||!h)return;const W=canvas.width,H=canvas.height;const scale=Math.max(W/w,H/h),tw=w*scale,th=h*scale;ctx.globalAlpha=alpha;try{ctx.drawImage(el,(W-tw)/2,(H-th)/2,tw,th)}catch(_e){}ctx.globalAlpha=1}
 function drawTextBlock(txt,yPct=.79){const W=canvas.width,H=canvas.height;const base=canvas.width>canvas.height?37:44;ctx.save();ctx.textAlign='center';ctx.direction='rtl';ctx.font=`bold ${base}px RushVazir0923, Vazir, Tahoma, sans-serif`;const width=W*.86;const lines=[];let part='';for(const word of txt.split(/\s+/).filter(Boolean)){const candidate=part?part+' '+word:word;if(ctx.measureText(candidate).width>width&&part){lines.push(part);part=word}else part=candidate}if(part)lines.push(part);const displayed=lines.slice(0,4),lineH=base*1.4,boxH=displayed.length*lineH+27;const center=H*yPct;ctx.fillStyle='#061325cc';ctx.fillRect(W*.035,center-boxH/2,W*.93,boxH);ctx.fillStyle='#ffffff';ctx.shadowColor='#000';ctx.shadowBlur=7;displayed.forEach((line,i)=>ctx.fillText(line,W/2,center-boxH/2+lineH*(i+.75)));ctx.restore()}
-function paint(t){const W=canvas.width,H=canvas.height;ctx.clearRect(0,0,W,H);ctx.fillStyle='#05090f';ctx.fillRect(0,0,W,H);const active=rfLayerState.video!==false?bounds().filter(b=>t>=b.start&&t<b.end):[];if(active.length){const first=active[0];drawCover(first.clip.el,1);if(active.length>1){const second=active[1],k=clamp((t-second.start)/Math.max(.05,second.overlap),0,1);
-  if(transition==='slide'){ctx.save();ctx.translate(W*(1-k),0);drawCover(second.clip.el,1);ctx.restore()}
-  else if(transition==='zoom'){ctx.save();ctx.translate(W/2,H/2);const s=.72+.28*k;ctx.scale(s,s);ctx.translate(-W/2,-H/2);drawCover(second.clip.el,k);ctx.restore()}
-  else if(transition==='wipe'){ctx.save();ctx.beginPath();ctx.rect(0,0,W*k,H);ctx.clip();drawCover(second.clip.el,1);ctx.restore()}
-  else drawCover(second.clip.el,k);
+// 0947: fully local, frame-by-frame graphics on the SAME canvas used by preview/export.
+// These graphic elements are illustrative, not verified footage or geographical data.
+function drawMotionExtras(b,t,opacity=1){
+ const m=media.get(b.clip.mediaId),scene=m?.rfMotion;if(!scene)return;
+ const W=canvas.width,H=canvas.height,elapsed=Math.max(0,t-b.start),sec=Math.max(.5,b.duration);
+ const u=clamp(elapsed/sec,0,1),enter=clamp(elapsed/.8,0,1),exit=clamp((sec-elapsed)/.55,0,1);
+ const smooth=x=>x*x*(3-2*x),e=smooth(enter),alpha=opacity*e*exit;
+ const color=/^#[0-9a-fA-F]{6}$/.test(scene.accent||'')?scene.accent:'#26b4dc';
+ ctx.save();
+ if(scene.motionKind==='slide')ctx.translate((1-e)*W*.09,0);
+ if(scene.motionKind==='zoom'){ctx.translate(W/2,H/2);const k=.87+.13*e;ctx.scale(k,k);ctx.translate(-W/2,-H/2)}
+ ctx.globalAlpha=alpha;ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=Math.max(2,W*.005);
+ const type=scene.type;
+ if(type==='data'||type==='timeline'){
+   const n=type==='data'?6:5,baseY=H*.64,baseX=W*.19,spread=W*.64/n;
+   for(let i=0;i<n;i++){
+     const size=(type==='data'?(0.2+((i*7+3)%9)/13):.25+.08*i)*H;
+     const grow=smooth(clamp((elapsed-i*.12)/1.4,0,1));
+     ctx.globalAlpha=alpha*(.38+.6*i/n);ctx.fillRect(baseX+i*spread,baseY-size*grow,spread*.52,size*grow);
+   }
+   ctx.globalAlpha=alpha;ctx.beginPath();ctx.moveTo(baseX-8,baseY+6);ctx.lineTo(baseX+spread*n,baseY+6);ctx.stroke();
+ }else if(type==='map'){
+   const pts=[[.25,.44],[.38,.35],[.46,.51],[.57,.29],[.7,.4],[.62,.55]];
+   ctx.globalAlpha=alpha*.75;ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x*W,y*H):ctx.moveTo(x*W,y*H));ctx.stroke();
+   pts.forEach(([x,y],i)=>{const pulse=1+.12*Math.sin(elapsed*4+i);ctx.beginPath();ctx.arc(x*W,y*H,Math.max(5,W*.012)*pulse,0,2*Math.PI);ctx.fill()});
+ }else if(type==='quote'){
+   ctx.font=`bold ${Math.round(W*.18)}px Georgia,serif`;ctx.globalAlpha=alpha*.28;ctx.fillText('“',W*.2,H*.48);
+ }else{
+   const sw=W*.25;
+   ctx.globalAlpha=alpha*.4;ctx.strokeRect(W*.1+(1-e)*sw,H*.2,W*.8,H*.55);
+   ctx.beginPath();ctx.moveTo(W*.12,H*.62);ctx.lineTo(W*(.65+.025*Math.sin(elapsed*2)),H*.43);ctx.lineTo(W*.87,H*.49);ctx.stroke();
+ }
+ const visual=String(scene.visual||'').trim();
+ if(visual){
+  ctx.globalAlpha=alpha;const fs=Math.max(17,Math.round(W*.027));ctx.font=`${fs}px RushVazir0923,Vazir,Tahoma,sans-serif`;ctx.direction='rtl';ctx.textAlign='center';
+  const words=visual.split(/\s+/).filter(Boolean),lines=[];let line='';
+  for(const word of words){const next=line?line+' '+word:word;if(ctx.measureText(next).width>W*.78&&line){lines.push(line);line=word}else line=next;if(lines.length>=2)break;}
+  if(line&&lines.length<3)lines.push(line);
+  const shown=lines.slice(0,2);if(shown.length){ctx.fillStyle='#071322dd';ctx.fillRect(W*.1,H*.81,W*.8,H*.14);ctx.fillStyle='#cfe6f9';shown.forEach((txt,i)=>ctx.fillText(txt,W*.5,H*(.855+i*.045)));}
+ }
+ ctx.restore();
+}
+function paint(t){const W=canvas.width,H=canvas.height;ctx.clearRect(0,0,W,H);ctx.fillStyle='#05090f';ctx.fillRect(0,0,W,H);const active=rfLayerState.video!==false?bounds().filter(b=>t>=b.start&&t<b.end):[];if(active.length){const first=active[0];drawCover(first.clip.el,1);drawMotionExtras(first,t,1);if(active.length>1){const second=active[1],k=clamp((t-second.start)/Math.max(.05,second.overlap),0,1);
+  if(transition==='slide'){ctx.save();ctx.translate(W*(1-k),0);drawCover(second.clip.el,1);drawMotionExtras(second,t,1);ctx.restore()}
+  else if(transition==='zoom'){ctx.save();ctx.translate(W/2,H/2);const s=.72+.28*k;ctx.scale(s,s);ctx.translate(-W/2,-H/2);drawCover(second.clip.el,k);drawMotionExtras(second,t,k);ctx.restore()}
+  else if(transition==='wipe'){ctx.save();ctx.beginPath();ctx.rect(0,0,W*k,H);ctx.clip();drawCover(second.clip.el,1);drawMotionExtras(second,t,1);ctx.restore()}
+  else{drawCover(second.clip.el,k);drawMotionExtras(second,t,k)}
  }}else if(rfLayerState.video===false){/* Video track disabled: intentionally blank background. */}else if(clips.length===0){ctx.font='bold 30px RushVazir0923, Vazir, Tahoma, sans-serif';ctx.fillStyle='#b5cce5';ctx.textAlign='center';ctx.fillText('راش‌ها را وارد کن و تدوین را شروع کن',W/2,H/2);ctx.font='18px RushVazir0923, Vazir, Tahoma, sans-serif';ctx.fillStyle='#7693b7';ctx.fillText('پیش‌نمایش پروژه اینجا نمایش داده می‌شود',W/2,H/2+40)}else{ctx.font='18px RushVazir0923, Vazir, Tahoma, sans-serif';ctx.fillStyle='#8096b2';ctx.textAlign='center';ctx.fillText('در حال آماده‌سازی فریم…',W/2,H/2)}
- if(rfLayerState.title!==false)titles.filter(title=>t>=title.start&&t<title.start+title.length).forEach(title=>drawTextBlock(title.text));}
+ if(rfLayerState.title!==false)titles.filter(title=>t>=title.start&&t<title.start+title.length).forEach(title=>{
+  if(title.rfMotion){const pct=clamp((t-title.start)/.65,0,1);ctx.save();ctx.globalAlpha=pct;ctx.translate(0,(1-pct)*26);drawTextBlock(title.text,.75);ctx.restore();}
+  else drawTextBlock(title.text);
+ });}
 function updateTimeUI(){const total=duration();$('time').textContent=`${fmt(playheadTime)} / ${fmt(total)}`;$('scrubFill').style.width=(total?clamp(playheadTime/total*100,0,100):0)+'%';$('playhead').style.left=(playheadTime*zoom+PADDING)+'px'}
 function seek(t){const was=isPlaying;if(was)stopPlayback();playheadTime=clamp(t,0,duration());synchronize(playheadTime,false);paint(playheadTime);updateTimeUI();if(was)startPlayback()}
 function tick(){if(!isPlaying)return;playheadTime=clamp((performance.now()-playClock)/1000,0,duration());synchronize(playheadTime,true);paint(playheadTime);updateTimeUI();if(exporting){const pct=duration()?playheadTime/duration()*100:0;$('exportProgress').value=pct;$('modalText').textContent=`در حال ساخت خروجی روی همین کامپیوتر... ${fa(Math.floor(pct))}٪ · ${fmt(playheadTime)} / ${fmt(duration())}`;}
@@ -243,7 +288,7 @@ function split(){if(!clips.length)return;const b=bounds().find(b=>playheadTime>b
 $('split').onclick=split;
 function removeSelected(){if(!selected)return;snapshot();if(selected.type==='video'){const i=clips.findIndex(c=>c.id===selected.id);if(i>-1){clips[i].el?.pause?.();clips.splice(i,1)}}else if(selected.type==='title')titles=titles.filter(t=>t.id!==selected.id);else if(selected.type==='music'||selected.type==='voice'){audioTracks[selected.type]?.el?.pause?.();audioTracks[selected.type]=null}selected=null;afterChange('مورد انتخاب‌شده حذف شد')}
 $('remove').onclick=removeSelected;
-function undo(){const entry=history.pop();if(!entry){status('تغییری برای بازگردانی وجود ندارد');return}pauseAll();clips=entry.clips.map(c=>{const copy={...c};makeClipEl(copy);return copy});titles=entry.titles;audioTracks=Object.fromEntries(Object.entries(entry.audios).map(([k,v])=>[k,v?Object.assign(makeAudio(v.mediaId,k),v):null]));selected=entry.selected;transition=entry.transition;syncTransitionButtons();afterChange('آخرین تغییر بازگردانده شد')}
+function undo(){const entry=history.pop();if(!entry){status('تغییری برای بازگردانی وجود ندارد');return}pauseAll();clips=entry.clips.map(c=>{const copy={...c};makeClipEl(copy);return copy});titles=entry.titles;audioTracks=Object.fromEntries(Object.entries(entry.audios).map(([k,v])=>[k,v?Object.assign(makeAudio(v.mediaId,k),v):null]));selected=entry.selected;transition=entry.transition;if(entry.motionStates){for(const [id,m] of media){if(m.rfMotion&&entry.motionStates[id])m.rfMotion={...entry.motionStates[id]}}}syncTransitionButtons();afterChange('آخرین تغییر بازگردانده شد')}
 $('undo').onclick=undo;
 const transitionLabels={fade:'محو',slide:'اسلاید',zoom:'زوم',wipe:'وایپ',cut:'کات'};
 const transitionOrder=['fade','slide','zoom','wipe','cut'];
@@ -259,7 +304,13 @@ function inspectorField(label,input){return `<div class="field"><label>${label}<
 function renderInspector(){const r=$('inspectorContent');if(!selected){$('selectTag').textContent='چیزی انتخاب نشده';r.innerHTML='<div class="empty">یک کلیپ را از تایم‌لاین انتخاب کن.<br>اینجا می‌توانی آن را کوتاه کنی، سرعت را تغییر بدهی یا صدایش را تنظیم کنی.</div>';return}
  $('selectTag').textContent=selected.type==='video'?'راش':selected.type==='title'?'متن':selected.type==='music'?'موسیقی':'نریشن';
  if(selected.type==='video'){const c=clips.find(c=>c.id===selected.id);if(!c){selected=null;return renderInspector()}const m=media.get(c.mediaId);r.innerHTML=`<div class="section"><h3>${escapeText(m.name)}</h3><div class="tag">${m.type==='image'?'عکس':'ویدئو'} · ${fmt(clipLength(c))}</div>${inspectorField('شروع از ثانیه فایل اصلی',`<input id="inVal" type="number" step="0.1" min="0" max="${(c.out-.1).toFixed(2)}" value="${c.in.toFixed(2)}">`)}${inspectorField('پایان در ثانیه فایل اصلی',`<input id="outVal" type="number" step="0.1" min="${(c.in+.1).toFixed(2)}" max="${m.duration.toFixed(2)}" value="${c.out.toFixed(2)}">`)}${inspectorField('سرعت پخش',`<select id="speedVal"><option value=".5">نیم‌برابر (0.5×)</option><option value="1">معمولی (1×)</option><option value="1.5">تند (1.5×)</option><option value="2">دوبرابر (2×)</option></select>`)}${m.type==='video'?inspectorField('صدای راش (درصد)',`<input id="clipVolume" type="range" min="0" max="100" value="${Math.round((c.volume??.85)*100)}">`):''}<button class="btn primary" id="trimSave" style="width:100%">اعمال تغییرات</button></div><div class="section"><h3>کارهای سریع</h3><div class="line"><button class="btn" id="copyClip">تکثیر کلیپ</button><button class="btn red" id="delClip">حذف</button></div></div>`;
- $('speedVal').value=String(c.speed);$('trimSave').onclick=()=>{const a=+$('inVal').value,b=+$('outVal').value,s=+$('speedVal').value;if(!(a>=0&&b>a+.05&&b<=m.duration+.01))return alert('زمان شروع و پایان معتبر نیست.');snapshot();c.in=a;c.out=b;c.speed=s;c.volume=$('clipVolume')? +$('clipVolume').value/100 : (c.volume??.85);afterChange('برش و سرعت ذخیره شد')};$('copyClip').onclick=()=>{snapshot();const ix=clips.findIndex(x=>x.id===c.id);const copy=createClip(m,c.in,c.out,c.speed);clips.splice(ix+1,0,copy);selected={type:'video',id:copy.id};afterChange('کلیپ کپی شد')};$('delClip').onclick=removeSelected;
+ if(m.rfMotion){
+    const fx=m.rfMotion,ex=escapeText;
+    r.insertAdjacentHTML('afterbegin',`<div class="section"><h3>✦ موشن‌گرافیک قابل ویرایش</h3>${inspectorField('توضیح صحنه',`<textarea id="rfMotionVisual" rows="3">${ex(fx.visual||'')}</textarea>`)}${inspectorField('رنگ موشن',`<input id="rfMotionAccent" type="color" value="${/^#[0-9a-fA-F]{6}$/.test(fx.accent||'')?fx.accent:'#26b4dc'}">`)}${inspectorField('نوع حرکت',`<select id="rfMotionKind"><option value="fade">محو</option><option value="slide">اسلاید</option><option value="zoom">زوم</option></select>`)}<button class="btn primary" type="button" id="rfMotionUpdate" style="width:100%">ذخیره تغییرات موشن</button></div>`);
+    $('rfMotionKind').value=['fade','slide','zoom'].includes(fx.motionKind)?fx.motionKind:'fade';
+    $('rfMotionUpdate').onclick=()=>{snapshot();fx.visual=$('rfMotionVisual').value.trim().slice(0,180);fx.accent=$('rfMotionAccent').value;fx.motionKind=$('rfMotionKind').value;afterChange('موشن و توضیح صحنه ویرایش شد')};
+   }
+   $('speedVal').value=String(c.speed);$('trimSave').onclick=()=>{const a=+$('inVal').value,b=+$('outVal').value,s=+$('speedVal').value;if(!(a>=0&&b>a+.05&&b<=m.duration+.01))return alert('زمان شروع و پایان معتبر نیست.');snapshot();c.in=a;c.out=b;c.speed=s;c.volume=$('clipVolume')? +$('clipVolume').value/100 : (c.volume??.85);afterChange('برش و سرعت ذخیره شد')};$('copyClip').onclick=()=>{snapshot();const ix=clips.findIndex(x=>x.id===c.id);const copy=createClip(m,c.in,c.out,c.speed);clips.splice(ix+1,0,copy);selected={type:'video',id:copy.id};afterChange('کلیپ کپی شد')};$('delClip').onclick=removeSelected;
  }else if(selected.type==='title'){const t=titles.find(x=>x.id===selected.id);if(!t){selected=null;return renderInspector()}r.innerHTML=`<div class="section"><h3>متن روی تصویر</h3>${inspectorField('عبارت',`<textarea id="overlayText" rows="4">${escapeText(t.text)}</textarea>`)}${inspectorField('شروع (ثانیه)',`<input id="titleStart" type="number" step="0.1" value="${t.start.toFixed(1)}">`)}${inspectorField('مدت نمایش (ثانیه)',`<input id="titleDuration" type="number" min=".4" step="0.1" value="${t.length.toFixed(1)}">`)}<button class="btn primary" id="saveTitle" style="width:100%">ثبت تغییرات</button></div><button class="btn red" id="delClip">حذف متن</button>`;$('saveTitle').onclick=()=>{snapshot();t.text=$('overlayText').value.trim();t.start=clamp(+$('titleStart').value,0,duration());t.length=clamp(+$('titleDuration').value,.4,40);afterChange('متن و زمان آن ویرایش شد')};$('delClip').onclick=removeSelected;
  }else {const key=selected.type,a=audioTracks[key];if(!a){selected=null;return renderInspector()}r.innerHTML=`<div class="section"><h3>${key==='music'?'موسیقی زمینه':'نریشن'}</h3><div class="note">${escapeText(media.get(a.mediaId)?.name||'')}</div>${inspectorField('میزان صدا',`<input id="volVal" type="range" min="0" max="100" value="${Math.round(a.volume*100)}">`)}<div class="hintline" id="volText">${Math.round(a.volume*100)}٪</div>${inspectorField('شروع در تایم‌لاین (ثانیه)',`<input id="audioOffset" type="number" min="0" step=".1" value="${a.offset.toFixed(1)}">`)}<button class="btn primary" id="saveAudio" style="width:100%">ثبت تنظیمات صدا</button></div><button class="btn red" id="delClip">حذف لایه صدا</button>`;$('volVal').oninput=()=>{$('volText').textContent=$('volVal').value+'٪';a.el._rfAudio&&(a.el._rfAudio.gain.gain.value=+$('volVal').value/100)};$('saveAudio').onclick=()=>{snapshot();a.volume=+$('volVal').value/100;a.offset=clamp(+$('audioOffset').value,0,duration());afterChange('تنظیمات صدا ذخیره شد')};$('delClip').onclick=removeSelected;}
 }
@@ -543,29 +594,57 @@ $('exportBtn').onclick=async()=>{if(exporting)return;if(!clips.length)return ale
  try{stopPlayback();seek(0);ensureAudio();await audioCtx?.resume?.();paint(0);const videoStream=canvas.captureStream(30),tracks=[...videoStream.getVideoTracks()];if(audioDest&&(audioTracks.music||audioTracks.voice||clips.some(c=>c.el?.tagName==='VIDEO')))tracks.push(...audioDest.stream.getAudioTracks());const stream=new MediaStream(tracks);recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:3500000});recorder.ondataavailable=e=>{if(e.data.size)recordedChunks.push(e.data)};recorder.onerror=e=>{status('خطای ضبط خروجی: '+(e.error?.message||'ناشناخته'))};recorder.onstop=()=>{videoStream.getTracks().forEach(t=>t.stop());if(cancelRecording){recordedChunks=[];return}outputBlob=new Blob(recordedChunks,{type:recorder.mimeType});outputName='RushFinder-SmartEdit-'+Date.now()+(recorder.mimeType.includes('mp4')?'.mp4':'.webm');$('modalTitle').textContent='ویدئوی تدوین‌شده آماده است';$('modalText').textContent=`${fa((outputBlob.size/1e6).toFixed(1))} مگابایت · ${recorder.mimeType.includes('mp4')?'MP4':'WebM'} · بدون ارسال به سرور`;$('exportProgress').value=100;$('cancelExport').classList.add('hidden');$('downloadExport').classList.remove('hidden');$('closeModal').classList.remove('hidden');exporting=false;status('خروجی آماده دانلود است')};
  recorder.start(600);await startPlayback();if(!isPlaying)throw Error('پخش پروژه شروع نشد');status('در حال ضبط خروجی روی کامپیوتر...');
  }catch(e){console.error(e);exporting=false;stopPlayback();hideModal();alert('ساخت خروجی ممکن نشد: '+e.message)}};
-// 0942: public bridge for Claude-generated, editable motion scenes.
+// 0947: AI storyboard -> actual editable, animated timeline, automatically in one call.
+// Only schematic graphics and text are generated here; this is not footage/photoreal video generation.
 window.rfCreateClaudeMotionProject=async function(plan){
  if(!plan||!Array.isArray(plan.scenes)||!plan.scenes.length)throw Error('سناریوی صحنه معتبر نیست');
  if(exporting)throw Error('ابتدا خروجی در حال ساخت را تمام کن.');
- if(clips.length||titles.length){if(!confirm('صحنه‌های جدید به انتهای تایم‌لاین فعلی اضافه شوند؟'))return false;}
- let cursor=duration();
- for(const scene of plan.scenes){
-  const sec=clamp(Number(scene.duration)||5,2,20);
-  const title=String(scene.title||'صحنه خبری').slice(0,100);
-  const subtitle=String(scene.visual||scene.description||'').slice(0,180);
-  const accent=['#20b7d5','#3977ef','#9b6bd3','#22a58c','#d28a3b'][Math.abs(String(scene.type||'').length)%5];
-  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
-  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#071426"/><stop offset="1" stop-color="#18395d"/></linearGradient><radialGradient id="r"><stop stop-color="${accent}" stop-opacity=".65"/><stop offset="1" stop-color="${accent}" stop-opacity="0"/></radialGradient></defs><rect width="1920" height="1080" fill="url(#g)"/><circle cx="1500" cy="250" r="650" fill="url(#r)"/><path d="M0 870 Q500 650 950 900 T1920 760 V1080 H0Z" fill="#07101d" opacity=".6"/><path d="M130 170 H460" stroke="${accent}" stroke-width="12" stroke-linecap="round"/><text x="170" y="480" fill="#ffffff" font-size="100" font-family="Tahoma,Arial,sans-serif" font-weight="700">${esc(title)}</text><foreignObject x="170" y="535" width="1450" height="220"><div xmlns="http://www.w3.org/1999/xhtml" style="font:42px Tahoma,Arial,sans-serif;color:#c6d9ef;line-height:1.6">${esc(subtitle)}</div></foreignObject><text x="170" y="950" fill="${accent}" font-size="28" font-family="Arial,sans-serif" letter-spacing="8">RUSHFINDER  •  MOTION STORY</text><circle cx="1660" cy="850" r="110" fill="none" stroke="${accent}" stroke-width="3" opacity=".65"/><circle cx="1660" cy="850" r="75" fill="none" stroke="#ffffff" stroke-width="2" opacity=".25"/></svg>`;
-  const file=new File([svg],'Claude-Motion-'+(cursor.toFixed(0))+'.svg',{type:'image/svg+xml'});
-  const m=await importFile(file); if(!m)throw Error('ساخت صحنه تصویری ناموفق بود');
-  m.duration=sec; const clip=createClip(m); clip.in=0;clip.out=sec;clip.speed=1;clip.volume=0;
-  // Place each scene sequentially on the main video track.
-  clip.start=cursor; pushClip(clip); cursor+=sec;
-  const t={id:uid(),text:title,start:clip.start,length:sec};titles.push(t);
- }
- selected=null;afterChange('سناریوی Claude روی تایم‌لاین قرار گرفت؛ صحنه‌ها و عنوان‌ها قابل جابه‌جایی و ویرایش‌اند.');
- return true;
+ const existing=clips.length||titles.length;
+ if(existing&&!confirm('صحنه‌های جدید به انتهای تایم‌لاین موجود اضافه شوند؟'))return 0;
+ const prepared=[];
+ const colors=['#21b7d6','#3d80e6','#a874dd','#24af9b','#e6a34b','#ff6f72'];
+ const styleName=String(document.getElementById('rfMotionStyle')?.value||'news');
+ try{
+  for(let i=0;i<Math.min(18,plan.scenes.length);i++){
+   const scene=plan.scenes[i],sec=clamp(Number(scene.duration)||5,2,20),accent=colors[i%colors.length];
+   // PNG avoids SVG foreignObject/image security restrictions that caused missing clips.
+   const cv=document.createElement('canvas');cv.width=1280;cv.height=720;
+   const g=cv.getContext('2d');if(!g)throw Error('مرورگر از ساخت تصاویر پشتیبانی نمی‌کند');
+   const bg=g.createLinearGradient(0,0,1280,720);bg.addColorStop(0,styleName==='documentary'?'#0c1721':'#071328');bg.addColorStop(1,styleName==='energetic'?'#351436':'#142c4b');
+   g.fillStyle=bg;g.fillRect(0,0,1280,720);
+   g.strokeStyle=accent;g.globalAlpha=.22;g.lineWidth=3;
+   for(let j=0;j<9;j++){g.beginPath();g.arc(1060,150,60+j*48,0,Math.PI*2);g.stroke()}
+   g.globalAlpha=.18;g.fillStyle=accent;g.beginPath();g.moveTo(0,720);g.lineTo(0,470);g.bezierCurveTo(300,360,530,710,1280,450);g.lineTo(1280,720);g.fill();g.globalAlpha=1;
+   g.fillStyle=accent;g.fillRect(90,82,250,8);
+   g.fillStyle='#b5d0eb';g.font='20px Tahoma,Arial,sans-serif';g.fillText('RUSHFINDER  •  MOTION',90,675);
+   const blob=await new Promise(resolve=>cv.toBlob(resolve,'image/png'));
+   if(!blob)throw Error('خروجی تصویر صحنه ساخته نشد');
+   const file=new File([blob],`RushFinder-Motion-${String(i+1).padStart(2,'0')}.png`,{type:'image/png'});
+   const m=await importFile(file);
+   if(!m||m.type!=='image')throw Error('تصویر صحنه '+(i+1)+' بارگذاری نشد');
+   m.duration=sec;
+   m.rfMotion={type:String(scene.type||'title'),visual:String(scene.visual||'').slice(0,180),motionKind:/slide/i.test(scene.motion||'')?'slide':/zoom/i.test(scene.motion||'')?'zoom':'fade',accent,style:styleName,sceneIndex:i+1};
+   const c=createClip(m,0,sec,1);
+   prepared.push({clip:c,headline:String(scene.title||'صحنه خبری').slice(0,100),seconds:sec,media:m});
+  }
+  // Make the whole storyboard a single undo action and keep prior clips if any scene failed.
+  snapshot();stopPlayback();if(!existing){transition='cut';syncTransitionButtons()}
+  const oldCount=clips.length;
+  for(const item of prepared)clips.push(item.clip);
+  const bs=bounds();
+  for(let i=0;i<prepared.length;i++){
+   const b=bs[oldCount+i],item=prepared[i];
+   titles.push({id:uid(),text:item.headline,start:b.start,length:b.duration,rfMotion:true});
+  }
+  selected=prepared[0]?{type:'video',id:prepared[0].clip.id}:null;
+  playheadTime=bs[oldCount]?.start||0;
+  afterChange('✓ '+prepared.length+' صحنه گرافیکی متحرک به‌صورت خودکار روی تایم‌لاین ساخته شد. برای ویرایش، کلیپ یا عنوان را انتخاب کن.');
+  window.rfLastMotionCreation={count:prepared.length,seconds:prepared.reduce((n,x)=>n+x.seconds,0)};
+  return prepared.length;
+ }catch(error){for(const item of prepared){media.delete(item.media.id);URL.revokeObjectURL(item.media.url)}renderAssets();throw error;}
 };
+// Basic diagnostics for end-to-end tests; no keys or private data.
+window.rfMotionTimelineSummary=()=>({video:clips.length,motion:clips.filter(c=>media.get(c.mediaId)?.rfMotion).length,titles:titles.length,duration:duration()});
 window.addEventListener('keydown',e=>{const editing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();return}if(editing)return;if(e.code==='Space'){e.preventDefault();isPlaying?stopPlayback():startPlayback()}if(e.key.toLowerCase()==='s'){e.preventDefault();split()}if(e.key==='Delete'||e.key==='Backspace')removeSelected()});
 window.addEventListener('beforeunload',()=>{for(const m of media.values())URL.revokeObjectURL(m.url);pauseAll()});
 renderAssets();renderTimeline();renderInspector();paint(0);
