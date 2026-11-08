@@ -4,6 +4,7 @@ import path from 'node:path';
 process.env.GEMINI_API_KEY='test-not-real';
 let apiHits=0;
 globalThis.fetch=async(url,options={})=>{
+ if(String(url).includes('/v1beta/models?pageSize'))return {ok:true,status:200,json:async()=>({models:[{name:'models/gemini-3.8-flash',supportedGenerationMethods:['generateContent']}]})};
  if(String(url).includes('aparat.com'))return {ok:true,status:200,json:async()=>({videobysearch:[{uid:'ax12BC',title:'سیل در تهران',duration:85,description:'نمایی از سیل',small_poster:'https://example.com/1.jpg'}]})};
  apiHits++;
  const request=JSON.parse(options.body);

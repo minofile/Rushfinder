@@ -1,6 +1,7 @@
 // RushFinder 0924: independent, server-only SmartEdit lookup.
 // Reuse this EXISTING API function to stay under the Hobby 12-functions cap.
 const rfSmartCalls=new Map();
+const rfSearchCache=new Map(); // Warm-instance cache avoids repeated 100-unit YouTube searches
 
 // Chapters come ONLY from video-owner-provided timestamps in a YouTube description.
 // They are useful location hints, NOT visual scene recognition or proof of accuracy.
@@ -32,6 +33,9 @@ async function rfSmartVideoLookup(req,res){
  if(!key)return rfSmartReply(res,503,{error:'کلید YOUTUBE_SMARTEDIT_API_KEY یا YOUTUBE_API_KEY روی سرور تنظیم نشده است.'});
  const q=String(req.query.q||'').trim().replace(/\s+/g,' ').slice(0,90);
  if(q.length<2)return rfSmartReply(res,400,{error:'متن جست‌وجو کوتاه است.'});
+ const cacheKey=q.toLowerCase();
+ const cached=rfSearchCache.get(cacheKey);
+ if(cached&&Date.now()-cached.time<3*60*60*1000)return rfSmartReply(res,200,{...cached.result,cached:true});
  // Per-instance throttle is best-effort only; protect quota with authenticated use in production.
  const addr=String(req.headers['x-forwarded-for']||req.socket?.remoteAddress||'unknown').split(',')[0].slice(0,100);
  const now=Date.now(),recent=(rfSmartCalls.get(addr)||[]).filter(t=>t>now-3600000);
@@ -70,7 +74,7 @@ async function rfSmartVideoLookup(req,res){
     }
    }}
   }catch(_){}
-  return rfSmartReply(res,200,{query:q,items:hits.filter(x=>timing.get(x.id.videoId)?.embeddable!==false).map(x=>({
+  const searchResult={query:q,items:hits.filter(x=>timing.get(x.id.videoId)?.embeddable!==false).map(x=>({
    id:x.id.videoId,title:String(x.snippet?.title||'بدون عنوان').slice(0,180),
    channel:String(x.snippet?.channelTitle||'').slice(0,90),
    thumbnail:String(x.snippet?.thumbnails?.medium?.url||x.snippet?.thumbnails?.default?.url||'').slice(0,300),
@@ -78,7 +82,10 @@ async function rfSmartVideoLookup(req,res){
    description:String(timing.get(x.id.videoId)?.description||x.snippet?.description||'').slice(0,700),
    chapters:rfSmartChapters(timing.get(x.id.videoId)?.description||'',timing.get(x.id.videoId)?.seconds||0),
    url:'https://www.youtube.com/watch?v='+x.id.videoId
-  }))});
+  }))};
+  rfSearchCache.set(cacheKey,{time:Date.now(),result:searchResult});
+  if(rfSearchCache.size>80)rfSearchCache.delete(rfSearchCache.keys().next().value);
+  return rfSmartReply(res,200,searchResult);
  }catch(err){return rfSmartReply(res,502,{error:'اتصال به یوتیوب ممکن نشد: '+(err.name==='AbortError'?'پایان زمان درخواست':'خطای شبکه')});}
  finally{clearTimeout(timeout)}
 }
@@ -87,22 +94,85 @@ async function rfSmartVideoLookup(req,res){
 // ONLY a Gemini response with YouTube video input can provide a visual timestamp proposal.
 // Never expose Gemini keys to the browser or accept arbitrary video URLs from users.
 function rfGeminiKey(){return process.env.GEMINI_API_KEY||process.env.GOOGLE_GEMINI_API_KEY||process.env.GOOGLE_API_KEY||''}
-function rfGeminiModel(){const m=process.env.SMARTEDIT_GEMINI_MODEL||'gemini-2.5-flash';return /^gemini-[a-z0-9.\-]+$/i.test(m)?m:'gemini-2.5-flash'}
+// 0937: The original fallback (gemini-2.5-flash) is retired. Resolve the
+// model with the SAME Gemini API key used for requests. Never trust a Vercel
+// environment variable blindly: it may point to a removed or inaccessible model.
+const rfFlashModels=['gemini-3.8-flash','gemini-3.7-flash','gemini-3.6-flash','gemini-3.5-flash'];
+const rfGeminiSelection={name:'',checkedAt:0,available:[],warning:''};
+function rfPreferredGeminiModel(){
+ const m=String(process.env.SMARTEDIT_GEMINI_MODEL||'gemini-3.8-flash').trim();
+ return /^gemini-[a-z0-9.\-]+$/i.test(m)?m:'gemini-3.8-flash';
+}
+async function rfResolveGeminiModel(force=false){
+ if(!rfGeminiKey())throw Error('GEMINI_NOT_CONFIGURED');
+ if(!force&&rfGeminiSelection.name&&Date.now()-rfGeminiSelection.checkedAt<10*60*1000)return rfGeminiSelection.name;
+ const preferred=rfPreferredGeminiModel();
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),9000);
+ try{
+  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=100',{
+   signal:controller.signal,headers:{'x-goog-api-key':rfGeminiKey(),Accept:'application/json'}
+  });
+  const data=await r.json().catch(()=>({}));
+  if(!r.ok){
+   if(r.status===401||r.status===403||r.status===429)throw Error('GEMINI_HTTP_'+r.status+' '+String(data?.error?.message||'').slice(0,120));
+   throw Error('GEMINI_MODELS_LIST_'+r.status);
+  }
+  const supported=(Array.isArray(data.models)?data.models:[]).filter(m=>Array.isArray(m.supportedGenerationMethods)&&m.supportedGenerationMethods.includes('generateContent'))
+   .map(m=>String(m.name||'').replace(/^models\//,''));
+  let chosen=[preferred,...rfFlashModels].find(m=>supported.includes(m));
+  if(!chosen)chosen=supported.filter(m=>/^gemini-3\.[0-9]+-flash/.test(m)).sort().reverse()[0];
+  if(!chosen)throw Error('GEMINI_MODEL_UNAVAILABLE: No compatible Flash model with generateContent');
+  rfGeminiSelection.name=chosen;rfGeminiSelection.checkedAt=Date.now();rfGeminiSelection.available=supported;rfGeminiSelection.warning=chosen!==preferred?'مدل '+preferred+' در دسترس نیست؛ از '+chosen+' استفاده می‌شود.':'';
+  return chosen;
+ }catch(e){
+  // Some API keys can generate content but cannot list models. In that case
+  // try the current stable default. Never mask a quota or invalid-key response.
+  if(/^GEMINI_HTTP_(401|403|429)/.test(String(e.message||e))||/GEMINI_MODEL_UNAVAILABLE/.test(String(e.message||e)))throw e;
+  const selected=/gemini-2\.5-/.test(preferred)?'gemini-3.8-flash':preferred;
+  rfGeminiSelection.name=selected;rfGeminiSelection.checkedAt=Date.now();rfGeminiSelection.warning='فهرست مدل‌ها در دسترس نبود؛ مدل '+selected+' آزمایش می‌شود.';
+  return selected;
+ }finally{clearTimeout(timer)}
+}
 function rfParseGeminiJSON(text){
  const t=String(text||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');
  try{return JSON.parse(t)}catch(_){const a=t.indexOf('{'),b=t.lastIndexOf('}');if(a<0||b<a)throw Error('GEMINI_BAD_JSON');return JSON.parse(t.slice(a,b+1))}
 }
-async function rfGeminiGenerate(parts,{timeoutMs=40000}={}){
+async function rfGeminiGenerate(parts,{timeoutMs=39000}={}){
  const key=rfGeminiKey();if(!key)throw Error('GEMINI_NOT_CONFIGURED');
- const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
+ let model=await rfResolveGeminiModel();
+ const request=async current=>{
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
+  try{
+   const url='https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(current)+':generateContent';
+   const response=await fetch(url,{method:'POST',signal:controller.signal,headers:{'x-goog-api-key':key,'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts}],generationConfig:{temperature:0,responseMimeType:'application/json',maxOutputTokens:4096}})});
+   const raw=await response.json().catch(()=>({}));
+   if(!response.ok)throw Error('GEMINI_HTTP_'+response.status+' '+String(raw?.error?.message||'').slice(0,160));
+   const txt=(raw?.candidates||[]).flatMap(x=>x.content?.parts||[]).map(x=>x.text||'').join('');
+   if(!txt)throw Error('GEMINI_EMPTY_RESPONSE');
+   return rfParseGeminiJSON(txt);
+  }finally{clearTimeout(timer)}
+ };
+ try{return await request(model)}catch(e){
+  // Retry *only* when Google explicitly rejects the model. Do not retry
+  // quota, credentials, or content errors against additional paid models.
+  const m=String(e?.message||e);
+  if(!/GEMINI_HTTP_404/.test(m))throw e;
+  rfGeminiSelection.checkedAt=0;
+  const alternate=await rfResolveGeminiModel(true);
+  if(alternate===model)throw Error('GEMINI_MODEL_UNAVAILABLE: '+model+' not accessible with this API key');
+  return request(alternate);
+ }
+}
+async function rfSmartEditConfig(req,res){
+ if(!rfGeminiKey())return rfSmartReply(res,503,{error:'GEMINI_API_KEY در Production تعریف نشده است.',code:'GEMINI_NOT_CONFIGURED'});
  try{
-  const url='https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(rfGeminiModel())+':generateContent';
-  const response=await fetch(url,{method:'POST',signal:controller.signal,headers:{'x-goog-api-key':key,'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts}],generationConfig:{temperature:0,responseMimeType:'application/json'}})});
-  const raw=await response.json().catch(()=>({}));
-  if(!response.ok)throw Error('GEMINI_HTTP_'+response.status+' '+String(raw?.error?.message||'').slice(0,130));
-  const txt=(raw?.candidates||[]).flatMap(x=>x.content?.parts||[]).map(x=>x.text||'').join('');
-  return rfParseGeminiJSON(txt);
- }finally{clearTimeout(timer)}
+  const name=await rfResolveGeminiModel();
+  return rfSmartReply(res,200,{ok:true,geminiModel:name,geminiWarning:rfGeminiSelection.warning,
+   youtubeConfigured:!!(process.env.YOUTUBE_SMARTEDIT_API_KEY||process.env.YOUTUBE_API_KEY)});
+ }catch(e){
+  const m=String(e?.message||e),quota=/429/.test(m),auth=/401|403/.test(m);
+  return rfSmartReply(res,quota?429:503,{error:rfSafeAIError(e),code:quota?'GEMINI_QUOTA':auth?'GEMINI_AUTH':'GEMINI_MODEL'});
+ }
 }
 // A small per-instance rate guard; add real authentication before public paid deployment.
 const rfGeminiQuota=new Map();
@@ -110,7 +180,7 @@ function rfGeminiRateCheck(req,mode){
  const ip=String(req.headers?.['x-forwarded-for']||req.socket?.remoteAddress||'local').split(',')[0].slice(0,64);
  const key=mode+':'+ip,now=Date.now();
  const fresh=(rfGeminiQuota.get(key)||[]).filter(t=>t>now-3600000);
- if(fresh.length >= (mode==='video'?15:12))return false;
+ if(fresh.length >= (mode==='video'?40:mode==='voice'?24:24))return false;
  fresh.push(now);rfGeminiQuota.set(key,fresh);
  if(rfGeminiQuota.size>500)rfGeminiQuota.clear();return true;
 }
@@ -137,7 +207,7 @@ async function rfSmartEditVision(req,res){
  try{
   // YouTube URL is a special Gemini video input; the official API example omits mimeType.
   // Let Gemini resolve the public video's MIME type rather than forcing 'video/*'.
-  const result=await rfGeminiGenerate([{fileData:{fileUri:'https://www.youtube.com/watch?v='+id}},{text:prompt}],{timeoutMs:55000});
+  const result=await rfGeminiGenerate([{fileData:{fileUri:'https://www.youtube.com/watch?v='+id}},{text:prompt}],{timeoutMs:47000});
   const allowed=new Map(segments.map(x=>[x.index,x]));
   const matches=(Array.isArray(result?.matches)?result.matches:[]).filter(x=>allowed.has(x.index)).map(x=>({
    index:x.index,start:Number(x.start),end:Number(x.end),confidence:Number(x.confidence),visualEvidence:String(x.visualEvidence||'').slice(0,180)
@@ -163,7 +233,7 @@ async function rfSmartEditTranscribe(req,res){
  if(!/^audio\/(mpeg|mp3|wav|x-wav|mp4|aac|ogg|webm)$/.test(mime)||!/^[A-Za-z0-9+/]+={0,2}$/.test(data)||data.length>3800000||data.length<100)
   return rfSmartReply(res,400,{error:'فایل صوتی باید کمتر از حدود ۲.۵ مگابایت و از نوع MP3/WAV/M4A/OGG/WebM باشد.'});
  try{
-  const response=await rfGeminiGenerate([{text:'Transcribe the following Persian or multilingual spoken narration accurately, with punctuation. Return JSON only: {"transcript":"complete verbatim transcription"}. Do not add information not spoken.'},{inlineData:{mimeType:mime,data}}],{timeoutMs:55000});
+  const response=await rfGeminiGenerate([{text:'Transcribe the following Persian or multilingual spoken narration accurately, with punctuation. Return JSON only: {"transcript":"complete verbatim transcription"}. Do not add information not spoken.'},{inlineData:{mimeType:mime,data}}],{timeoutMs:47000});
   const transcript=String(response?.transcript||'').trim().slice(0,18000);
   if(!transcript)return rfSmartReply(res,422,{error:'صدای قابل تبدیل به متن تشخیص داده نشد.'});
   return rfSmartReply(res,200,{transcript});
@@ -176,7 +246,7 @@ function rfSafeAIError(err){
  if(/429|quota|RESOURCE_EXHAUSTED/i.test(message))return 'سهمیه یا محدودیت تعداد درخواست‌های سرویس هوش مصنوعی پر شده است';
  if(/401|403|PERMISSION_DENIED|UNAUTHENTICATED/i.test(message))return 'مجوز یا کلید API معتبر نیست یا دسترسی مدل غیرفعال است';
  if(/GEMINI_HTTP_400|INVALID_ARGUMENT/i.test(message))return 'ورودی لینک ویدیو برای مدل فعلی پذیرفته نشد (HTTP 400)';
- if(/404|NOT_FOUND/i.test(message))return 'مدل انتخاب‌شده در API موجود نیست';
+ if(/404|NOT_FOUND|MODEL_UNAVAILABLE/i.test(message))return 'مدل Gemini برای این کلید در دسترس نیست؛ SMARTEDIT_GEMINI_MODEL را بررسی کن';
  if(/AbortError|timeout/i.test(message))return 'زمان پاسخ درخواست به پایان رسید';
  if(/BAD_JSON|Unexpected token|JSON/i.test(message))return 'پاسخ مدل ساختار JSON معتبر ندارد';
  if(/GEMINI_NOT_CONFIGURED/i.test(message))return 'GEMINI_API_KEY در Vercel تعریف نشده است';
@@ -295,17 +365,18 @@ async function rfSmartEditFrames(req,res){
  }
  if(times.length<3)return rfSmartReply(res,400,{error:'تصاویر ویدیویی کافی نیست.'});
  try{
-  const result=await rfGeminiGenerate(parts,{timeoutMs:55000});
+  const result=await rfGeminiGenerate(parts,{timeoutMs:47000});
   const matches=(Array.isArray(result?.matches)?result.matches:[]).map(x=>({start:Number(x.start),end:Number(x.end),confidence:Number(x.confidence),visualEvidence:String(x.visualEvidence||'').slice(0,230)}))
-   .filter(x=>Number.isFinite(x.start)&&Number.isFinite(x.end)&&x.start>=0&&x.end>x.start&&x.end<=Math.max(...times)+15&&x.confidence>=.65&&x.visualEvidence.length>6).slice(0,2);
+   .filter(x=>Number.isFinite(x.start)&&Number.isFinite(x.end)&&x.start>=Math.max(0,Math.min(...times)-5)&&x.end>x.start&&x.end<=Math.max(...times)+5&&x.confidence>=.65&&x.visualEvidence.length>6).slice(0,2);
   return rfSmartReply(res,200,{ai:true,method:'gemini_aparat_frames',matches});
- }catch(e){return rfSmartReply(res,502,{error:'Gemini نتوانست فریم‌های آپارات را بررسی کند: '+String(e.message||e).slice(0,140)});}
+ }catch(e){return rfSmartReply(res,/429/.test(String(e?.message||''))?429:502,{error:'Gemini نتوانست فریم‌ها را بررسی کند: '+rfSafeAIError(e)});}
 }
 
 // Search-only integration with the official YouTube Data API.
 // Playback uses the official embedded player; no audio extraction or MP3 conversion.
 export default async function handler(req,res){
  res.setHeader('Cache-Control','s-maxage=300, stale-while-revalidate=600');
+ if(req.query.mode==='smartedit-config'&&req.method==='GET')return rfSmartEditConfig(req,res);
  if(req.query.mode==='smartedit-vision'&&req.method==='POST')return rfSmartEditVision(req,res);
  if(req.query.mode==='smartedit-aparat'&&req.method==='GET')return rfSmartAparatLookup(req,res);
  if(req.query.mode==='smartedit-frames'&&req.method==='POST')return rfSmartEditFrames(req,res);

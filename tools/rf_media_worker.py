@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""RushFinder local media worker 0934.
+"""RushFinder local media worker 0937.
 
 Fetch authorized public videos from YouTube/Aparat with yt-dlp, extract timeline
 segments using FFmpeg, and serve the cut media back to the site's browser.
@@ -87,8 +87,21 @@ def download(source, vid, folder):
 
 
 def ffprobe_duration(path):
-    r=command(['ffprobe','-v','error','-show_entries','format=duration','-of','default=noprint_wrappers=1:nokey=1',str(path)],timeout=30)
-    return float(r.stdout.strip())
+    # Some Windows systems have ffmpeg.exe but not ffprobe.exe. A successful
+    # /health check must not conceal a missing ffprobe dependency.
+    if shutil.which('ffprobe'):
+        try:
+            r=command(['ffprobe','-v','error','-show_entries','format=duration',
+                       '-of','default=noprint_wrappers=1:nokey=1',str(path)],timeout=30)
+            duration=float(r.stdout.strip())
+            if duration>0:return duration
+        except (RuntimeError, ValueError):
+            pass
+    result=subprocess.run(['ffmpeg','-hide_banner','-i',str(path)],
+                          capture_output=True,text=True,errors='replace',timeout=30)
+    match=re.search(r'Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)',result.stderr)
+    if not match:raise RuntimeError('خواندن مدت ویدیو با FFmpeg ممکن نشد')
+    return int(match.group(1))*3600+int(match.group(2))*60+float(match.group(3))
 
 
 def cut_video(src, dest, start, duration):
@@ -113,28 +126,39 @@ def set_job(job, **values):
 def process_job(job, clips):
     work = ROOT / job
     work.mkdir(parents=True,exist_ok=True)
-    try:
-        total = len(clips)
-        out=[]
-        for i,c in enumerate(clips):
+    total = len(clips)
+    out=[]
+    failures=[]
+    for i,c in enumerate(clips):
+        try:
             srcid=c['provider']+'_'+c['videoId']
+            set_job(job,status='running',percent=round(i/total*100),stage=f'دریافت و بررسی ویدیو {i+1}/{total}')
             source=download(c['provider'],c['videoId'],work/srcid)
             length=ffprobe_duration(source)
             start=float(c['sourceStart']); dur=float(c['duration'])
             if not (0<=start and .5<=dur<=60 and start+dur<=length+.12):
-                raise RuntimeError('تایم‌کد از طول ویدیوی منبع بیشتر است: '+srcid)
+                raise RuntimeError('زمان کات از طول ویدیوی اصلی بیشتر است')
             name=f'clip_{i:02d}.mp4';cut_video(source,work/name,start,dur)
             out.append({'filename':name,'url':f'http://{HOST}:{PORT}/media/{job}/{name}',
                         'start':c['start'],'duration':dur,'provider':c['provider'],'videoId':c['videoId'],
                         'sourceStart':start,'sentence':c['sentence']})
-            set_job(job,status='running',percent=round((i+1)/total*100),stage=f'برش واقعی {i+1}/{total}')
-        set_job(job,status='done',clips=out,percent=100,stage='آماده‌سازی تایم‌لاین کامل شد')
-    except Exception as exc:
-        set_job(job,status='error',error=str(exc)[:500],stage='خطا در دریافت یا برش ویدیو')
+        except Exception as exc:
+            # Do not lose successfully verified and rendered shots merely
+            # because one upstream public source becomes unavailable.
+            failures.append({'index':i+1,'error':str(exc)[-260:]})
+        set_job(job,status='running',percent=round((i+1)/total*100),
+                stage=f'کات‌های واقعی {len(out)}/{total} · ناموفق {len(failures)}')
+    if out:
+        set_job(job,status='done',clips=out,failures=failures,percent=100,
+                stage='کلیپ‌های قابل‌دریافت آماده شدند' if failures else 'آماده‌سازی تایم‌لاین کامل شد')
+    else:
+        reason=failures[0]['error'] if failures else 'هیچ منبعی قابل‌دریافت نبود'
+        set_job(job,status='error',clips=[],failures=failures,
+                error='هیچ کلیپ واقعی ساخته نشد؛ دلیل اولین ویدیو: '+reason,stage='خطا در دریافت یا برش ویدیو')
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version='RushFinderMediaWorker/0934'
+    server_version='RushFinderMediaWorker/0937'
     def log_message(self, fmt, *args):
         print('%s - %s' % (self.address_string(), fmt%args),flush=True)
 
@@ -172,7 +196,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if not self.allowed():return self.json(403,{'error':'این سایت مجاز نیست'})
         if self.path=='/health':
-            try:check_tools();return self.json(200,{'ok':True,'version':'0934','features':['youtube','aparat','ffmpeg']})
+            try:check_tools();return self.json(200,{'ok':True,'version':'0937','features':['youtube','aparat','ffmpeg']})
             except Exception as e:return self.json(503,{'ok':False,'error':str(e)})
         if self.path.startswith('/jobs/'):
             job=self.path[6:]
@@ -274,6 +298,6 @@ class Handler(BaseHTTPRequestHandler):
         except Exception as exc:return self.json(502,{'error':str(exc)[:350]})
 
 if __name__=='__main__':
-    print(f'RushFinder 0934 Media Worker: http://{HOST}:{PORT}/health',flush=True)
+    print(f'RushFinder 0937 Media Worker: http://{HOST}:{PORT}/health',flush=True)
     print('Allowed browser origins:',', '.join(sorted(ALLOWED_ORIGINS)),flush=True)
     ThreadingHTTPServer((HOST,PORT),Handler).serve_forever()

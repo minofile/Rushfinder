@@ -11,7 +11,7 @@ function clamp(n,a,b){return Math.max(a,Math.min(b,n))}
 async function json(url,opts={}){
  const r=await fetch(url,opts);
  let data;try{data=await r.json()}catch{throw Error('پاسخ غیر JSON از '+url)}
- if(!r.ok)throw Error(String(data.error||('HTTP '+r.status)));
+ if(!r.ok){const e=new Error(String(data.error||('HTTP '+r.status)));e.httpStatus=r.status;e.code=String(data.code||'');throw e;}
  return data;
 }
 const post=(url,data)=>json(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
@@ -53,31 +53,38 @@ async function transcribe(file){
  const mime=({'audio/x-m4a':'audio/mp4','audio/x-wav':'audio/wav','audio/mp3':'audio/mpeg'}[file.type]||file.type||'audio/mpeg');
  return (await post('/api/youtube-music?mode=smartedit-transcribe',{mimeType:mime,audioBase64:b64})).transcript;
 }
-async function lookupYoutube(q){return (await json('/api/youtube-music?mode=smartedit&q='+encodeURIComponent(q))).items||[]}
-async function lookupAparat(q){return (await json('/api/youtube-music?mode=smartedit-aparat&q='+encodeURIComponent(q))).items||[]}
+const ytLookups=new Map();
+async function lookupYoutube(q){const k=q.trim().toLowerCase();if(!ytLookups.has(k))ytLookups.set(k,json('/api/youtube-music?mode=smartedit&q='+encodeURIComponent(q)).then(x=>x.items||[]).catch(e=>{ytLookups.delete(k);throw e}));return ytLookups.get(k)}
+const apLookups=new Map();
+async function lookupAparat(q){const k=q.trim().toLowerCase();if(!apLookups.has(k))apLookups.set(k,json('/api/youtube-music?mode=smartedit-aparat&q='+encodeURIComponent(q)).then(x=>x.items||[]).catch(e=>{apLookups.delete(k);throw e}));return apLookups.get(k)}
 // The public YouTube URL input can fail even when Gemini text generation works.
 // In that case, inspect actual FFmpeg-extracted frames of an accessible, authorized
 // source video. Never convert a metadata match into an unverified cut.
 async function inspectYT(v,segment,index,beat){
- let direct;
+ let direct=null,verified=false;
  try{
   const j=await post('/api/youtube-music?mode=smartedit-vision',{
    videoId:v.id,videoDuration:v.durationSeconds||0,
    segments:[{index,text:segment,seconds:Math.min(60,beat.duration)}]
   });
-  if(j.method!=='gemini_video_frames')return null;
-  const m=(j.matches||[]).find(x=>x.index===index&&x.confidence>=.65);
-  if(!m)return null; // Semantic non-match is not a transport failure.
-  const dur=Math.min(beat.duration,Number(m.end)-Number(m.start));
-  return dur>=.5?{start:beat.start,duration:dur,sourceStart:Number(m.start),provider:'youtube',videoId:v.id,sentence:segment,confidence:m.confidence,visualEvidence:m.visualEvidence}:null;
+  if(j.method==='gemini_video_frames'){
+   verified=true;
+   const m=(j.matches||[]).find(x=>x.index===index&&x.confidence>=.65);
+   if(m){
+    const dur=Math.min(beat.duration,Number(m.end)-Number(m.start));
+    if(dur>=.5)return {start:beat.start,duration:dur,sourceStart:Number(m.start),provider:'youtube',videoId:v.id,sentence:segment,confidence:m.confidence,visualEvidence:m.visualEvidence};
+   }
+  }
  }catch(e){direct=e}
- // A quota/key/model error affects frame inference too. Do not make another paid
- // Gemini request, or pretend the source footage was inspected.
- const message=String(direct?.message||direct);
- if(/سهمیه|محدودیت تعداد درخواست|کلید API|دسترسی مدل|مدل انتخاب‌شده|مدل فعلی.*موجود نیست/i.test(message))throw direct;
- say('تحلیل مستقیم یوتیوب ناموفق بود؛ بررسی فریم‌های واقعی ویدیوی مجاز…');
+ // Wrong credentials, quota, and unavailable models cannot be fixed by
+ // downloading frames, because the same server key/model is used for them.
+ const message=String(direct?.message||direct||'');
+ if(direct&&(direct.httpStatus===429||/GEMINI_(AUTH|QUOTA|MODEL)|کلید API|سهمیه|مجوز.*مدل/i.test(message)))throw direct;
+ // A video URL might not be accepted by Gemini, or Gemini might miss a
+ // short relevant shot. Check source frames instead; never invent a cut.
+ say(verified?'لینک یوتیوب صحنه مرتبطی نشان نداد؛ بررسی فریم‌های واقعی…':'تحلیل لینک یوتیوب ناموفق بود؛ بررسی فریم‌های واقعی…');
  try{return await inspectFrames(v,segment,beat,'youtube')}
- catch(ferr){throw Error('تحلیل مستقیم: '+message+' | بررسی فریم‌های محلی: '+String(ferr?.message||ferr))}
+ catch(ferr){throw Error((direct?'لینک: '+message.slice(0,150)+' | ':'')+'فریم‌ها: '+String(ferr?.message||ferr).slice(0,170))}
 }
 async function inspectFrames(v,segment,beat,provider){
  const j=await post(worker+'/frames',{provider,videoId:v.id,rightsConfirmed:true});
@@ -130,10 +137,14 @@ async function run(){
  const mode=$('rfAutoCutSource').value;
  try{
   if(!$('rfAutoCutRights').checked)throw Error('ابتدا تأیید کن اجازه دریافت و استفاده از ویدیوها را داری.');
+  say('در حال بررسی مدل Gemini و اتصال سرویس‌ها…');
+  const config=await json('/api/youtube-music?mode=smartedit-config');
+  say('مدل فعال Gemini: '+config.geminiModel+(config.geminiWarning?' · '+config.geminiWarning:''));
+  if(mode==='youtube'&&!config.youtubeConfigured)throw Error('کلید جست‌وجوی YouTube روی سرور تعریف نشده است.');
   say('در حال بررسی سرویس برش واقعی…');
   let health;
   try{health=await json(worker+'/health')}catch(e){
-   throw Error('برنامه RUN-0934-MEDIA-WORKER.cmd را در کامپیوترت اجرا کن؛ سرویس برش واقعی پیدا نشد. '+e.message)
+   throw Error('Media Worker پاسخ نداد؛ CMD را باز نگه دار و دسترسی مرورگر به 127.0.0.1:8767 را بررسی کن. '+e.message)
   }
   if(!health.ok)throw Error(String(health.error||'سرویس برش آماده نیست'));
   const voice=window.rfNarrationFile||null;
@@ -171,6 +182,7 @@ async function run(){
    const a=ap.status==='fulfilled'?ap.value:[];
    if(yt.status==='rejected'&&mode==='youtube')throw yt.reason;
    if(ap.status==='rejected'&&mode==='aparat')throw ap.reason;
+   if(yt.status==='rejected'&&mode==='both')say('جست‌وجوی یوتیوب برای بخش '+(i+1)+' ناموفق بود؛ آپارات بررسی می‌شود.');
    candidates.push({youtube:youtubeOptions(y,ai?.anchors),aparat:a.filter(v=>/^[A-Za-z0-9_-]{4,25}$/.test(v.id||'')).slice(0,2),query:q,anchors:ai?.anchors||[]});
   }
   // Gemini judges metadata conservatively BEFORE requesting visual timestamp checks.
