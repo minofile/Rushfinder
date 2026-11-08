@@ -55,6 +55,8 @@ async function transcribe(file){
 }
 const ytLookups=new Map();
 async function lookupYoutube(q){const k=q.trim().toLowerCase();if(!ytLookups.has(k))ytLookups.set(k,json('/api/youtube-music?mode=smartedit&q='+encodeURIComponent(q)).then(x=>x.items||[]).catch(e=>{ytLookups.delete(k);throw e}));return ytLookups.get(k)}
+const vzLookups=new Map();
+async function lookupVecteezy(q){const k=q.trim().toLowerCase();if(!vzLookups.has(k))vzLookups.set(k,json('/api/youtube-music?mode=smartedit-vecteezy&q='+encodeURIComponent(q)).then(x=>x.items||[]).catch(e=>{vzLookups.delete(k);throw e}));return vzLookups.get(k)}
 const apLookups=new Map();
 async function lookupAparat(q){const k=q.trim().toLowerCase();if(!apLookups.has(k))apLookups.set(k,json('/api/youtube-music?mode=smartedit-aparat&q='+encodeURIComponent(q)).then(x=>x.items||[]).catch(e=>{apLookups.delete(k);throw e}));return apLookups.get(k)}
 // The public YouTube URL input can fail even when Gemini text generation works.
@@ -104,6 +106,7 @@ async function inspectFrames(v,segment,beat,provider){
  return dur>=.5?{start:beat.start,duration:dur,sourceStart:seconds(m.start),provider,videoId:v.id,sentence:segment,confidence:m.confidence,visualEvidence:m.visualEvidence}:null;
 }
 async function inspectAparat(v,segment,beat){return inspectFrames(v,segment,beat,'aparat')}
+async function inspectVecteezy(v,segment,beat){return inspectFrames(v,segment,beat,'vecteezy')}
 function wait(ms){return new Promise(r=>setTimeout(r,ms))}
 async function render(cuts){
  const started=await post(worker+'/jobs',{clips:cuts,rightsConfirmed:true});
@@ -135,12 +138,18 @@ function youtubeOptions(videos,anchors){
 async function run(){
  button.disabled=true;
  const mode=$('rfAutoCutSource').value;
+ const useYT=['youtube','both','all'].includes(mode),useAP=['aparat','both','all'].includes(mode),useVZ=['vecteezy','all'].includes(mode);
  try{
   if(!$('rfAutoCutRights').checked)throw Error('ابتدا تأیید کن اجازه دریافت و استفاده از ویدیوها را داری.');
   say('در حال بررسی مدل Gemini و اتصال سرویس‌ها…');
   const config=await json('/api/youtube-music?mode=smartedit-config');
   say('مدل فعال Gemini: '+config.geminiModel+(config.geminiWarning?' · '+config.geminiWarning:''));
   if(mode==='youtube'&&!config.youtubeConfigured)throw Error('کلید جست‌وجوی YouTube روی سرور تعریف نشده است.');
+  if(mode==='vecteezy'&&!config.vecteezyConfigured)throw Error('برای منبع ویتیزی، VECTEEZY_API_KEY و VECTEEZY_ACCOUNT_ID در Vercel لازم است.');
+  if(mode==='vecteezy'&&!config.vecteezyWorkerReady)throw Error('برای کات خودکار ویتیزی، کلید مشترک Media Worker باید تنظیم شود؛ README-0939 را ببین.');
+  if(mode==='vecteezy'&&!$('rfVecteezyPaid')?.checked)throw Error('برای دانلود خودکار ویتیزی، تأیید هزینه احتمالی API را تیک بزن.');
+  const vecteezyEnabled=useVZ&&config.vecteezyConfigured&&config.vecteezyWorkerReady&&Boolean($('rfVecteezyPaid')?.checked);
+  if(mode==='all'&&!vecteezyEnabled)say('منبع ویتیزی هنوز آماده نیست یا هزینه‌اش تأیید نشده؛ یوتیوب و آپارات ادامه می‌یابند.');
   say('در حال بررسی سرویس برش واقعی…');
   let health;
   try{health=await json(worker+'/health')}catch(e){
@@ -155,8 +164,8 @@ async function run(){
   const d=await audioLength(voice)||parts.reduce((n,p)=>n+p.split(/\s+/).length,0)/2.3;
   const dur=clamp(d,3,1200),beats=timings(parts,dur);
   let plan={segments:[]},planWarning='';
-  if(mode!=='aparat'){
-   say('Gemini در حال تحلیل '+parts.length+' بخش نریشن…');
+  if(useYT||useVZ){
+   say('هوش مصنوعی (OpenAI → Claude → Gemini) در حال تحلیل '+parts.length+' بخش نریشن…');
    try{
     plan=await post('/api/youtube-music?mode=smartedit-analyze',{
      task:'plan',segments:parts.map((t,index)=>({index,text:t}))
@@ -170,23 +179,27 @@ async function run(){
   const candidates=[];
   for(let i=0;i<parts.length;i++){
    const ai=plans.get(i),q=String(ai?.query||fallbackSearchQuery(parts[i])).trim(),apaQ=terms(parts[i]);
-   if(!q&&mode==='youtube'){
-    candidates.push({youtube:[],aparat:[],query:'',anchors:[]});continue;
+   if(!q&&(mode==='youtube'||mode==='vecteezy')){
+    candidates.push({youtube:[],aparat:[],vecteezy:[],query:'',anchors:[]});continue;
    }
-   say('جست‌وجوی ویدیو '+(i+1)+' از '+parts.length+' در یوتیوب/آپارات…');
-   const [yt,ap]=await Promise.allSettled([
-    mode!=='aparat'&&q?lookupYoutube(q):Promise.resolve([]),
-    mode!=='youtube'?lookupAparat(apaQ):Promise.resolve([])
+   say('جست‌وجوی ویدیو '+(i+1)+' از '+parts.length+' در منابع فعال…');
+   const [yt,ap,vz]=await Promise.allSettled([
+    useYT&&q?lookupYoutube(q):Promise.resolve([]),
+    useAP?lookupAparat(apaQ):Promise.resolve([]),
+    vecteezyEnabled&&q?lookupVecteezy(q):Promise.resolve([])
    ]);
    const y=yt.status==='fulfilled'?yt.value:[];
    const a=ap.status==='fulfilled'?ap.value:[];
+   const z=vz.status==='fulfilled'?vz.value:[];
    if(yt.status==='rejected'&&mode==='youtube')throw yt.reason;
    if(ap.status==='rejected'&&mode==='aparat')throw ap.reason;
-   if(yt.status==='rejected'&&mode==='both')say('جست‌وجوی یوتیوب برای بخش '+(i+1)+' ناموفق بود؛ آپارات بررسی می‌شود.');
-   candidates.push({youtube:youtubeOptions(y,ai?.anchors),aparat:a.filter(v=>/^[A-Za-z0-9_-]{4,25}$/.test(v.id||'')).slice(0,2),query:q,anchors:ai?.anchors||[]});
+   if(vz.status==='rejected'&&mode==='vecteezy')throw vz.reason;
+   if(yt.status==='rejected'&&mode!=='youtube')say('جست‌وجوی یوتیوب برای بخش '+(i+1)+' ناموفق بود؛ منابع دیگر بررسی می‌شوند.');
+   if(vz.status==='rejected'&&mode==='all')say('جست‌وجوی ویتیزی برای بخش '+(i+1)+' ناموفق بود؛ یوتیوب و آپارات ادامه می‌یابند.');
+   candidates.push({youtube:youtubeOptions(y,ai?.anchors),aparat:a.filter(v=>/^[A-Za-z0-9_-]{4,25}$/.test(v.id||'')).slice(0,2),vecteezy:z.filter(v=>/^\d{1,15}$/.test(String(v.id||''))).slice(0,2),query:q,anchors:ai?.anchors||[]});
   }
   // Gemini judges metadata conservatively BEFORE requesting visual timestamp checks.
-  const judgements=mode==='aparat'?null:await post('/api/youtube-music?mode=smartedit-analyze',{
+  const judgements=!useYT?null:await post('/api/youtube-music?mode=smartedit-analyze',{
    task:'judge',segments:parts.map((text,index)=>({index,text})),
    candidates:candidates.map((g,index)=>({index,options:g.youtube}))
   }).catch(()=>null);
@@ -202,10 +215,13 @@ async function run(){
    if(!hit){for(const v of g.aparat.slice(0,2)){
     try{hit=await inspectAparat(v,parts[i],beat);if(hit)break}catch(e){inspectionErrors.push('Aparat: '+String(e.message||e));console.warn('Aparat vision',e.message)}
    }}
+   if(!hit&&vecteezyEnabled){for(const v of g.vecteezy.slice(0,2)){
+    try{hit=await inspectVecteezy(v,parts[i],beat);if(hit)break}catch(e){inspectionErrors.push('Vecteezy: '+String(e.message||e));console.warn('Vecteezy vision',e.message)}
+   }}
    if(hit)cuts.push(hit);else missing.push(i+1);
   }
   if(!cuts.length){
-   const found=candidates.some(g=>g.youtube.length||g.aparat.length);
+   const found=candidates.some(g=>g.youtube.length||g.aparat.length||g.vecteezy.length);
    if(inspectionErrors.length)throw Error('هیچ کات واقعی تأیید نشد. خطای بررسی تصویر: '+inspectionErrors[0].slice(0,220));
    if(!found)throw Error('هیچ ویدیوی مناسبی در منابع انتخاب‌شده پیدا نشد؛ کات ساختگی ایجاد نمی‌کنیم. '+(planWarning?'تحلیل اولیه: '+planWarning.slice(0,110):''));
    throw Error('Gemini هیچ صحنه مرتبطی را در تصویر ویدیوهای پیدا‌شده تأیید نکرد؛ کات ساختگی ایجاد نمی‌کنیم.');

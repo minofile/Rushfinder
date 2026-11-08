@@ -29,3 +29,5 @@ Desktop.ini
 
 # Never commit local access secrets.
 .rushfinder-secret
+# Private Vecteezy Media Worker token: never publish to GitHub
+vecteezy-worker-secret.local.txt

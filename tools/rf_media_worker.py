@@ -6,6 +6,10 @@ segments using FFmpeg, and serve the cut media back to the site's browser.
 Only binds 127.0.0.1; never places API keys in browser source.
 """
 import base64
+import ipaddress
+import socket
+import urllib.request
+import zipfile
 import json
 import os
 import re
@@ -31,6 +35,7 @@ MAX_FILES = 12
 MAX_BYTES = int(os.environ.get('RUSHFINDER_MAX_VIDEO_MB','350')) * 1024 * 1024
 ALLOWED_ID = re.compile(r'^[A-Za-z0-9_-]{11}$')
 APARAT_ID = re.compile(r'^[A-Za-z0-9_-]{4,25}$')
+VECTEEZY_ID = re.compile(r'^\d{1,15}$')
 
 
 def source_url(source, vid):
@@ -38,6 +43,8 @@ def source_url(source, vid):
         return f'https://www.youtube.com/watch?v={vid}'
     if source == 'aparat' and APARAT_ID.fullmatch(vid):
         return f'https://www.aparat.com/v/{vid}'
+    if source == 'vecteezy' and VECTEEZY_ID.fullmatch(vid):
+        return f'https://www.vecteezy.com/video/{vid}'
     raise ValueError('شناسه یا منبع ویدیو معتبر نیست')
 
 
@@ -61,12 +68,85 @@ def command(args, timeout=180):
     return r
 
 
+# Vecteezy official-API downloads are resolved by the RushFinder server using a
+# shared worker secret. Never scrape Vecteezy HTML or accept arbitrary URLs from the browser.
+VECTEEZY_HOST_SUFFIXES=('vecteezy.com','eezy.cloud','amazonaws.com','cloudfront.net','googleapis.com','googleusercontent.com','fastly.net','akamaihd.net')
+def validate_media_url(url):
+    parsed=urlsplit(url)
+    host=(parsed.hostname or '').lower().rstrip('.')
+    if parsed.scheme != 'https' or parsed.username or parsed.password or not host or parsed.port not in (None,443):
+        raise ValueError('Vecteezy download URL must be HTTPS')
+    if not any(host==s or host.endswith('.'+s) for s in VECTEEZY_HOST_SUFFIXES):
+        raise ValueError('Vecteezy download URL host is not allowlisted: '+host[:90])
+    addresses=socket.getaddrinfo(host,443,type=socket.SOCK_STREAM)
+    if not addresses or any(not ipaddress.ip_address(info[4][0]).is_global for info in addresses):
+        raise ValueError('Vecteezy download URL resolves to a private or invalid address')
+    return url
+
+class SafeRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self,req,fp,code,msg,headers,newurl):
+        validate_media_url(newurl)
+        return super().redirect_request(req,fp,code,msg,headers,newurl)
+
+def download_vecteezy(vid,folder):
+    token=os.environ.get('RUSHFINDER_WORKER_SHARED_KEY','').strip()
+    if not token:raise RuntimeError('برای کات ویتیزی، کلید RUSHFINDER_WORKER_SHARED_KEY در Media Worker لازم است')
+    base=os.environ.get('RUSHFINDER_SERVER_URL','https://rushfinder.vercel.app').rstrip('/')
+    base_url=urlsplit(base)
+    if base_url.scheme!='https' or not base_url.hostname or base_url.username or base_url.password:
+        raise RuntimeError('RUSHFINDER_SERVER_URL باید آدرس HTTPS سایت خودت باشد')
+    endpoint=base+'/api/youtube-music?mode=smartedit-vecteezy-download'
+    req=urllib.request.Request(endpoint,data=json.dumps({'id':vid}).encode(),
+      headers={'Content-Type':'application/json','X-RushFinder-Worker-Key':token},method='POST')
+    try:
+        with urllib.request.urlopen(req,timeout=25) as response:
+            reply=json.loads(response.read(100000).decode('utf-8'))
+    except Exception as exc:raise RuntimeError('درخواست دانلود مجاز ویتیزی ناموفق بود: '+str(exc)[:180])
+    url=validate_media_url(str(reply.get('url','')))
+    opener=urllib.request.build_opener(SafeRedirect())
+    folder.mkdir(parents=True,exist_ok=True)
+    binary=folder/'vecteezy-download.bin'
+    with opener.open(urllib.request.Request(url,headers={'User-Agent':'RushFinder/0939'}),timeout=60) as response:
+        total=0
+        with binary.open('wb') as f:
+            while True:
+                b=response.read(262144)
+                if not b:break
+                total+=len(b)
+                if total>MAX_BYTES:raise RuntimeError('حجم فایل ویتیزی بیش از حد مجاز است')
+                f.write(b)
+    if zipfile.is_zipfile(binary):
+        with zipfile.ZipFile(binary) as archive:
+            options=[z for z in archive.infolist() if not z.is_dir() and
+                Path(z.filename).suffix.lower() in {'.mp4','.mov','.mkv','.webm'} and 1000<=z.file_size<=MAX_BYTES]
+            if not options:raise RuntimeError('داخل فایل دریافت‌شده از ویتیزی ویدیوی قابل استفاده پیدا نشد')
+            z=max(options,key=lambda a:a.file_size)
+            suffix=Path(z.filename).suffix.lower()
+            dest=folder/('source'+suffix)
+            with archive.open(z) as src,dest.open('wb') as out:
+                shutil.copyfileobj(src,out,1024*1024)
+    else:
+        # FFmpeg probes the actual stream; MP4 is the normal licensed stock format.
+        extension=Path(urlsplit(url).path).suffix.lower()
+        if extension not in {'.mp4','.mov','.mkv','.webm'}:extension='.mp4'
+        dest=folder/('source'+extension)
+        binary.rename(dest)
+    binary.unlink(missing_ok=True)
+    return dest
+
 def download(source, vid, folder):
     url = source_url(source, vid)
     folder.mkdir(parents=True, exist_ok=True)
     existing = list(folder.glob('source.*'))
     if existing:
         return existing[0]
+    if source=='vecteezy':
+        # Use the one licensed download for both visual inspection and the
+        # resulting FFmpeg cuts instead of charging for the same item twice.
+        shared=ROOT/'inspect'/('vecteezy_'+vid)
+        found=[f for f in shared.glob('source.*') if f.suffix.lower() in {'.mp4','.mkv','.webm','.mov'} and f.is_file()] if shared.exists() else []
+        if found:return found[0]
+        return download_vecteezy(vid,shared)
     ytdlp = check_tools()
     output = folder / 'source.%(ext)s'
     # No cookies, no DRM bypass, playlist disabled, 720p max; download only if
@@ -158,7 +238,7 @@ def process_job(job, clips):
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version='RushFinderMediaWorker/0937'
+    server_version='RushFinderMediaWorker/0939'
     def log_message(self, fmt, *args):
         print('%s - %s' % (self.address_string(), fmt%args),flush=True)
 
@@ -196,7 +276,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if not self.allowed():return self.json(403,{'error':'این سایت مجاز نیست'})
         if self.path=='/health':
-            try:check_tools();return self.json(200,{'ok':True,'version':'0937','features':['youtube','aparat','ffmpeg']})
+            try:check_tools();return self.json(200,{'ok':True,'version':'0939','features':['youtube','aparat','vecteezy','ffmpeg'],'vecteezyWorkerReady':bool(os.environ.get('RUSHFINDER_WORKER_SHARED_KEY'))})
             except Exception as e:return self.json(503,{'ok':False,'error':str(e)})
         if self.path.startswith('/jobs/'):
             job=self.path[6:]
@@ -298,6 +378,6 @@ class Handler(BaseHTTPRequestHandler):
         except Exception as exc:return self.json(502,{'error':str(exc)[:350]})
 
 if __name__=='__main__':
-    print(f'RushFinder 0937 Media Worker: http://{HOST}:{PORT}/health',flush=True)
+    print(f'RushFinder 0939 Media Worker: http://{HOST}:{PORT}/health',flush=True)
     print('Allowed browser origins:',', '.join(sorted(ALLOWED_ORIGINS)),flush=True)
     ThreadingHTTPServer((HOST,PORT),Handler).serve_forever()
