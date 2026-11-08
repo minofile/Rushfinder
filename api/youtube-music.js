@@ -222,11 +222,69 @@ async function rfSmartEditAnalyze(req,res){
  }catch(e){return rfSmartReply(res,502,{error:'تطبیق هوشمند پاسخ نداد؛ از فیلتر محافظه‌کارانه استفاده می‌شود.',code:'AI_UNAVAILABLE'});}finally{clearTimeout(timer)}
 }
 
+
+// RushFinder 0934: Aparat discovery. This public legacy endpoint can stop working
+// without notice; errors are surfaced rather than inventing results.
+async function rfSmartAparatLookup(req,res){
+ const q=String(req.query.q||'').replace(/[\r\n]/g,' ').trim().slice(0,85);
+ if(q.length<2)return rfSmartReply(res,400,{error:'عبارت جست‌وجوی آپارات کوتاه است.'});
+ if(!rfGeminiRateCheck(req,'aparat'))return rfSmartReply(res,429,{error:'سقف جست‌وجوی آپارات پر شده است.'});
+ const url='https://www.aparat.com/etc/api/videoBySearch/text/'+encodeURIComponent(q)+'/perpage/9';
+ const ac=new AbortController(),timer=setTimeout(()=>ac.abort(),12000);
+ try{
+  const r=await fetch(url,{signal:ac.signal,headers:{Accept:'application/json','User-Agent':'RushFinder/0934'}});
+  if(!r.ok)throw Error('HTTP '+r.status);
+  const raw=await r.json();
+  const videos=Array.isArray(raw?.videobysearch)?raw.videobysearch:Array.isArray(raw?.data)?raw.data:[];
+  const items=videos.map(v=>{
+   const id=String(v.uid||v.videohash||v.hash_id||v.id||'');
+   if(!/^[A-Za-z0-9_-]{4,25}$/.test(id))return null;
+   return {provider:'aparat',id,title:String(v.title||'').slice(0,160),
+    channel:String(v.username||v.user?.name||'').slice(0,80),
+    description:String(v.description||v.descr||'').slice(0,700),
+    durationSeconds:Number(v.duration)||0,
+    thumbnail:String(v.big_poster||v.small_poster||v.thumbnail||'').slice(0,350),
+    url:'https://www.aparat.com/v/'+id};
+  }).filter(Boolean);
+  return rfSmartReply(res,200,{items,query:q});
+ }catch(e){return rfSmartReply(res,502,{error:'جست‌وجوی آپارات پاسخ نداد؛ ممکن است سرویس عمومی آن در دسترس نباشد: '+String(e.message||e).slice(0,110)});}
+ finally{clearTimeout(timer)}
+}
+
+// 0934: Frames captured locally from an authorized Aparat video and provided
+// to the server-held Gemini key. Do not trust titles as visual verification.
+async function rfSmartEditFrames(req,res){
+ if(!rfGeminiRateCheck(req,'video'))return rfSmartReply(res,429,{error:'سقف تحلیل تصویری این ساعت پر شده است.'});
+ if(!rfGeminiKey())return rfSmartReply(res,503,{error:'GEMINI_API_KEY روی Vercel تعریف نشده است.'});
+ const p=typeof req.body==='string'?(()=>{try{return JSON.parse(req.body)}catch{return {}}})():req.body||{};
+ const seconds=Math.max(.5,Math.min(60,Number(p.seconds)||6));
+ const text=String(p.text||'').slice(0,620);
+ const frames=(Array.isArray(p.frames)?p.frames:[]).slice(0,12);
+ if(!text||frames.length<3)return rfSmartReply(res,400,{error:'متن یا فریم‌های ویدیو کامل نیست.'});
+ let parts=[{text:'Persian news edit task. Inspect only the ATTACHED actual still frames from one video. Each frame has its source timestamp. Identify visually relevant moment for narration: '+JSON.stringify(text)+'. Return JSON object {"matches":[{"start":12.2,"end":17.5,"confidence":0.85,"visualEvidence":"specific details visible"}]}. If unrelated, return {"matches":[]}. DO NOT INVENT scenes or infer from titles. Required target segment length: '+seconds+' s. Timestamp must be inside observed frame range. When adjacent sampled frames differ, use conservative start/end that includes observed matching frames.'}];
+ let times=[];
+ for(const f of frames){
+  const t=Number(f?.time),b=String(f?.data||'');
+  if(!Number.isFinite(t)||t<0||t>1800||b.length>200000||!/^[A-Za-z0-9+/=]+$/.test(b)||b.length<100)continue;
+  times.push(t);parts.push({text:'Video frame timestamp: '+t.toFixed(2)+' seconds'});
+  parts.push({inlineData:{mimeType:'image/jpeg',data:b}});
+ }
+ if(times.length<3)return rfSmartReply(res,400,{error:'تصاویر ویدیویی کافی نیست.'});
+ try{
+  const result=await rfGeminiGenerate(parts,{timeoutMs:55000});
+  const matches=(Array.isArray(result?.matches)?result.matches:[]).map(x=>({start:Number(x.start),end:Number(x.end),confidence:Number(x.confidence),visualEvidence:String(x.visualEvidence||'').slice(0,230)}))
+   .filter(x=>Number.isFinite(x.start)&&Number.isFinite(x.end)&&x.start>=0&&x.end>x.start&&x.end<=Math.max(...times)+15&&x.confidence>=.65&&x.visualEvidence.length>6).slice(0,2);
+  return rfSmartReply(res,200,{ai:true,method:'gemini_aparat_frames',matches});
+ }catch(e){return rfSmartReply(res,502,{error:'Gemini نتوانست فریم‌های آپارات را بررسی کند: '+String(e.message||e).slice(0,140)});}
+}
+
 // Search-only integration with the official YouTube Data API.
 // Playback uses the official embedded player; no audio extraction or MP3 conversion.
 export default async function handler(req,res){
  res.setHeader('Cache-Control','s-maxage=300, stale-while-revalidate=600');
  if(req.query.mode==='smartedit-vision'&&req.method==='POST')return rfSmartEditVision(req,res);
+ if(req.query.mode==='smartedit-aparat'&&req.method==='GET')return rfSmartAparatLookup(req,res);
+ if(req.query.mode==='smartedit-frames'&&req.method==='POST')return rfSmartEditFrames(req,res);
  if(req.query.mode==='smartedit-transcribe'&&req.method==='POST')return rfSmartEditTranscribe(req,res);
  if(req.query.mode==='smartedit-analyze'&&req.method==='POST')return rfSmartEditAnalyze(req,res);
  if(req.method!=='GET')return res.status(405).json({error:'Method not allowed'});

@@ -125,6 +125,52 @@ window.rfApplyYoutubeCutsFromLocalFiles=async(items,videoFiles,voiceSeconds)=>{
  return cuts.length;
 };
 
+// 0934: import REAL trimmed MP4 clips produced by the local media worker.
+// Gaps remain black and narration keeps its independent audio track.
+window.rfApplyRealAutoCutClips=async(realCuts,voiceSeconds)=>{
+ if(exporting)throw Error('در زمان خروجی گرفتن نمی‌توان تایم‌لاین را تغییر داد.');
+ if(!Array.isArray(realCuts)||!realCuts.length)throw Error('هیچ برش واقعی ارسال نشده.');
+ const sorted=[...realCuts].sort((a,b)=>a.start-b.start),pending=[];
+ for(let i=0;i<sorted.length;i++){
+  const item=sorted[i];
+  if(!Number.isFinite(item.start)||!Number.isFinite(item.duration)||item.start<0||item.duration<.45)throw Error('زمان برش معتبر نیست');
+  const url=String(item.url||'');
+  if(!/^http:\/\/127\.0\.0\.1:8767\/media\/[a-f0-9]{32}\/clip_\d{2}\.mp4$/.test(url))throw Error('مسیر فایل برش غیرمجاز است');
+  const response=await fetch(url);
+  if(!response.ok)throw Error('دریافت کلیپ واقعی '+(i+1)+' ناموفق بود: '+response.status);
+  const len=Number(response.headers.get('content-length')||0);
+  if(len>85e6)throw Error('حجم یک کلیپ بیش از حد است');
+  const blob=await response.blob();
+  if(blob.size>85e6)throw Error('حجم کلیپ بیش از حد مجاز است');
+  const file=new File([blob],'RushFinder_AutoCut_'+String(i+1).padStart(2,'0')+'.mp4',{type:'video/mp4'});
+  const m=await importFile(file);
+  if(!m||m.type!=='video')throw Error('مرورگر نتوانست کلیپ واقعی '+(i+1)+' را پخش کند');
+  pending.push({...item,media:m});
+ }
+ const newClips=[];let cursor=0,black=null;
+ async function gap(seconds){
+  if(seconds<=.05)return;
+  if(!black){
+   const cv=document.createElement('canvas');cv.width=32;cv.height=18;
+   const blob=await new Promise(ok=>cv.toBlob(ok,'image/png'));
+   black=await importFile(new File([blob],'RushFinder_Empty_Scene.png',{type:'image/png'}));
+   if(!black)throw Error('ساخت فاصلهٔ خالی ممکن نیست');
+  }
+  newClips.push(createClip(black,0,seconds));
+ }
+ for(const c of pending){
+  if(c.start<cursor-.07)throw Error('دو کلیپ روی نوار همپوشانی دارند');
+  if(c.start>cursor+.05)await gap(c.start-cursor);
+  newClips.push(createClip(c.media,0,Math.min(c.media.duration,c.duration)));
+  cursor=c.start+c.duration;
+ }
+ if(Number(voiceSeconds)>cursor+.05)await gap(Number(voiceSeconds)-cursor);
+ snapshot();stopPlayback();clips=newClips;titles=[];
+ transition='cut';syncTransitionButtons();selected=clips[0]?{type:'video',id:clips[0].id}:null;playheadTime=0;
+ window.rfYTStopPreview?.();afterChange('✓ '+pending.length+' کلیپ واقعی روی تایم‌لاین قرار گرفت و در خروجی ویدیو دیده می‌شود.');
+ return pending.length;
+};
+
 function pushClip(c){snapshot();clips.push(c);selected={type:'video',id:c.id};afterChange('کلیپ به تایم‌لاین اضافه شد')}
 function afterChange(msg){stopPlayback();if(clips.length)window.rfYTStopPreview?.();playheadTime=clamp(playheadTime,0,duration());renderTimeline();window.dispatchEvent(new Event('rfTimelineChanged'));renderInspector();paint(playheadTime);updateTimeUI();if(msg)status(msg)}
 function addMediaToTimeline(id){const m=media.get(id);if(!m)return;if(m.type==='audio'){setAudio('music',id);return}pushClip(createClip(m))}
@@ -137,6 +183,7 @@ $('voiceInput').onchange=async e=>{await importFile(e.target.files[0],'voice');e
 // RushFinder SmartEdit 0912: narration is the primary timeline clock.
 async function rf0912ImportNarration(file){
  if(!file)return null;
+ window.rfNarrationFile=file;
  const label=$('autoVoiceInfo');label.dataset.loaded='0';label.textContent='در حال خواندن فایل نریشن…';
  const m=await importFile(file,'voice');
  if(m && m.type==='audio' && Number.isFinite(m.duration) && m.duration>0){
@@ -449,13 +496,11 @@ $('demoEdit').onclick=async()=>{
 $('useOnline').checked=true;
 // 0928: Do not invoke licensed-stock providers from the automatic editor.
 // Only the YouTube reference/cut storyboard may be used by the primary auto-edit button.
-$('quickEdit').onclick=async()=>{
- const start=window.rfYTStartAutoEdit;
- if(typeof start!=='function'){
-  $('smartReport').textContent='بخش YouTube بارگذاری نشده است. صفحه را تازه‌سازی کن؛ جست‌وجوی ویکی‌مدیا جایگزین نمی‌شود.';
-  return;
- }
- return start();
+$('quickEdit').onclick=()=>{
+ $('rfYTPanel').open=true;
+ const btn=$('rfAutoCutReal');
+ if(!btn){$('smartReport').textContent='برشگر واقعی بارگذاری نشده؛ Ctrl+F5 بزن.';return}
+ btn.click();
 };
 // Before generating YouTube cuts, remove old source-specific timeline clips ONLY
 // after the user explicitly confirms; narration/music tracks remain untouched.
