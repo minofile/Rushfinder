@@ -1,5 +1,5 @@
 (()=>{'use strict';
-// SmartEdit 0932 narration-aligned chapter-based YouTube cut-preview storyboard: official YouTube IFrame, NO content download or MP4 capture.
+// SmartEdit 0933 Gemini-video-verified narration-aligned YouTube cut-preview storyboard. No YouTube download or MP4 capture.
 const $=id=>document.getElementById(id), out=(el,s)=>{if(el)el.textContent=s};
 const btn=$('rfYTSearch'), status=$('rfYTStatus'), results=$('rfYTResults'), track=$('rfYTTrack');
 const overlay=$('rfYTOverlay'), host=$('rfYTPlayerHost'), inspector=$('rfYTCutInspector');
@@ -40,6 +40,24 @@ async function rfYTLookup(query){
  if(!resp.ok)throw new Error(rfYTApiError(data,resp.status));
  if(!data||!Array.isArray(data.items))throw new Error('پاسخ API ناقص است؛ آرایه items دریافت نشد. فایل api/youtube-music.js را هم با نسخه اصلاحیه جایگزین کن.');
  return data.items;
+}
+// Audio is sent to our server-side Gemini relay only when the user explicitly clicks auto-edit.
+// Short inline-audio mode: Vercel body limits may prevent transcription of large narration files.
+async function rfYTTranscribeVoice(file){
+ if(!file||file.size>2700000)throw new Error('برای نریشن بالای ۲.۵ مگابایت، متن نریشن را هم وارد کن (محدودیت حجم بارگذاری سرور).');
+ const audioBase64=await new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(String(fr.result||'').split(',')[1]||'');fr.onerror=()=>reject(Error('فایل صوتی خوانده نشد'));fr.readAsDataURL(file)});
+ const mimeType=({'audio/x-m4a':'audio/mp4','audio/m4a':'audio/mp4','audio/x-wav':'audio/wav','audio/mp3':'audio/mpeg'}[file.type]||file.type||'audio/mpeg');
+ const resp=await fetch('/api/youtube-music?mode=smartedit-transcribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mimeType,audioBase64})});
+ const json=await resp.json().catch(()=>({}));if(!resp.ok)throw new Error(String(json.error||'تبدیل نریشن به متن ناموفق بود.'));
+ return String(json.transcript||'').trim();
+}
+async function rfYTInspectVideo(video,segments){
+ try{
+  const resp=await fetch('/api/youtube-music?mode=smartedit-vision',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({videoId:video.id,videoDuration:video.durationSeconds||0,segments})});
+  const json=await resp.json().catch(()=>({}));if(!resp.ok)throw new Error(String(json.error||'Gemini visual analysis failed'));
+  if(!json.ai||json.method!=='gemini_video_frames')throw Error('Visual input was not verified');
+  return json.matches||[];
+ }catch(e){return {error:String(e.message||e)}}
 }
 function durationTotal(){return S.items.length?Math.max(...S.items.map(x=>x.start+x.duration)):0}
 function updateClock(t){
@@ -153,7 +171,7 @@ function renderTrack(){
  S.items.forEach((item,i)=>{
   const v=item.options[item.optionIndex||0];const label='✂ '+safe(item.sentence).slice(0,32)+' ← '+safe(v?.title||'نامشخص').slice(0,35);
   function makeButton(shadow){const b=document.createElement('button');b.type='button';b.className='rf-yt-clip'+(i===S.selected?' active':'')+(shadow?' rf-yt-shadow':'');b.style.left=(36+item.start*px)+'px';b.style.width=Math.max(35,item.duration*px-2)+'px';b.textContent=(shadow?'▶ پیش‌نمایش · ':'')+label;
-   b.title='برش مجازی '+(i+1)+' · '+fmt(item.start)+'–'+fmt(item.start+item.duration)+' | ویدئوی یوتیوب: '+fmt(item.sourceStart)+'–'+fmt(item.sourceStart+item.duration)+' | غیرقابل خروجی MP4';
+   b.title=(item.videoFrameVerified?'کات پیشنهادی از بررسی تصویر جمنای':'کات مبتنی بر فصل‌بندی')+' '+(i+1)+' · '+fmt(item.start)+'–'+fmt(item.start+item.duration)+' | ویدئوی یوتیوب: '+fmt(item.sourceStart)+'–'+fmt(item.sourceStart+item.duration)+' | غیرقابل خروجی MP4';
    b.addEventListener('click',()=>setSelection(i));return b}
   track.appendChild(makeButton(false));if(!realClips&&videoTrack)videoTrack.appendChild(makeButton(true));
  });
@@ -161,7 +179,7 @@ function renderTrack(){
 function updateInspector(){return renderInspector()}
 function renderInspector(){if(!inspector)return;inspector.replaceChildren();const it=selectedItem();if(!it){inspector.textContent='یک برش را از تایم‌لاین انتخاب کن تا نقطه شروع، مدت و منبع را عوض کنی.';return;}
  const title=document.createElement('strong');title.textContent='✂ تنظیم برش '+(S.selected+1)+' · '+fmt(it.start)+' تا '+fmt(it.start+it.duration);inspector.appendChild(title);
- const hint=document.createElement('p');hint.className='rf-yt-hint';hint.textContent='زمان شروع از داخل ویدئوی اصلی (نه زمان نریشن). صحنه پیشنهادی با تحلیل تصویر تأیید نشده است.';inspector.appendChild(hint);
+ const hint=document.createElement('p');hint.className='rf-yt-hint';hint.textContent=it.videoFrameVerified?'جمنای تصویر ویدئو را بررسی کرده و این بازه را پیشنهاد داده است؛ قبل از انتشار بررسی انسانی لازم است.':'بازه از فصل‌بندی منتشرشده ویدئو آمده؛ تصویر آن را جمنای تأیید نکرده است.';inspector.appendChild(hint);
  const grid=document.createElement('div');grid.className='rf-cut-grid';
  const makeInput=(label,value,min,step)=>{const w=document.createElement('label');w.textContent=label;const inp=document.createElement('input');inp.type='number';inp.min=String(min);inp.step=String(step);inp.value=String(value);w.appendChild(inp);grid.appendChild(w);return inp};
  const source=makeInput('شروع از ویدئوی یوتیوب (ثانیه)',it.sourceStart,0,0.5);
@@ -180,12 +198,12 @@ function renderReferences(){results.replaceChildren();S.items.forEach((item,i)=>
  const side=document.createElement('div');const head=document.createElement('b');head.textContent='برش '+(i+1)+' · '+fmt(item.start)+'–'+fmt(item.start+item.duration);side.appendChild(head);
  const selector=document.createElement('select');selector.setAttribute('aria-label','انتخاب منبع برش '+(i+1));for(const [j,opt] of item.options.entries()){const o=document.createElement('option');o.value=j;o.textContent=safe(opt.title);selector.appendChild(o)}selector.value=item.optionIndex||0;selector.onchange=()=>{stop(false);item.optionIndex=+selector.value;const selectedDuration=item.options[item.optionIndex]?.durationSeconds||21600;item.sourceStart=Math.min(item.sourceStart,Math.max(0,selectedDuration-item.duration));item.sourceEnd=item.sourceStart+item.duration;renderReferences();setSelection(i)};side.appendChild(selector);
  const script=document.createElement('div');script.className='rf-yt-script';script.textContent='🎙 '+safe(item.sentence);side.appendChild(script);
- const warn=document.createElement('small');warn.textContent='فصل زمان‌دار: '+(item.chapterTitle||'نامعلوم')+' · ارتباط فقط از عنوان/توضیح فصل سنجیده شده؛ تصویر تحلیل نشده و قبل از انتشار باید دیده شود.';side.appendChild(warn);
+ const warn=document.createElement('small');warn.textContent=item.videoFrameVerified?'✓ بررسی فریم‌های ویدئو با Gemini · '+String(item.visualEvidence||'')+' · قبل از انتشار خودت هم بازبینی کن.':'فصل زمان‌دار: '+(item.chapterTitle||'نامعلوم')+' · تصویر با Gemini تأیید نشده است.';side.appendChild(warn);
  const link=document.createElement('a');link.href='https://www.youtube.com/watch?v='+v.id+'&t='+Math.floor(item.sourceStart)+'s';link.target='_blank';link.rel='noopener noreferrer';link.textContent='منبع در YouTube';side.appendChild(link);row.appendChild(side);row.onclick=e=>{if(e.target===selector||e.target===link)return;setSelection(i)};results.appendChild(row)});if(S.proposals.length)showUnlocatedSuggestions(S.proposals);renderTrack();renderInspector()}
 function showUnlocatedSuggestions(groups){
  const d=document.createElement('div');d.className='rf-yt-unlocated';
  const h=document.createElement('b');h.textContent='ویدئوهای پیشنهادی بدون زمان کاتِ قابل تأیید';d.appendChild(h);
- const p=document.createElement('p');p.textContent='عنوان و توضیح مرتبط است، اما زمان صحنه در اطلاعات یوتیوب وجود ندارد. برای این موارد کات خودکار حدسی ساخته نشده؛ می‌توانی ویدئو را در YouTube بررسی کنی.';d.appendChild(p);
+ const p=document.createElement('p');p.textContent='این منابع از نظر موضوعی پیشنهاد شده‌اند، اما بازه تصویری مطمئن برای آن‌ها تشخیص داده نشده است. برای جلوگیری از تدوین اشتباه، آن‌ها خودکار کات نخورده‌اند.';d.appendChild(p);
  for(const g of groups.slice(0,8)){
   const a=document.createElement('a');a.href='https://www.youtube.com/watch?v='+g.video.id;a.target='_blank';a.rel='noopener noreferrer';a.textContent='↗ '+safe(g.video.title)+' · بخش '+(g.index+1);d.appendChild(a);
  }
@@ -265,15 +283,28 @@ function reset(){stop();++S.playToken;S.items=[];S.gaps=[];S.proposals=[];S.sele
 $('rfYTClear').addEventListener('click',reset);// Clear references explicitly; the original new-project confirmation remains untouched.
 function splitAt(at){const i=S.items.findIndex(it=>at>it.start+0.4&&at<it.start+it.duration-0.4);if(i<0)return message('برای تقسیم، نشانگر را داخل برش بگذار یا دکمه تقسیم وسط برش را بزن.',true);stop();const a=S.items[i],len=at-a.start;const b={...a,id:S.clipId++,start:at,duration:a.duration-len,sourceStart:a.sourceStart+len,sourceEnd:a.sourceStart+a.duration};a.duration=len;a.sourceEnd=a.sourceStart+len;S.items.splice(i+1,0,b);renderReferences();setSelection(i+1);message('برش مجازی در '+fmt(at)+' تقسیم شد؛ صدای ویدئوها خاموش است.')}
 $('rfYTSplit')?.addEventListener('click',()=>{const t=S.voice?.currentTime||0;const i=S.selected;const v=S.items[i];const at=S.active?t:v?v.start+v.duration/2:-1;splitAt(at)});
-$('rfYTPlan').onclick=()=>{if(!S.items.length)return message('هنوز برشی ساخته نشده.',true);const data={type:'RushFinder YouTube Virtual Cut Storyboard — not MP4',version:'0932',renderableMP4:false,voiceSeconds:S.duration,unmatched:S.gaps,clips:S.items.map(it=>({sentence:it.sentence,query:it.query,timelineStart:it.start,timelineDuration:it.duration,sourceStart:it.sourceStart,sourceEnd:it.sourceEnd,chapterTitle:it.chapterTitle,source:it.options[it.optionIndex||0],verifiedByHuman:false}))};const u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download='RushFinder-0932-YouTube-Chapter-Storyboard.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)};
-// Embedded YouTube clips cannot be included in MediaRecorder MP4/WebM output.
-for(const b of [$('exportBtn'),$('rfExportSide')])b?.addEventListener('click',e=>{if(S.items.length&&!confirm('برش‌های یوتیوب فقط مجازی هستند و داخل خروجی MP4 یا WebM نمی‌آیند. ادامه می‌دهی؟')){e.preventDefault();e.stopImmediatePropagation()}},true);
-btn.onclick=async()=>{
- const text=$('script').value.trim();if(!text)return message('متن واقعی نریشن را در کادر متن وارد کن. فایل صوتی به‌تنهایی برای فهم موضوع کافی نیست.',true);
- const parts=sentences(text);if(!parts.length)return message('متن کافی نیست.',true);
- $('rfYTPanel').open=true;
- btn.disabled=true;stop();message('در حال تحلیل موضوع '+parts.length+' بخش از کل نریشن؛ کات‌های قبلی تا پیدا شدن نتیجه مرتبط حفظ می‌شوند…');
+$('rfYTRealFiles')?.addEventListener('change',async e=>{
+ const files=[...e.target.files||[]];e.target.value='';if(!files.length)return;
+ if(!S.items.length)return message('ابتدا صحنه‌ها را با Gemini پیدا کن.',true);
  try{
+  message('در حال افزودن فایل‌های ویدیویی مجاز و اعمال کات‌های واقعی…');
+  const count=await window.rfApplyYoutubeCutsFromLocalFiles?.(S.items,files,S.duration);
+  if(!count)throw Error('ماژول تدوین اصلی آماده نیست.');
+  stop();overlay.hidden=true;
+  message('✓ '+count+' کات واقعی روی نوار ویدئو قرار گرفتند. با پخش‌کننده اصلی ببین و با دکمه خروجی فایل بساز.');
+ }catch(err){message('ورود فایل‌های اصلی ناموفق بود: '+String(err?.message||err),true)}
+});
+$('rfYTPlan').onclick=()=>{if(!S.items.length)return message('هنوز برشی ساخته نشده.',true);const data={type:'RushFinder Gemini Video Cut Storyboard — not MP4',version:'0933',renderableMP4:false,voiceSeconds:S.duration,unmatched:S.gaps,clips:S.items.map(it=>({sentence:it.sentence,query:it.query,timelineStart:it.start,timelineDuration:it.duration,sourceStart:it.sourceStart,sourceEnd:it.sourceEnd,chapterTitle:it.chapterTitle,geminiVisualVerified:!!it.videoFrameVerified,visualEvidence:it.visualEvidence||'',source:it.options[it.optionIndex||0],verifiedByHuman:false}))};const u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download='RushFinder-0933-Gemini-Storyboard.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)};
+// Embedded YouTube clips cannot be included in MediaRecorder MP4/WebM output.
+for(const b of [$('exportBtn'),$('rfExportSide')])b?.addEventListener('click',e=>{if(S.items.length&&!window.rfSmartEditHasClips?.()&&!confirm('برش‌های یوتیوب فقط مجازی هستند و داخل خروجی MP4 یا WebM نمی‌آیند. ادامه می‌دهی؟')){e.preventDefault();e.stopImmediatePropagation()}},true);
+btn.onclick=async()=>{
+ $('rfYTPanel').open=true;btn.disabled=true;stop();
+ try{
+  let text=$('script').value.trim();
+  if(!text&&S.voiceFile){message('در حال گوش‌دادن به نریشن و تبدیل صدا به متن با Gemini…');text=await rfYTTranscribeVoice(S.voiceFile);$('script').value=text;}
+  if(!text)throw Error('متن نریشن یا فایل صوتی وارد کن.');
+  const parts=sentences(text);if(!parts.length)throw Error('متن کافی نیست.');
+  message('در حال تحلیل موضوع '+parts.length+' بخش از کل نریشن؛ کات‌های قبلی حفظ می‌شوند…');
   let dur=S.voiceFile?await probeVoice(S.voiceFile):0;if(!dur)dur=parts.reduce((n,p)=>n+p.split(/\s+/).length,0)/2.3;
   dur=clamp(dur,5,1200);
   const steps=beats(parts,dur),suggested=[],gaps=[],cache=new Map(),candidateGroups=[],errors=[];S.proposals=[];
@@ -295,12 +326,51 @@ btn.onclick=async()=>{
   message('بررسی ارتباط عنوان و توضیحات ویدئوها با جملات واقعی نریشن…');
   const judge=await requestAI('judge',parts,candidateGroups.map(g=>({index:g.index,options:g.options.slice(0,9)})));
   const judged=new Map((judge?.matches||[]).map(x=>[x.index,x]));
+  // Group repeated videos to avoid paying for the same Gemini YouTube visual input many times.
+  // Each segment gets at most one high-ranked video for actual visual inspection.
+  const videoGroups=new Map(),visualMatches=new Map();let visionRan=false,visionErrors=0;
+  for(let i=0;i<parts.length;i++){
+   const g=candidateGroups[i],ids=new Set(judged.get(i)?.ids||[]);
+   const options=judge?g.options.filter(v=>ids.has(v.id)):strictFallback(g.options,g.query,g.anchors);
+   const v=options[0];if(!v)continue;
+   if(!videoGroups.has(v.id))videoGroups.set(v.id,{video:v,segments:[]});
+   videoGroups.get(v.id).segments.push({index:i,text:parts[i],seconds:Math.max(.5,Math.min(steps[i].duration,60))});
+  }
+  const allGroups=[...videoGroups.values()].slice(0,12);
+  for(let offset=0;offset<allGroups.length;offset+=2){
+   const groups=allGroups.slice(offset,offset+2);
+   message('Gemini در حال دیدن محتوای واقعی ویدئوهای '+(offset+1)+' تا '+(offset+groups.length)+' از '+allGroups.length+'…');
+   const outcomes=await Promise.all(groups.map(async g=>({g,result:await rfYTInspectVideo(g.video,g.segments)})));
+   for(const {g,result} of outcomes){
+    if(!Array.isArray(result)){visionErrors++;continue}
+    visionRan=true;
+    for(const x of result){if(!visualMatches.has(x.index))visualMatches.set(x.index,{match:x,video:g.video})}
+   }
+  }
   for(let i=0;i<parts.length;i++){
    const beat=steps[i],g=candidateGroups[i];let options=[];
    if(judge){const verdict=judged.get(i);const valid=new Set((verdict?.ids||[]).slice(0,4));options=g.options.filter(v=>valid.has(v.id)).slice(0,4)}
    else options=strictFallback(g.options,g.query,g.anchors);
    options=options.filter(v=>!v.durationSeconds||v.durationSeconds>2.5);
    if(!options.length){gaps.push({start:beat.start,duration:beat.duration,sentence:parts[i],query:g.query,reason:'هیچ ویدئوی دارای ارتباط قابل تأیید با متن پیدا نشد'});errors.push('بخش '+(i+1));continue}
+   const visual=visualMatches.get(i);
+   if(visual){
+    const clipSeconds=Math.min(beat.duration,visual.match.end-visual.match.start);
+    if(clipSeconds>=.5){
+     suggested.push({id:S.clipId++,sentence:parts[i],query:g.query,start:beat.start,duration:clipSeconds,
+      sourceStart:visual.match.start,sourceEnd:visual.match.start+clipSeconds,options:[visual.video],optionIndex:0,
+      videoFrameVerified:true,visualEvidence:visual.match.visualEvidence,unverified:false});
+     if(beat.duration-clipSeconds>.25)gaps.push({start:beat.start+clipSeconds,duration:beat.duration-clipSeconds,sentence:parts[i],query:g.query,reason:'صحنه تصویری تأییدشده برای باقی این بخش کافی نیست'});
+     continue;
+    }
+   }
+   // When Gemini has inspected the actual video, NEVER replace its negative result
+   // with an unrelated chapter-based clip from text metadata.
+   if(visionRan){
+    gaps.push({start:beat.start,duration:beat.duration,sentence:parts[i],query:g.query,reason:'جمنای صحنه مرتبط قابل تأییدی در تصویر این ویدئو پیدا نکرد'});
+    S.proposals.push(...options.slice(0,1).map(video=>({index:i,video})));
+    continue;
+   }
    // No guessed offsets. Select ONLY intervals documented as timestamped chapters
    // and matching this segment's topic; otherwise keep the section unresolved.
    const count=Math.min(42,Math.max(1,Math.ceil(beat.duration/6.5)));
@@ -328,13 +398,13 @@ btn.onclick=async()=>{
    if(unmatchedStart!==null)gaps.push({start:unmatchedStart,duration:Math.max(0,beat.start+beat.duration-unmatchedStart),sentence:parts[i],query:g.query,reason:'بازه زمان‌دارِ مرتبط برای ادامه این جمله کافی نبود'});
   }
   if(!suggested.length){
-   renderReferences();message(S.proposals.length?'ویدئوهای مرتبط از نظر عنوان پیدا شدند، اما زمان فصل‌بندی‌شدهٔ مناسب برای کات نبود. زمان حدسی نمی‌سازیم؛ لینک‌ها در فهرست هستند و کات‌های قبلی حفظ شدند.':'ویدئوی واقعاً مرتبط و دارای زمان کات مناسب پیدا نشد. کات حدسی نمی‌سازیم و کات‌های قبلی حفظ شدند.',true);
+   renderReferences();message(visionRan?'Gemini تصویر ویدیوهای انتخاب‌شده را بررسی کرد اما صحنه مرتبط و مطمئنی برای کات پیدا نشد؛ کات جعلی ساخته نمی‌شود.':S.proposals.length?'ویدئوهای مرتبط پیدا شدند اما زمان تصویری یا فصل معتبر برای برش پیدا نشد.':'ویدیوی مرتبطی با زمان کات قابل تأیید پیدا نشد.',true);
    return;
   }
   if(window.rfPrepareYoutubeOnly?.()===false){message('جایگزینی لغو شد؛ کات‌های قبلی حفظ شدند.');return}
   const unmatchedProposals=S.proposals.slice();reset();S.proposals=unmatchedProposals;S.items=suggested;S.gaps=gaps;S.duration=dur;S.selected=0;renderReferences();updateClock(0);
   await showClip(0,false,0);
-  message('✓ '+suggested.length+' برشِ مجازی بر اساس فصل‌های زمان‌دار YouTube ساخته شد؛ '+gaps.length+' بازه بدون زمان قابل تأیید خالی ماند. عنوان فصل‌ها با متن تطبیق داده شده اما محتوای تصویری فریم‌ها بررسی نشده است. برش‌های یوتیوب وارد MP4 نمی‌شوند.',false);
+  message('✓ '+suggested.length+' کات پیشنهادی روی تایم‌لاین قرار گرفت ('+suggested.filter(x=>x.videoFrameVerified).length+' کات با بررسی تصویری Gemini). '+gaps.length+' بازه بدون تصویر مرتبط خالی ماند. این کات‌ها پیش‌نمایش یوتیوب هستند و هنوز در فایل MP4 وارد نمی‌شوند.',false);
  }catch(e){message('تدوین ناتمام ماند؛ کات‌های قبلی حفظ شدند. '+(e?.message||String(e)),true)}finally{btn.disabled=false}
 };
 
@@ -350,6 +420,6 @@ window.rfYTStartAutoEdit=()=>btn.onclick();
 window.rfYTReset=reset;
 window.rfYTStopPreview=()=>{stop();overlay.hidden=true};
 window.rfYTPreviewState=()=>({count:S.items.length,duration:S.duration,active:S.active,sourceCount:new Set(S.items.map(it=>it.options[it.optionIndex||0]?.id)).size});
-renderInspector();message('فقط YouTube: برای جلوگیری از کات‌های تصادفی، برش خودکار فقط از فصل‌های زمان‌دار مرتبط ساخته می‌شود. تصویر فیلم‌ها تحلیل نمی‌شود.');
+renderInspector();message('YouTube + Gemini: ویدیوهای عمومی با Gemini برای پیشنهاد صحنه و زمان کات بررسی می‌شوند. دریافت فایل و MP4 از YouTube هنوز فعال نیست.');
 window.addEventListener('beforeunload',()=>{stop();if(S.voiceURL)URL.revokeObjectURL(S.voiceURL)});
 })();

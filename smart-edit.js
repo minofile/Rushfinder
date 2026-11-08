@@ -74,6 +74,57 @@ $('aspect').onchange=()=>{const ratio=$('aspect').value;if(ratio==='9:16'){canva
 if(window.ResizeObserver)new ResizeObserver(layoutPreviewFrame).observe($('stage'));else window.addEventListener('resize',layoutPreviewFrame);
 requestAnimationFrame(layoutPreviewFrame);
 window.rfSmartEditHasClips=()=>clips.length>0;
+// Gemini's YouTube timestamp matches become REAL, editable source cuts once the
+// user supplies licensed local copies of those exact videos.
+// This import stays in the browser: original files are not sent to Vercel.
+window.rfApplyYoutubeCutsFromLocalFiles=async(items,videoFiles,voiceSeconds)=>{
+ if(exporting)throw Error('ابتدا خروجی در حال ساخت را تمام کن.');
+ if(!items?.length)throw Error('ابتدا کات‌های هوشمند را بساز.');
+ const names=new Map();
+ for(const file of Array.from(videoFiles||[])){
+  const matches=String(file.name||'').match(/[A-Za-z0-9_-]{11}/g)||[];
+  for(const id of matches)if(!names.has(id))names.set(id,file);
+ }
+ const cuts=items.map(item=>{
+  const option=item.options?.[item.optionIndex||0]||{};
+  return {id:option.id,start:Number(item.start),duration:Number(item.duration),sourceStart:Number(item.sourceStart)};
+ }).sort((a,b)=>a.start-b.start);
+ const needed=[...new Set(cuts.map(x=>x.id))];
+ if(cuts.some(x=>!/^[A-Za-z0-9_-]{11}$/.test(x.id||'')||!Number.isFinite(x.start)||!Number.isFinite(x.duration)||!Number.isFinite(x.sourceStart)||x.start<0||x.duration<.4||x.sourceStart<0))throw Error('اطلاعات تایم‌کد معتبر نیست.');
+ const missing=needed.filter(x=>!names.has(x));
+ if(missing.length)throw Error('فایل‌ ویدیوی منبع پیدا نشد (شناسه باید در نام فایل باشد): '+missing.join('، '));
+ const sources=new Map();
+ for(const id of needed){
+  const m=await importFile(names.get(id));
+  if(!m||m.type!=='video')throw Error('ویدئوی اصلی خوانده نشد: '+id);
+  sources.set(id,m);
+ }
+ for(const cut of cuts){const m=sources.get(cut.id);if(cut.sourceStart+cut.duration>m.duration+.15)throw Error('زمان کات از مدت ویدئوی اصلی بیشتر است: '+cut.id);}
+ const newClips=[];let cursor=0,blankMedia=null;
+ async function gap(d){
+  if(d<=.05)return;
+  if(!blankMedia){
+   const cv=document.createElement('canvas');cv.width=16;cv.height=9;
+   const blob=await new Promise(resolve=>cv.toBlob(resolve,'image/png'));
+   blankMedia=await importFile(new File([blob],'RushFinder-Black-Gap.png',{type:'image/png'}));
+   if(!blankMedia)throw Error('ساخت فریم خالی برای همگام‌سازی نریشن ناموفق بود.');
+  }
+  newClips.push(createClip(blankMedia,0,d,1));
+ }
+ for(const c of cuts){
+  if(c.start<cursor-.05)throw Error('کات‌ها روی تایم‌لاین همپوشانی غیرمجاز دارند.');
+  if(c.start>cursor+.05)await gap(c.start-cursor);
+  newClips.push(createClip(sources.get(c.id),c.sourceStart,c.sourceStart+c.duration,1));
+  cursor=c.start+c.duration;
+ }
+ const desired=Math.max(cursor,Number(voiceSeconds)||0);
+ if(desired>cursor+.05)await gap(desired-cursor);
+ snapshot();stopPlayback();clips=newClips;titles=[];selected=clips[0]?{type:'video',id:clips[0].id}:null;
+ transition='cut';syncTransitionButtons();playheadTime=0;
+ afterChange('✓ '+cuts.length+' برش واقعی از فایل‌های مجاز روی تایم‌لاین قرار گرفت. حالا پخش و خروجی MP4/WebM فعال است.');
+ return cuts.length;
+};
+
 function pushClip(c){snapshot();clips.push(c);selected={type:'video',id:c.id};afterChange('کلیپ به تایم‌لاین اضافه شد')}
 function afterChange(msg){stopPlayback();if(clips.length)window.rfYTStopPreview?.();playheadTime=clamp(playheadTime,0,duration());renderTimeline();window.dispatchEvent(new Event('rfTimelineChanged'));renderInspector();paint(playheadTime);updateTimeUI();if(msg)status(msg)}
 function addMediaToTimeline(id){const m=media.get(id);if(!m)return;if(m.type==='audio'){setAudio('music',id);return}pushClip(createClip(m))}
