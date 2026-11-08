@@ -543,6 +543,29 @@ $('exportBtn').onclick=async()=>{if(exporting)return;if(!clips.length)return ale
  try{stopPlayback();seek(0);ensureAudio();await audioCtx?.resume?.();paint(0);const videoStream=canvas.captureStream(30),tracks=[...videoStream.getVideoTracks()];if(audioDest&&(audioTracks.music||audioTracks.voice||clips.some(c=>c.el?.tagName==='VIDEO')))tracks.push(...audioDest.stream.getAudioTracks());const stream=new MediaStream(tracks);recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:3500000});recorder.ondataavailable=e=>{if(e.data.size)recordedChunks.push(e.data)};recorder.onerror=e=>{status('خطای ضبط خروجی: '+(e.error?.message||'ناشناخته'))};recorder.onstop=()=>{videoStream.getTracks().forEach(t=>t.stop());if(cancelRecording){recordedChunks=[];return}outputBlob=new Blob(recordedChunks,{type:recorder.mimeType});outputName='RushFinder-SmartEdit-'+Date.now()+(recorder.mimeType.includes('mp4')?'.mp4':'.webm');$('modalTitle').textContent='ویدئوی تدوین‌شده آماده است';$('modalText').textContent=`${fa((outputBlob.size/1e6).toFixed(1))} مگابایت · ${recorder.mimeType.includes('mp4')?'MP4':'WebM'} · بدون ارسال به سرور`;$('exportProgress').value=100;$('cancelExport').classList.add('hidden');$('downloadExport').classList.remove('hidden');$('closeModal').classList.remove('hidden');exporting=false;status('خروجی آماده دانلود است')};
  recorder.start(600);await startPlayback();if(!isPlaying)throw Error('پخش پروژه شروع نشد');status('در حال ضبط خروجی روی کامپیوتر...');
  }catch(e){console.error(e);exporting=false;stopPlayback();hideModal();alert('ساخت خروجی ممکن نشد: '+e.message)}};
+// 0942: public bridge for Claude-generated, editable motion scenes.
+window.rfCreateClaudeMotionProject=async function(plan){
+ if(!plan||!Array.isArray(plan.scenes)||!plan.scenes.length)throw Error('سناریوی صحنه معتبر نیست');
+ if(exporting)throw Error('ابتدا خروجی در حال ساخت را تمام کن.');
+ if(clips.length||titles.length){if(!confirm('صحنه‌های جدید به انتهای تایم‌لاین فعلی اضافه شوند؟'))return false;}
+ let cursor=duration();
+ for(const scene of plan.scenes){
+  const sec=clamp(Number(scene.duration)||5,2,20);
+  const title=String(scene.title||'صحنه خبری').slice(0,100);
+  const subtitle=String(scene.visual||scene.description||'').slice(0,180);
+  const accent=['#20b7d5','#3977ef','#9b6bd3','#22a58c','#d28a3b'][Math.abs(String(scene.type||'').length)%5];
+  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#071426"/><stop offset="1" stop-color="#18395d"/></linearGradient><radialGradient id="r"><stop stop-color="${accent}" stop-opacity=".65"/><stop offset="1" stop-color="${accent}" stop-opacity="0"/></radialGradient></defs><rect width="1920" height="1080" fill="url(#g)"/><circle cx="1500" cy="250" r="650" fill="url(#r)"/><path d="M0 870 Q500 650 950 900 T1920 760 V1080 H0Z" fill="#07101d" opacity=".6"/><path d="M130 170 H460" stroke="${accent}" stroke-width="12" stroke-linecap="round"/><text x="170" y="480" fill="#ffffff" font-size="100" font-family="Tahoma,Arial,sans-serif" font-weight="700">${esc(title)}</text><foreignObject x="170" y="535" width="1450" height="220"><div xmlns="http://www.w3.org/1999/xhtml" style="font:42px Tahoma,Arial,sans-serif;color:#c6d9ef;line-height:1.6">${esc(subtitle)}</div></foreignObject><text x="170" y="950" fill="${accent}" font-size="28" font-family="Arial,sans-serif" letter-spacing="8">RUSHFINDER  •  MOTION STORY</text><circle cx="1660" cy="850" r="110" fill="none" stroke="${accent}" stroke-width="3" opacity=".65"/><circle cx="1660" cy="850" r="75" fill="none" stroke="#ffffff" stroke-width="2" opacity=".25"/></svg>`;
+  const file=new File([svg],'Claude-Motion-'+(cursor.toFixed(0))+'.svg',{type:'image/svg+xml'});
+  const m=await importFile(file); if(!m)throw Error('ساخت صحنه تصویری ناموفق بود');
+  m.duration=sec; const clip=createClip(m); clip.in=0;clip.out=sec;clip.speed=1;clip.volume=0;
+  // Place each scene sequentially on the main video track.
+  clip.start=cursor; pushClip(clip); cursor+=sec;
+  const t={id:uid(),text:title,start:clip.start,length:sec};titles.push(t);
+ }
+ selected=null;afterChange('سناریوی Claude روی تایم‌لاین قرار گرفت؛ صحنه‌ها و عنوان‌ها قابل جابه‌جایی و ویرایش‌اند.');
+ return true;
+};
 window.addEventListener('keydown',e=>{const editing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();return}if(editing)return;if(e.code==='Space'){e.preventDefault();isPlaying?stopPlayback():startPlayback()}if(e.key.toLowerCase()==='s'){e.preventDefault();split()}if(e.key==='Delete'||e.key==='Backspace')removeSelected()});
 window.addEventListener('beforeunload',()=>{for(const m of media.values())URL.revokeObjectURL(m.url);pauseAll()});
 renderAssets();renderTimeline();renderInspector();paint(0);

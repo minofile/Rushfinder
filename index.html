@@ -4903,7 +4903,7 @@ function dateFor(y,m,d){let lo=Date.UTC(y+620,0,1),hi=Date.UTC(y+623,0,1);while(
 function load(src){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('Template image load failed'));img.src=src})}
 function line(ctx,text,x,y,maxWidth,size=33){ctx.font=`bold ${size}px YEKAN,Tahoma,sans-serif`;ctx.textAlign='center';ctx.direction='rtl';ctx.fillText(text,x,y,maxWidth)}
 // Load the complete on-disk Sada Khorasan template (the old inline PNG was truncated). and on Vercel even when a separate asset URL is missing.
-const templateData='assets/calendar/seda-daily-template.webp';
+const templateData='assets/calendar/seda-daily-template.png';
 // Offline ZIP writer (STORE, CRC-32): no CDN or network connection required.
 function crc32(bytes){let c=0xffffffff;for(const v of bytes){c^=v;for(let j=0;j<8;j++)c=(c>>>1)^((c&1)?0xedb88320:0)}return(c^0xffffffff)>>>0}
 function zipFiles(files){const enc=new TextEncoder(),parts=[],central=[];let offset=0;const u16=(v)=>[v&255,(v>>>8)&255],u32=(v)=>[v&255,(v>>>8)&255,(v>>>16)&255,(v>>>24)&255];for(const f of files){const name=enc.encode(f.name),data=f.data,crc=crc32(data),size=data.length;const local=new Uint8Array([...u32(0x04034b50),...u16(20),...u16(0x0800),...u16(0),...u16(0),...u16(0),...u32(crc),...u32(size),...u32(size),...u16(name.length),...u16(0),...name]);parts.push(local,data);central.push(new Uint8Array([...u32(0x02014b50),...u16(20),...u16(20),...u16(0x0800),...u16(0),...u16(0),...u16(0),...u32(crc),...u32(size),...u32(size),...u16(name.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(offset),...name]));offset+=local.length+data.length}const centralSize=central.reduce((n,x)=>n+x.length,0),end=new Uint8Array([...u32(0x06054b50),...u16(0),...u16(0),...u16(files.length),...u16(files.length),...u32(centralSize),...u32(offset),...u16(0)]);return new Blob([...parts,...central,end],{type:'application/zip'})}
@@ -4918,7 +4918,7 @@ button.addEventListener('click',async()=>{
  const y=Number(en(match[1])),m=monthIndex+1;
  button.disabled=true;
  try{
-  const template=await load(media==='اخبار مشهد'?'assets/calendar/mashhad-daily-template.webp':media==='خبرفوری'?'assets/calendar/khabarfori-daily-template.webp':media==='اخبار استان‌ها'?'assets/calendar/provinces-daily-template.webp':templateData),canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1920;
+  const template=await load(media==='اخبار مشهد'?'assets/calendar/mashhad-daily-template.png':media==='خبرفوری'?'assets/calendar/khabarfori-daily-template.png':media==='اخبار استان‌ها'?'assets/calendar/provinces-daily-template.png':templateData),canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1920;
   const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Canvas unavailable');
   const files=[];
   for(let i=0;i<chosen.length;i++){
