@@ -1,6 +1,8 @@
 {
   "functions": {
-    "api/youtube-music.js": {"maxDuration": 60},
+    "api/youtube-music.js": {
+      "maxDuration": 60
+    },
     "api/search.js": {
       "maxDuration": 10
     },
@@ -15,6 +17,10 @@
     }
   },
   "rewrites": [
+    {
+      "source": "/api/claude-motion-plan",
+      "destination": "/api/chat?mode=claude-motion-plan"
+    },
     {
       "source": "/api/audius-download",
       "destination": "/api/combined-music?__rf_music_route=audius"
