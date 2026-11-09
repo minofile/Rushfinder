@@ -297,7 +297,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب ۶۰۵</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01000</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -358,6 +358,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
   <input id="rf962-access" type="password" autocomplete="off" spellcheck="false" placeholder="کد اختصاصی مدیر را وارد کنید" aria-label="کد دسترسی مدیر">
   <p class="rf962-help">کلید AvalAI فقط روی سرور Vercel با نام AVALAI_API_KEY ثبت می‌شود و هرگز در مرورگر قرار نمی‌گیرد. برای جلوگیری از مصرف ناخواسته، ساخت تصویر به کد دسترسی مدیر نیاز دارد.</p>
 </div>
+<div id="rf1000-brand-lock" role="status" style="background:#eaf8f0;color:#17693e;border:1px solid #c2ead4;border-radius:11px;padding:10px 13px;font-size:12px;line-height:1.9;font-weight:700">🔒 لوگو و قالب انتخابی ثابت هستند؛ هوش مصنوعی فقط محتوای اینفوگرافیک را تولید می‌کند.</div>
 <div id="rf607-test-area"><button type="button" id="rf607-test-button">بررسی اتصال AvalAI</button><span id="rf607-test-output" role="status" aria-live="polite"></span></div>
 <div class="actions rf601-actions"><button id="generate" class="primary">✦ ساخت اینفوگرافیک</button><button id="reroll" class="ghost">↻ طرح متفاوت</button></div><div id="rf594-status" role="status" aria-live="polite" style="font-size:12px;line-height:1.9;color:#27546b;white-space:pre-wrap;margin-top:7px" hidden></div>
     </section>
@@ -433,8 +434,8 @@ const layoutName=document.getElementById('layoutName');
 const dimsEl=document.getElementById('dimensions');
 const brandsEl=document.getElementById('brands');
 function updateMeta(){const d=(dimsEl.textContent||'').trim();let l=(layoutName.textContent||'').trim()||'تشخیص خودکار چیدمان';l=l.replace(/^چیدمان:\s*/,'').replace(' • محتوای سمت سفید','');if(metaEl)metaEl.textContent=d+' | '+l;}
-Object.entries(brands).forEach(([k,v])=>{const b=document.createElement('button');b.className='brandBtn'+(k===brand?' active':'');b.innerHTML='<span class="brandTxt"><strong>'+v.name+'</strong><span>تم اختصاصی '+v.name+'</span></span><span class="brandIconBox"></span>';b.onclick=()=>{brand=k;brandsEl.querySelectorAll('.brandBtn').forEach(x=>x.classList.remove('active'));b.classList.add('active');render()};brandsEl.appendChild(b)});
-document.querySelectorAll('.sizeBtn').forEach(btn=>btn.onclick=()=>{size=btn.dataset.size;document.querySelectorAll('.sizeBtn').forEach(x=>x.classList.toggle('active',x===btn));render()});
+Object.entries(brands).forEach(([k,v])=>{const b=document.createElement('button');b.className='brandBtn'+(k===brand?' active':'');b.innerHTML='<span class="brandTxt"><strong>'+v.name+'</strong><span>تم اختصاصی '+v.name+'</span></span><span class="brandIconBox"></span>';b.onclick=()=>{window.rf1000ComposedReady=false;brand=k;brandsEl.querySelectorAll('.brandBtn').forEach(x=>x.classList.remove('active'));b.classList.add('active');render()};brandsEl.appendChild(b)});
+document.querySelectorAll('.sizeBtn').forEach(btn=>btn.onclick=()=>{window.rf1000ComposedReady=false;size=btn.dataset.size;document.querySelectorAll('.sizeBtn').forEach(x=>x.classList.toggle('active',x===btn));render()});
 document.getElementById('generate').onclick=()=>{variant++;render()};
 document.getElementById('reroll').onclick=()=>{variant++;render();statusEl.textContent='طرح حرفه‌ای با چیدمان متفاوت ساخته شد.'};
 function normalizeText(t){return (t||'').replace(/\r/g,'').replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/ۀ/g,'ه').replace(/\s+:/g,':').replace(/:+/g,':').replace(/\u200c{2,}/g,'‌').replace(/می باشد/g,'می‌باشد').replace(/نمی باشد/g,'نمی‌باشد').replace(/[ \t]+$/gm,'').trim()}
@@ -711,60 +712,75 @@ function rf581Render(){
   urgent:{square:'urgent-square.png',story:'urgent-story.png'},
   mashhad:{square:'mashhad-square.png',story:'mashhad-story.png'},
   jaryan:{square:'jaryan-square.png',story:'jaryan-story.png'},
-  farda:{square:'urgent-square.png',story:'urgent-story.png'}
+  farda:{square:'farda-square.png',story:'farda-story.png'}
  };
  function rf705TemplatePath(b=brand,z=size){
-  return 'assets/infographic-templates/'+(rf705TemplateFiles[b]||rf705TemplateFiles.urgent)[z];
+  return 'assets/infographic-templates/'+(rf705TemplateFiles[b]||rf705TemplateFiles.urgent)[z]+'?v=01000';
  }
  function rf705LoadTemplate(b=brand,z=size){
   const path=rf705TemplatePath(b,z);
-  if(rf705TemplateCache[path])return rf705TemplateCache[path];
-  rf705TemplateCache[path]=new Promise((resolve,reject)=>{
-   const img=new Image();img.onload=()=>resolve(img);
-   img.onerror=()=>reject(new Error('قالب اصلی برند بارگذاری نشد: '+path));
-   img.src=path;
+  if(!rf705TemplateCache[path]){
+   rf705TemplateCache[path]=new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.onload=()=>resolve(img);
+    img.onerror=()=>{delete rf705TemplateCache[path];reject(new Error('قالب لوگوی ثابت بارگذاری نشد: '+path))};
+    img.src=path;
+   });
+  }
+  return rf705TemplateCache[path].then(img=>{
+    // Never switch the saved image of one brand into another brand's output.
+    if(path===rf705TemplatePath()){
+     window.rf705CurrentTemplate=img;
+     window.rf705CurrentTemplatePath=path;
+    }
+    return img;
   });
-  return rf705TemplateCache[path];
  }
  window.rf705LoadTemplate=rf705LoadTemplate;
+ // RushFinder 01000: exact source logo always wins over AI generated pixels.
+ // A successful draw *requires* the matching brand PNG, never ship an unbranded frame.
  function rf702DrawFinal(){
   const pic=window.rf702FinalImage;
   if(!pic)return false;
-  safeCanvas();ctx.clearRect(0,0,cv.width,cv.height);
-  ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);
-  // 0715: Full-bleed Gemini artwork (COVER). The authentic brand template is
-  // drawn last at its original geometry, without editing any PNG bytes.
-  // Do not fit/contain the image into a small center panel.
+  const path=rf705TemplatePath();
+  const template=window.rf705CurrentTemplatePath===path?window.rf705CurrentTemplate:null;
+  window.rf1000ComposedReady=false;
+  if(!template || !template.complete || !template.naturalWidth){
+   rf705LoadTemplate().then(()=>{if(window.rf702FinalImage===pic && rf705TemplatePath()===path)rf702DrawFinal();})
+    .catch(err=>{console.error(err);statusEl.textContent=err.message;});
+   return true;
+  }
+  safeCanvas();
   const W=cv.width,H=cv.height;
+  const isStory=size==='story';
+  const brandRail={
+   urgent:{width:isStory?1107/1280:1760/2000,colour:'#eaf2fe'},
+   mashhad:{width:isStory?1069/1280:1760/2000,colour:'#ffcc00'},
+   jaryan:{width:isStory?1069/1280:1760/2000,colour:'#090909'}
+  };
   ctx.save();
-  const coverScale=Math.max(W/pic.naturalWidth,H/pic.naturalHeight);
-  const coverW=pic.naturalWidth*coverScale,coverH=pic.naturalHeight*coverScale;
-  ctx.drawImage(pic,(W-coverW)/2,(H-coverH)/2,coverW,coverH);
-  ctx.restore();
-  // RF0728 revised: Gemini receives headline inside original input and lays it out ONCE.
-  // No extra title overlay, panel, white cover, or logo-area repaint by RushFinder.
-  // RF0730: The white lettering inside the authentic green brand logo is
-  // transparent in the original overlay PNG. Place a pure white backing behind
-  // this small logo zone BEFORE compositing the untouched PNG. Otherwise the
-  // generated picture shows through and turns those letters grey or textured.
-  if(brand==='urgent'){
-    ctx.save();ctx.fillStyle='#ffffff';
-    ctx.fillRect(Math.round(W*.78),0,Math.ceil(W*.22),Math.ceil(H*(size==='story'?.12:.235)));
+  try{
+   ctx.clearRect(0,0,W,H);
+   ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H);
+   if(brandRail[brand]){
+    const rail=brandRail[brand];
+    const right=Math.round(W*rail.width);
+    // A solid, uniform backing for the original brand's transparent side rail.
+    ctx.fillStyle=rail.colour;ctx.fillRect(right,0,W-right,H);
+    ctx.save();ctx.beginPath();ctx.rect(0,0,right,H);ctx.clip();
+    ctx.drawImage(pic,0,0,pic.naturalWidth,pic.naturalHeight,0,0,right,H);
     ctx.restore();
-  }
-  // Always draw the exact original PNG template LAST, with no modifications.
-  const template=window.rf705CurrentTemplate;
-  if(template && window.rf705CurrentTemplatePath===rf705TemplatePath()){
-    ctx.drawImage(template,0,0,cv.width,cv.height);
-  }else{
-    rf705LoadTemplate().then(img=>{
-      if(!window.rf702FinalImage)return;
-      window.rf705CurrentTemplate=img;
-      window.rf705CurrentTemplatePath=rf705TemplatePath();
-      rf702DrawFinal();
-    }).catch(err=>{console.error(err);statusEl.textContent=err.message});
-  }
-  layoutName.textContent='اینفوگرافیک داخل قالب اصلی '+brands[brand].name;updateMeta();
+   }else{
+    // Farda's authentic logo sits at bottom left, not on the urgent-news rail.
+    // Reserve space so AI drawings cannot hide it or paint another logo over it.
+    const bottom=Math.round(H*(isStory?0.925:0.89));
+    ctx.drawImage(pic,0,0,pic.naturalWidth,pic.naturalHeight,0,0,W,bottom);
+   }
+   // Draw exact, user-supplied alpha PNG last; its brand mark never gets redrawn by AI.
+   ctx.drawImage(template,0,0,W,H);
+  }finally{ctx.restore();}
+  window.rf1000ComposedReady=true;
+  layoutName.textContent='محتوا + لوگوی ثابت اصلی '+brands[brand].name;updateMeta();
   area.classList.add('rf702-has-image');
   return true;
  }
@@ -962,7 +978,23 @@ const rf586OriginalRender=render;
  render=function(){if(window.rf702DrawFinal?.())return;if(!input.value.trim()){safeCanvas();ctx.clearRect(0,0,cv.width,cv.height);return;}if(!rf595DrawComparison()){if(rf580Style.value==='auto'){safeCanvas();rf581Render();}else rf586OriginalRender();}rf586DrawSource();};
  rf586SourceOn.addEventListener('change',()=>{rf586SourceText.hidden=!rf586SourceOn.checked;render();});
  rf586SourceText.addEventListener('input',render);
- document.getElementById('download').onclick=()=>{render(); cv.toBlob(blob=>{const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='RushFinder-Infographic-712-'+brand+'-'+size+'.png'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1500);},'image/png')};
+ document.getElementById('download').onclick=async()=>{
+   const b=document.getElementById('download');b.disabled=true;
+   try{
+    if(window.rf702FinalImage){
+      await rf705LoadTemplate(brand,size);
+      rf702DrawFinal();
+      if(!window.rf1000ComposedReady)throw new Error('قالب لوگوی ثابت هنوز آماده نیست؛ PNG ذخیره نشد.');
+    }else{render();}
+    const blob=await new Promise(resolve=>cv.toBlob(resolve,'image/png'));
+    if(!blob)throw new Error('ساخت فایل PNG امکان‌پذیر نیست.');
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;
+    a.download='RushFinder-Infographic-01000-'+brand+'-'+size+'.png';
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);
+   }catch(err){console.error(err);statusEl.textContent=err.message;}
+   finally{b.disabled=false;}
+  };
  document.getElementById('copy').onclick=()=>{const t=input.value; if(navigator.clipboard?.writeText) navigator.clipboard.writeText(t).then(()=>statusEl.textContent='متن کپی شد.'); else {input.select(); document.execCommand('copy'); statusEl.textContent='متن کپی شد.';}};
  rf580TitleText.value='';
  input.value='';
@@ -1066,8 +1098,10 @@ function promptFor(c){
   'همهٔ اقلام منبع را دقیقاً یک‌بار بیاور. متن، واحد و اعداد را تغییر نده، تکرار نکن و هیچ مقدار ساختگی مثل درصد، شماره تماس یا ردیف نمونه اضافه نکن.',
   'تمام اعداد واقعی منبع با ارقام فارسی نوشته شوند. از نمایش رشتهٔ آزمایشی ارقام خودداری کن.',
   'خوانایی، هماهنگی رنگ، آیکون معنادار، ترکیب‌بندی حرفه‌ای، اندازه‌های متنوع و فاصله‌گذاری منظم را رعایت کن.',
-  'تمام بوم را با محتوای مرتبط پر کن؛ حاشیهٔ بی‌دلیل و کادرهای خالی نساز. تیتر و بدنه مزاحم لوگو نشوند.',
-  'گوشهٔ بالای راست متعلق به قالب اصلی و لوگوی سفید «خبر فوری» است؛ در آن ناحیه هیچ طرح، متن، لوگو یا کادر نساز. قالب PNG ثابت بعداً به تصویر اضافه می‌شود.',
+  'یک تصویر محتوایی مستقل بساز که همهٔ تیترها، آمار و تصاویر در محدودهٔ خودش و با حاشیهٔ امن ۵ درصد جا شوند. هیچ متن یا عددی از لبه قطع نشود.',
+  'هیچ لوگو، نام رسانه، نام شرکت، واترمارک یا نوار برند نساز؛ لوگوی اصلی به صورت لایهٔ قفل شده بعد از ساخت اضافه می‌شود و نباید توسط مدل بازطراحی شود.',
+  'مثل یک اینفوگرافیک تحریریه‌ای حرفه‌ای طراحی کن: تیتر خوانا، بلوک‌های متنوع متناسب با تعداد اقلام، تصویر یا آیکون مرتبط برای هر گروه، سلسله‌مراتب واضح و یک کادر جمع‌بندی در پایین؛ بدون باکس‌های بزرگ خالی.',
+  'همهٔ محتوا، اعداد و نام‌ها باید فقط از متن کاربر باشند؛ موردی را حذف یا جعل نکن. برای متن‌های بلند فونت را مناسب کن.',
   custom,
   'متن منبع (بدون افزودن هیچ کلمه یا داده):',raw,
   'خروجی یک تصویر واحد باشد.'
