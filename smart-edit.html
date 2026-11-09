@@ -461,6 +461,44 @@ body:not(.rf-show-legacy-tracks) #transitionTrack~.drop-hint{display:none!import
 #rfHermesPanel .rf-hermes-header { display: flex !important; }
 #rfHermesPanel #rfHermesSubmit { display: block !important; }
 </style>
+<!-- RushFinder 0961: hide duplicate advanced narration fields; fix inspector padding. -->
+<style id="rf0961-editor-spacing-and-dedup">
+/* Advanced tools retain legacy DOM IDs for existing JS but do not show a second narration form. */
+#rfHermesLegacyContent .rf0961-hide-duplicate,
+#rfHermesLegacyContent > label.voice-drop:has(> #autoVoiceInput),
+#rfHermesLegacyContent > #autoVoiceInfo,
+#rfHermesLegacyContent > .field:has(> textarea#script),
+#rfHermesLegacyContent > label:first-child:has(> input[type="checkbox"])
+{display:none !important;}
+/* Give the left-side output format field real space inside the panel. */
+.workspace .inspector {overflow-y:auto !important;overflow-x:hidden !important;
+  padding-bottom:18px !important;scrollbar-gutter:stable;box-sizing:border-box;}
+.workspace .inspector .project-controls {box-sizing:border-box !important;
+  padding-inline:13px !important;padding-bottom:26px !important;}
+.workspace .inspector .project-controls .project-readonly {box-sizing:border-box !important;
+  width:calc(100% - 12px) !important;max-width:calc(100% - 12px) !important;
+  margin-inline:6px !important;margin-bottom:14px !important;}
+.workspace .inspector .rf-project-accordion {box-sizing:border-box;padding-bottom:16px !important;}
+</style>
+<script id="rf0961-dom-compat">
+(()=>{'use strict';
+ function clean(){
+  const old=document.getElementById('rfHermesLegacyContent');if(!old)return;
+  const audio=old.querySelector('#autoVoiceInput');
+  if(audio){const wrap=audio.closest('label');if(wrap&&old.contains(wrap))wrap.classList.add('rf0961-hide-duplicate');}
+  const info=old.querySelector('#autoVoiceInfo');if(info)info.classList.add('rf0961-hide-duplicate');
+  const script=old.querySelector('#script');
+  if(script){const field=script.closest('.field');if(field&&old.contains(field))field.classList.add('rf0961-hide-duplicate');}
+  for(const child of old.children){
+   if(child.tagName==='LABEL'&&child.querySelector('input[type="checkbox"]'))
+    child.classList.add('rf0961-hide-duplicate');
+  }
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',clean,{once:true});
+ else clean();
+})();
+</script>
+
 </head><body>
 <div class="app">
 <header class="top">
