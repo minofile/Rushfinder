@@ -457,6 +457,10 @@ body:not(.rf-show-legacy-tracks) #transitionTrack~.drop-hint{display:none!import
 #rfHermesPanel .rf-hermes-note,
 #rfHermesPanel .rf-hermes-access { display: none !important; }
 </style>
+<style id="rf0960-visible-labels">
+#rfHermesPanel .rf-hermes-header { display: flex !important; }
+#rfHermesPanel #rfHermesSubmit { display: block !important; }
+</style>
 </head><body>
 <div class="app">
 <header class="top">
@@ -485,8 +489,8 @@ body:not(.rf-show-legacy-tracks) #transitionTrack~.drop-hint{display:none!import
 <div class="lib-content hidden" id="textTab"><div class="note smart-report">برای نوشتن متن روی فیلم از این ابزار استفاده کن. متن سناریوی تدوین به‌صورت خودکار روی خروجی نمایش داده نمی‌شود.</div><button class="btn primary" id="moveTextToScript" style="width:100%;white-space:normal" type="button">✦ تبدیل متن به تدوین هوشمند</button><div class="field"><label>متن روی تصویر</label><textarea id="titleText" placeholder="تیتر خبر یا جمله کوتاه…" rows="3"></textarea></div><button class="btn primary" id="addTitle" style="width:100%">＋ افزودن متن در نشانگر</button><p class="note">متن روی لایه بالای ویدئو قرار می‌گیرد و در خروجی هم دیده می‌شود.</p></div>
 <div class="lib-content hidden" id="audioTab"><label class="import" for="musicInput">♫ افزودن موسیقی</label><input accept="audio/*" class="file-input" id="musicInput" type="file"/><label class="import" for="voiceInput" style="margin-top:10px">🎙 انتخاب فایل نریشن</label><input accept="audio/*" class="file-input" id="voiceInput" type="file"/><button class="btn" id="autoMusic" style="width:100%;margin-top:10px">♫ ساخت موسیقی ساده خودکار</button><button class="btn" id="recordVoice" style="width:100%;margin-top:10px">● ضبط نریشن با میکروفون</button><p class="note">نریشن و موسیقی لایه‌های جداگانه دارند. ضبط میکروفون به مجوز مرورگر نیاز دارد.</p></div>
 <div class="lib-content" id="autoTab">
-<section class="rf-hermes-editor" id="rfHermesPanel" aria-label="تدوین با Hermes">
-  <div class="rf-hermes-header" id="rf0959Heading"><strong>ØªØ¯ÙˆÛŒÙ†</strong></div>
+<section class="rf-hermes-editor" id="rfHermesPanel" aria-label="تدوین">
+  <div class="rf-hermes-header" id="rf0959Heading"><strong>تدوین</strong></div>
   <div id="rf0957HermesHiddenHeader" class="rf0957-hidden-compat" hidden aria-hidden="true"><span id="rfHermesLive" class="rf-hermes-chip">بررسی اتصال…</span></div>
   <p class="rf-hermes-lead">متن و فایل نریشن را برای تدوین آماده کن.</p>
   <label for="rfHermesScript">متن یا دستور تدوین</label>
@@ -495,7 +499,7 @@ body:not(.rf-show-legacy-tracks) #transitionTrack~.drop-hint{display:none!import
   <div class="rf-hermes-fileinfo" id="rfHermesAudioInfo">فایل انتخاب نشده</div>
   <details class="rf-hermes-access"><summary>🔒 کد دسترسی تدوین</summary><input type="password" autocomplete="off" id="rfHermesAccessCode" placeholder="کد دسترسی ارائه‌شده توسط مدیر سایت"></details>
   <!-- Hermes job controls are withheld until the colleague's worker is connected. Keep IDs for existing JS. -->
-  <button type="button" class="btn primary rf-hermes-submit" id="rfHermesSubmit">ارسال درخواست به Hermes</button>
+  <button type="button" class="btn primary rf-hermes-submit" id="rfHermesSubmit">ارسال درخواست</button>
   <div id="rf0957HermesJobCompat" class="rf0957-hidden-compat" hidden aria-hidden="true">
     
     <div id="rfHermesStatus" role="status" aria-live="polite" class="rf-hermes-status">سفارش جدیدی ثبت نشده است.</div>
