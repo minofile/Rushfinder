@@ -297,7 +297,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01000</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01001</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -715,7 +715,7 @@ function rf581Render(){
   farda:{square:'farda-square.png',story:'farda-story.png'}
  };
  function rf705TemplatePath(b=brand,z=size){
-  return 'assets/infographic-templates/'+(rf705TemplateFiles[b]||rf705TemplateFiles.urgent)[z]+'?v=01000';
+  return 'assets/infographic-templates/'+(rf705TemplateFiles[b]||rf705TemplateFiles.urgent)[z]+'?v=01001';
  }
  function rf705LoadTemplate(b=brand,z=size){
   const path=rf705TemplatePath(b,z);
@@ -762,10 +762,16 @@ function rf581Render(){
   try{
    ctx.clearRect(0,0,W,H);
    ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H);
-   if(brandRail[brand]){
+   if(brand==='urgent'){
+    // 01001: The user-provided Khabar Fori template is transparent except for its
+    // green brand mark / far-right edge. Fill *all* transparent pixels with the
+    // artwork, then stamp the original logo on top (below). A 12% light-blue
+    // reserved rail in 01000 produced a conspicuous blank strip below the logo.
+    ctx.drawImage(pic,0,0,pic.naturalWidth,pic.naturalHeight,0,0,W,H);
+   }else if(brandRail[brand]){
     const rail=brandRail[brand];
     const right=Math.round(W*rail.width);
-    // A solid, uniform backing for the original brand's transparent side rail.
+    // Other brands have their own established rail layouts; do not alter them.
     ctx.fillStyle=rail.colour;ctx.fillRect(right,0,W-right,H);
     ctx.save();ctx.beginPath();ctx.rect(0,0,right,H);ctx.clip();
     ctx.drawImage(pic,0,0,pic.naturalWidth,pic.naturalHeight,0,0,right,H);
@@ -990,7 +996,7 @@ const rf586OriginalRender=render;
     if(!blob)throw new Error('ساخت فایل PNG امکان‌پذیر نیست.');
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');a.href=url;
-    a.download='RushFinder-Infographic-01000-'+brand+'-'+size+'.png';
+    a.download='RushFinder-Infographic-01001-'+brand+'-'+size+'.png';
     document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);
    }catch(err){console.error(err);statusEl.textContent=err.message;}
    finally{b.disabled=false;}
@@ -1099,6 +1105,7 @@ function promptFor(c){
   'تمام اعداد واقعی منبع با ارقام فارسی نوشته شوند. از نمایش رشتهٔ آزمایشی ارقام خودداری کن.',
   'خوانایی، هماهنگی رنگ، آیکون معنادار، ترکیب‌بندی حرفه‌ای، اندازه‌های متنوع و فاصله‌گذاری منظم را رعایت کن.',
   'یک تصویر محتوایی مستقل بساز که همهٔ تیترها، آمار و تصاویر در محدودهٔ خودش و با حاشیهٔ امن ۵ درصد جا شوند. هیچ متن یا عددی از لبه قطع نشود.',
+  ...(c.brandKey==='urgent'?['برای قالب خبر فوری، پس‌زمینهٔ محتوایی و طراحی باید تا لبهٔ راست و پایین تصویر ادامه پیدا کند؛ هیچ نوار کناری یا فضای سفید/آبی خالی نساز. فقط در گوشهٔ بالا-راست، ۲۰٪ عرض و ۱۸٪ ارتفاع را بدون تیتر، عدد، قیمت و نوشتهٔ مهم نگه دار تا لوگوی ثابت خبر فوری بعداً بدون پوشاندن متن روی آن قرار بگیرد. بقیهٔ فضا را به‌طور کامل طراحی کن.']:[]),
   'هیچ لوگو، نام رسانه، نام شرکت، واترمارک یا نوار برند نساز؛ لوگوی اصلی به صورت لایهٔ قفل شده بعد از ساخت اضافه می‌شود و نباید توسط مدل بازطراحی شود.',
   'مثل یک اینفوگرافیک تحریریه‌ای حرفه‌ای طراحی کن: تیتر خوانا، بلوک‌های متنوع متناسب با تعداد اقلام، تصویر یا آیکون مرتبط برای هر گروه، سلسله‌مراتب واضح و یک کادر جمع‌بندی در پایین؛ بدون باکس‌های بزرگ خالی.',
   'همهٔ محتوا، اعداد و نام‌ها باید فقط از متن کاربر باشند؛ موردی را حذف یا جعل نکن. برای متن‌های بلند فونت را مناسب کن.',
