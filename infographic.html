@@ -297,7 +297,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01001</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01002</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -715,7 +715,7 @@ function rf581Render(){
   farda:{square:'farda-square.png',story:'farda-story.png'}
  };
  function rf705TemplatePath(b=brand,z=size){
-  return 'assets/infographic-templates/'+(rf705TemplateFiles[b]||rf705TemplateFiles.urgent)[z]+'?v=01001';
+  return 'assets/infographic-templates/'+(rf705TemplateFiles[b]||rf705TemplateFiles.urgent)[z]+'?v=01002';
  }
  function rf705LoadTemplate(b=brand,z=size){
   const path=rf705TemplatePath(b,z);
@@ -753,36 +753,25 @@ function rf581Render(){
   safeCanvas();
   const W=cv.width,H=cv.height;
   const isStory=size==='story';
-  const brandRail={
-   urgent:{width:isStory?1107/1280:1760/2000,colour:'#eaf2fe'},
-   mashhad:{width:isStory?1069/1280:1760/2000,colour:'#ffcc00'},
-   jaryan:{width:isStory?1069/1280:1760/2000,colour:'#090909'}
-  };
   ctx.save();
   try{
    ctx.clearRect(0,0,W,H);
    ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H);
-   if(brand==='urgent'){
-    // 01001: The user-provided Khabar Fori template is transparent except for its
-    // green brand mark / far-right edge. Fill *all* transparent pixels with the
-    // artwork, then stamp the original logo on top (below). A 12% light-blue
-    // reserved rail in 01000 produced a conspicuous blank strip below the logo.
+   if(brand==='urgent'||brand==='mashhad'||brand==='jaryan'){
+    // 01002: All three authentic side-logo templates are almost entirely
+    // transparent. The old opaque yellow/black rail filled 12% of the frame,
+    // creating a huge empty block and squashing the AI composition to 88%.
+    // Draw the complete image below the template, so only original opaque
+    // logo and thin vertical border from the asset cover its pixels.
     ctx.drawImage(pic,0,0,pic.naturalWidth,pic.naturalHeight,0,0,W,H);
-   }else if(brandRail[brand]){
-    const rail=brandRail[brand];
-    const right=Math.round(W*rail.width);
-    // Other brands have their own established rail layouts; do not alter them.
-    ctx.fillStyle=rail.colour;ctx.fillRect(right,0,W-right,H);
-    ctx.save();ctx.beginPath();ctx.rect(0,0,right,H);ctx.clip();
-    ctx.drawImage(pic,0,0,pic.naturalWidth,pic.naturalHeight,0,0,right,H);
-    ctx.restore();
    }else{
-    // Farda's authentic logo sits at bottom left, not on the urgent-news rail.
-    // Reserve space so AI drawings cannot hide it or paint another logo over it.
+    // Khabar Farda has an authentic bottom-left logo, not a side bar.
+    // Keep its established bottom safe margin unchanged.
     const bottom=Math.round(H*(isStory?0.925:0.89));
     ctx.drawImage(pic,0,0,pic.naturalWidth,pic.naturalHeight,0,0,W,bottom);
    }
-   // Draw exact, user-supplied alpha PNG last; its brand mark never gets redrawn by AI.
+   // The selected brand's pixel-identical, transparent source PNG is always
+   // stamped LAST. Never draw another brand's logo or a substitute bar.
    ctx.drawImage(template,0,0,W,H);
   }finally{ctx.restore();}
   window.rf1000ComposedReady=true;
@@ -996,7 +985,7 @@ const rf586OriginalRender=render;
     if(!blob)throw new Error('ساخت فایل PNG امکان‌پذیر نیست.');
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');a.href=url;
-    a.download='RushFinder-Infographic-01001-'+brand+'-'+size+'.png';
+    a.download='RushFinder-Infographic-01003-'+brand+'-'+size+'.png';
     document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);
    }catch(err){console.error(err);statusEl.textContent=err.message;}
    finally{b.disabled=false;}
@@ -1005,6 +994,25 @@ const rf586OriginalRender=render;
  rf580TitleText.value='';
  input.value='';
  (document.fonts?.ready||Promise.resolve()).then(render).catch(render);
+})();
+</script>
+<script id="rf01003-urgent-theme-status">
+(()=>{
+  'use strict';
+  const badge=document.getElementById('rf1000-brand-lock');
+  const keys=['urgent','mashhad','jaryan','farda'];
+  const names=['خبر فوری','اخبار مشهد','جریان','خبرفردا'];
+  if(!badge)return;
+  const sync=()=>{
+    const all=[...document.querySelectorAll('.brandBtn')];
+    const i=all.findIndex(b=>b.classList.contains('active'));
+    const selected=keys[i<0?0:i];
+    badge.textContent=selected==='urgent'
+      ? '🔒 تم اختصاصی خبر فوری: پس‌زمینه روشن، سبز زمردی، کارت‌های برجسته و تصویرسازی سه‌بعدی؛ لوگوی اصلی ثابت و بدون بازطراحی.'
+      : '🔒 قالب و لوگوی اصلی '+names[i<0?0:i]+' ثابت می‌مانند؛ سبک این رسانه مستقل از خبر فوری است.';
+  };
+  document.querySelectorAll('.brandBtn').forEach(b=>b.addEventListener('click',sync));
+  sync();
 })();
 </script>
 <script id="rf550-brand-logos">
@@ -1079,7 +1087,54 @@ function rf724StructuredNews(raw){
  return lines.map(rf724PersianDigits).join('\n');
 }
 function current(){const brandKey=rf724ActiveBrandKey();return {news:newsInput.value.trim(),brand:rf724BrandName(brandKey),brandKey,style:$('rf580-graphic-style')?.value||'auto',size:document.querySelector('.sizeBtn.active')?.dataset?.size||'square',customPrompt:($('rf580-other-prompt')?.value||'').trim(),headline:rf726NormalizeText(($('rf580-title-text')?.value||'').trim()),model:$('rf962-model')?.value||'gpt-image-2.5-flare',quality:$('rf962-quality')?.value||'low'};}
+function rf01003UrgentLayoutGuide(news){
+ const raw=String(news||'');
+ const pct=(raw.match(/(?:[0-9۰-۹٠-٩]+(?:[.,٫،][0-9۰-۹٠-٩]+)?\s*(?:درصد|٪|%))/g)||[]).length;
+ const entries=raw.split(/\n/).map(v=>v.trim()).filter(Boolean).length;
+ if(/بازده|رشد|کاهش|نوسان|مقایسه/.test(raw)&&pct>=2)
+  return 'چیدمان مناسب این خبر: کارت‌های عددی سمت چپ و یک نمودار سه‌بعدی سبز سمت راست. اگر درصدها بازده مستقل‌اند، نمودار دایره‌ای سهم بازار نکش و از مقیاس نادرست استفاده نکن.';
+ if(/سهم|ترکیب|تقسیم|سهمیه/.test(raw)&&pct>=3)
+  return 'چیدمان مناسب: نمودار دایره‌ای/دونات سه‌بعدی سبز در مرکز یا سمت راست و برچسب‌های دقیق دور آن؛ نمودار دایره‌ای فقط اگر داده‌ها واقعاً اجزای یک کل با جمع ۱۰۰٪ باشند، وگرنه نمودار میله‌ای مقایسه‌ای.';
+ if(/بارش|باران|هواشناسی|دما|برف/.test(raw))
+  return 'چیدمان مناسب: کارت‌های سفید برجسته در ستون چپ و تصویر سه‌بعدی مرتبط مانند ابر، چتر، نقشه یا قطرات باران در سمت راست؛ اعداد و واحدهای گزارش‌شده را دقیق نگه دار.';
+ if(/قیمت|گران|هزینه|تومان|ریال/.test(raw))
+  return 'چیدمان مناسب: کارت‌های سفید برجسته، نام کالا و مقدار واضح، تصویرسازی سه‌بعدی واقعی کالا/موضوع در سمت راست یا میان کارت‌ها. قیمت‌ها دقیقاً طبق متن و با واحد ذکرشده نمایش داده شوند.';
+ if(entries>=5)
+  return 'چیدمان مناسب: کارت‌های اطلاعاتی چندردیفی در سمت چپ و یک تصویرسازی سه‌بعدی مرتبط و خلوت در سمت راست، با سرفصل‌های کوتاه و خوانا.';
+ return 'چیدمان مناسب: تیتر قوی در بالا، یک تصویر سه‌بعدی موضوعی در سمت راست و مجموعه کارت‌های خبری سفید با داده‌های قابل مقایسه در سمت چپ.';
+}
+function rf01003UrgentPrompt(c){
+ const shape=c.size==='story'?'استوری عمودی ۹:۱۶':'مربع ۱:۱';
+ const styleMap={
+  auto:'سه‌بعدی تحریریه‌ای با عمق طبیعی و نمایش واضح داده‌ها',
+  '3d':'سه‌بعدی با حجم و نورپردازی استودیویی نرم',
+  '2d':'دوبعدی فلت؛ تم سفید/سبز و کارت‌ها حفظ شوند',
+  minimal:'مینیمال و بسیار خلوت، با همان هویت سفید/سبز',
+  table:'جدول و کارت‌های منظم با همان هویت سفید/سبز',
+  chart:'نمودار دقیق طبق اعداد منبع، با همان هویت سفید/سبز',
+  comparison:'مقایسهٔ تمیز و هندسی در قالب سفید/سبز',
+  timeline:'تایم‌لاین با تاریخ‌های واقعی منبع در قالب سفید/سبز',
+  cards:'کارت‌های برجسته سفید در قالب سفید/سبز',
+  other:'ترجیح سبک کاربر با حفظ رنگ و لوگوی ثابت رسانه'
+ };
+ return [
+  'یک اینفوگرافیک فارسی بسیار حرفه‌ای، خوانا و آماده انتشار بساز. اندازه: '+shape+'. برند: خبر فوری.',
+  'هویت بصری ثابت: زمینه سفید گرم یا کرم خیلی روشن (#F6F4F0)، سبز زمردی تیره (#006D3C)، مشکی زغالی و سبز ملایم. ظاهر روشن و مینیمال؛ نه تم تیره یا قرمز/زرد جیغ.',
+  'مطابق سه نمونهٔ تم خبر فوری: تیتر فوق‌العاده درشت در بالا، کلمات اصلی سبز و باقی مشکی؛ ستون کارت‌های آماری سفید با گوشه‌های گرد و سایه نرم مثل پنل‌های سرامیکی برجسته؛ تصویرسازی سه‌بعدی موضوعی یا نمودار خوش‌ساخت در سمت راست. فضای خالی سنجیده، نور استودیویی لطیف و عمق واقع‌گرایانه.',
+  'سبک انتخابی کاربر: '+(styleMap[c.style]||styleMap.auto)+'.',
+  rf01003UrgentLayoutGuide(c.news),
+  'نوشته‌ها و اعداد فقط از متن منبع باشند؛ هیچ قیمت، درصد، عنوان، واحد، تاریخ یا منبعی را جعل یا حذف نکن. خط نخست تیتر است، بقیه داده‌ها؛ هر مورد دقیقاً یک‌بار. تمام ارقام فارسی و متون راست‌به‌چپ خوانا باشند.',
+  'نمودار دایره‌ای فقط اگر مقادیر واقعاً سهم یک کل و جمع آن‌ها ۱۰۰٪ است؛ برای بازدهی مستقل، نمودار میله‌ای مناسب‌تر است.',
+  'لوگوی اصلی خبر فوری بعداً توسط سایت و به‌شکل ثابت روی تصویر قرار می‌گیرد؛ مدل مطلقاً هیچ لوگو، متن «خبر فوری»، نوار عمودی رنگی، واترمارک یا آیدی رسانه نکشد.',
+  'در ۲۱٪ عرض و ۲۱٪ ارتفاع گوشه بالای راست، هیچ تیتر یا عدد مهمی نگذار تا لوگوی ثابت روی متن نیفتد. پس‌زمینه کرم را بدون نوار کناری خالی تا لبه راست ادامه بده.',
+  'چیدمان یکپارچه، کارت‌های داده و شکل سه‌بعدی بدون شلوغی؛ هیچ نوشته خارج از کادر نباشد.',
+  c.customPrompt?'دستور تکمیلی کاربر: '+rf724PersianDigits(c.customPrompt.slice(0,400)):'',
+  'متن منبع:',rf724StructuredNews(c.news),
+  'فقط یک تصویر واحد تولید کن.'
+ ].filter(Boolean).join('\n');
+}
 function promptFor(c){
+ if(c.brandKey==='urgent')return rf01003UrgentPrompt(c);
  const styleRules={
   auto:'یک اینفوگرافیک خبری ممتاز و پویا با انتخاب خودکار بهترین چیدمان بر اساس داده‌ها؛ نه جدول خشک یا کارت‌های تکراری.',
   '2d':'سبک الزام‌آور: دوبعدی فلت و وکتوری. فقط شکل‌های تخت، آیکون‌های فلت، رنگ‌های یکدست، خطوط دقیق و تایپوگرافی مدرن. بدون رندر سه‌بعدی، حجم، پرسپکتیو ایزومتریک، متریال، نورپردازی حجمی و سایهٔ برجسته.',
@@ -1105,7 +1160,7 @@ function promptFor(c){
   'تمام اعداد واقعی منبع با ارقام فارسی نوشته شوند. از نمایش رشتهٔ آزمایشی ارقام خودداری کن.',
   'خوانایی، هماهنگی رنگ، آیکون معنادار، ترکیب‌بندی حرفه‌ای، اندازه‌های متنوع و فاصله‌گذاری منظم را رعایت کن.',
   'یک تصویر محتوایی مستقل بساز که همهٔ تیترها، آمار و تصاویر در محدودهٔ خودش و با حاشیهٔ امن ۵ درصد جا شوند. هیچ متن یا عددی از لبه قطع نشود.',
-  ...(c.brandKey==='urgent'?['برای قالب خبر فوری، پس‌زمینهٔ محتوایی و طراحی باید تا لبهٔ راست و پایین تصویر ادامه پیدا کند؛ هیچ نوار کناری یا فضای سفید/آبی خالی نساز. فقط در گوشهٔ بالا-راست، ۲۰٪ عرض و ۱۸٪ ارتفاع را بدون تیتر، عدد، قیمت و نوشتهٔ مهم نگه دار تا لوگوی ثابت خبر فوری بعداً بدون پوشاندن متن روی آن قرار بگیرد. بقیهٔ فضا را به‌طور کامل طراحی کن.']:[]),
+  ...(['urgent','mashhad','jaryan'].includes(c.brandKey)?['برای این قالب، تصویر و پس‌زمینه باید کل عرض و ارتفاع را بدون نوار کناری زرد، مشکی، سفید یا آبیِ خالی پر کند. خودت لوگو، خط عمودی یا برچسب برند را نکش؛ سایت قالب اصلی برند انتخابی را به صورت لایه ثابت بعداً اضافه می‌کند. در گوشهٔ بالای راست، حدود ۲۰ درصد عرض و ۱۸ درصد ارتفاع، تیتر یا عدد مهم نگذار تا لوگوی ثابت روی نوشته نیفتد.']:[]),
   'هیچ لوگو، نام رسانه، نام شرکت، واترمارک یا نوار برند نساز؛ لوگوی اصلی به صورت لایهٔ قفل شده بعد از ساخت اضافه می‌شود و نباید توسط مدل بازطراحی شود.',
   'مثل یک اینفوگرافیک تحریریه‌ای حرفه‌ای طراحی کن: تیتر خوانا، بلوک‌های متنوع متناسب با تعداد اقلام، تصویر یا آیکون مرتبط برای هر گروه، سلسله‌مراتب واضح و یک کادر جمع‌بندی در پایین؛ بدون باکس‌های بزرگ خالی.',
   'همهٔ محتوا، اعداد و نام‌ها باید فقط از متن کاربر باشند؛ موردی را حذف یا جعل نکن. برای متن‌های بلند فونت را مناسب کن.',
