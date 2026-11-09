@@ -1,56 +1,115 @@
-// RushFinder 0709 - Chabokan Gemini image via OpenAI-compatible chat/completions.
-// Server-side only. Never add API keys to source files or browser code.
-const send=(res,status,body)=>res.status(status).json(body);
-const safeError=(value)=>String(value||'').slice(0,250).replace(/sk-[A-Za-z0-9_-]+|Bearer\s+\S+/gi,'[REDACTED]');
-const VALID_ENDPOINT='https://ai.chabokan.net/v1/chat/completions';
-function imageFrom(obj){
- if(!obj)return null;
- if(typeof obj==='string'){
-  if(/^data:image\/(png|jpeg|webp);base64,/i.test(obj))return obj;
-  if(/^https:\/\//i.test(obj))return obj;
-  return null;
- }
- if(Array.isArray(obj)) {for(const item of obj){const result=imageFrom(item);if(result)return result;}return null;}
- if(typeof obj!=='object')return null;
- const b64=obj.b64_json||obj.image_base64||obj.base64;
- if(typeof b64==='string'&&b64.length>60&&/^[A-Za-z0-9+/=\s]+$/.test(b64))return 'data:image/png;base64,'+b64.replace(/\s/g,'');
- const candidate=[obj.image_url,obj.image,obj.url,obj.data,obj.content,obj.parts,obj.output,obj.images,obj.result,obj.message];
- for(let x of candidate){if(x&&typeof x==='object'&&typeof x.url==='string')x=x.url;const found=imageFrom(x);if(found)return found;}
- return null;
+// RushFinder 0963: replace the old Chabokan image provider with Gisoo.
+// Keep this existing Vercel route name to avoid adding another serverless function.
+// Secret keys are read only from Vercel environment variables.
+import { timingSafeEqual } from 'node:crypto';
+
+const DEFAULT_BASE_URL = 'https://gisoo.pro/api/v1';
+const ALLOWED_MODELS = new Set(['gpt-image-2.6-sunburst', 'gpt-image-2.6-flare']);
+const ALLOWED_QUALITIES = new Set(['low', 'medium', 'high']);
+
+function secureEqual(a, b) {
+  const aa = Buffer.from(String(a || ''), 'utf8');
+  const bb = Buffer.from(String(b || ''), 'utf8');
+  return aa.length === bb.length && aa.length > 0 && timingSafeEqual(aa, bb);
 }
-export default async function handler(req,res){
- res.setHeader('Cache-Control','no-store');
- const key=String(process.env.CHABOKAN_API_KEY||'').trim();
- const model=String(process.env.CHABOKAN_IMAGE_MODEL||'').trim();
- const supplied=String(process.env.CHABOKAN_IMAGE_URL||'').trim();
- // This release is intentionally restricted to the provider's official chat endpoint.
- // Never proxy an arbitrary URL from a configuration typo or client input.
- const validUrl=supplied===VALID_ENDPOINT;
- const missing=[!key&&'CHABOKAN_API_KEY',!supplied&&'CHABOKAN_IMAGE_URL',!model&&'CHABOKAN_IMAGE_MODEL'].filter(Boolean);
- if(req.method==='GET'&&req.query?.probe==='gemini')return send(res,200,{
-  ok:missing.length===0&&validUrl,
-  code:missing.length?'MISSING_CONFIG':validUrl?'CONFIGURED':'INVALID_ENDPOINT',
-  message:missing.length?'تنظیمات سرور ناقص است: '+missing.join(', '):validUrl?'تنظیمات ثبت شده است. تولید تصویر هنوز آزمایش نشده و ممکن است هزینه داشته باشد.':'آدرس CHABOKAN_IMAGE_URL باید دقیقاً مسیر chat/completions چابکان باشد.',
-  model:model||null
- });
- if(req.method!=='POST')return send(res,405,{error:'فقط درخواست POST پذیرفته می‌شود.'});
- if(missing.length)return send(res,503,{error:'تنظیمات سرور ناقص است: '+missing.join(', '),definitiveRejection:true});
- if(!validUrl)return send(res,503,{error:'CHABOKAN_IMAGE_URL باید دقیقاً https://ai.chabokan.net/v1/chat/completions باشد.',definitiveRejection:true});
- const prompt=String(req.body?.prompt||'').trim();
- if(prompt.length<30||prompt.length>3500)return send(res,400,{error:'توضیح تصویر نامعتبر است.',definitiveRejection:true});
- const ratio=req.body?.size==='story'?'2:3':'1:1';
- const payload={model,stream:false,messages:[{role:'user',content:[{type:'text',text:`Generate ONE image, ${ratio} aspect ratio. Return the generated image in the response (not a textual description). ${prompt}`}]}]};
- const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),165000),started=Date.now();
- try{
-  const upstream=await fetch(VALID_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','Authorization':'Bearer '+key},body:JSON.stringify(payload),signal:controller.signal,redirect:'error'});
-  let data;try{data=await upstream.json()}catch{data=null;}
-  if(!upstream.ok){const reason=data?.error?.message||data?.message||data?.error?.detail||'';
-   return send(res,[400,401,402,403,404,422,429].includes(upstream.status)?upstream.status:502,{error:'خطای چابکان (HTTP '+upstream.status+'). '+safeError(reason),upstreamStatus:upstream.status,definitiveRejection:[400,401,402,403,404,422,429].includes(upstream.status)});
+function send(res, status, body) { return res.status(status).json(body); }
+function safeError(value) {
+  return String(value || 'خطای نامشخص').replace(/sk-[A-Za-z0-9_-]+|Bearer\s+\S+/gi, '[REDACTED]').slice(0, 240);
+}
+function getBaseUrl() {
+  const raw = String(process.env.GISOO_BASE_URL || DEFAULT_BASE_URL).trim().replace(/\/+$/, '');
+  // Only allow the two documented Gisoo API hosts; never proxy a caller-supplied URL.
+  if (raw !== 'https://gisoo.pro/api/v1' && raw !== 'https://ir.gisoo.pro/api/v1') return DEFAULT_BASE_URL;
+  return raw;
+}
+function imageError(res, status, message, definitiveRejection = true) {
+  return send(res, status, { error: message, definitiveRejection });
+}
+
+async function handleGisoo(req, res) {
+  res.setHeader('Cache-Control', 'no-store');
+  const key = String(process.env.GISOO_API_KEY || '').trim();
+  const accessCode = String(process.env.RF_INFO_ACCESS_CODE || '').trim();
+  if (!key || !accessCode) {
+    return imageError(res, 503, 'تنظیمات Vercel ناقص است: ' + [!key && 'GISOO_API_KEY', !accessCode && 'RF_INFO_ACCESS_CODE'].filter(Boolean).join(', '));
   }
-  const message=data?.choices?.[0]?.message;
-  let image=imageFrom(message?.content)||imageFrom(message?.images)||imageFrom(data?.data)||imageFrom(data?.images)||imageFrom(data?.output)||null;
-  if(image)return send(res,200,{image,model,elapsedMs:Date.now()-started});
-  return send(res,502,{error:'چابکان پاسخ داد ولی تصویر قابل استفاده در پاسخ نبود. ممکن است این مدل یا مسیر chat/completions در چابکان خروجی تصویر ندهد؛ پیش از درخواست دوباره، لاگ و اعتبار را بررسی کنید.',code:'NO_IMAGE_IN_RESPONSE',definitiveRejection:false});
- }catch(e){return send(res,502,{error:e?.name==='AbortError'?'زمان پاسخ تمام شد. پیش از تلاش دوباره مصرف اعتبار را بررسی کنید.':'اتصال به چابکان برقرار نشد.',definitiveRejection:false});}
- finally{clearTimeout(timer);}
+  if (!secureEqual(req.headers['x-rushfinder-info-code'], accessCode)) {
+    return imageError(res, 403, 'کد دسترسی مدیر صحیح نیست. این کد با API Key گیسو فرق دارد.');
+  }
+  const baseUrl = getBaseUrl();
+  if (req.method === 'GET' && req.query?.probe === 'gisoo') {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 20000);
+    try {
+      const upstream = await fetch(baseUrl + '/models?type=image', {
+        method: 'GET',
+        headers: { 'Authorization': 'Bearer ' + key, 'Accept': 'application/json' },
+        signal: controller.signal,
+        redirect: 'error'
+      });
+      let catalogue; try { catalogue = await upstream.json(); } catch { catalogue = null; }
+      if (!upstream.ok) {
+        const raw = catalogue?.error?.message || catalogue?.message || '';
+        return imageError(res, [401, 403, 429].includes(upstream.status) ? upstream.status : 502,
+          'بررسی اتصال گیسو ناموفق بود (HTTP ' + upstream.status + '): ' + safeError(raw));
+      }
+      const modelText = JSON.stringify(catalogue || {});
+      const sunburstAvailable = modelText.includes('gpt-image-2.6-sunburst');
+      const flareAvailable = modelText.includes('gpt-image-2.6-flare');
+      return send(res, 200, {
+        ok: true,
+        code: 'GISOO_CONNECTED',
+        baseUrl,
+        models: { sunburst: sunburstAvailable, flare: flareAvailable },
+        message: 'اتصال گیسو موفق بود؛ فهرست مدل‌های تصویر دریافت شد. هنوز تصویر پولی ساخته نشده است.'
+      });
+    } catch (error) {
+      return imageError(res, 502, error?.name === 'AbortError' ? 'مهلت بررسی اتصال گیسو تمام شد.' : 'ارتباط با گیسو برقرار نشد. نشانی GISOO_BASE_URL را بررسی کنید.');
+    } finally { clearTimeout(timer); }
+  }
+  if (req.method !== 'POST') return imageError(res, 405, 'فقط درخواست POST پذیرفته می‌شود.');
+
+  const prompt = String(req.body?.prompt || '').trim();
+  const model = String(req.body?.model || 'gpt-image-2.6-sunburst');
+  const quality = String(req.body?.quality || 'medium');
+  const size = req.body?.size === 'story' ? '1024x1536' : '1024x1024';
+  if (prompt.length < 30 || prompt.length > 3500) return imageError(res, 400, 'متن توضیح تصویر باید بین ۳۰ تا ۳۵۰۰ نویسه باشد.');
+  if (!ALLOWED_MODELS.has(model) || !ALLOWED_QUALITIES.has(quality)) return imageError(res, 400, 'مدل یا کیفیت انتخاب‌شده معتبر نیست.');
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 165000);
+  const started = Date.now();
+  try {
+    // Gisoo documents POST /images/generations and returns data[0].b64_json.
+    const payload = { model, prompt, size, quality, n: 1, output_format: 'webp' };
+    const upstream = await fetch(baseUrl + '/images/generations', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+      redirect: 'error'
+    });
+    let result; try { result = await upstream.json(); } catch { result = null; }
+    if (!upstream.ok) {
+      const status = upstream.status;
+      const raw = result?.error?.message || result?.message || result?.error?.detail || '';
+      const definitive = [400, 401, 402, 403, 404, 422, 429].includes(status);
+      return imageError(res, definitive ? status : 502, 'خطای گیسو (HTTP ' + status + '): ' + safeError(raw), definitive);
+    }
+    const b64 = result?.data?.[0]?.b64_json;
+    if (typeof b64 !== 'string' || b64.length < 100) {
+      return imageError(res, 502, 'گیسو پاسخ داد، اما دادهٔ تصویر در data[0].b64_json پیدا نشد. پیش از تلاش دوباره گزارش مصرف گیسو را بررسی کنید.', false);
+    }
+    // Keep the JSON response below typical serverless response-size limits.
+    if (b64.length > 5_000_000) {
+      return imageError(res, 502, 'تصویر ساخته شده اما پاسخ برای انتقال از Vercel بیش از حد بزرگ است؛ درخواست را تکرار نکنید و مصرف گیسو را بررسی کنید.', false);
+    }
+    return send(res, 200, { image: 'data:image/webp;base64,' + b64, model, provider: 'gisoo', elapsedMs: Date.now() - started });
+  } catch (error) {
+    return imageError(res, 502, error?.name === 'AbortError' ? 'زمان ساخت تصویر تمام شد. پیش از تلاش دوباره گزارش مصرف گیسو را بررسی کنید.' : 'اتصال به API تصویر گیسو برقرار نشد. پیش از تلاش دوباره گزارش مصرف را بررسی کنید.', false);
+  } finally { clearTimeout(timer); }
+}
+
+export default async function handler(req, res) {
+  return handleGisoo(req, res);
 }
