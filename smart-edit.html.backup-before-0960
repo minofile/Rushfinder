@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="fa">
+<head>
+<meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>RushFinder | Editor</title>
+<style>
+:root{--bg:#0a101c;--panel:#111d30;--panel2:#16243b;--edge:#2a3952;--blue:#267cfb;--blue2:#1c5be3;--txt:#f0f5fc;--muted:#93a9c4;--green:#24cb9c;--orange:#f4ae69;--shadow:0 14px 34px #0004}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--txt);font:13px/1.7 Tahoma,'Segoe UI',sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer;color:inherit}button:disabled{opacity:.45;cursor:not-allowed}input,textarea,select{background:#0b1728;border:1px solid #33465f;color:#e7f1ff;border-radius:8px;padding:8px;min-width:0}input[type=range]{accent-color:var(--blue);padding:0;width:100%}input[type=number]{direction:ltr;text-align:center}.app{height:100vh;min-height:680px;display:flex;flex-direction:column;overflow:hidden}.top{height:63px;flex:0 0 63px;background:#0e192b;border-bottom:1px solid var(--edge);display:flex;align-items:center;justify-content:space-between;padding:0 19px;gap:14px}.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:16px;white-space:nowrap}.logo{background:linear-gradient(135deg,#00bdfb,#1755ec);clip-path:polygon(0 0,100% 50%,0 100%,26% 50%);width:32px;height:32px}.small{font-size:11px;color:var(--muted);font-weight:400}.top-right,.top-left{display:flex;align-items:center;gap:9px}.pill{padding:3px 10px;border:1px solid #284868;border-radius:20px;color:#9ec5f7;background:#142843;font-size:11px;white-space:nowrap}.btn{border:1px solid #344762;background:#17273e;border-radius:9px;padding:8px 12px;white-space:nowrap}.btn:hover{background:#223957}.btn.primary{background:linear-gradient(120deg,#1660dd,#358dff);border-color:transparent;font-weight:700}.btn.primary:hover{filter:brightness(1.12)}.btn.ghost{background:transparent}.btn.red{color:#ffa5ac;border-color:#813544}.workspace{flex:1;min-height:260px;display:grid;grid-template-columns:250px minmax(380px,1fr) 270px;grid-template-areas:'inspector viewer library';gap:10px;padding:10px;direction:ltr;min-height:0}.panel{background:var(--panel);border:1px solid var(--edge);border-radius:12px;overflow:hidden;min-width:0;direction:rtl;box-shadow:var(--shadow)}.library{grid-area:library;display:flex;flex-direction:column}.viewer{grid-area:viewer;display:flex;flex-direction:column;min-height:0}.inspector{grid-area:inspector;display:flex;flex-direction:column}.head{height:47px;border-bottom:1px solid var(--edge);display:flex;align-items:center;justify-content:space-between;padding:0 13px;gap:7px;font-weight:800}.subtle{font-weight:400;color:var(--muted);font-size:11px}.tabs{display:flex;align-items:stretch;background:#0e192b;padding:5px;gap:4px}.tab{flex:1;border:0;background:transparent;color:#9cb3d1;padding:8px 3px;border-radius:8px;font-size:12px}.tab.active{background:#1e3c67;color:#fff}.lib-content,.inspect-content{padding:12px;overflow:auto;flex:1}.import{border:1px dashed #3f70a8;background:#132d4c;border-radius:10px;text-align:center;padding:20px 8px;cursor:pointer;display:block;color:#c5dffd;font-weight:700}.import:hover{background:#19406c}.file-input{display:none}.note{font-size:11px;color:var(--muted);line-height:1.9;margin:9px 0}.assets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}.asset{padding:7px;text-align:center;background:#18283e;border:1px solid #2b435f;border-radius:8px;cursor:grab;min-width:0}.asset:hover{border-color:#4e98ef;background:#223d5d}.asset-thumb{height:53px;display:grid;place-items:center;background:linear-gradient(140deg,#253b5f,#0b1828);border-radius:6px;font-size:25px;color:#8cc4ff}.asset-title{font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr;margin-top:5px}.asset small{color:var(--muted)}.asset button{border:0;background:#225fb8;border-radius:5px;padding:3px 5px;font-size:10px;margin-top:5px}.empty{text-align:center;color:#7890af;font-size:12px;padding:25px 12px}.video-head{height:43px;display:flex;align-items:center;justify-content:space-between;padding:0 15px;border-bottom:1px solid var(--edge)}.stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:13px;background:#070e19}.stage canvas{display:block;background:#000;border-radius:5px;max-width:100%;max-height:100%;aspect-ratio:16/9;box-shadow:0 10px 32px #0009}.player{height:58px;border-top:1px solid var(--edge);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:7px}.controls{display:flex;align-items:center;gap:12px}.time{font-family:Consolas,monospace;color:#a9cdf9;font-size:12px;direction:ltr;min-width:116px;text-align:center}.iconbtn{border:0;background:#21334f;border-radius:8px;padding:6px 12px;font-size:16px}.iconbtn:hover{background:#2b4e7a}.progress-rail{width:min(92%,660px);height:4px;border-radius:10px;background:#283d56;cursor:pointer;position:relative}.progress-rail>div{width:0%;height:100%;background:var(--blue);border-radius:10px}.section{padding:10px 0;border-bottom:1px solid #263750}.section:last-child{border:0}.section h3{font-size:12px;margin:0 0 10px;color:#d5e5f9}.field{margin:9px 0}.field label{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}.field input,.field select,.field textarea{width:100%}.row{display:flex;align-items:center;gap:7px}.row>*{flex:1;min-width:0}.row .btn{flex:0 0 auto}.tag{font-size:10px;display:inline-block;border:1px solid #397a9d;border-radius:5px;padding:1px 6px;color:#a8daf5}.bottom{height:286px;flex:0 0 286px;margin:0 10px 10px;display:flex;flex-direction:column;background:#0e192b;border:1px solid var(--edge);border-radius:12px;overflow:hidden}.toolrow{height:48px;flex:0 0 48px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--edge);padding:0 12px;gap:8px}.toolset{display:flex;gap:7px;align-items:center;flex-wrap:nowrap}.toolrow .btn{padding:5px 10px;font-size:12px}.zoom{width:85px!important}.timeline-wrap{display:flex;flex:1;min-height:0;overflow:auto;direction:ltr;position:relative}.track-labels{width:132px;flex:0 0 132px;position:sticky;left:0;z-index:8;background:#111e31;border-right:1px solid #31455f;direction:rtl}.ruler-label{height:32px;border-bottom:1px solid #273953;display:grid;place-items:center;color:var(--muted);font-size:11px}.track-label{height:47px;padding:7px 12px;border-bottom:1px solid #2e3b51;font-size:11px;display:flex;align-items:center;gap:7px}.track-label span{font-size:18px;color:#94b9e9}.tracks-scroller{overflow:auto;position:relative;flex:1;min-width:0}.ruler{height:32px;background:#101d32;border-bottom:1px solid #334767;position:relative;direction:ltr;cursor:crosshair}.tick{position:absolute;top:3px;border-left:1px solid #54708e;height:12px;padding-left:4px;font:10px Consolas;color:#819bb7;pointer-events:none}.track{height:47px;position:relative;border-bottom:1px solid #273953;background:repeating-linear-gradient(90deg,transparent,transparent 23px,#152239 24px);direction:ltr}.track:hover{background-color:#14243b}.clip{position:absolute;top:5px;height:36px;border-radius:6px;border:1px solid #67a8ed;background:#1d4e8b;display:flex;align-items:center;padding:0 8px;color:#f0f8ff;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:grab;user-select:none;direction:rtl}.clip.video-clip{background:linear-gradient(130deg,#235c91,#153e69)}.clip.image-clip{background:linear-gradient(130deg,#6371ad,#344978)}.clip.title-clip{background:linear-gradient(130deg,#8058a7,#513573);border-color:#ba8cf2}.clip.music-clip{background:linear-gradient(130deg,#1c8c8a,#176463);border-color:#58d5cf}.clip.voice-clip{background:linear-gradient(130deg,#a77433,#775025);border-color:#f5b960}.clip.active{outline:2px solid #fff;outline-offset:1px}.clip .duration-chip{position:absolute;left:5px;bottom:0;font:9px Consolas;color:#d3e2f8}.playhead{position:absolute;width:2px;background:#ff656b;z-index:7;top:0;bottom:0;pointer-events:none;box-shadow:0 0 0 1px #b8364266}.playhead:before{content:'';position:absolute;top:0;left:-5px;width:12px;height:11px;background:#ff656b;clip-path:polygon(0 0,100% 0,50% 100%)}.timeline-base{position:relative;min-width:100%;height:220px}.drop-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#7094b9;font-size:11px;pointer-events:none}.track.has-content .drop-hint{display:none}.statusbar{height:30px;flex:0 0 30px;background:#0a1424;border-top:1px solid #223750;color:#97aeca;display:flex;justify-content:space-between;align-items:center;padding:0 15px;font-size:11px}.statusbar b{color:#51d6b3}.modal-back{position:fixed;inset:0;background:#000a;z-index:30;display:none;align-items:center;justify-content:center;padding:20px}.modal-back.show{display:flex}.modal{width:min(540px,100%);background:#14243a;border:1px solid #426185;padding:22px;border-radius:15px;box-shadow:0 20px 60px #000c}.modal h2{margin:0 0 10px;font-size:19px}.modal p{color:#b2c5df;line-height:1.9}.modal progress{width:100%;height:14px;accent-color:#287fff}.modal .actions{display:flex;gap:8px;margin-top:18px;justify-content:flex-start}.muted{color:var(--muted)}.hidden{display:none!important}.side-script{width:100%;resize:vertical;min-height:100px}.title-preview{color:#d8e5fa}.line{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}.hintline{font-size:10px;color:#9ab1cc}.kbd{padding:2px 5px;background:#22334a;border:1px solid #415771;border-radius:4px;font:10px Consolas}.red-txt{color:#ffb3ba}@media(max-width:1200px){.workspace{grid-template-columns:210px minmax(320px,1fr) 230px}.head{padding:0 9px}.top{padding:0 10px}}@media(max-width:920px){.app{min-height:760px;height:auto;overflow:auto}.workspace{min-height:550px;grid-template-columns:1fr 1fr;grid-template-areas:'viewer viewer' 'inspector library'}.viewer{height:320px}.bottom{height:290px;flex:0 0 290px}.top-right .small,.pill{display:none}}@media(max-width:620px){.workspace{display:flex;flex-direction:column}.library,.inspector{min-height:170px;max-height:250px}.viewer{height:320px;flex:0 0 320px}.top{height:auto;min-height:60px;flex-wrap:wrap}.bottom{margin:0 4px 5px}.toolset{gap:3px}.toolrow .btn{padding:4px 5px;font-size:10px}}
+.switchline{display:flex;gap:6px;align-items:center;line-height:1.8;color:#cddff4}.switchline input{width:auto!important;min-width:auto}.smart-report{padding:10px;border:1px solid #3d5b7e;border-radius:8px;background:#102339;white-space:pre-line}.online-hits{display:grid;gap:8px}.online-hit{border:1px solid #39577a;border-radius:9px;background:#14263d;padding:8px}.online-hit img{display:block;width:100%;height:100px;object-fit:cover;border-radius:6px;margin-bottom:5px}.online-hit .row{display:flex;gap:5px;justify-content:space-between;margin-top:6px}.online-hit a{color:#9ed2ff}.inline-warn{color:#ffc18d}.online-hit button{white-space:normal}.note a{color:#9ed2ff}
+
+.start-advice{color:#c8defc;line-height:2;background:#162e49;border:1px solid #416c9b;padding:10px;border-radius:9px;margin:7px 0}.line .btn{white-space:normal;font-size:11px}
+
+/* 0910: readable guided entry for the offline test; editor internals unchanged */
+@media(min-width:1250px){.workspace{grid-template-columns:240px minmax(370px,1fr) 390px}.lib-content{scrollbar-width:thin}}
+.start-guide{position:fixed;inset:0;z-index:100;background:#020915d9;display:flex;align-items:center;justify-content:center;padding:20px;direction:rtl}
+.start-guide[hidden]{display:none!important}
+.start-guide-card{width:min(710px,96vw);max-height:95vh;overflow:auto;background:#13243b;border:1px solid #43658c;box-shadow:0 18px 90px #000b;border-radius:20px;padding:28px;color:#f5f9ff}
+.start-guide-card h1{font-size:24px;margin:0 0 8px}.start-guide-card p{line-height:2;margin:8px 0 16px;color:#b3c9e6}
+.start-guide-card textarea{width:100%;min-height:136px;font-size:16px;line-height:2;resize:vertical}
+.start-guide-actions{display:flex;gap:12px;flex-wrap:wrap;margin:17px 0 8px}
+.start-guide-actions .btn{flex:1;min-width:190px;white-space:normal;font-size:15px;padding:13px}
+.start-guide-tip{border:1px solid #395b85;border-radius:10px;background:#0f2036;padding:10px;color:#d0e4fa;font-size:12px;line-height:2}
+.start-guide-badge{font-size:12px;display:inline-block;border:1px solid #5c85b5;background:#15345a;border-radius:18px;padding:2px 10px;margin-bottom:12px}
+
+
+/* Narration-first workflow: separate file upload from script; no news text overlays. */
+.narr-hero{padding:13px;background:linear-gradient(130deg,#123e73,#163056);border:1px solid #3680c0;border-radius:13px;margin:0 0 12px}
+.narr-hero b{color:#fff;font-size:14px}.narr-hero p{color:#cde5ff;font-size:11px;line-height:1.9;margin:4px 0 0}
+.voice-drop{display:block;border:1px dashed #63b5e6;background:#102f51;border-radius:11px;padding:12px;margin:7px 0;cursor:pointer;text-align:center;color:#eaf7ff;font-weight:700}
+.voice-drop:focus-within{outline:2px solid #4d98f9}.voice-drop input{display:none}
+.narr-selected{font:11px/1.9 Tahoma;color:#a7e6ff;white-space:pre-wrap;overflow-wrap:anywhere;margin:4px 0 11px}
+.start-guide-card input[type=file]{width:100%;margin:6px 0 12px}
+@media(max-width:900px){.start-guide-card{padding:15px}.narr-hero{padding:9px}}
+
+/* SmartEdit 0913: use the SAME Vazir assets already present in RushFinder. */
+@font-face{font-family:RFVazir;src:url('fonts/VAZIR-REGULAR-UI.TTF') format('truetype');font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:RFVazir;src:url('fonts/VAZIR-MEDIUM-UI.TTF') format('truetype');font-style:normal;font-weight:500;font-display:swap}
+@font-face{font-family:RFVazir;src:url('fonts/VAZIR-BOLD-UI.TTF') format('truetype');font-style:normal;font-weight:700 900;font-display:swap}
+html,body,button,input,select,textarea,.narr-selected{font-family:RFVazir,Tahoma,sans-serif}
+.app{min-height:610px}.top{height:54px;flex-basis:54px;padding:0 12px}.brand{font-size:14px}.brand .small{font-size:10px}
+.workspace{grid-template-columns:215px minmax(380px,1fr) 252px;gap:7px;padding:7px}.panel{border-radius:10px}
+.head{height:38px;padding:0 10px}.tabs{padding:3px;gap:3px}.tab{padding:6px 2px;font-size:11px}
+.lib-content,.inspect-content{padding:9px}.section{padding:7px 0}.field{margin:6px 0}.field label{margin-bottom:3px}
+.field input,.field select,.field textarea{padding:6px}.note{font-size:10px;line-height:1.75;margin:6px 0}
+.btn{padding:6px 8px;font-size:11px}.import{padding:12px 7px}.row{gap:5px}
+.narr-hero{padding:9px}.narr-hero p{line-height:1.65}.voice-drop{padding:8px}
+#autoTab .side-script{min-height:82px;max-height:130px;font-size:12px;line-height:1.75}
+#quickEdit{min-height:40px;margin-top:6px;font-size:12px!important}
+.edit-journey{gap:3px}.journey-item{padding:4px 2px;font-size:9px}.start-guide-card textarea{min-height:95px;font-size:13px}
+.start-guide-card h1{font-size:19px}.start-guide-card p{line-height:1.7}
+.start-guide-actions .btn{min-width:160px;padding:9px;font-size:12px}
+.bottom{height:248px;flex-basis:248px;margin:0 7px 7px}.toolrow{height:42px;flex-basis:42px;padding:0 9px}
+.track-labels{width:116px;flex-basis:116px}.player{height:47px}.video-head{height:37px}
+@media(max-width:1200px){.workspace{grid-template-columns:190px minmax(320px,1fr) 220px}}
+@media(max-width:920px){.workspace{grid-template-columns:1fr 1fr}.bottom{height:260px;flex-basis:260px}}
+
+</style>
+<style id="rf0911-polish">
+:root{--blue:#4c83ff;--green:#26d6b5;--panel:#101d32;--panel2:#172a47}
+body{background:radial-gradient(ellipse at 70% -10%,#122d54 0%,#0a101c 55%)}
+.top{background:linear-gradient(105deg,#0b172a,#102748 65%,#111a37);box-shadow:0 6px 28px #0004}
+.brand .logo{filter:drop-shadow(0 0 11px #2b85ff66)}
+.workspace .panel{border:1px solid #294464;box-shadow:0 10px 30px #0005}
+.head{background:linear-gradient(90deg,#102543,#101b31)}
+#autoTab{background:radial-gradient(circle at top right,#18345c80,transparent 45%)}
+#autoTab .side-script{min-height:118px;resize:vertical;border-color:#4777b5;line-height:1.9;font-size:13px}
+#quickEdit{margin-top:9px;min-height:48px;font-size:14px!important;background:linear-gradient(105deg,#125bd6,#388aff,#735ef2);box-shadow:0 10px 20px #166dfa38}
+#quickEdit:hover{filter:brightness(1.13)}
+#smartReport{margin-top:10px;border:1px solid #356192;background:#102947;min-height:54px}
+#startNotice{background:#10304b;border:1px solid #296c98;color:#c5eaff}
+.edit-journey{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:12px 0 9px}
+.journey-item{border:1px solid #31506f;background:#13263f;color:#9bbad6;border-radius:9px;font-size:10px;text-align:center;padding:6px 3px;transition:.2s}
+.journey-item.active{background:#174a8e;border-color:#4e9dff;color:#fff;box-shadow:0 0 0 1px #4e9dff33}
+.journey-item.done{color:#9cffdb;border-color:#277e6e;background:#103d3a}
+.progress-track{background:#1b2c45;height:5px;border-radius:99px;overflow:hidden}
+.progress-track span{display:block;width:0%;height:100%;background:linear-gradient(90deg,#3187ff,#42ddc7);transition:width .3s}
+.credits-note{border:1px solid #39627d;background:#0e3041;border-radius:8px;font-size:11px;padding:10px;white-space:pre-line;color:#c8e3ef;margin-top:10px}
+.online-hit{border-color:#376ca3;background:linear-gradient(115deg,#182a46,#132b43)}
+.start-guide{backdrop-filter:blur(10px)}
+.start-guide-card{box-shadow:0 30px 90px #000a;border-color:#3c80cf;background:linear-gradient(150deg,#132f55,#111c33 70%)}
+@media(max-width:900px){.edit-journey{grid-template-columns:1fr 1fr}}
+</style>
+<style id="rf0915-light-video-editor">
+/* UI-only redesign for RushFinder 0915, matching the light-blue approved visual concept. */
+:root{--bg:#f1f6ff;--panel:#ffffff;--panel2:#f4f8ff;--edge:#dae6f8;--blue:#1576f2;--blue2:#0c5ddc;--txt:#173151;--muted:#7087a8;--green:#23b99a;--orange:#e6ad55;--shadow:0 9px 26px #3866a110}
+html,body,button,input,select,textarea,.narr-selected{font-family:RFVazir,Tahoma,sans-serif!important}
+html,body{background:#f1f6ff!important;color:var(--txt)!important;color-scheme:light;font-size:12px;line-height:1.8}
+*{scrollbar-width:thin;scrollbar-color:#c3d7f4 #f4f8ff}
+.app{background:radial-gradient(circle at 45% 8%,#e9f1ff,#f4f8ff 72%);min-height:650px}
+.top{height:68px;flex:0 0 68px;background:#fff!important;border-bottom:1px solid #dce8f7;padding:0 19px;box-shadow:0 5px 19px #3467a00a;gap:12px}
+.brand{font-size:16px;font-weight:900;color:#102e56}.brand-blue{color:#087bf5!important}.brand .small{color:#7289a6;font-size:10px}.brand .logo{width:29px;height:29px;filter:none;background:linear-gradient(150deg,#22cced,#1680fc 60%,#0a56cf)}
+.pill{background:#eff6ff;border:1px solid #dfecfe;color:#5071a3;padding:5px 10px;border-radius:20px;font-size:10px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mode-switch{display:flex;gap:5px;background:#eff5fd;padding:4px;border-radius:11px;margin-inline:auto}
+.mode-btn{border:0;background:transparent;color:#55709a;border-radius:8px;padding:9px 14px;font-weight:800;white-space:nowrap}.mode-btn.active{color:#fff;background:#0e65dd;box-shadow:0 4px 11px #1578ed2b}
+.top-left,.top-right{gap:6px}.btn{border:1px solid #d8e5f7;background:#f7fbff;border-radius:9px;padding:7px 11px;color:#31567b;box-shadow:none;font-weight:600}.btn:hover{background:#eaf3ff;border-color:#acd2fc;color:#1763be}.btn.primary{background:linear-gradient(110deg,#1269e9,#288afb)!important;border-color:#1680ff;color:#fff;box-shadow:0 5px 15px #2679e22a}.btn.red{background:#fff7f8;border-color:#f1c9cd;color:#b74b5c}.btn.ghost{background:#f2f7ff}
+.workspace{grid-template-columns:260px minmax(365px,1fr) 356px;gap:10px;padding:11px;grid-template-areas:'inspector viewer library';direction:ltr}
+.workspace .panel,.panel{background:#fff!important;border:1px solid #d8e6f8!important;border-radius:16px;box-shadow:0 7px 22px #3467a010!important}
+.head{height:43px;background:#fff!important;color:#173b69;border-bottom:1px solid #e3edf9;padding:0 14px;font-size:12px}
+.head-icon{width:25px;height:25px;display:grid;place-items:center;background:#edf5ff;border-radius:8px;color:#1e81ee;font-size:15px}
+.subtle,.note{color:#7b8eaa!important}
+.inspector{overflow:auto}.project-controls{padding:10px 12px 13px;border-bottom:1px solid #e6eef9}.project-label{display:block;color:#325b8a;font-weight:700;font-size:11px;margin:7px 0 5px}
+.project-controls input{width:100%;background:#fafdff;border:1px solid #d6e4f6;color:#254776;border-radius:9px;text-align:center;height:34px;font-size:11px}
+.ratio-options{display:flex;gap:5px}.ratio-choice{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1px;flex:1;background:#f7faff;color:#6a82a0;border:1px solid #dce8f9;border-radius:9px;padding:6px 2px;font-size:14px;min-width:0;line-height:1.1}
+.ratio-choice span{font:11px/1.6 Arial,sans-serif}.ratio-choice.active{color:#075fd6;background:#e3efff;border-color:#5a9dfc;box-shadow:0 0 0 1px #7bb2f93d}
+.project-readonly{background:#f7faff;border:1px solid #dde9fa;color:#557197;border-radius:8px;padding:7px 8px;text-align:center;font-size:10px}
+.side-export{width:100%;margin-top:13px;font-size:11px}.clip-settings-title{padding:9px 12px 0;color:#23476f;font-weight:800;font-size:11px}.clip-settings-title .subtle{font-weight:400;font-size:10px}
+.inspect-content{padding:7px 11px 15px;flex:1;overflow:visible}.inspector .empty{background:#f5f9ff;border:1px dashed #dce9f7;border-radius:11px;color:#8ba0b7;text-align:center;line-height:1.9;padding:14px 9px}
+.video-head{height:45px;background:#fff;border-bottom:1px solid #e3ecfa;padding:0 14px}.video-head strong{color:#1f4572;font-size:12px}
+input,select,textarea{background:#fbfdff;border:1px solid #dae5f5;color:#284973;border-radius:9px;padding:7px 9px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#4e99f5;box-shadow:0 0 0 2px #70abfb2b}
+input[type=range]{accent-color:#2585f9}.field label{color:#426384;font-weight:700;font-size:11px}.section{border-bottom:1px solid #ecf1f8}.section h3{color:#295b95}
+.stage{padding:12px;background:radial-gradient(circle at 45% 35%,#e9f1fd,#dce7f8 85%);position:relative}
+.stage:after{content:'◰  پیش‌نمایش زنده';position:absolute;left:16px;top:14px;font-size:10px;letter-spacing:0;color:#7898bc;background:#ffffffbb;border:1px solid #e1ecfb;border-radius:7px;padding:3px 8px;pointer-events:none}
+.stage canvas{border-radius:8px;outline:4px solid #fff;box-shadow:0 15px 34px #3452733f;max-height:97%}
+.player{height:58px;background:#fff;border-top:1px solid #e1ebf9}.controls{gap:8px;direction:ltr}.iconbtn{background:#f0f6ff;color:#2868b3;border:1px solid #dfeafa;border-radius:50%;font-size:14px;padding:5px 11px;min-width:34px}.iconbtn:hover{background:#e0efff;color:#075ddd}#play.iconbtn{color:#fff;background:linear-gradient(140deg,#1475f4,#2889ff);border-color:#0d6fe7;box-shadow:0 5px 12px #1778ed44;font-size:18px;min-width:42px}
+.time{color:#5b7396;font:12px/1.4 Consolas,monospace}.progress-rail{background:#dce8f8;height:4px}.progress-rail>div{background:#278cff}
+.library .head{position:sticky;top:0;z-index:3}.tabs{background:#f8fbff;border-bottom:1px solid #e3ebf7;gap:3px;padding:5px}.tab{color:#6b82a3;border-radius:8px;font-weight:700;font-size:10px;padding:7px 2px}.tab.active{background:#dcecff;color:#0965d7}.tab:hover{background:#edf6ff;color:#0f65c2}
+.lib-content{padding:11px 13px;scrollbar-color:#ccdbef #fff}.library #autoTab{background:#fff!important}
+.narr-hero{background:#edf5ff;border:1px solid #d4e6ff;border-inline-start:3px solid #268af4;border-radius:11px;padding:10px}
+.narr-hero b{color:#1754a2;font-size:12px}.narr-hero p{color:#6f8aab;font-size:10px}
+.voice-drop,.import{background:#f7fbff!important;border:1px dashed #9fc5f5!important;border-radius:10px;padding:10px;color:#2062b2;font-weight:800;font-size:11px}
+.voice-drop:hover,.import:hover{background:#eaf5ff!important}.narr-selected{color:#6390ba;font-size:10px;line-height:1.7}
+#autoTab .side-script{background:#fafdff;border-color:#cadff8;min-height:95px;max-height:170px;font-size:12px;line-height:1.9;resize:vertical}
+#autoTab .field{margin:9px 0}.switchline{color:#466a95;font-size:10px}.smart-report,#smartReport{color:#617a97;background:#f4f8ff!important;border:1px solid #dbe7fa;border-radius:10px;min-height:0;font-size:10px;line-height:1.8;margin-top:7px}
+.online-hit{background:#f6faff!important;border:1px solid #dbe7fa!important;color:#2c4e74;border-radius:10px}.online-hit a,.note a{color:#1978e8!important}
+.start-advice{background:#f3f9ff;border:1px solid #b8d9ff;color:#466c9a}.credits-note{background:#f4fbff;border:1px solid #cfe3f4;color:#537b99}.tag{background:#edf5ff;color:#4179b9;border-color:#d2e6ff}
+#quickEdit{background:linear-gradient(120deg,#1267ed,#278bfa)!important;box-shadow:0 7px 16px #1978f13a!important;border:0!important;min-height:43px;font-size:12px!important;color:white}
+.edit-journey{gap:5px;margin:9px 0}.journey-item{border-radius:7px;background:#f5f9ff;color:#89a0bb;border:1px solid #dce7f8;font-size:9px;padding:5px 2px}
+.journey-item.active{background:#e3efff;border-color:#64a1f4;color:#145dc0}.journey-item.done{background:#e5f7f0;color:#25876c;border-color:#9ae5c7}.progress-track{background:#dbe9f9;height:4px}.progress-track span{background:linear-gradient(90deg,#197cfa,#3ed0ad)}
+.preset-group{margin:12px 0 14px;padding-top:10px;border-top:1px solid #e7eef8}.preset-title{display:flex;align-items:center;justify-content:space-between;color:#245486;font-size:11px;font-weight:800;margin:0 0 8px;gap:5px}.preset-title span{font-size:9px;font-weight:400;color:#95a7bc}
+.transition-gallery{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.transition-preset{min-width:0;display:flex;align-items:center;flex-direction:column;gap:5px;border:1px solid #dce8f8;background:#fff;padding:6px 2px;border-radius:10px;color:#617a98;font-size:9px;line-height:1.3;white-space:nowrap}
+.transition-preset.is-selected{background:#edf5ff;border-color:#368cf8;color:#0f60c7;box-shadow:inset 0 0 0 1px #95c5ff}.transition-art{width:90%;height:35px;display:grid;place-items:center;font:bold 22px Tahoma,sans-serif;color:#638dbd;background:#e9f1fc;border-radius:6px;box-shadow:inset 0 0 0 1px #dbe6f5}.art-fade{background:linear-gradient(125deg,#a1bfe7 50%,#d0e2f8 50%)}.art-slide{background:linear-gradient(90deg,#adc8ea 45%,#e7f1ff 45%)}.art-zoom{background:radial-gradient(circle at center,#c6daf4 0 40%,#e4edfa 41%)}.art-wipe{background:repeating-linear-gradient(90deg,#adc8ea 0 5px,#dce8f8 5px 10px)}.art-cut{background:linear-gradient(90deg,#c2d7ef 50%,#a0bde5 50%)}
+.bottom{height:294px;flex-basis:294px;margin:0 10px 9px;background:#fff;border:1px solid #d8e4f7;border-radius:15px;box-shadow:0 8px 24px #3467a015}
+.toolrow{height:42px;flex-basis:42px;background:#fff;border-bottom:1px solid #dce9f8;padding:0 12px}.toolrow strong{color:#24507c}.toolset{gap:6px}.toolrow .btn{background:#f6faff;font-size:10px;padding:6px 8px;color:#315f98}
+.timeline-wrap{background:#f6f9ff}.track-labels{width:120px;flex-basis:120px;background:#f2f6fc;border-right:1px solid #d3e1f4}.ruler-label{height:30px;background:#eef4fc;border-bottom:1px solid #d7e4f3;color:#6682a6}.track-label{height:47px;color:#355776;background:#f7faff;border-bottom:1px solid #e0e8f5;border-inline-start:3px solid transparent;font-weight:700;padding:8px}
+.track-label:nth-child(2){border-inline-start-color:#9b7cf1}.track-label:nth-child(3){border-inline-start-color:#3698e8}.track-label:nth-child(4){border-inline-start-color:#49b6a7}.track-label:nth-child(5){border-inline-start-color:#91ace7}.track-label span{color:#6089bd;font-size:16px}
+.ruler{height:30px;background:#f0f5fd;border-color:#dce6f4}.tick{color:#7691b1;border-left-color:#bed0ea}.track{height:47px;border-color:#dde8f5;background:repeating-linear-gradient(90deg,transparent,transparent 43px,#d7e3f324 44px),#f7faff}
+.track:hover{background-color:#f0f7ff}.clip{border-radius:6px;box-shadow:inset 0 0 0 1px #ffffff26;top:5px;height:35px;color:#fff;font-size:10px}
+.clip.video-clip{background:linear-gradient(145deg,#286bb3,#4d9be7);border-color:#2577c2}.clip.image-clip{background:linear-gradient(130deg,#7894c9,#5476ae);border-color:#527bab}.clip.title-clip{background:linear-gradient(130deg,#9268ca,#b193e6);border-color:#9970c6}.clip.music-clip{background:linear-gradient(120deg,#49bdab,#218f80);border-color:#329888}.clip.voice-clip{background:linear-gradient(120deg,#8aa8ea,#567bbd);border-color:#6087cc}.clip.active{outline:2px solid #196cff;outline-offset:1px}.drop-hint{color:#9cb1cb}
+.playhead,.playhead:before{background:#fb6074}.statusbar{background:#fff;border-top:1px solid #e0eafa;color:#7c91ad}.statusbar b{color:#159a7c}.kbd{background:#edf5ff;border:1px solid #d4e7fe;color:#4a76ac}
+.start-guide{background:#14355eaa;backdrop-filter:blur(4px)}.start-guide-card,.modal{background:#fff;border:1px solid #d4e6ff;border-radius:17px;color:#1d456f;box-shadow:0 20px 65px #1435574f}.start-guide-card h1,.modal h2{color:#20509e}.start-guide-card p,.modal p{color:#7189a6}.start-guide-tip{background:#f3f9ff;border-color:#cfe5ff;color:#5a7eaa}.start-guide-badge{background:#e7f3ff;border-color:#c4ddff;color:#2469b2}.modal-back{background:#1b355777}
+#rfGuideOpen{font-size:10px}
+@media(max-width:1500px){.workspace{grid-template-columns:215px minmax(350px,1fr) 308px}.top{padding:0 10px}.pill{display:none}.mode-btn{padding:7px 9px}.library #autoTab .note{font-size:10px}}
+@media(max-width:1100px){.workspace{grid-template-columns:190px minmax(260px,1fr) 260px}.project-controls{padding:8px}.top-right .small{display:none}.mode-btn{font-size:10px}}
+@media(max-width:920px){.app{height:auto;min-height:750px;overflow:visible}.workspace{grid-template-columns:1fr 1fr;grid-template-areas:'viewer viewer' 'inspector library'}.viewer{min-height:340px}.bottom{height:290px;flex-basis:290px}.top{min-height:64px;height:auto;flex-wrap:wrap}.mode-switch{order:3;margin:0 auto}}
+@media(max-width:620px){.workspace{display:flex;flex-direction:column}.viewer{flex:0 0 330px;min-height:330px}.library,.inspector{max-height:none}.top-left{gap:3px}.top-left .btn{font-size:10px;padding:5px}.bottom{margin:0 4px 4px}.toolrow .btn{font-size:9px;padding:4px}.transition-gallery{gap:3px}.transition-preset{font-size:8px}}
+</style>
+
+<style id="rf0915-compact-details">
+#autoTab .narr-hero{margin:0 0 7px;padding:7px 9px}#autoTab .narr-hero p{font-size:9px;line-height:1.6}
+#autoTab .voice-drop{padding:7px;font-size:10px;margin:5px 0}#autoTab .narr-selected{font-size:9px;margin:0 0 4px}
+#autoTab .field{margin:6px 0}#autoTab .field label{margin-bottom:3px}
+#autoTab .side-script{min-height:70px;max-height:125px;line-height:1.7;font-size:11px}
+#editStyle{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);opacity:0;pointer-events:none}
+.style-chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:4px}
+.style-chip{border:1px solid #dce8f8;border-radius:8px;background:#f8fbff;padding:7px 3px;color:#5679a2;font-size:10px;line-height:1.35}
+.style-chip.active{border-color:#579df8;background:#e5f1ff;color:#1260c3;font-weight:800}
+#autoTab .preset-group{margin:8px 0 10px;padding-top:7px}#autoTab .transition-art{height:28px;font-size:19px}
+#quickEdit{min-height:39px!important;margin-top:6px!important}#smartReport{max-height:95px;overflow:auto;min-height:36px}
+.advanced-search{border:1px solid #e2edf9;background:#f8fbff;border-radius:10px;margin:10px 0 5px;padding:0 8px}
+.advanced-search summary{font-size:10px;color:#567da8;font-weight:800;cursor:pointer;padding:7px 3px}
+.advanced-search[open]{padding-bottom:10px}.advanced-search .note{line-height:1.7}
+.edit-journey{display:none!important}
+.bottom{height:334px;flex:0 0 334px}.timeline-base{height:265px}.track-labels .track-label:last-child{border-inline-start:3px solid #a88ee5}.trans-marker{position:absolute;z-index:4;top:7px;height:32px;width:28px;background:#ebe4ff;border:1px solid #9578df;color:#7953bf;display:grid;place-items:center;border-radius:8px;cursor:pointer;font-size:14px;box-shadow:0 2px 6px #8c78b51f}.trans-marker:focus{outline:2px solid #845fe8}
+@media(max-width:920px){.bottom{height:310px;flex-basis:310px}}
+</style>
+<style id="rf0915-workspace-grid">
+/* Make smart tools tall like the approved mockup; timeline spans left and center only. */
+@media(min-width:1200px){
+ .app{display:grid;grid-template-columns:260px minmax(365px,1fr) 356px;grid-template-rows:68px minmax(320px,1fr) 334px;gap:10px;padding:0 10px 10px;direction:ltr;height:100vh;min-height:770px;overflow:hidden}
+ .top{grid-column:1/-1;grid-row:1;margin:0 -10px;direction:rtl}
+ .workspace{display:contents}
+ .inspector{grid-column:1;grid-row:2;direction:rtl;min-height:0}
+ .viewer{grid-column:2;grid-row:2;direction:rtl;min-height:0}
+ .library{grid-column:3;grid-row:2/4;direction:rtl;min-height:0}
+ .bottom{grid-column:1/3;grid-row:3;direction:rtl;height:auto;min-height:0;margin:0}
+ .stage{min-height:0}
+ .library .lib-content{overflow-y:auto}
+}
+@media(min-width:1200px) and (max-width:1500px){.app{grid-template-columns:215px minmax(345px,1fr) 308px}}
+</style>
+
+<style id="rf0919-remove-circled-heading">
+/* 0919: remove ONLY the editor header's logo/subtitle and local-processing badge. */
+@media (min-width:921px) {
+  .top { display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); }
+  .top > .mode-switch { grid-column:2; margin-inline:0; }
+  .top > .top-left { grid-column:3; justify-self:end; }
+}
+</style>
+<!-- RushFinder 0923: Vazir typography + more breathing room for Project Settings. -->
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin="anonymous">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin="anonymous">
+<style id="rushfinder-vazir-0923">
+/* The font binary is fetched by the user's browser from public font CDNs.
+   No font binaries are shipped in this patch. Local Vazir is preferred. */
+@font-face {
+  font-family: 'RushVazir0923';
+  src: local('Vazir'), local('Vazir Regular'),
+       url('https://cdnjs.cloudflare.com/ajax/libs/vazir-font/30.1.0/Vazir-Regular.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/npm/vazir-font@30.1.0/dist/Vazir-Regular.woff2') format('woff2');
+  font-style: normal; font-weight: 400; font-display: swap;
+}
+@font-face {
+  font-family: 'RushVazir0923';
+  src: local('Vazir Medium'),
+       url('https://cdnjs.cloudflare.com/ajax/libs/vazir-font/30.1.0/Vazir-Medium.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/npm/vazir-font@30.1.0/dist/Vazir-Medium.woff2') format('woff2');
+  font-style: normal; font-weight: 500; font-display: swap;
+}
+@font-face {
+  font-family: 'RushVazir0923';
+  src: local('Vazir Bold'),
+       url('https://cdnjs.cloudflare.com/ajax/libs/vazir-font/30.1.0/Vazir-Bold.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/npm/vazir-font@30.1.0/dist/Vazir-Bold.woff2') format('woff2');
+  font-style: normal; font-weight: 600 900; font-display: swap;
+}
+/* Override any earlier Tahoma / Segoe UI rules inside the editor. */
+html, body, body .app, body .app *,
+body .app button, body .app input, body .app textarea,
+body .app select, body .app option, body .app label {
+  font-family: 'RushVazir0923', 'Vazir', 'RFVazir', Tahoma, sans-serif !important;
+}
+/* Only the left Project Settings title and icon need extra top clearance. */
+.workspace .inspector { padding-top: 10px; }
+.workspace .inspector > .head {
+  flex: 0 0 auto;
+  min-height: 48px;
+  height: auto;
+  margin: 0 10px 8px;
+  padding: 9px 12px;
+  border: 1px solid #dbe7f6;
+  border-radius: 10px;
+  background: #f8fbff !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.workspace .inspector > .head > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  line-height: 1.9;
+}
+.workspace .inspector > .head > .head-icon {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  margin: 0;
+}
+.workspace .inspector > .project-controls { padding-top: 9px; }
+</style>
+
+<style id="rf0924-youtube-reference">
+:root{--rfYT:#e12c42}
+.rf-yt-panel{border:1px solid #d3e3f6;border-radius:11px;background:#f7faff;padding:10px;margin:10px 0}
+.rf-yt-heading{font-size:12px;font-weight:900;color:#244f92;margin-bottom:7px}
+.rf-yt-hint,.rf-yt-warning{font-size:10.5px;line-height:1.8;color:#597896;margin:6px 0;overflow-wrap:anywhere}
+.rf-yt-warning{color:#835e36;background:#fff8ec;border:1px solid #eadcb6;padding:8px;border-radius:7px}
+.rf-yt-results{display:flex;flex-direction:column;gap:8px;margin-top:9px;max-height:220px;overflow:auto}
+.rf-yt-result{border:1px solid #d7e5f7;border-radius:8px;padding:7px;background:white;display:grid;grid-template-columns:65px 1fr;gap:6px;align-items:center;direction:rtl;font-size:11px;color:#2a4f71}
+.rf-yt-result img{width:65px;aspect-ratio:16/9;border-radius:5px;object-fit:cover}
+.rf-yt-result label{min-width:0}.rf-yt-result select{width:100%;margin:4px 0;padding:5px;color:#254b73;background:#fff;border:1px solid #c9def2}
+.rf-yt-actions{display:flex;flex-wrap:wrap;gap:5px}.rf-yt-actions .btn{font-size:10px;padding:5px;flex:1}
+.rf-yt-overlay{position:absolute;inset:10px;display:grid;place-items:center;z-index:5;pointer-events:auto}
+.rf-yt-overlay[hidden]{display:none!important}
+#rfYTPlayerHost{width:min(100%,760px);aspect-ratio:16/9;background:#101925;box-shadow:0 9px 32px #142f5966}
+#rfYTPlayerHost iframe{width:100%;height:100%;border:0}
+.rf-yt-track{background:repeating-linear-gradient(90deg,transparent,transparent 43px,#e9d6d9 44px),#fffafb}
+.rf-yt-clip{position:absolute;top:5px;height:36px;border-radius:7px;background:linear-gradient(120deg,#fef4f5,#f9e1e5);border:1px solid #d37985;color:#8b2638;display:flex;gap:5px;align-items:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 7px;font-size:11px;cursor:pointer;direction:rtl}
+.rf-yt-clip.active{outline:2px solid #b72b46;outline-offset:1px}
+.rf-yt-label{border-inline-start:3px solid #d47886!important}
+.bottom{height:336px;flex-basis:336px}
+.timeline-base{height:312px}
+@media(max-width:920px){.bottom{height:340px;flex-basis:340px}}
+
+/* Reference cards use the installed RushFinder Vazir typography and compact light panels. */
+#rfYTPanel,.rf-yt-panel *,.rf-yt-clip{font-family:RushVazir0923,Vazir,Tahoma,sans-serif}
+#rfYTPanel{margin:8px 0;padding:9px}
+#rfYTPanel summary{cursor:pointer;font-size:12px;font-weight:800;color:#1756a0;list-style:none;display:flex;align-items:center;gap:6px}
+#rfYTPanel summary::-webkit-details-marker{display:none}
+#rfYTPanel summary::before{content:'▶';color:#ea445a;font-size:12px}
+#rfYTPanel[open] summary{margin-bottom:8px}
+#rfYTPanel .rf-yt-warning{margin-top:8px}
+#rfYTPanel .rf-yt-result select{font-size:11px}
+#rfYTPanel .rf-yt-status{min-height:30px}
+.rf-yt-unlocated{margin-top:10px;padding:12px;border:1px dashed #cba168;background:#fffaf2;border-radius:9px;display:flex;flex-direction:column;gap:7px;font-size:12px;color:#694b22}
+.rf-yt-unlocated p{margin:2px 0 5px;line-height:1.8}
+.rf-yt-unlocated a{color:#1356ad;text-decoration:underline;overflow-wrap:anywhere}
+.rf-yt-result a{font-size:10px;color:#1267b8;text-decoration:underline}
+.rf-yt-clip{text-align:right;line-height:1.15;min-width:0}
+.rf-yt-overlay{inset:9px;background:#eff5ff96;border-radius:7px}
+#rfYTPlayerHost{max-height:100%;height:auto;border:3px solid white;border-radius:9px;overflow:hidden}
+#rfYTPlayerHost iframe{display:block}
+.rf-yt-track{background:#fff8fa;border-bottom:1px solid #f0d3dc}
+.rf-yt-clip{font-weight:700}
+</style>
+
+<style id="rf0925-virtual-cuts">
+.rf-yt-clip{background:linear-gradient(105deg,#ebf5ff,#d8eaff);border:1px solid #69a6e9;color:#164f93;font-family:RushVazir0923,Vazir,Tahoma,sans-serif}
+.rf-yt-clip.active{outline:2px solid #287be2;outline-offset:1px}
+.rf-yt-track{background:#f3f8ff;border-bottom:1px solid #cee1f7}
+.rf-yt-label{border-inline-start:3px solid #348be4!important}
+.rf-yt-cut-inspector{margin:9px 0;padding:9px;background:#eef6ff;border:1px solid #c8dff9;border-radius:10px;color:#234d7e;font-size:11px;line-height:1.7}
+.rf-cut-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:7px 0}.rf-cut-grid label{display:flex;flex-direction:column;gap:3px;font-size:10px;font-weight:700}.rf-cut-grid input{width:100%;min-width:0;border:1px solid #a8cbed;border-radius:7px;padding:6px;color:#284d71;background:white;font-size:11px}
+.rf-yt-result.rf-yt-unverified{border-inline-start:3px solid #e0a347}.rf-yt-result small{font-size:10px;color:#56708d}.rf-yt-result a{display:inline-block;margin-top:4px}.rf-yt-cut-inspector .rf-yt-actions button{flex:1 1 auto}
+</style>
+<style id="rf0930-topic-match">
+.rf-yt-gap{position:absolute;top:5px;height:36px;display:flex;align-items:center;border:1px dashed #dc8a63;color:#a35433;background:#fff4ec;border-radius:7px;padding:0 7px;font-size:11px;overflow:hidden;white-space:nowrap;direction:rtl}
+.rf-yt-script{margin:5px 0;padding:5px 7px;background:#edf5ff;border-radius:5px;font-size:11px;color:#165b9d;line-height:1.7}
+</style>
+<style id="rf0927-preview-and-timeline-fixes">
+/* The export canvas and the embedded video occupy the SAME selected 16:9/1:1/9:16 frame. */
+.rf-preview-frame{position:relative;flex:none;overflow:hidden;background:#0e1725;border-radius:9px;box-shadow:0 10px 30px #1e41632f}
+.stage .rf-preview-frame canvas{width:100%!important;height:100%!important;display:block;max-width:none!important;max-height:none!important;box-shadow:none!important}
+.stage .rf-preview-frame .rf-yt-overlay{position:absolute;inset:0!important;display:flex;align-items:center;justify-content:center;background:#090e17;pointer-events:auto;padding:0!important}
+.stage .rf-preview-frame #rfYTPlayerHost{flex:0 0 auto;width:100%!important;max-width:100%!important;max-height:100%!important;height:auto!important;aspect-ratio:16/9;border:0!important;border-radius:0!important;background:#080b10;box-shadow:none!important;overflow:hidden}
+.stage .rf-preview-frame #rfYTPlayerHost iframe{display:block;width:100%!important;height:100%!important;border:0}
+.rf-yt-shadow{background:linear-gradient(115deg,#d9edff,#c0ddff)!important;border:1px dashed #498cd9!important;color:#165394!important;font-size:10px!important}
+.rf-yt-shadow.active{outline:2px solid #2173cc}
+.rf-yt-track .rf-yt-clip{font-size:10px}
+.rf-yt-status{white-space:pre-line}
+
+/* SmartEdit 0931: Premiere-style track enable/disable. Controls stay outside the YouTube iframe. */
+.track-labels{width:168px!important;flex-basis:168px!important}
+.rf-layer-label{padding:4px 6px!important;gap:4px!important;min-width:0;direction:rtl}
+.rf-layer-label>span:first-child{font-size:14px!important;flex:0 0 16px}
+.rf-layer-name{font-size:10px!important;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:inherit!important}
+.rf-layer-btn{flex:0 0 28px;min-width:28px;height:28px;line-height:1;border:1px solid #bed7ef;background:#eaf5ff;color:#1558a1;border-radius:7px;padding:0;display:grid;place-items:center;cursor:pointer;font:16px Tahoma,sans-serif}
+.rf-layer-btn:hover{background:#d4e9ff;border-color:#69a5e7}
+.rf-layer-btn[aria-pressed="false"]{color:#64748b;background:#e2e8f0;border-color:#cbd5e1;opacity:.9}
+.track.rf-layer-off .clip,.track.rf-layer-off .rf-yt-clip{opacity:.35;filter:grayscale(1)}
+.track.rf-layer-off{background-color:#eef1f6!important}
+.rf-yt-overlay[hidden]{display:none!important}
+
+</style>
+
+<style id="rf0943-ai-provider-selector">
+#rfClaudeMotionPanel{background:linear-gradient(145deg,#fbfdff,#f0f6ff)!important;border:1px solid #d7e6fb!important;box-shadow:0 7px 20px #3979c00d}
+#rfClaudeMotionPanel .rf-ai-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+#rfClaudeMotionPanel .rf-ai-heading h3{color:#1c4c82}
+.rf-ai-online{display:inline-flex;align-items:center;gap:5px;border:1px solid #bce9d9;background:#edfbf5;color:#16805e;border-radius:20px;padding:2px 8px;font-size:9px;font-weight:800;white-space:nowrap}
+.rf-ai-online i{width:7px;height:7px;border-radius:50%;background:#1dbb87;box-shadow:0 0 0 3px #1dbb871c}
+.rf-ai-provider{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:8px 0 9px}
+.rf-ai-provider-btn{min-width:0;display:flex;align-items:center;justify-content:center;gap:7px;border:1px solid #d9e5f5;border-radius:10px;padding:9px 7px;background:#fff;color:#59718f;box-shadow:0 2px 7px #315b8c0b}
+.rf-ai-provider-btn.is-active{border-color:#8d6be6;background:linear-gradient(135deg,#f7f2ff,#eee8ff);color:#5635a4;box-shadow:inset 0 0 0 1px #b6a0f1,0 5px 14px #7551ca17}
+.rf-ai-mark{width:24px;height:24px;flex:0 0 24px;border-radius:8px;display:grid;place-items:center;font-size:16px;font-weight:900}
+.rf-ai-claude{background:linear-gradient(145deg,#fff0df,#ffd3ad);color:#bd6532}
+.rf-ai-chatgpt{background:#edf1f6;color:#8794a7}
+.rf-ai-name{font-size:11px;font-weight:900}
+.rf-ai-state{font-size:9px;color:#13815d;background:#dff8ed;border-radius:20px;padding:1px 6px;font-weight:800}
+.rf-ai-coming{font-size:9px;color:#7b8798;background:#eef1f5;border-radius:20px;padding:1px 6px;font-weight:800}
+.rf-ai-lock{font-size:10px;opacity:.65}
+.rf-ai-provider-btn.is-disabled{background:#f2f4f7;border-color:#e3e7ed;color:#9aa6b5;cursor:not-allowed;filter:saturate(.45);box-shadow:none}
+.rf-ai-provider-btn.is-disabled:disabled{opacity:1}
+#rfClaudeMotionPanel #rfClaudeGenerate{background:linear-gradient(110deg,#6740c5,#8a62e7);border-color:transparent;color:#fff;box-shadow:0 5px 14px #7853cb2c}
+#rfClaudeMotionPanel #rfClaudeSavePlan{background:#fff;border-color:#d9e4f4;color:#49688e}
+#rfClaudeMotionPanel #rfClaudeSavePlan:disabled{opacity:.55}
+#rfClaudeMotionPanel #rfClaudeMotionStatus{padding:7px 9px;border-radius:8px;background:#f1f6fd;color:#637c9e}
+@media(max-width:620px){.rf-ai-provider-btn{gap:4px;padding:8px 4px}.rf-ai-name{font-size:10px}}
+</style>
+
+<style id="rf0954-hermes-clean-ui">
+/* Clear, focused editing workspace. Existing controls are retained in collapsible menus. */
+.workspace{grid-template-columns:218px minmax(350px,1fr) 320px!important;gap:8px!important;padding:8px!important}
+.workspace .inspector>.head{min-height:38px!important;margin:0 7px 5px!important;padding:5px 10px!important}
+.workspace .inspector>.head .head-icon{display:none!important}
+.workspace .library>.head{min-height:39px!important;height:39px!important}
+.workspace .lib-content{padding:10px!important}
+.workspace .video-head{min-height:39px!important;height:39px!important}
+#rfHermesPanel{padding:12px;background:linear-gradient(140deg,#f7fbff,#eff6ff);border:1px solid #c6d9f6;border-radius:13px;color:#183556;display:grid;gap:8px;box-shadow:0 5px 20px #1e4b8510}
+#rfHermesPanel label{font-weight:700;font-size:12px;color:#22466e;display:block}
+#rfHermesPanel textarea,#rfHermesPanel input{width:100%;border:1px solid #b9cce8!important;border-radius:9px;padding:10px;background:white!important;color:#193659!important;direction:rtl;font-size:12px}
+#rfHermesPanel textarea{resize:vertical;min-height:100px}
+.rf-hermes-header{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.rf-hermes-header strong{font-size:14px;color:#153b68}
+.rf-hermes-chip{padding:3px 7px;border-radius:30px;background:#e1e8f4;color:#526886;font-size:10px;white-space:nowrap}
+.rf-hermes-chip.is-ready{background:#dcf7e9;color:#126b43}
+.rf-hermes-lead{margin:0;color:#5f748f;font-size:11px;line-height:1.9}
+.rf-hermes-file{background:#fff;border:1px dashed #80a8df;padding:10px;text-align:center;border-radius:10px;cursor:pointer}
+.rf-hermes-fileinfo,.rf-hermes-note{font-size:10px;color:#647b95;line-height:1.85}
+.rf-hermes-access{border:0;padding:0;font-size:11px;color:#476487}
+.rf-hermes-access input{margin-top:6px}
+.rf-hermes-submit{width:100%;padding:11px!important;white-space:normal!important;font-size:13px!important}
+.rf-hermes-status{background:#eaf1fc;border-radius:7px;padding:9px;font-size:11px;color:#315c8b;line-height:1.8;min-height:34px}
+.rf-hermes-actions{display:flex;gap:6px}.rf-hermes-actions button{flex:1;white-space:normal;font-size:11px!important}
+#rfHermesPreviewLink{font-size:11px;color:#1665ad;text-decoration:underline}
+.rf-hermes-old,.rf-project-accordion{border:1px solid #d5e2ef;border-radius:10px;background:#fafcff;margin:9px 0;padding:9px;color:#345776}
+.rf-hermes-old>summary,.rf-project-accordion>summary{cursor:pointer;font-size:11px;font-weight:700;list-style:none}
+.rf-hermes-old>summary:before,.rf-project-accordion>summary:before{content:'▸ ';color:#3174bc}
+#rfHermesLegacyContent{margin-top:12px;border-top:1px solid #d6e4f5;padding-top:8px}
+.rf-project-accordion .project-controls{margin-top:10px}
+#rfHermesLegacy[open] #rfHermesLegacyContent>.note{margin:3px 0}
+/* Keep transition controls collapsed by default; obsolete YouTube row was removed. */
+body:not(.rf-show-legacy-tracks) #transitionTrack{display:none!important}
+body:not(.rf-show-legacy-tracks) #transitionTrack~.drop-hint{display:none!important}
+.bottom{height:300px!important;flex-basis:300px!important}
+.statusbar>span:last-child{display:none}
+@media(min-width:1200px){.app{grid-template-columns:210px minmax(360px,1fr) 330px!important}}
+@media(min-width:1200px) and (max-width:1450px){.app{grid-template-columns:180px minmax(330px,1fr) 300px!important}}
+@media(max-width:1160px){.workspace{grid-template-columns:180px minmax(320px,1fr) 285px!important}}
+@media(max-width:940px){.workspace{grid-template-columns:1fr 1fr!important;grid-template-areas:'viewer viewer' 'inspector library'!important}.viewer{min-height:300px}}
+@media(max-width:600px){.workspace{grid-template-columns:1fr!important;grid-template-areas:'viewer' 'library' 'inspector'!important}.bottom{height:330px!important}}
+</style>
+
+<style id="rf0957-no-page-stretch">
+/* Keep only the controls the user needs. Compatibility nodes are never displayed. */
+.rf0957-hidden-compat, [hidden] { display:none !important; }
+#rfHermesPanel .rf-hermes-access { display:none !important; }
+/* The advanced menu scrolls inside the right-hand column, not the document. */
+#rfHermesLegacy { min-width:0; overflow:hidden; }
+#rfHermesLegacy[open] #rfHermesLegacyContent {
+  box-sizing:border-box; max-height:min(52dvh, 430px); overflow-y:auto;
+  overflow-x:hidden; overscroll-behavior:contain; scrollbar-width:thin;
+}
+#rfHermesLegacyContent .field, #rfHermesLegacyContent .preset-group { min-width:0; }
+#rfHermesLegacyContent .row { flex-wrap:wrap; }
+.library { min-height:0 !important; min-width:0; }
+.library > .lib-content {
+  min-height:0 !important; min-width:0; flex:1 1 0 !important;
+  overflow-y:auto !important; overflow-x:hidden !important;
+  overscroll-behavior:contain;
+}
+@media (min-width:1200px) {
+  html,body { height:100%; overflow:hidden !important; }
+  body {position:fixed !important; inset:0 !important; width:100% !important; height:100dvh !important;}
+  .app {
+    height:100dvh !important; max-height:100dvh !important;
+    min-height:0 !important; overflow:hidden !important;
+    grid-template-rows:68px minmax(0,1fr) minmax(0,300px) !important;
+  }
+  .library { max-height:100% !important; overflow:hidden !important; }
+  .library > .lib-content { max-height:100% !important; }
+  .viewer,.inspector,.bottom { min-height:0 !important; overflow:hidden; }
+}
+@media (min-width:941px) and (max-width:1199px) {
+  body {position:fixed !important; inset:0 !important; width:100% !important; height:100dvh !important; overflow:hidden !important;}
+  .app { height:100dvh !important; min-height:0 !important; overflow:hidden !important; }
+  .workspace { min-height:0 !important; }
+  .library { overflow:hidden !important; }
+}
+@media (max-width:940px) {
+  #rfHermesLegacy[open] #rfHermesLegacyContent { max-height:320px; }
+}
+</style>
+<!-- RushFinder 0958: retain JS IDs but remove unfinished Hermes controls from the visible editor. -->
+<style id="rf0958-hide-circled-hermes">
+#rfHermesPanel #rfHermesStatus,
+#rfHermesPanel .rf-hermes-actions,
+#rfHermesPanel #rfHermesPreviewLink,
+#rfHermesPanel .rf-hermes-note,
+#rfHermesPanel .rf-hermes-access { display: none !important; }
+</style>
+</head><body>
+<div class="app">
+<header class="top">
+
+<nav aria-label="حالت تدوین" class="mode-switch"><button class="mode-btn active" id="rfSmartMode" type="button">✦ ویرایش هوشمند</button><button class="mode-btn" id="rfManualMode" type="button">✂ ویرایش دستی</button></nav>
+<div class="top-left"><button class="btn" id="rfGuideOpen" title="راهنمای شروع" type="button">؟ راهنما</button><button class="btn" id="newProject">＋ پروژه جدید</button><button class="btn" id="savePlan">◫ ذخیره طرح</button><button class="btn primary" id="exportBtn">⇧ خروجی ویدئو</button></div>
+</header>
+<section class="workspace">
+<aside class="panel inspector">
+<div class="head"><span>⚙ پروژه و تنظیمات</span><span class="head-icon">⚙</span></div>
+<div class="project-controls">
+<label class="project-label" for="rfProjectName">نام پروژه</label>
+<input id="rfProjectName" maxlength="80" title="نام پروژه" value="تدوین خبری جدید"/>
+<div class="project-label">نسبت تصویر</div>
+<div class="ratio-options"><button class="ratio-choice active" data-ratio="16:9" type="button">▭ <span>16:9</span></button><button class="ratio-choice" data-ratio="1:1" type="button">□ <span>1:1</span></button><button class="ratio-choice" data-ratio="9:16" type="button">▯ <span>9:16</span></button></div>
+<div class="project-label">کیفیت پیش‌نمایش</div><div class="project-readonly">HD · مطابق کادر انتخابی</div>
+<div class="project-label">فرمت خروجی</div><div class="project-readonly">MP4 / WebM · بر اساس مرورگر</div>
+<button class="btn primary side-export" id="rfExportSide" type="button">⇧ گرفتن خروجی از ویدئو</button>
+</div>
+<div class="clip-settings-title">✎ تنظیمات کلیپ <span class="subtle" id="selectTag">چیزی انتخاب نشده</span></div>
+<div class="inspect-content" id="inspectorContent"><div class="empty">برای کات، کوتاه‌کردن یا تنظیم صدا، یک کلیپ را از تایم‌لاین انتخاب کن.</div></div>
+</aside>
+<section class="panel viewer"><div class="video-head"><strong>▷ پیش‌نمایش خروجی</strong><div class="row" style="flex:0 0 auto"><span class="subtle">کادر خروجی</span><select id="aspect" title="کادر خروجی"><option value="16:9">16:9 افقی</option><option value="9:16">9:16 عمودی</option><option value="1:1">1:1 مربعی</option></select></div></div><div class="stage" id="stage"><div class="rf-preview-frame" id="rfPreviewFrame"><canvas aria-label="پیش‌نمایش تصویر" height="540" id="canvas" width="960"></canvas></div></div><div class="player"><div class="controls"><span class="time" id="time">00:00 / 00:00</span><button class="iconbtn" id="back" title="۵ ثانیه عقب">⏪</button><button class="iconbtn" id="play" title="پخش / توقف">▶</button><button class="iconbtn" id="forward" title="۵ ثانیه جلو">⏩</button><button class="iconbtn" id="muteBtn" title="قطع صدای پیش‌نمایش">🔊</button></div><div class="progress-rail" id="scrubRail"><div id="scrubFill"></div></div></div></section>
+<aside class="panel library"><div class="head"><span>✦ ابزار ویرایش هوشمند</span><span class="head-icon">▦</span></div><div class="tabs"><button class="tab" data-tab="media">رسانه‌ها</button><button class="tab" data-tab="text">تیتر روی فیلم</button><button class="tab" data-tab="audio">صدا</button><button class="tab active" data-tab="auto">✦ نریشن + متن</button></div>
+<div class="lib-content hidden" id="mediaTab"><label class="import" for="files">＋ افزودن راش و تصویر<br/><span class="small">فایل‌ها روی کامپیوتر باقی می‌مانند</span></label><input accept="video/*,image/*" class="file-input" id="files" multiple="" type="file"/><label class="import" for="folderFiles" style="margin-top:9px;background:#10263b">◧ جست‌وجو در پوشه راش‌های کامپیوتر<br/><span class="small">پوشه را خودت انتخاب می‌کنی</span></label><input class="file-input" directory="" id="folderFiles" multiple="" type="file" webkitdirectory=""/><div class="note" id="folderStatus"></div><div class="field" style="margin-top:11px"><label>افزودن فایل مجاز از لینک مستقیم MP4 (اختیاری)</label><input dir="ltr" id="directVideoUrl" placeholder="https://example.org/owned-footage.mp4" style="width:100%" type="url"/><label class="switchline" style="margin:7px 0"><input id="directRights" type="checkbox"/> حق استفاده از این فایل را دارم</label><button class="btn" id="addDirectVideo" style="width:100%" type="button">دریافت مستقیم و افزودن به پروژه</button><p class="note" id="directVideoStatus">فقط لینک مستقیم به فایل ویدئو، نه لینک صفحه یوتیوب، آپارات یا YTUltra. سرور ویدئو باید دانلود مرورگری (CORS) را مجاز کند. فایل به Vercel ارسال نمی‌شود.</p></div><div class="assets" id="assets"></div><div class="note">روی «افزودن» بزن یا فایل را روی نوار ویدئو بکش.</div></div>
+<div class="lib-content hidden" id="textTab"><div class="note smart-report">برای نوشتن متن روی فیلم از این ابزار استفاده کن. متن سناریوی تدوین به‌صورت خودکار روی خروجی نمایش داده نمی‌شود.</div><button class="btn primary" id="moveTextToScript" style="width:100%;white-space:normal" type="button">✦ تبدیل متن به تدوین هوشمند</button><div class="field"><label>متن روی تصویر</label><textarea id="titleText" placeholder="تیتر خبر یا جمله کوتاه…" rows="3"></textarea></div><button class="btn primary" id="addTitle" style="width:100%">＋ افزودن متن در نشانگر</button><p class="note">متن روی لایه بالای ویدئو قرار می‌گیرد و در خروجی هم دیده می‌شود.</p></div>
+<div class="lib-content hidden" id="audioTab"><label class="import" for="musicInput">♫ افزودن موسیقی</label><input accept="audio/*" class="file-input" id="musicInput" type="file"/><label class="import" for="voiceInput" style="margin-top:10px">🎙 انتخاب فایل نریشن</label><input accept="audio/*" class="file-input" id="voiceInput" type="file"/><button class="btn" id="autoMusic" style="width:100%;margin-top:10px">♫ ساخت موسیقی ساده خودکار</button><button class="btn" id="recordVoice" style="width:100%;margin-top:10px">● ضبط نریشن با میکروفون</button><p class="note">نریشن و موسیقی لایه‌های جداگانه دارند. ضبط میکروفون به مجوز مرورگر نیاز دارد.</p></div>
+<div class="lib-content" id="autoTab">
+<section class="rf-hermes-editor" id="rfHermesPanel" aria-label="تدوین با Hermes">
+  <div class="rf-hermes-header" id="rf0959Heading"><strong>ØªØ¯ÙˆÛŒÙ†</strong></div>
+  <div id="rf0957HermesHiddenHeader" class="rf0957-hidden-compat" hidden aria-hidden="true"><span id="rfHermesLive" class="rf-hermes-chip">بررسی اتصال…</span></div>
+  <p class="rf-hermes-lead">متن و فایل نریشن را برای تدوین آماده کن.</p>
+  <label for="rfHermesScript">متن یا دستور تدوین</label>
+  <textarea id="rfHermesScript" rows="5" placeholder="مثلاً: از این نریشن یک مستند با تیترها، تصاویر تاریخی و حرکت دوربین بساز…"></textarea>
+  <label class="rf-hermes-file" for="rfHermesAudio">🎙 افزودن نریشن (MP3، WAV، M4A، WEBM) <input type="file" id="rfHermesAudio" accept="audio/*,.m4a,.mp3,.wav,.webm" hidden></label>
+  <div class="rf-hermes-fileinfo" id="rfHermesAudioInfo">فایل انتخاب نشده</div>
+  <details class="rf-hermes-access"><summary>🔒 کد دسترسی تدوین</summary><input type="password" autocomplete="off" id="rfHermesAccessCode" placeholder="کد دسترسی ارائه‌شده توسط مدیر سایت"></details>
+  <!-- Hermes job controls are withheld until the colleague's worker is connected. Keep IDs for existing JS. -->
+  <button type="button" class="btn primary rf-hermes-submit" id="rfHermesSubmit">ارسال درخواست به Hermes</button>
+  <div id="rf0957HermesJobCompat" class="rf0957-hidden-compat" hidden aria-hidden="true">
+    
+    <div id="rfHermesStatus" role="status" aria-live="polite" class="rf-hermes-status">سفارش جدیدی ثبت نشده است.</div>
+    <div class="rf-hermes-actions"><button class="btn" id="rfHermesImport" type="button" disabled>واردکردن نتیجه به تایم‌لاین</button><button class="btn" id="rfHermesResume" type="button" hidden>پیگیری سفارش قبلی</button></div>
+    <a id="rfHermesPreviewLink" target="_blank" rel="noopener noreferrer" hidden>مشاهده ویدیوی ساخته‌شده</a>
+  </div>
+</section>
+<details class="rf-hermes-old" id="rfHermesLegacy"><summary>⚙ ابزارهای بیشتر: تنظیمات و افکت‌ها</summary><div id="rfHermesLegacyContent"></div></details>
+<!-- Hidden compatibility elements ensure existing scripts do not throw when the old AI controls are removed from the UI. -->
+<div id="rf0957HiddenMotionCompat" class="rf0957-hidden-compat" hidden aria-hidden="true"><div class="section" id="rfClaudeMotionPanel" style="margin:12px 0;padding:12px;border:1px solid #d9e5fa;border-radius:12px;background:#f8fbff">
+ <div class="rf-ai-heading"><h3 style="font-size:14px;margin:0">✦ ساخت موشن‌گرافیک با هوش مصنوعی</h3><span class="rf-ai-online"><i></i> موتور فعال: Claude</span></div>
+ <div class="rf-ai-provider" role="group" aria-label="انتخاب موتور هوش مصنوعی">
+  <button class="rf-ai-provider-btn is-active" id="rfClaudeProvider" type="button" aria-pressed="true" title="موتور فعال ساخت سناریو و موشن‌گرافیک"><span class="rf-ai-mark rf-ai-claude">✳</span><span class="rf-ai-name">Groq / Claude</span><span class="rf-ai-state">در حال بررسی</span></button>
+  <button class="rf-ai-provider-btn is-disabled" id="rfChatGPTProvider" type="button" disabled aria-disabled="true" title="اتصال ChatGPT در نسخه بعدی فعال می‌شود"><span class="rf-ai-mark rf-ai-chatgpt">◎</span><span class="rf-ai-name">ChatGPT</span><span class="rf-ai-coming">به‌زودی</span><span class="rf-ai-lock" aria-hidden="true">🔒</span></button>
+ </div>
+ <div class="field"><label for="rfMotionStyle">سبک موشن</label><select id="rfMotionStyle"><option value="news">خبرنگاری حرفه‌ای</option><option value="documentary">مستند سینمایی</option><option value="minimal">مینیمال و داده‌محور</option><option value="energetic">پر انرژی و مدرن</option></select></div>
+ <div class="field"><label for="rfMotionDuration">مدت تقریبی (ثانیه)</label><input id="rfMotionDuration" type="number" min="10" max="300" value="45"/></div>
+ <div class="row" style="margin-top:8px"><button class="btn primary" id="rfClaudeGenerate" type="button">✦ ساخت خودکار و افزودن به تایم‌لاین</button><button class="btn" id="rfClaudeSavePlan" type="button" disabled>دریافت سناریو JSON</button></div>
+ <div id="rfClaudeMotionStatus" class="note" aria-live="polite">برای تولید صحنه‌ها، کلید Groq یا Claude در Vercel لازم است.</div>
+ <div id="rfClaudeSceneList" style="display:grid;gap:6px;margin-top:8px"></div>
+</div></div>
+<label class="voice-drop" for="autoVoiceInput">◉ انتخاب فایل نریشن · MP3 / WAV / M4A <input accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.webm" id="autoVoiceInput" type="file"/></label><div class="narr-selected" id="autoVoiceInfo">هنوز نریشنی انتخاب نشده است.</div><div class="field"><label>▤ متن نریشن (در صورت داشتن فایل صوتی کوتاه، اختیاری)</label><textarea class="side-script" id="script" placeholder="مثلاً: بارش باران در تهران موجب ترافیک شد. تیم‌های امدادی به محل اعزام شدند…" rows="6"></textarea>
+</div><div class="field"><label>▦ سبک و قالب ویدئو</label><select id="editStyle"><option value="news">خبری · سریع و واضح</option><option value="cinema">سینمایی · آرام‌تر</option><option value="social">شبکه اجتماعی · ریتم تند</option></select><div class="style-chips"><button aria-pressed="true" class="style-chip active" data-style-value="news" type="button">▤ خبر و گزارش</button><button aria-pressed="false" class="style-chip" data-style-value="cinema" type="button">◈ سینمایی</button><button aria-pressed="false" class="style-chip" data-style-value="social" type="button">✦ شبکه اجتماعی</button></div></div><label class="voice-drop" for="autoMusicInput" style="border-color:#4482aa">♫ انتخاب موسیقی دلخواه<input accept="audio/*,.mp3,.wav,.m4a,.ogg" id="autoMusicInput" type="file"/></label><div class="narr-selected" id="autoMusicInfo">اگر آهنگ انتخاب نکنی، موسیقی ساده و اختصاصی ساخته می‌شود.</div><div class="preset-group">
+<div class="preset-title">▧ انتخاب ترنزیشن <span>به کلیپ‌های مجاور اعمال می‌شود</span></div>
+<div class="transition-gallery" id="rfTransitions">
+<button aria-pressed="true" class="transition-preset is-selected" data-transition-preset="fade" type="button"><span class="transition-art art-fade">◩</span><span>محو شدن</span></button>
+<button aria-pressed="false" class="transition-preset" data-transition-preset="slide" type="button"><span class="transition-art art-slide">➜</span><span>اسلاید</span></button>
+<button aria-pressed="false" class="transition-preset" data-transition-preset="zoom" type="button"><span class="transition-art art-zoom">⤢</span><span>زوم</span></button>
+<button aria-pressed="false" class="transition-preset" data-transition-preset="wipe" type="button"><span class="transition-art art-wipe">▥</span><span>وایپ</span></button>
+<button aria-pressed="false" class="transition-preset" data-transition-preset="cut" type="button"><span class="transition-art art-cut">▣</span><span>قطع ساده</span></button>
+</div>
+</div><div id="rfRetiredEditCompat" hidden aria-hidden="true" style="display:none!important">
+  <details id="rfYTPanel" hidden></details><button type="button" id="rfAutoCutReal" disabled hidden></button>
+  <button type="button" id="quickEdit" disabled hidden></button><span id="autoProgress" hidden></span><span id="smartReport" hidden></span>
+  <input type="checkbox" id="useOnline" checked><input type="checkbox" id="allowGeneric">
+  <input type="text" id="onlineQuery"><select id="licensedSource"><option value="auto">auto</option></select>
+  <button id="findYoutube" type="button" disabled></button><button id="findAparat" type="button" disabled></button>
+  <button id="openRushFolder" type="button" disabled></button><button id="tryLicensed" type="button" disabled></button>
+  <button id="demoEdit" type="button" disabled></button><div id="onlineHits"></div><div id="autoCredits" hidden></div>
+  <button id="downloadCredits" type="button" disabled></button>
+</div>
+</div>
+</aside>
+</section>
+<section class="bottom"><div class="toolrow"><div class="toolset"><strong style="font-size:12px">▤ تایم‌لاین و برش دستی</strong><button class="btn" id="split" title="برش از محل نشانگر (S)">✂ تقسیم</button><button class="btn" id="remove" title="حذف کلیپ انتخاب‌شده">🗑 حذف</button><button class="btn" id="undo" title="بازگردانی Ctrl+Z">↶ بازگشت</button><button class="btn" id="transition" title="ترنزیشن بین کلیپ‌ها">◇ ترنزیشن: محو</button></div><div class="toolset"><span class="subtle">بزرگ‌نمایی تایم‌لاین</span><input class="zoom" id="zoom" max="115" min="18" type="range" value="44"/><span class="tag" id="zoomValue">44px/s</span></div></div>
+<div class="timeline-wrap"><div class="track-labels"><div class="ruler-label">زمان</div><div class="track-label rf-layer-label"><span>▣</span><span class="rf-layer-name">متن‌ها</span><button type="button" class="rf-layer-btn" data-rf-layer="title" aria-label="خاموش کردن تصویر لایه متن‌ها" aria-pressed="true" title="چشم: نمایش/پنهان کردن لایه متن">◉</button></div><div class="track-label rf-layer-label"><span>▰</span><span class="rf-layer-name">ویدئو / راش</span><button type="button" class="rf-layer-btn" data-rf-layer="video" aria-label="خاموش کردن تصویر لایه راش" aria-pressed="true" title="چشم: خاموش/روشن کردن تصویر راش، بدون حذف کلیپ">◉</button></div><div class="track-label rf-layer-label"><span>♫</span><span class="rf-layer-name">موسیقی</span><button type="button" class="rf-layer-btn rf-layer-audio" data-rf-layer="music" aria-label="قطع صدای موسیقی" aria-pressed="true" title="بلندگو: قطع/وصل صدای موسیقی">🔊</button></div><div class="track-label rf-layer-label"><span>♬</span><span class="rf-layer-name">نریشن</span><button type="button" class="rf-layer-btn rf-layer-audio" data-rf-layer="voice" aria-label="قطع صدای نریشن" aria-pressed="true" title="بلندگو: قطع/وصل صدای نریشن">🔊</button></div><div class="track-label"><span>◇</span> ترنزیشن</div></div><div class="tracks-scroller" id="scroll"><div class="timeline-base" id="timeline"><div class="ruler" id="ruler"></div><div class="track" id="titleTrack"><div class="drop-hint">لایه متن</div></div><div class="track" id="videoTrack"><div class="drop-hint">صحنه‌ها و کلیپ‌ها اینجا قرار می‌گیرند</div></div><div class="track" id="musicTrack"><div class="drop-hint">لایه موسیقی</div></div><div class="track" id="voiceTrack"><div class="drop-hint">لایه نریشن</div></div><div class="playhead" id="playhead"></div><div class="track" id="transitionTrack"><div class="drop-hint">ترنزیشن‌ها بین نماها نمایش داده می‌شوند</div></div></div></div></div>
+<div class="statusbar"><span id="status">آماده · برای شروع چند راش وارد کن</span><span><b>تدوین محلی</b> · بدون آپلود فیلم · میانبر: <span class="kbd">Space</span> پخش <span class="kbd">S</span> تقسیم <span class="kbd">Ctrl+Z</span> بازگشت</span></div>
+</section>
+</div>
+<div aria-labelledby="startGuideTitle" aria-modal="true" class="start-guide" hidden="" id="startGuide" role="dialog">
+<div class="start-guide-card">
+<span class="start-guide-badge">RushFinder SmartEdit 0928 · نسخه وب · تدوین خودکار</span>
+<h1 id="startGuideTitle">متن و نریشن را به تدوین اضافه کن</h1>
+<p>متن یا نریشن را وارد کن. می‌توانی درخواست را برای Hermes آماده کنی، یا از بخش ابزارهای بیشتر موشن هوشمند بسازی. صحنه‌های دریافت‌شده روی تایم‌لاین قابل ویرایش هستند.</p>
+<label for="guideVoice" style="display:block;margin-bottom:7px;font-weight:700">۱. فایل نریشن (اختیاری)</label>
+<input accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.webm" id="guideVoice" type="file"/>
+<label for="guideScript" style="display:block;margin-bottom:7px;font-weight:700">۲. متن دقیق نریشن</label>
+<textarea id="guideScript" placeholder="متن واقعی نریشن را اینجا وارد کن..."></textarea>
+<div class="start-guide-actions">
+<button class="btn primary" id="guideBuild" type="button">ثبت متن و ورود به تدوین</button>
+<button class="btn" id="guideChoose" type="button">◧ انتخاب پوشه راش‌های خودم</button>
+</div>
+<div class="start-guide-actions"><button class="btn ghost" id="guideSkip" type="button">ورود بدون نریشن</button></div>
+<div class="start-guide-tip">برای ارسال درخواست واقعی به Hermes، اتصال سیستم تدوین همکار باید فعال باشد.</div>
+</div>
+</div>
+<div class="modal-back" id="exportModal"><div class="modal"><h2 id="modalTitle">ساخت خروجی ویدئو</h2><p id="modalText">ویدئو در مرورگر خودت و با سرعت واقعی پخش و ضبط می‌شود. تب را تا پایان باز نگه دار.</p><progress id="exportProgress" max="100" value="0"></progress><div class="actions"><button class="btn red" id="cancelExport">توقف خروجی</button><button class="btn primary hidden" id="downloadExport">دانلود فایل</button><button class="btn hidden" id="closeModal">بستن</button></div></div></div>
+<script src="smart-edit.js?v=0955"></script>
+<script src="claude-motion-editor.js?v=0954" defer></script>
+<script src="hermes-ui.js?v=0957" defer></script>
+<script>
+(()=>{
+ const guide=document.getElementById('startGuide');
+ const script=document.getElementById('script');
+ const field=document.getElementById('guideScript');
+ const close=()=>{guide.hidden=true};
+ const putText=()=>{script.value=field.value.trim()};
+ document.getElementById('guideBuild').addEventListener('click',async()=>{
+   const file=document.getElementById('guideVoice').files?.[0];
+   if(!field.value.trim()){alert('ابتدا متن یا دستور تدوین را بنویس.');return;}
+   putText();close();document.querySelector('[data-tab="auto"]').click();
+   // The editor owns the media import pipeline; input change triggers import then edit.
+   if(file){await window.rf0912ImportNarration(file);if(document.getElementById('autoVoiceInfo').dataset.loaded!=='1')return;}
+   const hermesScript=document.getElementById('rfHermesScript');if(hermesScript){hermesScript.value=field.value.trim();hermesScript.focus();}
+ });
+ document.getElementById('guideChoose').addEventListener('click',()=>{putText();close();document.querySelector('[data-tab="auto"]').click();document.getElementById('folderFiles').click();});
+ document.getElementById('guideSkip').addEventListener('click',()=>{putText();close();document.querySelector('[data-tab="auto"]').click();document.getElementById('script').focus();});
+ if(new URLSearchParams(location.search).get('embedded')==='1')guide.hidden=true;
+})();
+</script>
+<script id="rf0915-design-controls">
+(()=>{
+ const $=id=>document.getElementById(id);
+ const smart=$('rfSmartMode'),manual=$('rfManualMode');
+ function chooseMode(mode){const auto=mode==='auto';smart.classList.toggle('active',auto);manual.classList.toggle('active',!auto);document.querySelector('[data-tab="'+(auto?'auto':'media')+'"]').click()}
+ smart.addEventListener('click',()=>chooseMode('auto'));
+ manual.addEventListener('click',()=>chooseMode('manual'));
+ document.querySelectorAll('.ratio-choice').forEach(btn=>btn.addEventListener('click',()=>{
+   $('aspect').value=btn.dataset.ratio;
+   $('aspect').dispatchEvent(new Event('change',{bubbles:true}));
+   document.querySelectorAll('.ratio-choice').forEach(x=>x.classList.toggle('active',x===btn));
+ }));
+ $('aspect').addEventListener('change',()=>document.querySelectorAll('.ratio-choice').forEach(x=>x.classList.toggle('active',x.dataset.ratio===$('aspect').value)));
+ $('rfExportSide').addEventListener('click',()=>$('exportBtn').click());
+ $('rfGuideOpen').addEventListener('click',()=>{$('startGuide').hidden=false});
+ document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{smart.classList.toggle('active',b.dataset.tab==='auto');manual.classList.toggle('active',b.dataset.tab!=='auto');}));
+ const p=$('rfProjectName'); p.addEventListener('change',()=>{if(!p.value.trim())p.value='پروژه بدون نام'});
+ document.querySelectorAll('[data-style-value]').forEach(b=>b.addEventListener('click',()=>{
+  $('editStyle').value=b.dataset.styleValue;
+  $('editStyle').dispatchEvent(new Event('change',{bubbles:true}));
+  document.querySelectorAll('[data-style-value]').forEach(x=>{const is=x===b;x.classList.toggle('active',is);x.setAttribute('aria-pressed',String(is))})
+ }));
+})();
+</script>
+</body></html>
