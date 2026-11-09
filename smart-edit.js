@@ -684,6 +684,57 @@ window.rfGetRemotionTimelinePlan=function(){
 };
 
 // Basic diagnostics for end-to-end tests; no keys or private data.
+// RushFinder 0954: import real Hermes scene assets to the *existing* editable timeline.
+// Rendering/export remain manual; receiving a finished job never starts export.
+window.rfImportHermesProject=async function(result){
+ if(exporting)throw Error('ابتدا ساخت خروجی فعلی را متوقف یا تکمیل کن.');
+ if(!result || typeof result!=='object')throw Error('پروژه Hermes معتبر نیست.');
+ const p=result.project&&typeof result.project==='object'?result.project:result;
+ let scenes=Array.isArray(p.scenes)?p.scenes.filter(x=>x&&typeof x==='object'):[];
+ const finalUrl=result.final_mp4_url||p.final_mp4_url||'';
+ if(!scenes.length&&finalUrl){scenes=[{title:'ویدئوی آماده Hermes',duration:0,media_url:finalUrl}]}
+ if(!scenes.length)throw Error('Hermes باید فایل MP4 یا فایل پروژه همراه با رسانه‌های صحنه‌ها را برگرداند.');
+ if(scenes.length>40)throw Error('حداکثر ۴۰ صحنه در هر نوبت پشتیبانی می‌شود.');
+ if((clips.length||titles.length)&&!confirm('صحنه‌های Hermes به انتهای تایم‌لاین فعلی اضافه شوند؟'))return 0;
+ const loaded=[],added=[],newTitles=[];
+ const extOf=(url,mime)=>{let ext='mp4';if(/^image\//.test(mime))ext=mime.includes('png')?'png':'jpg';else if(/^audio\//.test(mime))ext='mp3';else if(/webm/i.test(mime))ext='webm';else if(/quicktime/i.test(mime))ext='mov';return ext};
+ async function loadAsset(url,label){
+  if(!/^https:\/\//i.test(url)&&!/^http:\/\/localhost[:/]/i.test(url)&&!/^http:\/\/127\.0\.0\.1[:/]/i.test(url))throw Error('آدرس رسانه باید HTTPS امن باشد.');
+  const response=await fetch(url,{mode:'cors',cache:'no-store'});
+  if(!response.ok)throw Error('دریافت رسانه '+label+' ناموفق بود ('+response.status+').');
+  const blob=await response.blob();if(!blob.size||blob.size>180*1024*1024)throw Error('حجم رسانه '+label+' مجاز نیست.');
+  const filename=String(label||'Hermes').replace(/[^\w\u0600-\u06ff.-]/g,'_').slice(0,45)+'-'+uid()+'.'+extOf(url,blob.type);
+  const file=new File([blob],filename,{type:blob.type||'video/mp4'});
+  const m=await importFile(file);if(!m)throw Error('رسانه '+label+' قابل خواندن نیست.');loaded.push(m);return m;
+ }
+ try{
+  for(let i=0;i<scenes.length;i++){
+   const scene=scenes[i],url=scene.media_url||scene.video_url||scene.image_url||'';
+   if(!url)throw Error('صحنه '+(i+1)+' فایل مجزا ندارد. برای ویرایش صحنه‌ای، Hermes باید هر صحنه را جداگانه برگرداند.');
+   const m=await loadAsset(url,'Hermes-scene-'+(i+1));
+   if(m.type!=='video'&&m.type!=='image')throw Error('رسانه صحنه '+(i+1)+' باید فیلم یا تصویر باشد.');
+   const sec=clamp(Number(scene.duration)||Number(m.duration)||5,.3,m.type==='video'?Math.max(.3,m.duration):600);
+   if(m.type==='image')m.duration=sec;
+   if(scene.motion&&m.type==='image'){
+    m.rfMotion={type:String(scene.motion.type||scene.type||'title').slice(0,30),title:String(scene.title||'').slice(0,100),visual:String(scene.motion.visual||'').slice(0,240),accent:/^#[\da-f]{6}$/i.test(scene.motion.accent||'')?scene.motion.accent:'#39aee8',motionKind:String(scene.motion.kind||'fade'),sceneIndex:i+1};
+   }
+   added.push(createClip(m,0,sec));
+   if(String(scene.title||'').trim())newTitles.push({sceneIndex:i,text:String(scene.title).slice(0,160),duration:sec});
+  }
+  let audioM=null;
+  if(p.voice_url||result.voice_url){const audioUrl=p.voice_url||result.voice_url;audioM=await loadAsset(audioUrl,'Hermes-narration');if(audioM.type!=='audio')throw Error('فایل نریشن معتبر نیست.');}
+  snapshot();stopPlayback();
+  // Hard cuts preserve individual scene boundaries and make every returned clip editable.
+  if(!clips.length){transition='cut';syncTransitionButtons()}
+  const oldCount=clips.length;clips.push(...added);
+  const bs=bounds();newTitles.forEach(item=>{const b=bs[oldCount+item.sceneIndex];if(b)titles.push({id:uid(),text:item.text,start:b.start,length:Math.min(item.duration,b.duration),rfHermes:true})});
+  if(audioM){setAudio('voice',audioM.id);audioTracks.voice.offset=0;audioTracks.voice.volume=.96}
+  selected={type:'video',id:added[0].id};playheadTime=bs[oldCount]?.start||0;
+  afterChange('✓ '+added.length+' صحنه Hermes با لایه تیتر و نریشن روی تایم‌لاین قرار گرفت. برای اصلاح، کلیپ را انتخاب کن.');
+  return added.length;
+ }catch(error){for(const m of loaded){media.delete(m.id);try{URL.revokeObjectURL(m.url)}catch(_){}}renderAssets();throw error;}
+};
+
 window.rfMotionTimelineSummary=()=>({video:clips.length,motion:clips.filter(c=>media.get(c.mediaId)?.rfMotion).length,titles:titles.length,duration:duration()});
 window.addEventListener('keydown',e=>{const editing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();return}if(editing)return;if(e.code==='Space'){e.preventDefault();isPlaying?stopPlayback():startPlayback()}if(e.key.toLowerCase()==='s'){e.preventDefault();split()}if(e.key==='Delete'||e.key==='Backspace')removeSelected()});
 window.addEventListener('beforeunload',()=>{for(const m of media.values())URL.revokeObjectURL(m.url);pauseAll()});

@@ -365,6 +365,50 @@ body .app select, body .app option, body .app label {
 #rfClaudeMotionPanel #rfClaudeMotionStatus{padding:7px 9px;border-radius:8px;background:#f1f6fd;color:#637c9e}
 @media(max-width:620px){.rf-ai-provider-btn{gap:4px;padding:8px 4px}.rf-ai-name{font-size:10px}}
 </style>
+
+<style id="rf0954-hermes-clean-ui">
+/* Clear, focused editing workspace. Existing controls are retained in collapsible menus. */
+.workspace{grid-template-columns:218px minmax(350px,1fr) 320px!important;gap:8px!important;padding:8px!important}
+.workspace .inspector>.head{min-height:38px!important;margin:0 7px 5px!important;padding:5px 10px!important}
+.workspace .inspector>.head .head-icon{display:none!important}
+.workspace .library>.head{min-height:39px!important;height:39px!important}
+.workspace .lib-content{padding:10px!important}
+.workspace .video-head{min-height:39px!important;height:39px!important}
+#rfHermesPanel{padding:12px;background:linear-gradient(140deg,#f7fbff,#eff6ff);border:1px solid #c6d9f6;border-radius:13px;color:#183556;display:grid;gap:8px;box-shadow:0 5px 20px #1e4b8510}
+#rfHermesPanel label{font-weight:700;font-size:12px;color:#22466e;display:block}
+#rfHermesPanel textarea,#rfHermesPanel input{width:100%;border:1px solid #b9cce8!important;border-radius:9px;padding:10px;background:white!important;color:#193659!important;direction:rtl;font-size:12px}
+#rfHermesPanel textarea{resize:vertical;min-height:100px}
+.rf-hermes-header{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.rf-hermes-header strong{font-size:14px;color:#153b68}
+.rf-hermes-chip{padding:3px 7px;border-radius:30px;background:#e1e8f4;color:#526886;font-size:10px;white-space:nowrap}
+.rf-hermes-chip.is-ready{background:#dcf7e9;color:#126b43}
+.rf-hermes-lead{margin:0;color:#5f748f;font-size:11px;line-height:1.9}
+.rf-hermes-file{background:#fff;border:1px dashed #80a8df;padding:10px;text-align:center;border-radius:10px;cursor:pointer}
+.rf-hermes-fileinfo,.rf-hermes-note{font-size:10px;color:#647b95;line-height:1.85}
+.rf-hermes-access{border:0;padding:0;font-size:11px;color:#476487}
+.rf-hermes-access input{margin-top:6px}
+.rf-hermes-submit{width:100%;padding:11px!important;white-space:normal!important;font-size:13px!important}
+.rf-hermes-status{background:#eaf1fc;border-radius:7px;padding:9px;font-size:11px;color:#315c8b;line-height:1.8;min-height:34px}
+.rf-hermes-actions{display:flex;gap:6px}.rf-hermes-actions button{flex:1;white-space:normal;font-size:11px!important}
+#rfHermesPreviewLink{font-size:11px;color:#1665ad;text-decoration:underline}
+.rf-hermes-old,.rf-project-accordion{border:1px solid #d5e2ef;border-radius:10px;background:#fafcff;margin:9px 0;padding:9px;color:#345776}
+.rf-hermes-old>summary,.rf-project-accordion>summary{cursor:pointer;font-size:11px;font-weight:700;list-style:none}
+.rf-hermes-old>summary:before,.rf-project-accordion>summary:before{content:'▸ ';color:#3174bc}
+#rfHermesLegacyContent{margin-top:12px;border-top:1px solid #d6e4f5;padding-top:8px}
+.rf-project-accordion .project-controls{margin-top:10px}
+#rfHermesLegacy[open] #rfHermesLegacyContent>.note{margin:3px 0}
+/* Hide obsolete YouTube-reference row by default; optional checkbox restores it. */
+body:not(.rf-show-legacy-tracks) .rf-yt-label,body:not(.rf-show-legacy-tracks) #rfYTTrack{display:none!important}
+body:not(.rf-show-legacy-tracks) #transitionTrack{display:none!important}
+body:not(.rf-show-legacy-tracks) #transitionTrack~.drop-hint{display:none!important}
+.bottom{height:300px!important;flex-basis:300px!important}
+.statusbar>span:last-child{display:none}
+@media(min-width:1200px){.app{grid-template-columns:210px minmax(360px,1fr) 330px!important}}
+@media(min-width:1200px) and (max-width:1450px){.app{grid-template-columns:180px minmax(330px,1fr) 300px!important}}
+@media(max-width:1160px){.workspace{grid-template-columns:180px minmax(320px,1fr) 285px!important}}
+@media(max-width:940px){.workspace{grid-template-columns:1fr 1fr!important;grid-template-areas:'viewer viewer' 'inspector library'!important}.viewer{min-height:300px}}
+@media(max-width:600px){.workspace{grid-template-columns:1fr!important;grid-template-areas:'viewer' 'library' 'inspector'!important}.bottom{height:330px!important}}
+</style>
 </head><body>
 <div class="app">
 <header class="top">
@@ -392,7 +436,23 @@ body .app select, body .app option, body .app label {
 <div class="lib-content hidden" id="mediaTab"><label class="import" for="files">＋ افزودن راش و تصویر<br/><span class="small">فایل‌ها روی کامپیوتر باقی می‌مانند</span></label><input accept="video/*,image/*" class="file-input" id="files" multiple="" type="file"/><label class="import" for="folderFiles" style="margin-top:9px;background:#10263b">◧ جست‌وجو در پوشه راش‌های کامپیوتر<br/><span class="small">پوشه را خودت انتخاب می‌کنی</span></label><input class="file-input" directory="" id="folderFiles" multiple="" type="file" webkitdirectory=""/><div class="note" id="folderStatus"></div><div class="field" style="margin-top:11px"><label>افزودن فایل مجاز از لینک مستقیم MP4 (اختیاری)</label><input dir="ltr" id="directVideoUrl" placeholder="https://example.org/owned-footage.mp4" style="width:100%" type="url"/><label class="switchline" style="margin:7px 0"><input id="directRights" type="checkbox"/> حق استفاده از این فایل را دارم</label><button class="btn" id="addDirectVideo" style="width:100%" type="button">دریافت مستقیم و افزودن به پروژه</button><p class="note" id="directVideoStatus">فقط لینک مستقیم به فایل ویدئو، نه لینک صفحه یوتیوب، آپارات یا YTUltra. سرور ویدئو باید دانلود مرورگری (CORS) را مجاز کند. فایل به Vercel ارسال نمی‌شود.</p></div><div class="assets" id="assets"></div><div class="note">روی «افزودن» بزن یا فایل را روی نوار ویدئو بکش.</div></div>
 <div class="lib-content hidden" id="textTab"><div class="note smart-report">برای نوشتن متن روی فیلم از این ابزار استفاده کن. متن سناریوی تدوین به‌صورت خودکار روی خروجی نمایش داده نمی‌شود.</div><button class="btn primary" id="moveTextToScript" style="width:100%;white-space:normal" type="button">✦ تبدیل متن به تدوین هوشمند</button><div class="field"><label>متن روی تصویر</label><textarea id="titleText" placeholder="تیتر خبر یا جمله کوتاه…" rows="3"></textarea></div><button class="btn primary" id="addTitle" style="width:100%">＋ افزودن متن در نشانگر</button><p class="note">متن روی لایه بالای ویدئو قرار می‌گیرد و در خروجی هم دیده می‌شود.</p></div>
 <div class="lib-content hidden" id="audioTab"><label class="import" for="musicInput">♫ افزودن موسیقی</label><input accept="audio/*" class="file-input" id="musicInput" type="file"/><label class="import" for="voiceInput" style="margin-top:10px">🎙 انتخاب فایل نریشن</label><input accept="audio/*" class="file-input" id="voiceInput" type="file"/><button class="btn" id="autoMusic" style="width:100%;margin-top:10px">♫ ساخت موسیقی ساده خودکار</button><button class="btn" id="recordVoice" style="width:100%;margin-top:10px">● ضبط نریشن با میکروفون</button><p class="note">نریشن و موسیقی لایه‌های جداگانه دارند. ضبط میکروفون به مجوز مرورگر نیاز دارد.</p></div>
-<div class="lib-content" id="autoTab"><label class="voice-drop" for="autoVoiceInput">◉ انتخاب فایل نریشن · MP3 / WAV / M4A <input accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.webm" id="autoVoiceInput" type="file"/></label><div class="narr-selected" id="autoVoiceInfo">هنوز نریشنی انتخاب نشده است.</div><div class="field"><label>▤ متن نریشن (در صورت داشتن فایل صوتی کوتاه، اختیاری)</label><textarea class="side-script" id="script" placeholder="مثلاً: بارش باران در تهران موجب ترافیک شد. تیم‌های امدادی به محل اعزام شدند…" rows="6"></textarea>
+<div class="lib-content" id="autoTab">
+<section class="rf-hermes-editor" id="rfHermesPanel" aria-label="تدوین با Hermes">
+  <div class="rf-hermes-header"><strong>✦ تدوین با Hermes</strong><span id="rfHermesLive" class="rf-hermes-chip">بررسی اتصال…</span></div>
+  <p class="rf-hermes-lead">متن یا نریشن بده؛ نتیجه به تایم‌لاین وارد می‌شود و قبل از خروجی قابل ویرایش است.</p>
+  <label for="rfHermesScript">متن یا دستور تدوین</label>
+  <textarea id="rfHermesScript" rows="5" placeholder="مثلاً: از این نریشن یک مستند با تیترها، تصاویر تاریخی و حرکت دوربین بساز…"></textarea>
+  <label class="rf-hermes-file" for="rfHermesAudio">🎙 افزودن نریشن (MP3، WAV، M4A، WEBM) <input type="file" id="rfHermesAudio" accept="audio/*,.m4a,.mp3,.wav,.webm" hidden></label>
+  <div class="rf-hermes-fileinfo" id="rfHermesAudioInfo">فایل انتخاب نشده</div>
+  <details class="rf-hermes-access"><summary>🔒 کد دسترسی تدوین</summary><input type="password" autocomplete="off" id="rfHermesAccessCode" placeholder="کد دسترسی ارائه‌شده توسط مدیر سایت"></details>
+  <button type="button" class="btn primary rf-hermes-submit" id="rfHermesSubmit">◀ ارسال درخواست به Hermes</button>
+  <div id="rfHermesStatus" role="status" aria-live="polite" class="rf-hermes-status">سفارش جدیدی ثبت نشده است.</div>
+  <div class="rf-hermes-actions"><button class="btn" id="rfHermesImport" type="button" disabled>↳ واردکردن نتیجه به تایم‌لاین</button><button class="btn" id="rfHermesResume" type="button" hidden>⟳ پیگیری سفارش قبلی</button></div>
+  <a id="rfHermesPreviewLink" target="_blank" rel="noopener noreferrer" hidden>مشاهده ویدیوی ساخته‌شده</a>
+  <div class="rf-hermes-note">تا وقتی دکمه «خروجی ویدئو» را نزنی، RushFinder خروجی جدیدی نمی‌گیرد. اگر Hermes فقط یک MP4 بسازد، کلیپ قابل برش است؛ برای ویرایش تک‌تک صحنه‌ها باید فایل پروژه را هم برگرداند.</div>
+</section>
+<details class="rf-hermes-old" id="rfHermesLegacy"><summary>⚙ ابزارهای قبلی: Groq، YouTube و تنظیمات پیشرفته</summary><div id="rfHermesLegacyContent"></div></details>
+<label class="voice-drop" for="autoVoiceInput">◉ انتخاب فایل نریشن · MP3 / WAV / M4A <input accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.webm" id="autoVoiceInput" type="file"/></label><div class="narr-selected" id="autoVoiceInfo">هنوز نریشنی انتخاب نشده است.</div><div class="field"><label>▤ متن نریشن (در صورت داشتن فایل صوتی کوتاه، اختیاری)</label><textarea class="side-script" id="script" placeholder="مثلاً: بارش باران در تهران موجب ترافیک شد. تیم‌های امدادی به محل اعزام شدند…" rows="6"></textarea>
 <div class="section" id="rfClaudeMotionPanel" style="margin:12px 0;padding:12px;border:1px solid #d9e5fa;border-radius:12px;background:#f8fbff">
  <div class="rf-ai-heading"><h3 style="font-size:14px;margin:0">✦ ساخت موشن‌گرافیک با هوش مصنوعی</h3><span class="rf-ai-online"><i></i> موتور فعال: Claude</span></div>
  <div class="rf-ai-provider" role="group" aria-label="انتخاب موتور هوش مصنوعی">
@@ -462,10 +522,11 @@ body .app select, body .app option, body .app label {
 </div>
 </div>
 <div class="modal-back" id="exportModal"><div class="modal"><h2 id="modalTitle">ساخت خروجی ویدئو</h2><p id="modalText">ویدئو در مرورگر خودت و با سرعت واقعی پخش و ضبط می‌شود. تب را تا پایان باز نگه دار.</p><progress id="exportProgress" max="100" value="0"></progress><div class="actions"><button class="btn red" id="cancelExport">توقف خروجی</button><button class="btn primary hidden" id="downloadExport">دانلود فایل</button><button class="btn hidden" id="closeModal">بستن</button></div></div></div>
-<script src="smart-edit.js?v=0951"></script>
+<script src="smart-edit.js?v=0954"></script>
 <script src="smart-youtube.js?v=0937" defer></script>
 <script src="smart-autocut.js?v=0939" defer></script>
-<script src="claude-motion-editor.js?v=0950" defer></script>
+<script src="claude-motion-editor.js?v=0954" defer></script>
+<script src="hermes-ui.js?v=0954" defer></script>
 <script>
 (()=>{
  const guide=document.getElementById('startGuide');

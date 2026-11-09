@@ -1,0 +1,4 @@
+bridge-config.local.json
+jobs/
+__pycache__/
+*.log
