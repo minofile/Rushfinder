@@ -15,9 +15,9 @@
  function status(text,bad=false){s.textContent=text;s.style.color=bad?'#a93146':'#315c8b';s.style.background=bad?'#fff0f1':'#eaf1fc'}
  function access(){return $('rfHermesAccessCode').value.trim()||sessionStorage.getItem('rfHermesAccess')||''}
  function token(){let v=sessionStorage.getItem('rfHermesSessionToken');if(!v){v=crypto.randomUUID()+crypto.randomUUID();sessionStorage.setItem('rfHermesSessionToken',v)}return v}
- async function post(data){const response=await fetch('/api/hermes',{method:'POST',headers:{'Content-Type':'application/json','X-RF-Access-Code':access()},body:JSON.stringify({...data,client_token:token()})});const r=await response.json().catch(()=>({}));if(!response.ok)throw Error(r.error||'خطای سرور Hermes ('+response.status+')');return r}
+ async function post(data){const response=await fetch('/api/chat?mode=hermes',{method:'POST',headers:{'Content-Type':'application/json','X-RF-Access-Code':access()},body:JSON.stringify({...data,client_token:token()})});const r=await response.json().catch(()=>({}));if(!response.ok)throw Error(r.error||'خطای سرور Hermes ('+response.status+')');return r}
  function stopPoll(){if(poller)clearInterval(poller);poller=null}
- async function checkHealth(){try{const r=await fetch('/api/hermes',{cache:'no-store'});const d=await r.json();if(!d.configured){live.textContent='نیازمند اتصال مدیر سایت';live.classList.remove('is-ready');return}live.textContent=d.online?'Hermes آنلاین':'سیستم Hermes آفلاین';live.classList.toggle('is-ready',!!d.online)}catch{live.textContent='ارتباط نامشخص';live.classList.remove('is-ready')}}
+ async function checkHealth(){try{const r=await fetch('/api/chat?mode=hermes',{cache:'no-store'});const d=await r.json();if(!d.configured){live.textContent='نیازمند اتصال مدیر سایت';live.classList.remove('is-ready');return}live.textContent=d.online?'Hermes آنلاین':'سیستم Hermes آفلاین';live.classList.toggle('is-ready',!!d.online)}catch{live.textContent='ارتباط نامشخص';live.classList.remove('is-ready')}}
  file.onchange=()=>{const f=file.files?.[0];info.textContent=f?f.name+' · '+(f.size/1048576).toFixed(1)+' MB':'فایل انتخاب نشده'};
  const toAudio=async f=>{
   if(!f)return undefined;

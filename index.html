@@ -5285,7 +5285,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  if(!btn){btn=document.createElement('button');btn.type='button';btn.id='rfSmartEditNav';btn.innerHTML='<i>✦</i><span>تدوین</span>';nav.appendChild(btn);}
  const after=nav.querySelector('#rfCompressNav')||nav.querySelector('#rfVideoCutNav');if(after)after.insertAdjacentElement('afterend',btn);
  const panel=document.createElement('section');panel.id='rfSmartEditPage';panel.setAttribute('aria-label','تدوین');
- const frame=document.createElement('iframe');frame.title='تدوین RushFinder';frame.src='smart-edit.html?embedded=1&v=0954';frame.setAttribute('allow','microphone');panel.appendChild(frame);document.body.appendChild(panel);
+ const frame=document.createElement('iframe');frame.title='تدوین RushFinder';frame.src='smart-edit.html?embedded=1&v=0956';frame.setAttribute('allow','microphone');panel.appendChild(frame);document.body.appendChild(panel);
  function bounds(){const side=document.querySelector('.sidebar'),head=document.querySelector('.app > .top')||document.querySelector('.top');const zoom=parseFloat(getComputedStyle(document.documentElement).zoom)||1;document.documentElement.style.setProperty('--rf536-sidebar-width',side&&getComputedStyle(side).display!=='none'?side.getBoundingClientRect().width/zoom+'px':'0px');document.documentElement.style.setProperty('--rf536-header-height',head?Math.max(0,head.getBoundingClientRect().bottom)/zoom+'px':'68px')}
  btn.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();bounds();
  document.querySelectorAll('.sidebar .nav button').forEach(b=>b.classList.toggle('active',b===btn));
