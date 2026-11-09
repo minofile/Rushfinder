@@ -1,4 +1,4 @@
-/* RushFinder 0954 — streamlined Hermes editor. No credentials are shipped in JS. */
+/* RushFinder 0955 — streamlined Hermes editor. No credentials are shipped in JS. */
 (()=>{'use strict';
  const $=id=>document.getElementById(id);
  const root=$('autoTab'),panel=$('rfHermesPanel'),legacy=$('rfHermesLegacy'),old=$('rfHermesLegacyContent');
@@ -8,7 +8,7 @@
  const projectControls=document.querySelector('.inspector .project-controls');
  if(projectControls){const acc=document.createElement('details');acc.className='rf-project-accordion';const summary=document.createElement('summary');summary.textContent='تنظیمات پروژه و کادر خروجی';acc.appendChild(summary);projectControls.parentNode.insertBefore(acc,projectControls);acc.appendChild(projectControls)}
  const trackToggle=document.createElement('label');trackToggle.style.cssText='display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:#44688d';
- const check=document.createElement('input');check.type='checkbox';check.style.width='auto';check.onchange=()=>document.body.classList.toggle('rf-show-legacy-tracks',check.checked);trackToggle.append(check,document.createTextNode('نمایش ردیف‌های قدیمی YouTube و ترنزیشن در تایم‌لاین'));old.prepend(trackToggle);
+ const check=document.createElement('input');check.type='checkbox';check.style.width='auto';check.onchange=()=>document.body.classList.toggle('rf-show-legacy-tracks',check.checked);trackToggle.append(check,document.createTextNode('نمایش ردیف ترنزیشن در تایم‌لاین'));old.prepend(trackToggle);
  const aiTab=document.querySelector('[data-tab="auto"]');if(aiTab)aiTab.textContent='✦ Hermes';
  const info=$('rfHermesAudioInfo'),file=$('rfHermesAudio'),btn=$('rfHermesSubmit'),s=$('rfHermesStatus'),live=$('rfHermesLive'),imp=$('rfHermesImport'),previous=$('rfHermesResume');
  let busy=false,active=null,result=null,lastImported='';let poller=null;

@@ -317,7 +317,7 @@ function renderInspector(){const r=$('inspectorContent');if(!selected){$('select
 function switchToAutoWithText(){
  const t=$('titleText').value.trim();if(t&&!$('script').value.trim())$('script').value=t;
  document.querySelector('[data-tab="auto"]').click();
- $('smartReport').textContent='متن خبر را در کادر بالا بررسی کن و روی «از متن، راش پیدا کن و تایم‌لاین بساز» بزن. بدون راش محلی یا اتصال به آرشیو آنلاین مجاز، هیچ ویدئویی برای تدوین موجود نیست.';
+ $('smartReport').textContent='از پنل Hermes یا ابزار ساخت موشن هوشمند استفاده کن.';
  $('script').focus();
 }
 $('moveTextToScript').onclick=switchToAutoWithText;
@@ -547,12 +547,8 @@ $('demoEdit').onclick=async()=>{
 $('useOnline').checked=true;
 // 0928: Do not invoke licensed-stock providers from the automatic editor.
 // Only the YouTube reference/cut storyboard may be used by the primary auto-edit button.
-$('quickEdit').onclick=()=>{
- $('rfYTPanel').open=true;
- const btn=$('rfAutoCutReal');
- if(!btn){$('smartReport').textContent='برشگر واقعی بارگذاری نشده؛ Ctrl+F5 بزن.';return}
- btn.click();
-};
+// RushFinder 0955: obsolete YouTube auto-cut button retired.
+$('quickEdit').onclick=()=>{};
 // Before generating YouTube cuts, remove old source-specific timeline clips ONLY
 // after the user explicitly confirms; narration/music tracks remain untouched.
 window.rfPrepareYoutubeOnly=()=>{
