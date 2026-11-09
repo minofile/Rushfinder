@@ -5291,10 +5291,10 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
  document.querySelectorAll('.sidebar .nav button').forEach(b=>b.classList.toggle('active',b===btn));
  for(const id of ['rfNewsTagPage','rfInfoPage','rfCompressPage','rfVideoCutPage','rfCalendarPage','rfCompanyPanel','rfSettingsPage']){const p=document.getElementById(id);if(p)p.classList.remove('rf-visible','rf-open','rf-selected','rf-company-on','active')}
  document.body.classList.remove('rf-news-tag-is-open','rf-info-is-open','rf-company-view');panel.classList.add('rf-visible');
- try{history.replaceState(null,'','#smart-edit')}catch(e){}
+ /* 0953: keep the current page URL free of a persistent smart-edit hash */
  },true);
  document.addEventListener('click',e=>{const b=e.target.closest?.('.sidebar .nav button');if(b&&b!==btn){panel.classList.remove('rf-visible');btn.classList.remove('active')}},true);
- window.addEventListener('resize',bounds);bounds();if(location.hash==='#smart-edit')btn.click();
+ window.addEventListener('resize',bounds);bounds();if(location.hash==='#smart-edit'){btn.click();try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
