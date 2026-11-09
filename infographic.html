@@ -350,15 +350,15 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
       </div>
 <div id="rf962-image-model">
   <div class="secTitle">مدل ساخت تصویر</div>
-  <label for="rf962-model">GPT Image 2.5 Flare — گیسو</label>
-  <select id="rf962-model" aria-label="مدل فعال تصویر گیسو"><option value="gpt-image-2.5-flare" selected>GPT Image 2.5 Flare (مدل مجاز کلید)</option></select>
+  <label for="rf962-model">GPT Image — OpenAI رسمی</label>
+  <select id="rf962-model" aria-label="انتخاب مدل تصویر OpenAI"><option value="gpt-image-2.5-flare" selected>GPT Image 2.5 Flare — تست اولیه</option><option value="gpt-image-2.5-sunburst">GPT Image 2.5 Sunburst — دقیق‌تر</option><option value="gpt-image-2.6-flare">GPT Image 2.6 Flare — سریع</option><option value="gpt-image-2.6-sunburst">GPT Image 2.6 Sunburst — جزئیات بالا</option></select>
   <label for="rf962-quality">کیفیت</label>
   <select id="rf962-quality" aria-label="کیفیت تصویر"><option value="high">بالا (هزینه بیشتر)</option><option value="medium">متوسط</option><option value="low" selected>پایین (آزمایش کم‌هزینه)</option></select>
   <label for="rf962-access">کد دسترسی مدیر (غیر از API Key)</label>
   <input id="rf962-access" type="password" autocomplete="off" spellcheck="false" placeholder="کد اختصاصی مدیر را وارد کنید" aria-label="کد دسترسی مدیر">
-  <p class="rf962-help">کلید API گیسو فقط روی سرور Vercel ثبت می‌شود و هرگز در مرورگر قرار نمی‌گیرد. برای جلوگیری از مصرف ناخواسته، ساخت تصویر به کد دسترسی مدیر نیاز دارد.</p>
+  <p class="rf962-help">کلید رسمی OpenAI فقط روی سرور Vercel با نام OPENAI_API_KEY ثبت می‌شود و هرگز در مرورگر قرار نمی‌گیرد. برای جلوگیری از مصرف ناخواسته، ساخت تصویر به کد دسترسی مدیر نیاز دارد.</p>
 </div>
-<div id="rf607-test-area"><button type="button" id="rf607-test-button">بررسی اتصال گیسو</button><span id="rf607-test-output" role="status" aria-live="polite"></span></div>
+<div id="rf607-test-area"><button type="button" id="rf607-test-button">بررسی اتصال OpenAI</button><span id="rf607-test-output" role="status" aria-live="polite"></span></div>
 <div class="actions rf601-actions"><button id="generate" class="primary">✦ ساخت اینفوگرافیک</button><button id="reroll" class="ghost">↻ طرح متفاوت</button></div><div id="rf594-status" role="status" aria-live="polite" style="font-size:12px;line-height:1.9;color:#27546b;white-space:pre-wrap;margin-top:7px" hidden></div>
     </section>
     <section class="panel">
@@ -1072,12 +1072,12 @@ function reviewPrompt(draft){
   const shade=document.createElement('div');shade.id='rf716-review-shade';shade.setAttribute('role','presentation');
   shade.innerHTML=`<section class="rf716-modal" role="dialog" aria-modal="true" aria-labelledby="rf716-heading" dir="rtl">
    <h2 id="rf716-heading">بازبینی پرامپت قبل از ساخت تصویر</h2>
-   <p>متن زیر دقیقاً برای GPT Image 2.5 Flare ارسال می‌شود. می‌توانی آن را ویرایش کنی. تا وقتی «تأیید و ساخت» را نزنی، هیچ درخواست پولی برای تولید تصویر ارسال نمی‌شود.</p>
+   <p>متن زیر برای مدل GPT Image انتخاب‌شده در OpenAI ارسال می‌شود. می‌توانی آن را ویرایش کنی. تا وقتی «تأیید و ساخت» را نزنی، هیچ درخواست پولی برای تولید تصویر ارسال نمی‌شود.</p>
    <label for="rf716-prompt">پرامپت نهایی (قابل ویرایش)</label>
    <textarea id="rf716-prompt" spellcheck="false" dir="rtl"></textarea>
    <p id="rf716-count" aria-live="polite"></p>
    <p class="rf716-warning">نتیجهٔ GPT Image ممکن است شامل عدد یا متن نادرست باشد. خروجی را قبل از انتشار بررسی کن؛ لوگو و قالب PNG اصلی بدون تغییر روی آن قرار می‌گیرند.</p>
-   <div class="rf716-actions"><button type="button" id="rf716-approve">تأیید و ساخت با GPT Image 2.5 Flare</button><button type="button" id="rf716-reset">بازسازی متن پیش‌فرض</button><button type="button" id="rf716-cancel">لغو</button></div>
+   <div class="rf716-actions"><button type="button" id="rf716-approve">تأیید و ساخت تصویر</button><button type="button" id="rf716-reset">بازسازی متن پیش‌فرض</button><button type="button" id="rf716-cancel">لغو</button></div>
   </section>`;
   const previousFocus=document.activeElement;
   document.body.appendChild(shade);
@@ -1102,19 +1102,19 @@ btn.addEventListener('click',async evt=>{
  const c=current();if(!c.news){say('ابتدا متن خبر را وارد کن.');return}
  const sig=JSON.stringify(c);
  const reviewedPrompt=await reviewPrompt(promptFor(c));
- if(reviewedPrompt===null){say('ساخت لغو شد؛ هیچ درخواستی به گیسو ارسال نشد.');return;}
+ if(reviewedPrompt===null){say('ساخت لغو شد؛ هیچ درخواستی به OpenAI ارسال نشد.');return;}
  // Check again after user finished reviewing; no stale result or simultaneous request.
  if(running)return;
  const approvedSignature=JSON.stringify({selection:c,prompt:reviewedPrompt});
  const approvedPending=getPending();
- if(approvedPending?.signature===approvedSignature){say('این پرامپت قبلاً ارسال شده و نتیجه نامشخص است. برای جلوگیری از هزینه دوباره، ابتدا گزارش مصرف گیسو را بررسی کن.');return;}
- if(!window.confirm('پرامپت تأیید شد. اکنون درخواست واقعی ساخت تصویر از طریق گیسو با GPT Image 2.5 Flare ارسال شود؟ این عملیات از اعتبار گیسو هزینه کم می‌کند.')){say('ساخت لغو شد؛ درخواستی ارسال نشد.');return;}
+ if(approvedPending?.signature===approvedSignature){say('این پرامپت قبلاً ارسال شده و نتیجه نامشخص است. برای جلوگیری از هزینه دوباره، ابتدا گزارش مصرف OpenAI را بررسی کن.');return;}
+ if(!window.confirm('پرامپت تأیید شد. اکنون ساخت تصویر با مدل '+c.model+' از OpenAI انجام شود؟ این عملیات از اعتبار API OpenAI هزینه کم می‌کند.')){say('ساخت لغو شد؛ درخواستی ارسال نشد.');return;}
  running=true;btn.disabled=true;savePending({signature:approvedSignature,time:Date.now()});
  try{
   // Render exact user-provided statistics first; never substitute hallucinated AI summaries.
   window.rf702FinalImage=null;window.rf602Artwork=null;localRender();
-  say('در حال ساخت تصویر با گیسو / GPT Image 2.5 Flare…');
-  const response=await fetch('/api/avalai-image',{method:'POST',headers:{'Content-Type':'application/json','X-RushFinder-Info-Code':$('rf962-access')?.value||''},body:JSON.stringify({provider:'gisoo',prompt:reviewedPrompt,size:c.size,model:c.model,quality:c.quality})});
+  say('در حال ساخت تصویر با OpenAI / '+c.model+'…');
+  const response=await fetch('/api/avalai-image',{method:'POST',headers:{'Content-Type':'application/json','X-RushFinder-Info-Code':$('rf962-access')?.value||''},body:JSON.stringify({provider:'openai',prompt:reviewedPrompt,size:c.size,model:c.model,quality:c.quality})});
   let data;try{data=await response.json()}catch{throw Error('پاسخ سرور قابل خواندن نیست (HTTP '+response.status+').')}
   if(!response.ok){
     if(data.definitiveRejection===true)savePending(null);
@@ -1137,12 +1137,12 @@ btn.addEventListener('click',async evt=>{
    say('✓ تصویر دریافت و با قالب اصلی برند ترکیب شد؛ PNG دانلودی همان پیش‌نمایش است.'+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
   }catch(renderError){
    console.error('RF0728 image received but local composition failed',renderError);
-   say('✓ تصویر از GPT Image از طریق گیسو دریافت شده، ولی نمایش یا بارگذاری قالب در سایت خطا دارد: '+(renderError?.message||'خطای نامشخص')+' — از ساخت مجدد تصویر پولی خودداری کن؛ ابتدا فایل قالب را بررسی کن.');
+   say('✓ تصویر از GPT Image از طریق OpenAI دریافت شده، ولی نمایش یا بارگذاری قالب در سایت خطا دارد: '+(renderError?.message||'خطای نامشخص')+' — از ساخت مجدد تصویر پولی خودداری کن؛ ابتدا فایل قالب را بررسی کن.');
   }
  }catch(error){
   const suffix=error?.definitiveRejection
-    ? ' — درخواست از سمت گیسو رد شده و قفل این درخواست برداشته شد. قبل از تلاش بعدی علت بالا را برطرف کن؛ ساخت تصویر هزینه دارد.'
-    : ' — تحویل درخواست قطعی نیست؛ برای جلوگیری از هزینه دوباره، درخواست مشابه قفل شده. ابتدا گزارش مصرف گیسو را بررسی کن.';
+    ? ' — درخواست از سمت OpenAI رد شده و قفل این درخواست برداشته شد. قبل از تلاش بعدی علت بالا را برطرف کن؛ ساخت تصویر هزینه دارد.'
+    : ' — تحویل درخواست قطعی نیست؛ برای جلوگیری از هزینه دوباره، درخواست مشابه قفل شده. ابتدا گزارش مصرف OpenAI را بررسی کن.';
   say('نتیجه تصویر دریافت نشد: '+(error?.message||'خطای نامشخص')+suffix);
  }
  finally{running=false;btn.disabled=false}
@@ -1228,11 +1228,11 @@ btn.addEventListener('click',async evt=>{
  button.addEventListener('click',async function(){
    button.disabled=true;result.textContent='در حال آزمایش اتصال از سرور سایت...';
    try{
-     const response=await fetch('/api/avalai-image?probe=gisoo',{method:'GET',cache:'no-store',headers:{Accept:'application/json','X-RushFinder-Info-Code':document.getElementById('rf962-access')?.value||''}});
+     const response=await fetch('/api/avalai-image?probe=openai',{method:'GET',cache:'no-store',headers:{Accept:'application/json','X-RushFinder-Info-Code':document.getElementById('rf962-access')?.value||''}});
      const data=await response.json();
-     result.textContent=data.ok?'✓ اتصال گیسو برقرار است؛ مجوز مدل هنگام ساخت واقعی تصویر بررسی می‌شود. هنوز تصویر پولی ساخته نشده است.':('✕ '+(data.message||data.error||'پاسخ نامشخص از سرور دریافت شد.')+' ['+(data.code||response.status)+']');
+     result.textContent=data.ok?'✓ کلید OpenAI معتبر است. مجوز مدل هنگام ساخت واقعی تصویر بررسی می‌شود؛ هنوز تصویر پولی ساخته نشده است.':('✕ '+(data.message||data.error||'پاسخ نامشخص از سرور دریافت شد.')+' ['+(data.code||response.status)+']');
      result.style.color=data.ok?'#08754c':'#ac3b25';
-   }catch(e){result.textContent='خطا در برقراری ارتباط با گیسو از طریق Vercel.';result.style.color='#ac3b25';}
+   }catch(e){result.textContent='خطا در برقراری ارتباط با OpenAI از طریق Vercel.';result.style.color='#ac3b25';}
    finally{button.disabled=false;}
  });
 })();</script><style id="rf702-clean-preview">
