@@ -1012,6 +1012,14 @@ function getPending(){try{return JSON.parse(sessionStorage.getItem(pendingKey)||
 function savePending(x){try{if(x)sessionStorage.setItem(pendingKey,JSON.stringify(x));else sessionStorage.removeItem(pendingKey)}catch{}}
 
 function say(t){status.hidden=!t;status.textContent=t||'';}
+function showPaidImageLink(url){
+ if(typeof url!=='string'||!/^https:\/\//i.test(url))return;
+ const link=document.createElement('a');
+ link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.referrerPolicy='no-referrer';
+ link.textContent='بازکردن تصویر برگشتی AvalAI (بدون ساخت مجدد)';
+ link.style.cssText='display:inline-block;margin:8px 0 0;color:#0057ad;text-decoration:underline;font-weight:700';
+ status.appendChild(document.createElement('br'));status.appendChild(link);
+}
 function localRender(){internalClick=true;try{btn.click()}finally{internalClick=false}}
 function rf726NormalizeText(value){return String(value||'').replace(/\r/g,'').replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/ۀ/g,'ه').replace(/\u200c{2,}/g,'‌').trim();}
 function rf724PersianDigits(value){
@@ -1110,6 +1118,7 @@ btn.addEventListener('click',async evt=>{
  if(approvedPending?.signature===approvedSignature){say('این پرامپت قبلاً ارسال شده و نتیجه نامشخص است. برای جلوگیری از هزینه دوباره، ابتدا گزارش مصرف AvalAI را بررسی کن.');return;}
  if(!window.confirm('پرامپت تأیید شد. اکنون ساخت تصویر با مدل '+c.model+' از AvalAI انجام شود؟ این عملیات از اعتبار API AvalAI هزینه کم می‌کند.')){say('ساخت لغو شد؛ درخواستی ارسال نشد.');return;}
  running=true;btn.disabled=true;savePending({signature:approvedSignature,time:Date.now()});
+ let paidImageUrl='';
  try{
   // Render exact user-provided statistics first; never substitute hallucinated AI summaries.
   window.rf702FinalImage=null;window.rf602Artwork=null;localRender();
@@ -1119,13 +1128,18 @@ btn.addEventListener('click',async evt=>{
   if(!response.ok){
     if(data.definitiveRejection===true)savePending(null);
     const wait=Number.isFinite(data.retryAfterSeconds)?' زمان اعلام‌شده تا تلاش بعدی: '+data.retryAfterSeconds+' ثانیه.':'';
-    const e=new Error((data.error||'خطای ساخت تصویر (HTTP '+response.status+').')+wait);
+    const ref = data.providerRequestId ? ' | شناسه درخواست AvalAI: '+String(data.providerRequestId).slice(0,100) : '';
+    const e=new Error((data.error||'خطای ساخت تصویر (HTTP '+response.status+').')+wait+ref);
     e.definitiveRejection=data.definitiveRejection===true;
     throw e;
   }
   if(!data.image)throw Error('تصویر در پاسخ دریافتی وجود ندارد.');
+  if(data.remoteImage && typeof data.image==='string' && data.image.startsWith('https://'))paidImageUrl=data.image;
   const pic=new Image();
-  await new Promise((resolve,reject)=>{pic.onload=resolve;pic.onerror=()=>reject(Error('تصویر دریافتی قابل نمایش نیست.'));pic.src=data.image;});
+  // AvalAI may return a CDN URL instead of Base64. Preserve Canvas export by
+  // requesting CORS where the CDN supports it. Never trigger a new paid request.
+  if(data.remoteImage){pic.crossOrigin='anonymous';pic.referrerPolicy='no-referrer';}
+  await new Promise((resolve,reject)=>{pic.onload=resolve;pic.onerror=()=>reject(Error(data.remoteImage?'آدرس تصویر AvalAI دریافت شد ولی سرور فایل اجازه بارگیری/CORS نداد. درخواست جدید نساز؛ ابتدا مصرف AvalAI و لینک فایل را بررسی کن.':'تصویر دریافتی قابل نمایش نیست.'));pic.src=data.image;});
   // Request delivered and image decoded successfully: clear the billing-uncertainty lock BEFORE local rendering.
   // A later canvas/UI error must never masquerade as an undelivered paid request.
   lastSignature=sig;lastPicture=pic;savePending(null);
@@ -1138,12 +1152,14 @@ btn.addEventListener('click',async evt=>{
   }catch(renderError){
    console.error('RF0728 image received but local composition failed',renderError);
    say('✓ تصویر از GPT Image از طریق AvalAI دریافت شده، ولی نمایش یا بارگذاری قالب در سایت خطا دارد: '+(renderError?.message||'خطای نامشخص')+' — از ساخت مجدد تصویر پولی خودداری کن؛ ابتدا فایل قالب را بررسی کن.');
+   if(paidImageUrl)showPaidImageLink(paidImageUrl);
   }
  }catch(error){
   const suffix=error?.definitiveRejection
     ? ' — درخواست از سمت AvalAI رد شده و قفل این درخواست برداشته شد. قبل از تلاش بعدی علت بالا را برطرف کن؛ ساخت تصویر هزینه دارد.'
     : ' — تحویل درخواست قطعی نیست؛ برای جلوگیری از هزینه دوباره، درخواست مشابه قفل شده. ابتدا گزارش مصرف AvalAI را بررسی کن.';
   say('نتیجه تصویر دریافت نشد: '+(error?.message||'خطای نامشخص')+suffix);
+  if(paidImageUrl)showPaidImageLink(paidImageUrl);
  }
  finally{running=false;btn.disabled=false}
 },true);

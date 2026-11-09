@@ -1,4 +1,4 @@
-// RushFinder 0967 — AvalAI image generation. Existing route; no extra Vercel functions.
+// RushFinder 0968 — AvalAI image response formats. Existing route; no extra Vercel functions.
 // The private AVALAI_API_KEY is read only on the server. Never return it to the browser.
 import { timingSafeEqual } from 'node:crypto';
 
@@ -23,6 +23,101 @@ function safeError(value) {
 }
 function imageError(res, status, message, definitiveRejection = true, extra = {}) {
   return send(res, status, { error: message, definitiveRejection, ...extra });
+}
+
+
+// Different AvalAI image routes can return Base64, data URLs, or HTTPS image URLs.
+// Never expose the API key, image body, or the user's prompt in diagnostic messages.
+const MAX_INLINE_BASE64 = 3_900_000; // safely below typical Vercel function response limits
+function imagePayload(result) {
+  const candidates = [
+    result?.data?.[0],
+    result?.data?.image,
+    result?.data,
+    result?.images?.[0],
+    result?.output?.[0],
+    result?.result?.data?.[0],
+    result?.result?.images?.[0],
+    result?.result,
+    result?.image,
+  ];
+  for (const item of candidates) {
+    if (!item) continue;
+    if (typeof item === 'string') {
+      if (/^data:image\/(?:png|jpeg|webp);base64,/i.test(item)) return {kind:'dataUrl', value:item};
+      if (/^https:\/\//i.test(item)) return {kind:'url', value:item};
+      continue;
+    }
+    if (typeof item !== 'object') continue;
+    for (const prop of ['b64_json', 'image_base64', 'base64', 'image_base64_data']) {
+      if (typeof item[prop]==='string' && item[prop].length>100) {
+        return {kind:'b64', value:item[prop]};
+      }
+    }
+    for (const prop of ['url', 'image_url', 'image']) {
+      const v = typeof item[prop]==='string' ? item[prop] : item[prop]?.url;
+      if (typeof v === 'string' && /^data:image\/(?:png|jpeg|webp);base64,/i.test(v)) return {kind:'dataUrl', value:v};
+      if (typeof v === 'string' && /^https:\/\//i.test(v)) return {kind:'url', value:v};
+    }
+  }
+  return null;
+}
+function payloadShape(value) {
+  if (!value || typeof value!=='object') return typeof value;
+  const props = item=>item && typeof item==='object'
+    ? Object.keys(item).slice(0,10).map(s=>s.slice(0,40)).join(', ')
+    : typeof item;
+  return 'root=['+props(value)+']; data[0]=['+props(value?.data?.[0])+']; result=['+props(value?.result)+']';
+}
+function mimeFromB64(b64) {
+  return b64.startsWith('iVBOR') ? 'image/png'
+    : b64.startsWith('/9j/') ? 'image/jpeg'
+    : b64.startsWith('UklGR') ? 'image/webp'
+    : 'image/png';
+}
+function asImageDataUrl(value, isDataUrl=false) {
+  const raw = isDataUrl ? value : value.replace(/\s+/g,'');
+  const b64 = isDataUrl ? String(raw).split(',',2)[1] : raw;
+  if (typeof b64!=='string' || b64.length<100 || !/^[a-zA-Z0-9+/=]+$/.test(b64)) return null;
+  if (b64.length > MAX_INLINE_BASE64) return {tooLarge:true};
+  return {image:isDataUrl ? raw : 'data:'+mimeFromB64(b64)+';base64,'+b64};
+}
+function safeHttpsImageUrl(raw) {
+  try {
+    const u = new URL(raw);
+    if (u.protocol!=='https:' || u.username || u.password || u.port || u.hostname.length>200) return null;
+    if (u.hostname==='localhost' || /^[0-9.]+$/.test(u.hostname) || u.hostname.includes(':') || u.hostname.endsWith('.local')) return null;
+    return u.href;
+  } catch {return null;}
+}
+function safeRemoteHost(url) {
+  const h = new URL(url).hostname.toLowerCase();
+  return h==='storage.googleapis.com' || h.endsWith('.storage.googleapis.com') ||
+    h.endsWith('.blob.core.windows.net') || h==='files.oaiusercontent.com' ||
+    h.endsWith('.oaiusercontent.com') || h.endsWith('.avalai.ir');
+}
+async function tryFetchImageUrl(url, signal) {
+  // Only access vetted storage endpoints, and never follow redirects (SSRF defense).
+  if (!safeRemoteHost(url)) return null;
+  try {
+    const r=await fetch(url, {method:'GET',signal,redirect:'error',headers:{Accept:'image/png,image/jpeg,image/webp'}});
+    if (!r.ok || !/^image\/(png|jpeg|webp)(?:;|$)/i.test(r.headers.get('content-type')||'')) return null;
+    const declared=Number(r.headers.get('content-length')||0);
+    if (declared>2_900_000) return null;
+    const reader=r.body?.getReader();
+    if (!reader) return null;
+    const parts=[];let total=0;
+    while(true){
+      const {value,done}=await reader.read();if(done)break;
+      total+=value.byteLength;
+      if(total>2_900_000){await reader.cancel();return null;}
+      parts.push(value);
+    }
+    const data=Buffer.concat(parts.map(p=>Buffer.from(p)),total);
+    if (!data.length) return null;
+    const mime=(r.headers.get('content-type')||'image/png').split(';')[0].toLowerCase();
+    return {image:'data:'+mime+';base64,'+data.toString('base64')};
+  } catch {return null;}
 }
 
 export default async function handler(req, res) {
@@ -91,16 +186,35 @@ export default async function handler(req, res) {
         'خطای AvalAI (HTTP '+upstream.status+'): '+safeError(raw)+hint, definitive,
         retryAfterSeconds ? {retryAfterSeconds} : {});
     }
-    const img = result?.data?.[0];
-    const b64 = img?.b64_json;
-    if (typeof b64!=='string' || b64.length<100) {
-      return imageError(res, 502, 'AvalAI پاسخ داد، اما تصویر base64 دریافت نشد. قبل از تلاش دوباره مصرف API را بررسی کن.', false);
+    const providerRequestId = String(upstream.headers.get('x-request-id') || upstream.headers.get('x-avalai-request-id') || '').slice(0,100);
+    // HTTP 200 is not proof that an image is available. Some providers send a
+    // JSON error/status body with 200; never silently re-issue a paid request.
+    const candidate = imagePayload(result);
+    if (!candidate) {
+      const msg = safeError(result?.error?.message || result?.message || '');
+      return imageError(res, 502,
+        'پاسخ موفق HTTP از AvalAI دریافت شد ولی محتوای تصویر در آن نیست. '+
+        (msg ? 'پیام سرویس: '+msg+'؛ ' : '')+
+        'ساخت دوباره نزن؛ مصرف را بررسی کن. ساختار پاسخ: '+payloadShape(result), false,
+        providerRequestId ? {providerRequestId} : {});
     }
-    if (b64.length > 5_000_000) {
-      return imageError(res, 502, 'تصویر ساخته شد ولی برای پاسخ Vercel بزرگ است. دوباره درخواست نده؛ ابتدا مصرف AvalAI را بررسی کن.', false);
+    if (candidate.kind==='b64' || candidate.kind==='dataUrl') {
+      const payload=asImageDataUrl(candidate.value,candidate.kind==='dataUrl');
+      if (payload?.image) {
+        return send(res,200,{image:payload.image,provider:'avalai',model,elapsedMs:Date.now()-started});
+      }
+      return imageError(res,502,payload?.tooLarge
+        ? 'تصویر برگشته ولی حجم Base64 برای پاسخ Vercel زیاد است؛ ساخت مجدد نزن و مصرف AvalAI را بررسی کن.'
+        : 'داده تصویر AvalAI ناقص یا نامعتبر است؛ ساخت مجدد نزن. '+payloadShape(result),false,
+        providerRequestId?{providerRequestId}:{});
     }
-    const mime = b64.startsWith('iVBOR') ? 'image/png' : b64.startsWith('/9j/') ? 'image/jpeg' : b64.startsWith('UklGR') ? 'image/webp' : 'image/webp';
-    return send(res, 200, {image:'data:'+mime+';base64,'+b64, provider:'avalai',model,elapsedMs:Date.now()-started});
+    const url=safeHttpsImageUrl(candidate.value);
+    if(!url){return imageError(res,502,'AvalAI آدرس تصویری غیرقابل استفاده برگشت داده؛ ساخت دوباره نزن.',false);}
+    const inline=await tryFetchImageUrl(url,controller.signal);
+    if (inline?.image) return send(res,200,{image:inline.image,provider:'avalai',model,elapsedMs:Date.now()-started});
+    // Fallback: return the provider's HTTPS image URL, rather than discarding a
+    // potentially paid result. Client uses anonymous CORS for Canvas export.
+    return send(res,200,{image:url,remoteImage:true,provider:'avalai',model,elapsedMs:Date.now()-started});
   } catch(e) {
     return imageError(res, 502,
       e?.name==='AbortError' ? 'زمان انتظار ساخت تصویر تمام شد؛ مصرف AvalAI را بررسی کن.' : 'ارتباط Vercel و AvalAI قطع شد؛ برای پیشگیری از هزینه دوباره مصرف را بررسی کن.', false);
