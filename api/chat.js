@@ -1,12 +1,12 @@
 // RushFinder 0946 — Groq motion storyboard, optional Claude fallback.
 // NOTE: this produces an editable storyboard, not rendered video. No key goes to browser.
-const MOTION_TYPES = new Set(['title','data','map','timeline','quote','closing','document']);
+const MOTION_TYPES = new Set(['title','data','map','timeline','quote','closing']);
 const MOTION_STYLES = new Set(['news','documentary','minimal','energetic']);
 const GROQ_DEFAULT_MODEL = 'openai/gpt-oss-20b';
 
 function rfMotionStatus(){
  return {ok:true,groqConfigured:!!process.env.GROQ_API_KEY,claudeConfigured:!!process.env.ANTHROPIC_API_KEY,
-  activeProvider:process.env.GROQ_API_KEY?'groq':(process.env.ANTHROPIC_API_KEY?'claude':null)};
+  activeProvider:process.env.ANTHROPIC_API_KEY?'claude':(process.env.GROQ_API_KEY?'groq':null)};
 }
 function rfParseMotionJSON(s){
  const t=String(s||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');
@@ -19,15 +19,14 @@ function rfNormalizeMotionPlan(text){
   projectTitle:String(raw.projectTitle||'موشن‌گرافیک خبری').slice(0,110),
   scenes:raw.scenes.slice(0,12).map(s=>({
    title:String(s?.title||'صحنه').slice(0,100),
-   visual:String(s?.visual||'').slice(0,180),
-   duration:Math.max(3,Math.min(15,Number(s?.duration)||5)),
+   subtitle:String(s?.subtitle||'').slice(0,100),
+   visual:String(s?.visual||'').slice(0,300),
+   duration:Math.max(3,Math.min(30,Number(s?.duration)||5)),
    type:MOTION_TYPES.has(s?.type)?s.type:'title',
    motion:String(s?.motion||'').slice(0,120),
    narration:String(s?.narration||'').slice(0,500),
-   caption:String(s?.caption||'').slice(0,160),
-   metric:String(s?.metric||'').slice(0,40),
-   location:String(s?.location||'').slice(0,90),
-   milestones:Array.isArray(s?.milestones)?s.milestones.slice(0,4).map(v=>String(v).slice(0,8)):[]
+   accent:/^#[0-9a-fA-F]{6}$/.test(String(s?.accent||''))?String(s.accent):'#d94a4a',
+   imageUrl:''
   }))
  };
 }
@@ -70,20 +69,12 @@ async function rfClaudeMotionPlanHandler(req,res){
  if(script.length>18000)return res.status(413).json({ok:false,error:'متن بیش از حد طولانی است؛ آن را کوتاه‌تر کن.'});
  if(!process.env.GROQ_API_KEY&&!process.env.ANTHROPIC_API_KEY)
   return res.status(503).json({ok:false,error:'برای ساخت موشن باید GROQ_API_KEY یا ANTHROPIC_API_KEY در Vercel تنظیم شود.'});
- const prompt=`You are a motion-graphics art director creating a Persian-language editable documentary timeline, in a sophisticated historic-explainer visual language: animated timeline, maps, documents, typography, charts and smooth scene changes. Return ONLY valid JSON: {"projectTitle":"...","scenes":[{"title":"concise Persian onscreen headline","visual":"brief visual direction","caption":"short on-screen narrative phrase","duration":number,"type":"title|map|data|timeline|quote|document|closing","motion":"fade|slide|zoom","location":"place only if stated in the narration","metric":"number only if verbatim in narration","milestones":["year from narration only"],"narration":"matching portion"}]}. Create 5-12 scenes, total around ${duration} seconds, style ${style}. Every scene must be distinct and use a meaningful composition, no repeated generic cards. Never invent statistics, years, locations, sources, quotations or maps presented as factual. If data is absent, leave metric and milestones empty. Charts without data are explicitly schematic. Maps are illustrative route diagrams, not accurate borders. Use Persian, readable short phrases. Each scene lasts 3-15 seconds. Output valid JSON only.`;
+ const prompt=`You are a professional motion-graphics director. Turn this Persian narration into an editable storyboard for a Persian news/documentary video. Return ONLY valid JSON: {"projectTitle":"...","scenes":[{"title":"short Persian on-screen headline","subtitle":"short kicker","visual":"specific visual composition and visual hierarchy","duration":number,"type":"title|data|map|timeline|quote|closing","motion":"slow-zoom|draw-line|route-reveal|bar-rise|type-on|fade","accent":"hex color","narration":"matching excerpt from the supplied script"}]}. Create 5 to 12 scenes, total duration close to ${duration} seconds. Style=${style}. Use only facts present in the narration; do not invent statistics, dates, quotes, or locations. If a chart/map is suggested but exact data is absent, use an illustrative abstract graphic and label it as illustrative. Persian text should be concise and readable. Each scene duration 3-15 seconds. Make each scene visually distinct. Output one JSON object, no prose.`;
  const failures=[];
- // Groq first for the newly configured free-key workflow. Claude is optional fallback.
- for(const [name,enabled,fn] of [['groq',!!process.env.GROQ_API_KEY,rfGroqMotionPlan],['claude',!!process.env.ANTHROPIC_API_KEY,rfClaudeMotionPlan]]){
+ // Claude is the primary motion director when its API key is configured; Groq remains the fallback.
+ for(const [name,enabled,fn] of [['claude',!!process.env.ANTHROPIC_API_KEY,rfClaudeMotionPlan],['groq',!!process.env.GROQ_API_KEY,rfGroqMotionPlan]]){
   if(!enabled)continue;
-  try{const result=await fn(script,prompt);
-   const toAscii=v=>String(v||'').replace(/[۰-۹]/g,d=>String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d))).replace(/[٠-٩]/g,d=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)));
-   const source=toAscii(script).replace(/\s+/g,' ');
-   for(const scene of result.plan.scenes){
-    if(scene.metric&&!source.includes(toAscii(scene.metric).trim()))scene.metric='';
-    if(scene.location&&!source.includes(toAscii(scene.location).trim()))scene.location='';
-    scene.milestones=scene.milestones.filter(y=>/^\d{3,4}$/.test(toAscii(y))&&source.includes(toAscii(y)));
-   }
-   return res.status(200).json({ok:true,...result});}
+  try{const result=await fn(script,prompt);return res.status(200).json({ok:true,...result});}
   catch(e){failures.push(name+': '+String(e?.message||'خطای ارتباطی').slice(0,120));}
  }
  return res.status(503).json({ok:false,error:'ساخت سناریو انجام نشد: '+failures.join(' | ')});

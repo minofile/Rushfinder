@@ -1,0 +1,24 @@
+@font-face{font-family:Vazir;src:url('./assets/VAZIR-REGULAR-UI.TTF') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:Vazir;src:url('./assets/VAZIR-MEDIUM-UI.TTF') format('truetype');font-weight:500;font-display:swap}
+@font-face{font-family:Vazir;src:url('./assets/VAZIR-BOLD-UI.TTF') format('truetype');font-weight:700 900;font-display:swap}
+:root{font-family:Vazir,Tahoma,sans-serif;color:#edf4fb;background:#070d18;font-synthesis:none}
+*{box-sizing:border-box}
+html,body,#root{margin:0;width:100%;height:100%;min-height:100%;overflow:hidden}
+button,input,select,textarea{font:inherit}
+.studio{height:100%;display:flex;flex-direction:column;background:#080f1b;min-height:0}
+.topbar{height:42px;flex:0 0 42px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-bottom:1px solid #26354a;background:#0b1524;gap:8px}
+.brand{font-weight:800;font-size:12px;color:#e8f1fb}.engine{font-size:10px;color:#9fb2c9;border:1px solid #34516f;border-radius:20px;padding:3px 8px}
+.actions{display:flex;gap:6px}.btn{border:1px solid #355273;background:#14263d;color:#eaf3fc;border-radius:7px;padding:6px 9px;font-size:10px;cursor:pointer}.btn.primary{background:#1e5d9c;border-color:#3988ca}.btn:disabled{opacity:.4;cursor:not-allowed}
+.main{flex:1;min-height:0;display:flex;flex-direction:column;gap:7px;padding:8px}
+.playerWrap{flex:1;min-height:100px;position:relative;border:1px solid #25374d;border-radius:8px;overflow:hidden;background:#050910}
+.playerWrap .remotion-player{width:100%;height:100%}
+.timeline{flex:0 0 auto;min-height:74px;max-height:98px;overflow:auto;border:1px solid #25374d;border-radius:8px;background:#0c1727;padding:7px}
+.track{height:36px;display:flex;gap:4px;min-width:max-content;align-items:stretch}
+.segment{border:1px solid #47607b;background:linear-gradient(145deg,#18324e,#102137);border-radius:5px;color:#dfeaf6;min-width:52px;padding:4px 7px;font-size:9px;text-align:right;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.segment.active{border-color:#f07868;box-shadow:inset 0 0 0 1px #f07868;background:linear-gradient(145deg,#53303b,#2b2331)}
+.editor{flex:0 0 145px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;min-height:0}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}.field label{font-size:9px;color:#9cb0c8}.field input,.field select,.field textarea{width:100%;min-width:0;border:1px solid #2d4059;border-radius:6px;background:#0d1a2b;color:#f1f5f9;padding:6px;font-size:10px;outline:none}.field textarea{resize:none;height:65px;line-height:1.7}
+.editor .wide{grid-column:span 2}
+.footer{height:22px;flex:0 0 22px;font-size:9px;color:#7e93ab;padding:3px 12px;border-top:1px solid #1e2e42;display:flex;justify-content:space-between}
+.empty{font-size:11px;color:#a9bbd0;padding:12px;text-align:center}
+@media(max-width:520px){.editor{grid-template-columns:1fr 1fr;flex-basis:150px}.editor .wide{grid-column:span 2}.brand{font-size:10px}.actions .btn{padding:5px 6px}}

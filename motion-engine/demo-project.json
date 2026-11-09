@@ -1,0 +1,78 @@
+{
+  "projectTitle": "انقلاب فرانسه؛ از اعتراض تا دگرگونی",
+  "style": "documentary",
+  "scenes": [
+    {
+      "id": "demo-1",
+      "sceneIndex": 1,
+      "title": "فرانسه در آستانه دگرگونی",
+      "subtitle": "روایت یک انقلاب تاریخی",
+      "visual": "جامعه‌ای در آستانه تغییر؛ تنش میان مردم و ساختار سلطنت",
+      "duration": 5,
+      "type": "title",
+      "motion": "slow-zoom",
+      "accent": "#d94a4a",
+      "narration": "فرانسه در آستانه یکی از بزرگ‌ترین دگرگونی‌های تاریخ خود قرار داشت."
+    },
+    {
+      "id": "demo-2",
+      "sceneIndex": 2,
+      "title": "۱۷۸۹؛ آغاز یک تحول",
+      "subtitle": "نقطه عطف تاریخی",
+      "visual": "اعتراض‌ها و شکل‌گیری جنبش مردمی در پاریس",
+      "duration": 6,
+      "type": "timeline",
+      "motion": "draw-line",
+      "accent": "#d94a4a",
+      "narration": "در سال ۱۷۸۹، اعتراض‌ها به نقطه‌ای سرنوشت‌ساز رسید."
+    },
+    {
+      "id": "demo-3",
+      "sceneIndex": 3,
+      "title": "سقوط نماد سلطنت",
+      "subtitle": "زندان باستیل",
+      "visual": "یورش مردم به باستیل و شکستن نماد قدرت سلطنتی",
+      "duration": 6,
+      "type": "map",
+      "motion": "route-reveal",
+      "accent": "#e6b65c",
+      "narration": "سقوط باستیل به نمادی از فروپاشی اقتدار سلطنت تبدیل شد."
+    },
+    {
+      "id": "demo-4",
+      "sceneIndex": 4,
+      "title": "حقوق شهروندی در کانون توجه",
+      "subtitle": "اعلامیه حقوق بشر و شهروند",
+      "visual": "مفاهیم آزادی، برابری و حقوق شهروندی",
+      "duration": 6,
+      "type": "quote",
+      "motion": "type-on",
+      "accent": "#d94a4a",
+      "narration": "مفاهیم آزادی و برابری به مرکز گفت‌وگوی سیاسی تبدیل شدند."
+    },
+    {
+      "id": "demo-5",
+      "sceneIndex": 5,
+      "title": "دگرگونی ساختار قدرت",
+      "subtitle": "از سلطنت تا جمهوری",
+      "visual": "تغییر ساختار سیاسی و جابه‌جایی قدرت",
+      "duration": 6,
+      "type": "data",
+      "motion": "bar-rise",
+      "accent": "#d94a4a",
+      "narration": "ساختار قدرت در فرانسه دستخوش تغییرات بنیادین شد."
+    },
+    {
+      "id": "demo-6",
+      "sceneIndex": 6,
+      "title": "انقلابی با پیامدهای جهانی",
+      "subtitle": "پایان یک فصل؛ آغاز فصلی دیگر",
+      "visual": "میراث سیاسی و اجتماعی انقلاب در تاریخ جهان",
+      "duration": 5,
+      "type": "closing",
+      "motion": "fade",
+      "accent": "#d94a4a",
+      "narration": "انقلاب فرانسه مسیر تاریخ سیاسی جهان را تحت تأثیر قرار داد."
+    }
+  ]
+}

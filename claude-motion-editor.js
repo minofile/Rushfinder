@@ -30,20 +30,11 @@ $('rfClaudeGenerate')?.addEventListener('click',async()=>{
   const count=await window.rfCreateClaudeMotionProject(d.plan);
   if(!count){status('افزودن صحنه‌ها لغو شد؛ تایم‌لاین قبلی حفظ شد.');return;}
   lastPlan=d.plan;
+  window.rfRemotionSendPlan?.(d.plan);
   d.plan.scenes.forEach((s,i)=>{const card=document.createElement('div');card.style.cssText='padding:8px;border:1px solid #b8d4f3;border-radius:8px;background:#f6faff;color:#214a74';const h=document.createElement('b');h.textContent=(i+1)+'. '+s.title;const p=document.createElement('div');p.className='note';p.style.color='#476584';p.textContent=(s.visual||'')+' · '+s.duration+' ثانیه';card.append(h,p);list?.append(card)});
   status('✓ '+count+' صحنه موشن ساخته و خودکار روی تایم‌لاین قرار گرفتند. پخش و ویرایش کن؛ خروجی فقط با دکمه «خروجی ویدئو» شروع می‌شود.');
   $('rfClaudeSavePlan').disabled=false;
  }catch(e){status('خطا در ساخت خودکار: '+e.message)}finally{btn.disabled=false;}
-});
-$('rfSaveEditableMotion')?.addEventListener('click',()=>{
- try{const d=window.rfExportEditableMotionProject?.();if(d)status('پروژه قابل ویرایش ذخیره شد. فایل نریشن را جداگانه نگه دار.');}
- catch(e){status('ذخیره پروژه: '+e.message)}
-});
-$('rfLoadEditableMotion')?.addEventListener('click',()=>$('rfOpenEditableMotionFile')?.click());
-$('rfOpenEditableMotionFile')?.addEventListener('change',async e=>{
- const file=e.target.files?.[0];if(!file)return;
- try{status('در حال بازکردن پروژه موشن…');const n=await window.rfImportEditableMotionProject(file);status('✓ '+n+' صحنه پروژه باز شد؛ برای ویرایش روی نوار انتخاب کن.');}
- catch(error){status('بازکردن پروژه ممکن نشد: '+error.message)}finally{e.target.value='';}
 });
 $('rfClaudeSavePlan')?.addEventListener('click',()=>{
  if(!lastPlan)return;
