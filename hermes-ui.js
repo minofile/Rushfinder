@@ -1,23 +1,23 @@
-/* RushFinder 0955 — streamlined Hermes editor. No credentials are shipped in JS. */
+/* RushFinder 0957 — simplified editor, inactive controls hidden. No credentials are shipped in JS. */
 (()=>{'use strict';
  const $=id=>document.getElementById(id);
- const root=$('autoTab'),panel=$('rfHermesPanel'),legacy=$('rfHermesLegacy'),old=$('rfHermesLegacyContent');
+ const root=$('autoTab'),panel=$('rfHermesPanel'),legacy=$('rfHermesLegacy'),old=$('rfHermesLegacyContent'),compat=$('rf0957HiddenMotionCompat');
  if(!root||!panel||!legacy||!old)return;
  // Keep legacy editors functional, but collapsed until explicitly requested.
- for(const el of [...root.children])if(el!==panel&&el!==legacy)old.appendChild(el);
+ for(const el of [...root.children])if(el!==panel&&el!==legacy&&el!==compat)old.appendChild(el);
  const projectControls=document.querySelector('.inspector .project-controls');
  if(projectControls){const acc=document.createElement('details');acc.className='rf-project-accordion';const summary=document.createElement('summary');summary.textContent='تنظیمات پروژه و کادر خروجی';acc.appendChild(summary);projectControls.parentNode.insertBefore(acc,projectControls);acc.appendChild(projectControls)}
  const trackToggle=document.createElement('label');trackToggle.style.cssText='display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:#44688d';
  const check=document.createElement('input');check.type='checkbox';check.style.width='auto';check.onchange=()=>document.body.classList.toggle('rf-show-legacy-tracks',check.checked);trackToggle.append(check,document.createTextNode('نمایش ردیف ترنزیشن در تایم‌لاین'));old.prepend(trackToggle);
- const aiTab=document.querySelector('[data-tab="auto"]');if(aiTab)aiTab.textContent='✦ Hermes';
+ const aiTab=document.querySelector('[data-tab="auto"]');if(aiTab)aiTab.textContent='✦ متن و نریشن';
  const info=$('rfHermesAudioInfo'),file=$('rfHermesAudio'),btn=$('rfHermesSubmit'),s=$('rfHermesStatus'),live=$('rfHermesLive'),imp=$('rfHermesImport'),previous=$('rfHermesResume');
  let busy=false,active=null,result=null,lastImported='';let poller=null;
  function status(text,bad=false){s.textContent=text;s.style.color=bad?'#a93146':'#315c8b';s.style.background=bad?'#fff0f1':'#eaf1fc'}
  function access(){return $('rfHermesAccessCode').value.trim()||sessionStorage.getItem('rfHermesAccess')||''}
  function token(){let v=sessionStorage.getItem('rfHermesSessionToken');if(!v){v=crypto.randomUUID()+crypto.randomUUID();sessionStorage.setItem('rfHermesSessionToken',v)}return v}
- async function post(data){const response=await fetch('/api/chat?mode=hermes',{method:'POST',headers:{'Content-Type':'application/json','X-RF-Access-Code':access()},body:JSON.stringify({...data,client_token:token()})});const r=await response.json().catch(()=>({}));if(!response.ok)throw Error(r.error||'خطای سرور Hermes ('+response.status+')');return r}
+ async function post(data){const response=await fetch('/api/hermes',{method:'POST',headers:{'Content-Type':'application/json','X-RF-Access-Code':access()},body:JSON.stringify({...data,client_token:token()})});const r=await response.json().catch(()=>({}));if(!response.ok)throw Error(r.error||'خطای سرور Hermes ('+response.status+')');return r}
  function stopPoll(){if(poller)clearInterval(poller);poller=null}
- async function checkHealth(){try{const r=await fetch('/api/chat?mode=hermes',{cache:'no-store'});const d=await r.json();if(!d.configured){live.textContent='نیازمند اتصال مدیر سایت';live.classList.remove('is-ready');return}live.textContent=d.online?'Hermes آنلاین':'سیستم Hermes آفلاین';live.classList.toggle('is-ready',!!d.online)}catch{live.textContent='ارتباط نامشخص';live.classList.remove('is-ready')}}
+ async function checkHealth(){try{const r=await fetch('/api/hermes',{cache:'no-store'});const d=await r.json();if(!d.configured){live.textContent='نیازمند اتصال مدیر سایت';live.classList.remove('is-ready');return}live.textContent=d.online?'Hermes آنلاین':'سیستم Hermes آفلاین';live.classList.toggle('is-ready',!!d.online)}catch{live.textContent='ارتباط نامشخص';live.classList.remove('is-ready')}}
  file.onchange=()=>{const f=file.files?.[0];info.textContent=f?f.name+' · '+(f.size/1048576).toFixed(1)+' MB':'فایل انتخاب نشده'};
  const toAudio=async f=>{
   if(!f)return undefined;
