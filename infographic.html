@@ -351,7 +351,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div id="rf962-image-model">
   <div class="secTitle">مدل ساخت تصویر</div>
   <label for="rf962-model">GPT Image 2.6</label>
-  <select id="rf962-model" aria-label="انتخاب مدل GPT Image"><option value="gpt-image-2.6-sunburst" selected>Sunburst — جزئیات و کیفیت بالا</option><option value="gpt-image-2.6-flare">Flare — گزینهٔ جایگزین GPT Image 2.6</option></select>
+  <select id="rf962-model" aria-label="انتخاب مدل GPT Image"><option value="openrouter/openai/gpt-image-2.6-sunburst" selected>Sunburst — جزئیات و کیفیت بالا</option><option value="openrouter/openai/gpt-image-2.6-flare">Flare — گزینهٔ جایگزین GPT Image 2.6</option></select>
   <label for="rf962-quality">کیفیت</label>
   <select id="rf962-quality" aria-label="کیفیت تصویر"><option value="high" selected>بالا (هزینه بیشتر)</option><option value="medium">متوسط (آزمایش)</option><option value="low">پایین (آزمایش سریع)</option></select>
   <label for="rf962-access">کد دسترسی مدیر (غیر از API Key)</label>
@@ -1032,7 +1032,7 @@ function rf724StructuredNews(raw){
  // Preserve exactly the supplied facts. Do not introduce synthetic row numbers.
  return lines.map(rf724PersianDigits).join('\n');
 }
-function current(){const brandKey=rf724ActiveBrandKey();return {news:newsInput.value.trim(),brand:rf724BrandName(brandKey),brandKey,style:$('rf580-graphic-style')?.value||'auto',size:document.querySelector('.sizeBtn.active')?.dataset?.size||'square',customPrompt:($('rf580-other-prompt')?.value||'').trim(),headline:rf726NormalizeText(($('rf580-title-text')?.value||'').trim()),model:$('rf962-model')?.value||'gpt-image-2.6-sunburst',quality:$('rf962-quality')?.value||'high'};}
+function current(){const brandKey=rf724ActiveBrandKey();return {news:newsInput.value.trim(),brand:rf724BrandName(brandKey),brandKey,style:$('rf580-graphic-style')?.value||'auto',size:document.querySelector('.sizeBtn.active')?.dataset?.size||'square',customPrompt:($('rf580-other-prompt')?.value||'').trim(),headline:rf726NormalizeText(($('rf580-title-text')?.value||'').trim()),model:$('rf962-model')?.value||'openrouter/openai/gpt-image-2.6-sunburst',quality:$('rf962-quality')?.value||'high'};}
 function promptFor(c){
  const styleRules={
   auto:'یک اینفوگرافیک خبری ممتاز و پویا با انتخاب خودکار بهترین چیدمان بر اساس داده‌ها؛ نه جدول خشک یا کارت‌های تکراری.',

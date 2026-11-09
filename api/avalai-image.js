@@ -4,7 +4,13 @@
 import { timingSafeEqual } from 'node:crypto';
 
 const DEFAULT_BASE_URL = 'https://gisoo.pro/api/v1';
-const ALLOWED_MODELS = new Set(['gpt-image-2.6-sunburst', 'gpt-image-2.6-flare']);
+// Gisoo uses fully qualified model IDs. Keep short aliases for cached 0963 browsers.
+const MODEL_ID_MAP = Object.freeze({
+  'gpt-image-2.6-sunburst': 'openrouter/openai/gpt-image-2.6-sunburst',
+  'gpt-image-2.6-flare': 'openrouter/openai/gpt-image-2.6-flare',
+  'openrouter/openai/gpt-image-2.6-sunburst': 'openrouter/openai/gpt-image-2.6-sunburst',
+  'openrouter/openai/gpt-image-2.6-flare': 'openrouter/openai/gpt-image-2.6-flare'
+});
 const ALLOWED_QUALITIES = new Set(['low', 'medium', 'high']);
 
 function secureEqual(a, b) {
@@ -61,7 +67,7 @@ async function handleGisoo(req, res) {
         code: 'GISOO_CONNECTED',
         baseUrl,
         models: { sunburst: sunburstAvailable, flare: flareAvailable },
-        message: 'اتصال گیسو موفق بود؛ فهرست مدل‌های تصویر دریافت شد. هنوز تصویر پولی ساخته نشده است.'
+        message: 'اتصال و فهرست مدل‌های گیسو بررسی شد؛ این تست مجوز مصرف هر مدل را تأیید نمی‌کند و تصویر پولی ساخته نشده است.'
       });
     } catch (error) {
       return imageError(res, 502, error?.name === 'AbortError' ? 'مهلت بررسی اتصال گیسو تمام شد.' : 'ارتباط با گیسو برقرار نشد. نشانی GISOO_BASE_URL را بررسی کنید.');
@@ -70,11 +76,11 @@ async function handleGisoo(req, res) {
   if (req.method !== 'POST') return imageError(res, 405, 'فقط درخواست POST پذیرفته می‌شود.');
 
   const prompt = String(req.body?.prompt || '').trim();
-  const model = String(req.body?.model || 'gpt-image-2.6-sunburst');
+  const model = MODEL_ID_MAP[String(req.body?.model || 'openrouter/openai/gpt-image-2.6-sunburst')];
   const quality = String(req.body?.quality || 'medium');
   const size = req.body?.size === 'story' ? '1024x1536' : '1024x1024';
   if (prompt.length < 30 || prompt.length > 3500) return imageError(res, 400, 'متن توضیح تصویر باید بین ۳۰ تا ۳۵۰۰ نویسه باشد.');
-  if (!ALLOWED_MODELS.has(model) || !ALLOWED_QUALITIES.has(quality)) return imageError(res, 400, 'مدل یا کیفیت انتخاب‌شده معتبر نیست.');
+  if (!model || !ALLOWED_QUALITIES.has(quality)) return imageError(res, 400, 'مدل یا کیفیت انتخاب‌شده معتبر نیست.');
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 165000);
@@ -93,8 +99,12 @@ async function handleGisoo(req, res) {
     if (!upstream.ok) {
       const status = upstream.status;
       const raw = result?.error?.message || result?.message || result?.error?.detail || '';
+      const code = String(result?.error?.code || result?.code || '');
+      const permissionHint = status === 403 && (code === 'model_not_allowed' || String(raw).includes('اجازهٔ استفاده از مدل'))
+        ? ' کلید یا پروژه گیسو مجوز این مدل را ندارد؛ در پنل API گیسو بخش مدل‌های مجاز (allowed_models) را بررسی و مدل کامل ' + model + ' را مجاز کنید.'
+        : '';
       const definitive = [400, 401, 402, 403, 404, 422, 429].includes(status);
-      return imageError(res, definitive ? status : 502, 'خطای گیسو (HTTP ' + status + '): ' + safeError(raw), definitive);
+      return imageError(res, definitive ? status : 502, 'خطای گیسو (HTTP ' + status + '): ' + safeError(raw) + permissionHint, definitive);
     }
     const b64 = result?.data?.[0]?.b64_json;
     if (typeof b64 !== 'string' || b64.length < 100) {
