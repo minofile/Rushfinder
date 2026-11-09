@@ -4,13 +4,9 @@
 import { timingSafeEqual } from 'node:crypto';
 
 const DEFAULT_BASE_URL = 'https://gisoo.pro/api/v1';
-// Gisoo uses fully qualified model IDs. Keep short aliases for cached 0963 browsers.
-const MODEL_ID_MAP = Object.freeze({
-  'gpt-image-2.6-sunburst': 'openrouter/openai/gpt-image-2.6-sunburst',
-  'gpt-image-2.6-flare': 'openrouter/openai/gpt-image-2.6-flare',
-  'openrouter/openai/gpt-image-2.6-sunburst': 'openrouter/openai/gpt-image-2.6-sunburst',
-  'openrouter/openai/gpt-image-2.6-flare': 'openrouter/openai/gpt-image-2.6-flare'
-});
+// The user's Gisoo API key explicitly allows the direct-provider GPT Image 2.5 Flare.
+// Never silently substitute another paid model when a cached browser submits 2.6.
+const MODEL_ID = 'gpt-image-2.5-flare';
 const ALLOWED_QUALITIES = new Set(['low', 'medium', 'high']);
 
 function secureEqual(a, b) {
@@ -60,14 +56,13 @@ async function handleGisoo(req, res) {
           'بررسی اتصال گیسو ناموفق بود (HTTP ' + upstream.status + '): ' + safeError(raw));
       }
       const modelText = JSON.stringify(catalogue || {});
-      const sunburstAvailable = modelText.includes('gpt-image-2.6-sunburst');
-      const flareAvailable = modelText.includes('gpt-image-2.6-flare');
       return send(res, 200, {
         ok: true,
         code: 'GISOO_CONNECTED',
         baseUrl,
-        models: { sunburst: sunburstAvailable, flare: flareAvailable },
-        message: 'اتصال و فهرست مدل‌های گیسو بررسی شد؛ این تست مجوز مصرف هر مدل را تأیید نمی‌کند و تصویر پولی ساخته نشده است.'
+        model: MODEL_ID,
+        modelListed: modelText.includes(MODEL_ID),
+        message: 'اتصال گیسو برقرار است؛ این تست مجوز ساخت تصویر را تأیید نمی‌کند و هیچ تصویر پولی ساخته نشده است.'
       });
     } catch (error) {
       return imageError(res, 502, error?.name === 'AbortError' ? 'مهلت بررسی اتصال گیسو تمام شد.' : 'ارتباط با گیسو برقرار نشد. نشانی GISOO_BASE_URL را بررسی کنید.');
@@ -76,11 +71,13 @@ async function handleGisoo(req, res) {
   if (req.method !== 'POST') return imageError(res, 405, 'فقط درخواست POST پذیرفته می‌شود.');
 
   const prompt = String(req.body?.prompt || '').trim();
-  const model = MODEL_ID_MAP[String(req.body?.model || 'openrouter/openai/gpt-image-2.6-sunburst')];
+  const requestedModel = String(req.body?.model || MODEL_ID).trim();
+  const model = requestedModel === MODEL_ID ? MODEL_ID : null;
   const quality = String(req.body?.quality || 'medium');
   const size = req.body?.size === 'story' ? '1024x1536' : '1024x1024';
   if (prompt.length < 30 || prompt.length > 3500) return imageError(res, 400, 'متن توضیح تصویر باید بین ۳۰ تا ۳۵۰۰ نویسه باشد.');
-  if (!model || !ALLOWED_QUALITIES.has(quality)) return imageError(res, 400, 'مدل یا کیفیت انتخاب‌شده معتبر نیست.');
+  if (!model) return imageError(res, 400, 'مدل انتخاب‌شده مربوط به نسخه قبلی صفحه است. صفحه اینفو را با Ctrl+F5 تازه‌سازی کنید. تنها مدل فعال GPT Image 2.5 Flare است.');
+  if (!ALLOWED_QUALITIES.has(quality)) return imageError(res, 400, 'کیفیت انتخاب‌شده معتبر نیست.');
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 165000);
