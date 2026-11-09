@@ -1,7 +1,4 @@
-@font-face{font-family:Vazir;src:url('./assets/VAZIR-REGULAR-UI.TTF') format('truetype');font-weight:400;font-display:swap}
-@font-face{font-family:Vazir;src:url('./assets/VAZIR-MEDIUM-UI.TTF') format('truetype');font-weight:500;font-display:swap}
-@font-face{font-family:Vazir;src:url('./assets/VAZIR-BOLD-UI.TTF') format('truetype');font-weight:700 900;font-display:swap}
-:root{font-family:Vazir,Tahoma,sans-serif;color:#edf4fb;background:#070d18;font-synthesis:none}
+:root{font-family:Tahoma,Arial,sans-serif;color:#edf4fb;background:#070d18;font-synthesis:none}
 *{box-sizing:border-box}
 html,body,#root{margin:0;width:100%;height:100%;min-height:100%;overflow:hidden}
 button,input,select,textarea{font:inherit}

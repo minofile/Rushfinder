@@ -1,0 +1,52 @@
+name: Build Remotion Studio
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'motion-engine/**'
+      - '.github/workflows/build-remotion.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: remotion-studio-main
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout RushFinder
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Install Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Remotion dependencies
+        working-directory: motion-engine
+        run: npm install --no-audit --no-fund
+      - name: Check TypeScript
+        working-directory: motion-engine
+        run: npm run typecheck
+      - name: Build production Remotion Player
+        working-directory: motion-engine
+        run: npm run build
+      - name: Validate compiled files
+        run: node scripts/verify-remotion.mjs
+      - name: Commit built Player for Vercel
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f motion-studio-web/index.html motion-studio-web/assets
+          if git diff --cached --quiet; then
+            echo 'Compiled Player is already up to date.'
+          else
+            git commit -m 'Publish compiled Remotion Player to Vercel'
+            git push origin HEAD:main
+          fi

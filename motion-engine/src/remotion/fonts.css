@@ -1,3 +1,1 @@
-@font-face{font-family:Vazir;src:url('../assets/VAZIR-REGULAR-UI.TTF') format('truetype');font-weight:400;font-display:swap}
-@font-face{font-family:Vazir;src:url('../assets/VAZIR-MEDIUM-UI.TTF') format('truetype');font-weight:500;font-display:swap}
-@font-face{font-family:Vazir;src:url('../assets/VAZIR-BOLD-UI.TTF') format('truetype');font-weight:700 900;font-display:swap}
+/* Fonts use system fallbacks; no private font assets needed for the build. */

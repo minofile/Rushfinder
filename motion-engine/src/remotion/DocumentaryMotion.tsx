@@ -37,7 +37,7 @@ const MapGraphic: React.FC<{frame:number; accent:string}> = ({frame,accent}) => 
       <circle cx={x} cy={y} r={13+Math.sin(frame/7+i)*3} fill={accent} opacity=".22" filter="url(#mapGlow)"/>
       <circle cx={x} cy={y} r="6" fill={accent} stroke="#fff" strokeWidth="2"/>
     </g>)}
-    <g fill="#b9c7d5" fontSize="12" fontFamily="Vazir, sans-serif"><text x="150" y="230">پاریس</text><text x="300" y="202">مسیر تحول</text></g>
+    <g fill="#b9c7d5" fontSize="12" fontFamily="Tahoma, sans-serif"><text x="150" y="230">پاریس</text><text x="300" y="202">مسیر تحول</text></g>
   </svg>;
 };
 
@@ -83,7 +83,7 @@ const MotionScene: React.FC<{scene:MotionScene; index:number; frames:number}> = 
   const isTimeline=scene.type==='timeline';
   const isQuote=scene.type==='quote';
   const isClosing=scene.type==='closing';
-  return <AbsoluteFill style={{background:'#07101c',color:'#f5f7fa',fontFamily:'Vazir, Tahoma, sans-serif',overflow:'hidden'}}>
+  return <AbsoluteFill style={{background:'#07101c',color:'#f5f7fa',fontFamily:'Tahoma, Arial, sans-serif',overflow:'hidden'}}>
     <AbsoluteFill style={{...background,opacity:fade}}/>
     {scene.imageUrl ? <AbsoluteFill style={{opacity:.22,transform:`scale(${scale})`}}><Img src={scene.imageUrl} style={{width:'100%',height:'100%',objectFit:'cover'}}/></AbsoluteFill> : null}
     <AbsoluteFill style={{opacity:.13,backgroundImage:'linear-gradient(rgba(255,255,255,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.09) 1px,transparent 1px)',backgroundSize:'80px 80px'}}/>

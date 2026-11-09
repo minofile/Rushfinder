@@ -39,9 +39,15 @@ if errorlevel 1 (
   exit /b 1
 )
 cd /d "%~dp0"
+node scripts\verify-remotion.mjs
+if errorlevel 1 (
+  echo [ERROR] Built Player is incomplete.
+  pause
+  exit /b 1
+)
 echo.
 echo [3/3] Publishing source and built player to GitHub...
-git add smart-edit.html smart-edit.js claude-motion-editor.js remotion-bridge.js api/chat.js motion-engine motion-studio-web BUILD-REMOTION-WEB.cmd RENDER-REMOTION.cmd README-0950-REMOTION-FA.md
+git add .github/workflows/build-remotion.yml scripts/verify-remotion.mjs smart-edit.html smart-edit.js claude-motion-editor.js remotion-bridge.js api/chat.js motion-engine motion-studio-web BUILD-REMOTION-WEB.cmd RENDER-REMOTION.cmd README-0950-REMOTION-FA.md README-0951-FA.md
 git diff --cached --quiet
 if not errorlevel 1 (
   echo No new Git changes to commit. The Remotion build is already up to date.
