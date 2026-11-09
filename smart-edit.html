@@ -449,6 +449,16 @@ body:not(.rf-show-legacy-tracks) #transitionTrack~.drop-hint{display:none!import
   #rfHermesLegacy[open] #rfHermesLegacyContent { max-height:320px; }
 }
 </style>
+<!-- RushFinder 0958: retain JS IDs but remove unfinished Hermes controls from the visible editor. -->
+<style id="rf0958-hide-circled-hermes">
+#rfHermesPanel .rf-hermes-header,
+#rfHermesPanel #rfHermesSubmit,
+#rfHermesPanel #rfHermesStatus,
+#rfHermesPanel .rf-hermes-actions,
+#rfHermesPanel #rfHermesPreviewLink,
+#rfHermesPanel .rf-hermes-note,
+#rfHermesPanel .rf-hermes-access { display: none !important; }
+</style>
 </head><body>
 <div class="app">
 <header class="top">
