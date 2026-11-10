@@ -725,7 +725,7 @@ function rf581Render(){
  function rf705TemplatePath(b=brand,z=size){
   if(!rf705TemplateFiles[b])throw new Error('برند انتخابی نامعتبر است.');
   if(z!=='square'&&z!=='story')throw new Error('اندازه انتخابی باید مربع یا استوری باشد.');
-  return 'assets/infographic-templates/'+rf705TemplateFiles[b][z]+'?v=01023';
+  return 'assets/infographic-templates/'+rf705TemplateFiles[b][z]+'?v=01025';
  }
  function rf705LoadTemplate(b=brand,z=size){
   const path=rf705TemplatePath(b,z);
@@ -755,7 +755,7 @@ function rf581Render(){
   const requestedRatio=W/H,sourceRatio=sw/sh;
   if(sourceRatio>requestedRatio+0.0001){
    const viewW=sh*requestedRatio;
-   ctx.drawImage(img,sw-viewW,0,viewW,sh,0,0,W,H);
+   ctx.drawImage(img,brand==='farda'?0:sw-viewW,0,viewW,sh,0,0,W,H);
   }else if(sourceRatio<requestedRatio-0.0001){
    const viewH=sw/requestedRatio;
    ctx.drawImage(img,0,0,sw,viewH,0,0,W,H);
@@ -1055,19 +1055,12 @@ function rf581Render(){
   try{
    ctx.clearRect(0,0,W,H);
    ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H);
-   if(brand==='urgent'||brand==='mashhad'||brand==='jaryan'){
-    // 01002: All three authentic side-logo templates are almost entirely
-    // transparent. The old opaque yellow/black rail filled 12% of the frame,
-    // creating a huge empty block and squashing the AI composition to 88%.
-    // Draw the complete image below the template, so only original opaque
-    // logo and thin vertical border from the asset cover its pixels.
-    ctx.drawImage(pic,0,0,pic.naturalWidth,pic.naturalHeight,0,0,W,H);
-   }else{
-    // Khabar Farda has an authentic bottom-left logo, not a side bar.
-    // Keep its established bottom safe margin unchanged.
-    const bottom=Math.round(H*(isStory?0.925:0.89));
-    ctx.drawImage(pic,0,0,pic.naturalWidth,pic.naturalHeight,0,0,W,bottom);
-   }
+   // 01025: Always cover the ENTIRE canvas with the original AI artwork.
+   // Never reserve an artificial white footer for Khabar Farda; the authentic
+   // transparent logo is composited in its actual position on top.
+   ctx.imageSmoothingEnabled=true;
+   ctx.imageSmoothingQuality='high';
+   ctx.drawImage(pic,0,0,pic.naturalWidth,pic.naturalHeight,0,0,W,H);
    if(brand==='urgent'){
     if(rf01022DesignMode.value==='editorial'){
       // Approved 01001-style newsroom art: preserve complete model composition.
@@ -1079,7 +1072,9 @@ function rf581Render(){
       rf01007DrawUrgent(pic,template);
     }
    }else{
-    rf702PaintLogoSafeZone(ctx,W,H,brand,size);
+    // 01025: Do NOT paint a pale rectangle beneath the original logo.
+    // It creates an obvious patch when users switch AI engines or backgrounds.
+    // The brand PNG is transparent everywhere except authentic logo pixels.
     rf01020StampOriginalTemplate(ctx,template,W,H);
    }
   }finally{ctx.restore();}
@@ -1555,10 +1550,12 @@ function promptFor(c){
   'فقط داده‌های منتخب زیر را به‌صورت خوانا بیاور، هر مورد یک‌بار؛ متن، واحد و اعداد را تغییر نده، تکرار نکن و هیچ مقدار ساختگی اضافه نکن. متن کامل خبر در کادر ورودی حفظ می‌شود.',
   'تمام اعداد واقعی منبع با ارقام فارسی نوشته شوند. از نمایش رشتهٔ آزمایشی ارقام خودداری کن.',
   'خوانایی، هماهنگی رنگ، آیکون معنادار، ترکیب‌بندی حرفه‌ای، اندازه‌های متنوع و فاصله‌گذاری منظم را رعایت کن.',
+  'تایپوگرافی فارسی باید بزرگ، یکدست، با لبه‌های تیز، بدون درهم‌ریختگی و کاملاً خوانا باشد. از متن‌های ریز و طولانی خودداری کن؛ تیتر و داده‌های منتخب را به بلوک‌های بزرگ تقسیم کن؛ کلمات و ارقام منبع را عوض نکن.',
   'یک تصویر محتوایی مستقل بساز که همهٔ تیترها، آمار و تصاویر در محدودهٔ خودش و با حاشیهٔ امن ۵ درصد جا شوند. هیچ متن یا عددی از لبه قطع نشود.',
   ...(['urgent','mashhad','jaryan'].includes(c.brandKey)?['برای این قالب، تصویر و پس‌زمینه باید کل عرض و ارتفاع را بدون نوار کناری زرد، مشکی، سفید یا آبیِ خالی پر کند. خودت لوگو، خط عمودی یا برچسب برند را نکش؛ سایت قالب اصلی برند انتخابی را به صورت لایه ثابت بعداً اضافه می‌کند.']:[]),
   rf724LogoSafePrompt(c.brandKey,c.size),
   'هیچ لوگو، نام رسانه، نام شرکت، واترمارک یا نوار برند نساز؛ لوگوی اصلی به صورت لایهٔ قفل شده بعد از ساخت اضافه می‌شود و نباید توسط مدل بازطراحی شود.',
+  'مهم: در پایین یا بالای تصویر هیچ @، نام کاربری، شناسه شبکه اجتماعی، نوار سفید امضا، جای لوگوی نقاشی‌شده یا مستطیل با رنگ متفاوت نساز. تصویر و بافت پس‌زمینه باید تا هر چهار لبه پیوسته باشد. لوگوی اصلی به صورت PNG شفاف روی همان تصویر کامل قرار می‌گیرد.',
   'مثل یک اینفوگرافیک تحریریه‌ای حرفه‌ای طراحی کن: تیتر خوانا، بلوک‌های متنوع متناسب با تعداد اقلام، تصویر یا آیکون مرتبط برای هر گروه، سلسله‌مراتب واضح و یک کادر جمع‌بندی در پایین؛ بدون باکس‌های بزرگ خالی.',
   'تمام محتوای نمایش‌داده‌شده باید دقیقاً از متن کاربر باشد؛ برای خوانایی فقط نکات منتخب نمایش داده شوند و هیچ داده‌ای جعل نشود.',
   custom,
