@@ -442,7 +442,7 @@ function normalizeText(t){return (t||'').replace(/\r/g,'').replace(/ي/g,'ی').r
 const rf580TitleOn=document.getElementById('rf580-title-on'),rf580SubOn=document.getElementById('rf580-subtitle-on');
 const rf580TitleText=document.getElementById('rf580-title-text'),rf580SubText=document.getElementById('rf580-subtitle-text');
 const rf580Style=document.getElementById('rf580-graphic-style'),rf580Other=document.getElementById('rf580-other-prompt');
-function rf580Sync(){rf580TitleText.hidden=!rf580TitleOn.checked;rf580SubText.hidden=!rf580SubOn.checked;document.getElementById('rf580-other-wrap').hidden=rf580Style.value!=='other';render();}
+function rf580Sync(){rf580TitleText.hidden=!rf580TitleOn.checked;rf580SubText.hidden=!rf580SubOn.checked;document.getElementById('rf580-other-wrap').hidden=rf580Style.value!=='other';render();if(window.rf702FinalImage){statusEl.textContent='سبک جدید برای ساخت بعدی ذخیره شد؛ تصویر قبلی با سبک قبلی باقی مانده است. برای تغییر تصویر، نیاز به ساخت جدید با تأیید هزینه دارید.';}}
 [rf580TitleOn,rf580SubOn,rf580Style].forEach(x=>x.addEventListener('change',rf580Sync));
 [rf580TitleText,rf580SubText,rf580Other].forEach(x=>x.addEventListener('input',()=>render()));
 function rf580EffectiveStyle(){
@@ -717,7 +717,7 @@ function rf581Render(){
  function rf705TemplatePath(b=brand,z=size){
   if(!rf705TemplateFiles[b])throw new Error('برند انتخابی نامعتبر است.');
   if(z!=='square'&&z!=='story')throw new Error('اندازه انتخابی باید مربع یا استوری باشد.');
-  return 'assets/infographic-templates/'+rf705TemplateFiles[b][z]+'?v=01020';
+  return 'assets/infographic-templates/'+rf705TemplateFiles[b][z]+'?v=01021';
  }
  function rf705LoadTemplate(b=brand,z=size){
   const path=rf705TemplatePath(b,z);
@@ -785,7 +785,7 @@ function rf581Render(){
  // V01010: headline is geometrically centred in the usable space LEFT of the
  // fixed top-right logo, not moved far below it and not clipped afterwards.
  // Locked news-brand header: title belongs to a centred safe rectangle left of the authentic logo.
- function rf01007Heading(text,W,top,maxBottom){
+ function rf01007Heading(text,W,top,maxBottom,palette){
   const family=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
   const story=size==='story',left=Math.round(W*.035),right=Math.round(W*.725);
   const width=right-left,mid=(left+right)/2,maxH=maxBottom-top;
@@ -803,7 +803,7 @@ function rf581Render(){
    const widths=words.map(word=>ctx.measureText(word).width),total=widths.reduce((x,y)=>x+y,0)+space*(words.length-1);
    let x=mid+total/2;
    words.forEach((word,j)=>{
-    ctx.textAlign='right';ctx.fillStyle=highlight.test(word)?'#00834a':'#202322';
+    ctx.textAlign='right';ctx.fillStyle=highlight.test(word)?(palette?.accent||'#00834a'):'#202322';
     ctx.fillText(word,x,top+(i+.58)*lineH);
     x-=widths[j]+space;
    });
@@ -925,40 +925,57 @@ function rf581Render(){
   }
   ctx.restore();
  }
- function rf01019RenderCard(item,x,y,w,h,family,idx){
-  const p=rf01009SplitRow(item),rad=Math.min(23,h*.22),iconW=Math.max(60,Math.min(98,h*.91));
-  ctx.save();ctx.shadowColor='rgba(40,42,31,.18)';ctx.shadowBlur=15;ctx.shadowOffsetY=8;
-  ctx.fillStyle='#fffdfc';ctx.beginPath();ctx.roundRect(x,y,w,h,rad);ctx.fill();ctx.restore();
-  ctx.save();ctx.strokeStyle='#ffffff';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(x+3,y+3,w-6,h-6,rad-2);ctx.stroke();ctx.restore();
-  ctx.save();ctx.shadowColor='rgba(32,66,42,.11)';ctx.shadowBlur=5;ctx.shadowOffsetY=3;
-  ctx.fillStyle='#f5f8f3';ctx.beginPath();ctx.roundRect(x+8,y+7,iconW-12,h-14,Math.min(20,h*.20));ctx.fill();ctx.restore();
-  rf01019CardIcon(item,x+iconW*.49,y+h/2,Math.min(32,h*.32));
-  const bodyLeft=x+iconW+9,bodyRight=x+w-12,avail=bodyRight-bodyLeft;
-  // Keep three distinct zones as in the original reference: icon | name | value.
+ // 01021: Genuine flat/volumetric renderer, keeping all Persian copy in browser canvas.
+ function rf01021Palette(headline,rows){
+  const t=[headline,...rows].join(' ');
+  if(/مرغ|گوشت|قیمت|گران|تورم|تومان|ریال|گرانی/.test(t))return {accent:'#bc1320',dark:'#8b0812',pale:'#fff1d4',warm:'#ffd91d',bg:'#f8f3e9',type:'prices'};
+  if(/دریاچه|ارومیه|سد|آب|بارش|باران|هوا|آلودگی|محیط/.test(t))return {accent:'#00834a',dark:'#006d3c',pale:'#e8f5ef',warm:'#caeee0',bg:'#f6f3ef',type:'nature'};
+  if(/بورس|بازار|ارز|دلار|سکه|طلا|سود|بازده|بانک/.test(t))return {accent:'#00834a',dark:'#006d3c',pale:'#eef7eb',warm:'#d8b65e',bg:'#f6f3ef',type:'finance'};
+  return {accent:'#00834a',dark:'#006d3c',pale:'#e8f5ef',warm:'#e9d9b8',bg:'#f6f3ef',type:'general'};
+ }
+ function rf01019RenderCard(item,x,y,w,h,family,idx,visual='3d',palette=null){
+  const pal=palette||rf01021Palette('',[item]),p=rf01009SplitRow(item),flat=visual==='2d';
+  const rad=flat?14:Math.min(26,h*.23),iconW=Math.max(56,Math.min(104,h*.88));
+  const baseX=x+3,baseY=y+2,baseW=w-6,baseH=h-5;
+  ctx.save();
+  if(!flat){
+   ctx.shadowColor='rgba(26,35,22,.28)';ctx.shadowBlur=Math.min(24,h*.22);ctx.shadowOffsetY=Math.min(11,h*.11);
+  }
+  ctx.fillStyle=flat?'#ffffff':'#fdfdfb';ctx.beginPath();ctx.roundRect(baseX,baseY,baseW,baseH,rad);ctx.fill();ctx.restore();
+  ctx.save();ctx.strokeStyle=flat?'#cadcd3':'#ffffff';ctx.lineWidth=flat?2:4;
+  ctx.beginPath();ctx.roundRect(baseX+2,baseY+2,baseW-4,baseH-4,rad);ctx.stroke();ctx.restore();
+  // Left motif: sculpted ceramic tile for 3D; flat color block for 2D.
+  ctx.save();if(!flat){ctx.shadowColor='rgba(34,53,34,.18)';ctx.shadowBlur=8;ctx.shadowOffsetY=4;}
+  ctx.fillStyle=flat?pal.pale:'#f2f5f0';ctx.beginPath();ctx.roundRect(x+10,y+9,iconW-14,h-19,Math.min(21,h*.22));ctx.fill();ctx.restore();
+  ctx.save();ctx.translate(x+iconW*.49,y+h/2);
+  ctx.beginPath();ctx.arc(0,0,Math.min(31,h*.27),0,Math.PI*2);
+  if(!flat){ctx.shadowColor='rgba(2,83,38,.28)';ctx.shadowBlur=8;ctx.shadowOffsetY=3;}
+  ctx.fillStyle=pal.pale;ctx.fill();ctx.restore();
+  rf01019CardIcon(item,x+iconW*.49,y+h/2,Math.min(23,h*.21));
+  const bodyLeft=x+iconW+9,bodyRight=x+w-15,avail=bodyRight-bodyLeft;
   if(p.value){
-   const numericWidth=Math.max(92,Math.min(avail*.36,155));
-   const sepX=bodyRight-numericWidth-8;
-   ctx.save();ctx.strokeStyle='#9cafa2';ctx.lineWidth=1.7;ctx.beginPath();ctx.moveTo(sepX,y+14);ctx.lineTo(sepX,y+h-14);ctx.stroke();ctx.restore();
-   const fs=Math.max(18,Math.min(35,h*.40));
-   const f=rf01009Fit(p.value,numericWidth-12,h-12,family,fs);
-   ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#00773e';
+   const numericWidth=Math.max(92,Math.min(avail*.41,190));const sepX=bodyRight-numericWidth-5;
+   ctx.save();ctx.strokeStyle=pal.accent;ctx.globalAlpha=.32;ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(sepX,y+16);ctx.lineTo(sepX,y+h-16);ctx.stroke();ctx.restore();
+   const maxFont=Math.min(48,h*.43),f=rf01009Fit(p.value,numericWidth-10,h-13,family,maxFont);
+   ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=pal.dark;
    ctx.font='900 '+f.size+'px '+family;
-   const lh=f.size*1.22;
-   f.lines.forEach((t,j)=>ctx.fillText(t,bodyRight-numericWidth/2,y+h/2+(j-(f.lines.length-1)/2)*lh,numericWidth-12));ctx.restore();
-   const labelWidth=Math.max(70,sepX-bodyLeft-12),label=rf01009Fit(p.label,labelWidth-8,h-12,family,Math.min(34,h*.33));
-   ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#262626';ctx.font='700 '+label.size+'px '+family;
-   label.lines.forEach((t,j)=>ctx.fillText(t,bodyLeft+labelWidth/2,y+h/2+(j-(label.lines.length-1)/2)*label.size*1.23,labelWidth-8));ctx.restore();
+   f.lines.forEach((t,j)=>ctx.fillText(t,bodyRight-numericWidth/2,y+h/2+(j-(f.lines.length-1)/2)*f.size*1.19,numericWidth-10));ctx.restore();
+   const labelWidth=Math.max(64,sepX-bodyLeft-10);
+   const label=rf01009Fit(p.label,labelWidth-9,h-13,family,Math.min(35,h*.36));
+   ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#1c2520';ctx.font='800 '+label.size+'px '+family;
+   label.lines.forEach((t,j)=>ctx.fillText(t,bodyLeft+labelWidth/2,y+h/2+(j-(label.lines.length-1)/2)*label.size*1.19,labelWidth-8));ctx.restore();
   }else{
-   const label=rf01009Fit(p.label,avail-18,h-10,family,Math.min(32,h*.36));
-   ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#252a25';ctx.font='700 '+label.size+'px '+family;
-   label.lines.forEach((t,j)=>ctx.fillText(t,bodyLeft+avail/2,y+h/2+(j-(label.lines.length-1)/2)*label.size*1.23,avail-18));ctx.restore();
+   // Section labels are presented with a distinct editorial accent rather than empty data cards.
+   const label=rf01009Fit(p.label,avail-18,h-12,family,Math.min(35,h*.38));
+   ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=pal.dark;ctx.font='800 '+label.size+'px '+family;
+   label.lines.forEach((t,j)=>ctx.fillText(t,bodyLeft+avail/2,y+h/2+(j-(label.lines.length-1)/2)*label.size*1.22,avail-18));ctx.restore();
   }
  }
  function rf01019DisplayRows(rows){
   // Editorial category labels are headings, not zero-value statistic cards.
   return rows.map(s=>String(s||'').trim()).filter(Boolean).filter(s=>!/(?:[:：]\s*)$/.test(s));
  }
- function rf01019DrawArtwork(pic,x,y,w,h){
+ function rf01019DrawArtwork(pic,x,y,w,h,visual){
   if(!pic||!pic.naturalWidth)return;
   const sw=pic.naturalWidth,sh=pic.naturalHeight;
   // AI was prompted to keep LEFT/TOP empty. Extract and magnify only the
@@ -969,8 +986,8 @@ function rf581Render(){
   else{const next=cw/targetAspect;sy+=(ch-next)*.53;ch=next;}
   ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
   ctx.drawImage(pic,sx,sy,cw,ch,x,y,w,h);
-  // Blend the hard left border of the illustration into the unchanged cream.
-  const fade=ctx.createLinearGradient(x,y,x+Math.min(45,w*.15),y);
+  // Blend edges; flat 2D and volumetric 3D share the original full-size artwork.
+  const fade=ctx.createLinearGradient(x,y,x+Math.min(35,w*.10),y);
   fade.addColorStop(0,'#f6f3ef');fade.addColorStop(1,'rgba(246,243,239,0)');
   ctx.fillStyle=fade;ctx.fillRect(x,y,Math.min(45,w*.15),h);ctx.restore();
  }
@@ -982,28 +999,30 @@ function rf581Render(){
   const rows=rf01019DisplayRows(manual?raw:raw.slice(1));
   const family=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
   const theme=window.rfUrgentTheme(headline,rows);
+  const pal=rf01021Palette(headline,rows);
+  const picked=rf580Style.value,visual=picked==='2d'?'2d':picked==='auto'?'3d':picked==='other'?rf580EffectiveStyle():picked;
   window.rf01008LastTheme=theme;
-  window.rf01012LastStyleLabel='قالب ثابت خبر فوری | تصویرسازی '+(theme==='thematic'?'موضوعی':theme==='share'?'سهم‌بندی':theme==='comparison'?'مقایسه‌ای':'اقتصادی');
+  window.rf01012LastStyleLabel='طراحی '+(visual==='2d'?'دوبعدی حرفه‌ای':'سه‌بعدی پریمیوم')+' | '+(theme==='thematic'?'موضوعی':theme==='share'?'سهم‌بندی':theme==='comparison'?'مقایسه‌ای':'اقتصادی');
   ctx.save();try{
-   ctx.fillStyle='#f6f3ef';ctx.fillRect(0,0,W,H);
-   const headerTop=story?H*.035:H*.049,headerEnd=story?H*.175:H*.195;
-   rf01007Heading(headline,W,headerTop,headerEnd);
-   // Fixed approved composition: editorial cards left; sizeable 3D render right.
-   const left=W*.038,cardW=W*.515,artX=W*.567,artW=W*.417;
-   const bodyTop=story?H*.192:H*.202,bodyBottom=story?H*.957:H*.963;
+   ctx.fillStyle=pal.bg;ctx.fillRect(0,0,W,H);
+   // Top right is always reserved for the original logo (no image or heading).
+   const headerTop=story?H*.035:H*.043,headerEnd=story?H*.174:H*.202;
+   rf01007Heading(headline,W,headerTop,headerEnd,pal);
+   // Larger artwork, larger tactile cards: fixed brand logo, adaptive visual style.
+   const left=W*.035,cardW=W*.515,artX=W*.554,artW=W*.441;
+   const bodyTop=story?H*.198:H*.217,bodyBottom=story?H*.954:H*.964;
    const bodyH=bodyBottom-bodyTop;
-   rf01019DrawArtwork(pic,artX,bodyTop+7,artW,bodyH-10);
-   const n=rows.length,gap=(n>8?7:12),minH=story?65:53;
-   const cardH=n?Math.min(story?165:147,(bodyH-gap*(n-1))/n):0;
-   if(n && cardH<minH){
-    statusEl.textContent='متن بسیار طولانی است؛ برای خوانایی کامل در قالب ثابت خبر فوری، داده‌ها را میان چند اینفوگرافیک تقسیم کنید.';
+   rf01019DrawArtwork(pic,artX,bodyTop-4,artW,bodyH+4,visual);
+   const n=rows.length,gap=n>=9?8:n>=7?10:15;
+   const cardH=n?(bodyH-gap*(n-1))/n:0;
+   if(n>8 || cardH<(story?69:74)){
+    statusEl.textContent='برای کیفیت و خوانایی مانند نمونه مرجع، این خبر داده‌های زیادی دارد؛ بهتر است به چند اسلاید تقسیم شود. همه داده‌ها بدون حذف حفظ شده‌اند.';
    }
    for(let i=0;i<n;i++){
     const y=bodyTop+i*(cardH+gap);
-    if(y+cardH>bodyBottom+1)break;
-    rf01019RenderCard(rows[i],left,y,cardW,cardH,family,i);
+    if(y+cardH>bodyBottom+2)break;
+    rf01019RenderCard(rows[i],left,y,cardW,cardH,family,i,visual,pal);
    }
-   // Brand PNG must be the literal source asset, stamped LAST, never redrawn.
    rf01020StampOriginalTemplate(ctx,template,W,H);
   }finally{ctx.restore();}
  }
@@ -1417,30 +1436,35 @@ function rf01003UrgentPrompt(c){
  const headline=c.headline||ls[0]||'';
  const items=c.headline?ls:ls.slice(1);
  const theme=window.rfUrgentTheme(headline,items);
- if(!theme)throw new Error('انتخاب خودکار تم آماده نیست. بدون ارسال درخواست پولی، صفحه را بررسی کن.');
+ const flat=c.style==='2d'||(c.style==='other'&&/دو.?بعد|فلت|وکتور/.test(c.customPrompt));
+ const styleDirective=flat
+  ?'سبک انتخابی کاربر ۲بعدی است: تصویرسازی دوبعدیِ حرفه‌ای و پرجزئیات، وکتور ادیتوریال با اشکال تخت و مرزبندی دقیق، لایه‌بندی خلاق، ریتم رنگی پویا؛ بدون حجم سه‌بعدی، رندر CGI، سکوی سرامیکی، نور حجمی یا پرسپکتیو سه‌بعدی. دوبعدی به معنی ساده یا کم‌جزئیات نیست.'
+  :'سبک انتخابی کاربر سه‌بعدی یا خودکار است: خروجی فوق حرفه‌ای، فوتورئال و سینمایی؛ سوژه اصلی بسیار بزرگ و چشمگیر، هندسه حجمی واقعی، متریال PBR، انعکاس‌ها، عمق میدان دقیق، نورپردازی استودیویی، سکوی سرامیکی چندلایه، سایه‌های طبیعی، جزئیات میکروسکوپی، رنگ‌های غنی و کنتراست کنترل‌شده. از رندر کوچک، منظره تخت، ایزومتریک ساده، انیمیشن کارتونی و فضای خالی بزرگ جلوگیری کن.';
+ const palette=/مرغ|قیمت|گرانی|تومان|گوشت|تورم/.test([headline,...items].join(' '))
+  ?'موضوع گرانی یا قیمت: استفاده هنرمندانه از قرمز تیره، زرد طلایی و مشکی در سوژه و تاکیدها؛ اشیای واقعی مرتبط، ظاهر خبری پرقدرت و لوکس.'
+  :'موضوع طبیعی/آبی یا عمومی: کرم روشن #F6F3EF، سبز زمردی #00834A، سبز تیره #006D3C، سفید سرامیکی و رنگ واقعی سوژه. رنگ‌ها زنده، دقیق و غنی باشند.';
  const layout=c.size==='story'
-  ?'فقط تصویرسازی: کانون اصلی در نیمه پایین و سمت راست کادر؛ فضای بالای تصویر و منطقه لوگوی بالا راست را برای لایه های ثابت سایت آزاد نگه دار.'
-  :'فقط تصویرسازی: کانون اصلی در نیمه راست کادر، با اندازه بزرگ و جزییات غنی. نیمه چپ برای کارت های داده و نوار بالایی برای تیتر محفوظ باشد. سوژه را پشت نوشته های سایت قرار نده.';
+  ?'سوژه اصلی بزرگ، در نیمه پایین راست با جزئیات فراوان؛ ۵۳٪ سمت چپ برای داده‌های سایت و بالای قاب برای تیتر و لوگوی اصلی خالی باشد. برای استوری ترکیب را دوباره عمودی طراحی کن؛ تصویر مربع کشیده‌شده تولید نکن.'
+  :'سوژه اصلی بزرگ و غنی در نیمه راست و مرکز پایین، تقریباً تمام منطقه اختصاصی را پر کند؛ ۵۲٪ چپ فقط برای کارت‌های داده و بالای کادر فقط برای تیتر و لوگوی اصلی محفوظ بماند.';
  return [
-  'دستور قطعی برای GPT Image 2.5 Flare: فقط یک تصویرسازی موضوعی حرفه ای بدون متن بساز؛ اندازه '+shape+'.',
-  rf01012UrgentReferenceStyle(theme),
-  rf01014UrgentSubjectGuide(headline,items),
-  layout,
-  'حاشیه امن لوگوی خبر فوری: ۳۰ درصد عرض بالای راست تا ۲۱ درصد ارتفاع کاملاً خلوت باشد؛ فقط پس زمینه روشن هموار در آن ناحیه دیده شود. هیچ مستطیل رنگی اضافه یا شبیه لوگو نساز.',
-  'هندسه اصلی همیشه ثابت است: کارت‌های بزرگ سفید سرامیکی برجسته در ستون چپ با حدود ۵۲٪ عرض، تصویرسازی حجمی مرتبط در سمت راست با حدود ۴۲٪ عرض. برای هیچ موضوعی رنگ‌ها، نسبت ستون‌ها، جای لوگو یا شکل کارت‌ها تغییر نمی‌کند. سوژه سه‌بعدی قسمت راست را با حجم زیاد پر کند، اما سمت چپ برای لایه‌های متنی سایت آزاد باشد.',
-  'ممنوعیت مطلق: لوگو، نشان رسانه، تیتر، کلمات، حروف، شماره، درصد، برچسب، کارت نوشته دار، واترمارک، هندل، URL، نوشته فارسی یا لاتین تولید نکن. همچنین از نمودار دایره ای برای درصدهای مستقل یا رتبه بندی استفاده نکن.',
-  'صفحه وب تیتر وسط چین، فونت انتخابی کاربر (از جمله کهربا)، اعداد فارسی، کارت ها و لوگوی اصلی بدون تغییر را خود رسم می کند. فقط المان های تصویری را بساز.',
-  'شرح موضوع فقط برای انتخاب اشیای مرتبط است؛ متن و ارقام آن نباید در تصویر نوشته شوند: '+[headline,...items.slice(0,8)].join('؛ '),
-  'یک خروجی باکیفیت، خوانا و متناسب با موضوع، بدون هیچ نوشته و لوگو تولید کن.'
- ].join('\n');
+  'فقط تصویرسازی ممتاز برای اینفوگرافیک خبری بساز. خروجی '+shape+'؛ انتخاب کاربر مقدم بر پیش‌فرض‌ها است.',
+  styleDirective,palette,rf01014UrgentSubjectGuide(headline,items),layout,
+  'استاندارد زیبایی: کیفیت بصری هم‌سطح پوسترهای خبری حرفه‌ای و تبلیغات تجاری لوکس، پرجزئیات، ترکیب‌بندی چشمگیر و موضوع‌محور؛ طرح ساده و خام مطلقاً ممنوع است.',
+  'در گوشه بالای راست تا ۳۰٪ عرض و ۲۱٪ ارتفاع فقط پس‌زمینه خالی بگذار، هیچ مستطیل مصنوعی لوگو یا طرح تزئینی نساز.',
+  'هیچ کارت آماری، جدول، تیتر، کلمه، حرف، رقم، درصد، نماد رسانه، واترمارک یا URL نساز. این عناصر را وب‌سایت با فونت انتخابی، ارقام فارسی و لوگوی PNG اصلی اضافه می‌کند.',
+  'دایره سهم از کل فقط در صورتی مجاز است که واقعاً اجزای یک کل ۱۰۰٪ باشند؛ در بقیه موارد نمودار دایره‌ای ممنوع.',
+  c.customPrompt?'ترجیح اضافه کاربر (پس از رعایت قواعد متن و لوگو): '+c.customPrompt.slice(0,500):'',
+  'شرح موضوع صرفاً برای تعیین اشیای تصویرسازی است، نه تولید نوشته: '+[headline,...items.slice(0,10)].join('؛ '),
+  'فقط یک تصویرسازی بدون هیچ نوشته و لوگو تولید کن.'
+ ].filter(Boolean).join('\n');
 }
 
 function promptFor(c){
  if(c.brandKey==='urgent')return rf01003UrgentPrompt(c);
  const styleRules={
   auto:'یک اینفوگرافیک خبری ممتاز و پویا با انتخاب خودکار بهترین چیدمان بر اساس داده‌ها؛ نه جدول خشک یا کارت‌های تکراری.',
-  '2d':'سبک الزام‌آور: دوبعدی فلت و وکتوری. فقط شکل‌های تخت، آیکون‌های فلت، رنگ‌های یکدست، خطوط دقیق و تایپوگرافی مدرن. بدون رندر سه‌بعدی، حجم، پرسپکتیو ایزومتریک، متریال، نورپردازی حجمی و سایهٔ برجسته.',
-  '3d':'سبک الزام‌آور: سه‌بعدی حرفه‌ای؛ آیکون‌های حجمی متناسب با هر موضوع، عمق واقعی، متریال ظریف و نورپردازی نرم. از حالت صرفاً فلت و دوبعدی دوری کن؛ در عین حال ترکیب‌بندی خلوت و خوانا بماند.',
+  '2d':'سبک الزام‌آور: دوبعدی بسیار حرفه‌ای و پوسترگونه، تصویرسازی وکتوری چندلایه با ترکیب‌بندی خلاق، رنگ‌های قوی و جزئیات فراوان؛ نه مینیمال یا جدول ساده. هیچ حجم سه‌بعدی، رندر CGI، متریال فیزیکی یا نورپردازی حجمی تولید نکن.',
+  '3d':'سبک الزام‌آور: سه‌بعدی لوکس، تمام‌حجمی، سوژه‌های بزرگ و چندلایه با متریال واقعی، رندر فوتورئال، نورپردازی سینمایی و عمق واقعی. هیچ کارت خام، گرافیک تخت یا منظره کوچک و بی‌اثر تولید نکن؛ تصویر را با جزئیات موضوعی غنی کن.',
   minimal:'سبک الزام‌آور: مینیمال و کم‌جزئیات؛ فقط عناصر ضروری، خطوط ظریف، فضای تنفس مناسب، رنگ‌های محدود، بدون تزئین شلوغ و بدون سایه‌های سنگین.',
   table:'سبک الزام‌آور: جدول خبری بسیار حرفه‌ای با ردیف‌های دقیق، تایپوگرافی برجسته و سلسله‌مراتب واضح؛ بدون فرم سه‌بعدی مگر در صورت درخواست کاربر.',
   chart:'سبک الزام‌آور: نمودار مستند و دقیق، مقیاس عددی صرفاً بر اساس داده‌های منبع، بدون مقدار پیش‌فرض یا درصد ساختگی.',
