@@ -297,7 +297,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01027</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01028</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -329,7 +329,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
         </select>
         <label for="rf01022-design-mode" style="display:block;margin:10px 0 6px;font-weight:800;color:#173962;font-size:13px">نوع چیدمان خروجی</label>
         <select id="rf01022-design-mode" class="rf580-style-select" aria-label="چیدمان حرفه‌ای یا رندر دقیق سایت">
-          <option value="editorial" selected>★ حرفه‌ای و آزاد (تم سبز خبر فوری + لوگوی اصلی)</option>
+          <option value="editorial" selected>★ طراحی حرفه‌ای مطابق سبک انتخابی + لوگوی اصلی</option>
           <option value="verified">چیدمان دقیق سایت (متن و اعداد قابل‌کنترل)</option>
         </select>
         <small style="display:block;color:#65758a;line-height:1.9;margin-top:6px">حالت حرفه‌ای: طراحی پوستر خبری پرجزئیات، برای خبر فوری همیشه سبز و روی قالب اصلی؛ مدل متن را می‌نویسد و احتمال خطای املایی دارد. حالت دقیق: متن و اعداد را سایت می‌نویسد؛ در خبرهای طولانی نتیجه ممکن است فشرده شود.</small>
@@ -356,7 +356,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
       </div>
 <div id="rf962-image-model">
   <div class="secTitle">مدل ساخت تصویر</div>
-  <label for="rf962-model">GPT Image</label>
+  <label for="rf962-model">GPT Image — AvalAI (اوَل‌ای‌آی)</label>
   <select id="rf962-model" aria-label="انتخاب مدل تصویر AvalAI"><option value="gpt-image-2.5-flare" selected>GPT Image 2.5 Flare — تست کم‌هزینه</option><option value="gpt-image-2.5-sunburst">GPT Image 2.5 Sunburst — جزئیات بیشتر</option><option value="gpt-image-2">GPT Image 2 — مدل جایگزین</option></select>
   <label for="rf962-quality">کیفیت</label>
   <select id="rf962-quality" aria-label="کیفیت تصویر"><option value="high">بالا (هزینه بیشتر)</option><option value="medium">متوسط</option><option value="low" selected>پایین (آزمایش کم‌هزینه)</option></select>
@@ -365,7 +365,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
   <p class="rf962-help">کلید AvalAI فقط روی سرور Vercel با نام AVALAI_API_KEY ثبت می‌شود و هرگز در مرورگر قرار نمی‌گیرد. برای جلوگیری از مصرف ناخواسته، ساخت تصویر به کد دسترسی مدیر نیاز دارد.</p>
 </div>
 <div id="rf1000-brand-lock" role="status" style="background:#eaf8f0;color:#17693e;border:1px solid #c2ead4;border-radius:11px;padding:10px 13px;font-size:12px;line-height:1.9;font-weight:700">🔒 لوگو و قالب انتخابی ثابت هستند؛ هوش مصنوعی فقط محتوای اینفوگرافیک را تولید می‌کند.</div>
-<div id="rf607-test-area"><button type="button" id="rf607-test-button">بررسی اتصال</button><span id="rf607-test-output" role="status" aria-live="polite"></span></div>
+<div id="rf607-test-area"><button type="button" id="rf607-test-button">بررسی اتصال AvalAI</button><span id="rf607-test-output" role="status" aria-live="polite"></span></div>
 <div class="actions rf601-actions"><button id="generate" class="primary">✦ ساخت اینفوگرافیک</button></div><div id="rf594-status" role="status" aria-live="polite" style="font-size:12px;line-height:1.9;color:#27546b;white-space:pre-wrap;margin-top:7px" hidden></div>
     </section>
     <section class="panel">
@@ -725,7 +725,7 @@ function rf581Render(){
  function rf705TemplatePath(b=brand,z=size){
   if(!rf705TemplateFiles[b])throw new Error('برند انتخابی نامعتبر است.');
   if(z!=='square'&&z!=='story')throw new Error('اندازه انتخابی باید مربع یا استوری باشد.');
-  return 'assets/infographic-templates/'+rf705TemplateFiles[b][z]+'?v=01027';
+  return 'assets/infographic-templates/'+rf705TemplateFiles[b][z]+'?v=01028';
  }
  function rf705LoadTemplate(b=brand,z=size){
   const path=rf705TemplatePath(b,z);
@@ -1009,7 +1009,7 @@ function rf581Render(){
   const family=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
   const theme=window.rfUrgentTheme(headline,rows);
   const pal={accent:'#00834A',dark:'#006D3C',pale:'#e8f5ef',warm:'#d4eee0',bg:'#F6F3EF',type:'urgent-brand'}; // Brand fixed regardless of topic
-  const picked=rf580Style.value,visual=picked==='2d'?'2d':picked==='auto'?'3d':picked==='other'?rf580EffectiveStyle():picked;
+  const picked=rf580Style.value,visual=picked==='auto'?'3d':picked==='other'?rf580EffectiveStyle():picked;
   window.rf01008LastTheme=theme;
   window.rf01012LastStyleLabel='طراحی '+(visual==='2d'?'دوبعدی حرفه‌ای':'سه‌بعدی پریمیوم')+' | '+(theme==='thematic'?'موضوعی':theme==='share'?'سهم‌بندی':theme==='comparison'?'مقایسه‌ای':'اقتصادی');
   ctx.save();try{
@@ -1077,9 +1077,22 @@ function rf581Render(){
    const theme=brand==='urgent'?'rgba(0,85,48,.90)':brand==='mashhad'?'rgba(75,51,0,.85)':brand==='jaryan'?'rgba(20,20,20,.88)':'rgba(104,11,34,.88)';
    const bg=ctx.createLinearGradient(x,y,x+w,y+h);
    bg.addColorStop(0,theme);bg.addColorStop(1,theme.replace(/\.8[0-9]\)/,'.72)').replace('.90)','.73)'));
-   ctx.fillStyle=bg;
+   const is3D=rf580Style.value==='3d'||rf580Style.value==='auto'||(rf580Style.value==='other'&&rf580EffectiveStyle()==='3d');
    const radius=Math.min(36,h*.22);
-   ctx.beginPath();ctx.roundRect(x,y,w,h,radius);ctx.fill();
+   if(is3D){
+    // Sculpted bevel and soft shadow are behind text; the font itself is untouched.
+    ctx.save();ctx.shadowColor='rgba(0,0,0,.26)';ctx.shadowBlur=23;ctx.shadowOffsetY=12;
+    ctx.fillStyle=brand==='urgent'?'#004b2e':'rgba(25,25,25,.55)';
+    ctx.beginPath();ctx.roundRect(x+3,y+7,w-6,h-9,radius);ctx.fill();ctx.restore();
+   }
+   ctx.fillStyle=bg;ctx.beginPath();ctx.roundRect(x,y,w,h,radius);ctx.fill();
+   if(is3D){
+    const sheen=ctx.createLinearGradient(x,y,x,y+h);
+    sheen.addColorStop(0,'rgba(255,255,255,.34)');sheen.addColorStop(.36,'rgba(255,255,255,.07)');sheen.addColorStop(1,'rgba(0,0,0,.15)');
+    ctx.fillStyle=sheen;ctx.beginPath();ctx.roundRect(x+2,y+2,w-4,h-4,radius);ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.42)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.roundRect(x+3,y+3,w-6,h-6,radius);ctx.stroke();
+   }
    ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.textBaseline='middle';
    ctx.shadowColor='rgba(0,0,0,.2)';ctx.shadowBlur=2;ctx.shadowOffsetY=2;
    ctx.font='900 '+sizePx+'px '+family;
@@ -1534,6 +1547,23 @@ function rf01014UrgentSubjectGuide(headline,items){
  if(/بورس|بازار|قیمت|طلا|سکه|ارز|تورم|مالی|بازده/.test(t))return 'سوژه اختصاصی: نمودارهای مالی حجمی، سکه، طلا یا ابزار مالی فقط در صورت ارتباط مستقیم.';
  return 'سوژه سه بعدی را از موضوع واقعی تیتر و داده ها انتخاب کن؛ از اجزای کلیشه ای نامرتبط و نمودارهای بی معنا دوری کن.';
 }
+// 01028: One strict style contract for all four brands (no 3D fallback for tables/charts).
+function rf01028StyleContract(c){
+ const rules={
+  '3d':'سه‌بعدی واقعی و کاملاً حرفه‌ای: سوژه و کارت‌ها و قاب‌های اطلاعاتی با حجم و متریال PBR، سایه طبیعی، بازتاب استودیویی و عمق؛ از عناصر تخت و کارت‌های ریز پرهیز کن.',
+  '2d':'دوبعدی واقعی و ممتاز: گرافیک ادیتوریال و وکتوری، بدون پرسپکتیو CGI، برجستگی سه‌بعدی یا نور حجمی؛ سلسله‌مراتب شفاف و آیکون‌های دوبعدی باکیفیت.',
+  'table':'جدولی ممتاز: جدول واضح و شبکه منظم با عنوان ستون‌ها و ردیف‌های درشت و خوانا؛ بدون تبدیل به پوستر سه‌بعدی یا کارت‌های پراکنده. اطلاعات زیاد را خلاصه کن.',
+  'chart':'نموداری ممتاز: نمودار میله‌ای یا خطی صحیح با مقیاس منطقی؛ برای درصدهای مستقل نمودار دایره‌ای ممنوع. نمودار دایره‌ای فقط برای سهم واقعی یک کل تقریباً ۱۰۰٪.',
+  'comparison':'مقایسه‌ای ممتاز: دو یا چند بخش بزرگ با تفکیک واضح قبل و بعد/گزینه‌ها و نمایش تفاوت‌ها بدون قاطی‌شدن داده‌ها؛ ساختار تقارن کنترل‌شده.',
+  'timeline':'تایم‌لاین ممتاز: ترتیب زمانی دقیق با گره‌های تاریخ و مسیر بصری پیوسته و حرفه‌ای؛ هر رویداد در بخش جداگانه و واضح.',
+  'cards':'کارت‌های اطلاعاتی ممتاز: چند کارت بزرگ و برجسته یا تخت متناسب با سبک، آیکون‌های موضوعی، فضای تنفس کافی؛ نه جدول باریک.',
+  'minimal':'مینیمال حرفه‌ای: عناصر محدود اما حساب‌شده با تایپوگرافی قوی، کنتراست و فضای منفی کنترل‌شده؛ نه طرح ناتمام و بی‌کیفیت.',
+  'auto':'خودکار هوشمند: براساس معنای خبر مناسب‌ترین ترکیب حرفه‌ای تصویرسازی/نمودار/مقایسه/تایم‌لاین را انتخاب کن؛ از جدول‌های مینیاتوری دوری کن.',
+  'other':'سبک سفارشی کاربر را اجرا کن؛ قواعد لوگو، رنگ برند، اندازه و صحت داده‌ها همیشه برقرارند.'
+ };
+ return rules[c.style]||rules.auto;
+}
+function rf01028IsVolumetric(c){return c.style==='3d'||(c.style==='auto'&&c.designMode==='editorial')||(c.style==='other'&&/سه.?بعد|3d|برجسته/.test(c.customPrompt||''));}
 function rf01003UrgentPrompt(c){
  const shape=c.size==='story'?'استوری عمودی ۹:۱۶':'مربع ۱:۱';
  const chosen=rf01024CurateNews(c.news,c.headline,c.size);
@@ -1541,8 +1571,7 @@ function rf01003UrgentPrompt(c){
  const items=chosen.items;
  const theme=window.rfUrgentTheme(headline,items);
  if(c.designMode==='editorial'){
-  const flat=c.style==='2d'||(c.style==='other'&&/دو.?بعد|فلت|وکتور/.test(c.customPrompt));
-  const mode=flat?'کاملاً دوبعدی: طرح گرافیکی حرفه‌ای، بدون حجم یا رندر CGI.':'کاملاً سه‌بعدی: سوژه بزرگ فوتورئال، متریال واقعی، نورپردازی سینمایی و عمق طبیعی.';
+  const mode=rf01028StyleContract(c);
   return [
    'یک اینفوگرافیک خبری بسیار حرفه‌ای، لوکس و پرجزئیات تولید کن؛ نسبت '+shape+'. '+mode,
    'هویت رنگی پوستر: سبز زمردی #00834A و سبز تیره #006D3C همراه با کرم #F6F3EF و سفید. سبز رنگ غالب باشد. رنگ واقعی سوژه‌ها طبیعی بماند.',
@@ -1551,7 +1580,7 @@ function rf01003UrgentPrompt(c){
    'تیتر این تصویر فقط و فقط در مرحله وب نوشته خواهد شد. هرگز تیتر ورودی را در تصویر تایپ نکن، تکرار نکن و هیچ کلمه‌ای شبیه آن در بالا نساز.',
    'قانون قطعی تیتر: در ۷۲ درصد بالایی سمت چپِ عرض، به ارتفاع ۲۳ درصد از بالای تصویر، هیچ متن یا کارت اطلاعاتی و هیچ سوژه مهم نباشد؛ اما پس‌زمینه تصویری باید یکسره و طبیعی در این فضا ادامه یابد. سایت تیتر را با فونت اصلی در مرکز این محدوده می‌نویسد.',
    rf724LogoSafePrompt(c.brandKey,c.size),
-   'در بقیه قاب، طراحی خلاق و غنی با سوژه سه‌بعدی یا دوبعدی متناسب با انتخاب انجام بده. حداکثر '+(c.size==='story'?'۷':'۵')+' مورد از آمار زیر را در کارت‌های حجیم، جذاب و درشت جا بده. هر مورد را دقیقاً مطابق منبع بنویس؛ عدد یا واحد جدید اختراع نکن.',
+   'در بقیه قاب، چیدمان را دقیقاً با سبک انتخابی کاربر اجرا کن؛ از تحمیل تصویرسازی سه‌بعدی به حالت جدول/نمودار/تایم‌لاین پرهیز کن. حداکثر '+(c.size==='story'?'۷':'۵')+' مورد از آمار زیر را در کارت‌های حجیم، جذاب و درشت جا بده. هر مورد را دقیقاً مطابق منبع بنویس؛ عدد یا واحد جدید اختراع نکن.',
    'فقط اطلاعات خبری در کارت‌ها مجاز است؛ هیچ عبارت «خبر فوری» یا متن تبلیغاتی/برند از مدل قابل قبول نیست.',
    'متن ورودی جهت انتخاب موضوع و کارت‌های خبری (تیتر را تایپ نکن): '+[headline,...items].join('؛ '),
    c.customPrompt?'ترجیح تکمیلی: '+c.customPrompt.slice(0,350):'',
@@ -1559,10 +1588,7 @@ function rf01003UrgentPrompt(c){
   ].filter(Boolean).join('\n');
  }
 
- const flat=c.style==='2d'||(c.style==='other'&&/دو.?بعد|فلت|وکتور/.test(c.customPrompt));
- const styleDirective=flat
-  ?'سبک انتخابی کاربر ۲بعدی است: تصویرسازی دوبعدیِ حرفه‌ای و پرجزئیات، وکتور ادیتوریال با اشکال تخت و مرزبندی دقیق، لایه‌بندی خلاق، ریتم رنگی پویا؛ بدون حجم سه‌بعدی، رندر CGI، سکوی سرامیکی، نور حجمی یا پرسپکتیو سه‌بعدی. دوبعدی به معنی ساده یا کم‌جزئیات نیست.'
-  :'سبک انتخابی کاربر سه‌بعدی یا خودکار است: خروجی فوق حرفه‌ای، فوتورئال و سینمایی؛ سوژه اصلی بسیار بزرگ و چشمگیر، هندسه حجمی واقعی، متریال PBR، انعکاس‌ها، عمق میدان دقیق، نورپردازی استودیویی، سکوی سرامیکی چندلایه، سایه‌های طبیعی، جزئیات میکروسکوپی، رنگ‌های غنی و کنتراست کنترل‌شده. از رندر کوچک، منظره تخت، ایزومتریک ساده، انیمیشن کارتونی و فضای خالی بزرگ جلوگیری کن.';
+ const styleDirective=rf01028StyleContract(c);
  const palette='تم برند خبر فوری ثابت و اجباری است: سبز زمردی #00834A، سبز تیره #006D3C، کرم روشن #F6F3EF و سفید سرامیکی. سبز همیشه رنگ غالب پوستر است، حتی اخبار قیمت یا گرانی؛ از قرمز/زرد به عنوان تم اصلی استفاده نکن. رنگ واقعی سوژه می‌تواند طبیعی باقی بماند.';
  const layout=c.size==='story'
   ?'سوژه اصلی بزرگ، در نیمه پایین راست با جزئیات فراوان؛ ۵۳٪ سمت چپ برای داده‌های سایت اختصاص یابد؛ تصویر پس‌زمینه در همه جای قاب از جمله پشت لوگو امتداد یابد. برای استوری ترکیب را دوباره عمودی طراحی کن؛ تصویر مربع کشیده‌شده تولید نکن.'
@@ -1583,8 +1609,7 @@ function rf01003UrgentPrompt(c){
 function promptFor(c){
  if(c.brandKey==='urgent')return rf01003UrgentPrompt(c);
  const selected=rf01024CurateNews(c.news,c.headline,c.size);
- const isFlat=c.style==='2d'||(c.style==='other'&&/دو.?بعد|فلت|وکتور/.test(c.customPrompt));
- const mode=isFlat?'سبک دوبعدی حقیقی: طراحی ادیتوریال گرافیکی با کیفیت چاپ، بدون حجم سه‌بعدی و بدون CGI.':'سبک سه‌بعدی حقیقی: تصویرسازی پریمیوم فوتورئال، متریال واقعی، سایه و نور سینمایی، سوژه بزرگ و پرجزئیات.';
+ const mode=rf01028StyleContract(c);
  const shape=c.size==='story'?'استوری عمودی ۹:۱۶':'مربع ۱:۱';
  return [
   'یک اینفوگرافیک فارسی بسیار شیک، بزرگ و خوانا برای انتشار بساز؛ ابعاد '+shape+'.',
