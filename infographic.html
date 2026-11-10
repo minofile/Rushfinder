@@ -297,7 +297,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01028</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01029</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -356,16 +356,16 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
       </div>
 <div id="rf962-image-model">
   <div class="secTitle">مدل ساخت تصویر</div>
-  <label for="rf962-model">GPT Image</label>
+  <label for="rf962-model">GPT Image — AvalAI (اوَل‌ای‌آی)</label>
   <select id="rf962-model" aria-label="انتخاب مدل تصویر AvalAI"><option value="gpt-image-2.5-flare" selected>GPT Image 2.5 Flare — تست کم‌هزینه</option><option value="gpt-image-2.5-sunburst">GPT Image 2.5 Sunburst — جزئیات بیشتر</option><option value="gpt-image-2">GPT Image 2 — مدل جایگزین</option></select>
   <label for="rf962-quality">کیفیت</label>
   <select id="rf962-quality" aria-label="کیفیت تصویر"><option value="high">بالا (هزینه بیشتر)</option><option value="medium">متوسط</option><option value="low" selected>پایین (آزمایش کم‌هزینه)</option></select>
   <label for="rf962-access">کد دسترسی مدیر (غیر از API Key)</label>
   <input id="rf962-access" type="password" autocomplete="off" spellcheck="false" placeholder="کد اختصاصی مدیر را وارد کنید" aria-label="کد دسترسی مدیر">
-  <p class="rf962-help">کلید تصویرسازی فقط روی سرور ذخیره می‌شود و برای جلوگیری از مصرف ناخواسته، ساخت تصویر نیازمند کد دسترسی مدیر است.</p>
+  <p class="rf962-help">کلید AvalAI فقط روی سرور Vercel با نام AVALAI_API_KEY ثبت می‌شود و هرگز در مرورگر قرار نمی‌گیرد. برای جلوگیری از مصرف ناخواسته، ساخت تصویر به کد دسترسی مدیر نیاز دارد.</p>
 </div>
 <div id="rf1000-brand-lock" role="status" style="background:#eaf8f0;color:#17693e;border:1px solid #c2ead4;border-radius:11px;padding:10px 13px;font-size:12px;line-height:1.9;font-weight:700">🔒 لوگو و قالب انتخابی ثابت هستند؛ هوش مصنوعی فقط محتوای اینفوگرافیک را تولید می‌کند.</div>
-<div id="rf607-test-area"><button type="button" id="rf607-test-button">بررسی اتصال</button><span id="rf607-test-output" role="status" aria-live="polite"></span></div>
+<div id="rf607-test-area"><button type="button" id="rf607-test-button">بررسی اتصال AvalAI</button><span id="rf607-test-output" role="status" aria-live="polite"></span></div>
 <div class="actions rf601-actions"><button id="generate" class="primary">✦ ساخت اینفوگرافیک</button></div><div id="rf594-status" role="status" aria-live="polite" style="font-size:12px;line-height:1.9;color:#27546b;white-space:pre-wrap;margin-top:7px" hidden></div>
     </section>
     <section class="panel">
@@ -725,7 +725,7 @@ function rf581Render(){
  function rf705TemplatePath(b=brand,z=size){
   if(!rf705TemplateFiles[b])throw new Error('برند انتخابی نامعتبر است.');
   if(z!=='square'&&z!=='story')throw new Error('اندازه انتخابی باید مربع یا استوری باشد.');
-  return 'assets/infographic-templates/'+rf705TemplateFiles[b][z]+'?v=01028';
+  return 'assets/infographic-templates/'+rf705TemplateFiles[b][z]+'?v=01029';
  }
  function rf705LoadTemplate(b=brand,z=size){
   const path=rf705TemplatePath(b,z);
@@ -1564,6 +1564,18 @@ function rf01028StyleContract(c){
  return rules[c.style]||rules.auto;
 }
 function rf01028IsVolumetric(c){return c.style==='3d'||(c.style==='auto'&&c.designMode==='editorial')||(c.style==='other'&&/سه.?بعد|3d|برجسته/.test(c.customPrompt||''));}
+// 01029: Reserve real subject/face space BEFORE a paid image is composed.
+// The web compositor draws the exact original-brand logo and headline later.
+function rf01029SubjectSafeComposition(c){
+ const story=c.size==='story',farda=c.brandKey==='farda';
+ const top=story?24:29;
+ return [
+  'قانون ضروری کادربندی: نوار '+top+'٪ بالای پوستر برای تیتر سایت است. این قسمت فقط بافت طبیعی و پیوسته پس‌زمینه داشته باشد؛ هیچ صورت، سر، چهره، سوژه اصلی، ساختمان مهم، کارت یا نوشته‌ای آنجا نساز. لکه سفید یا کادر خالی مصنوعی ممنوع.',
+  'سر و صورت افراد و سوژه مهم را از ارتفاع '+(story?28:33)+'٪ به پایین قرار بده؛ اگر لازم است سوژه را کوچک‌تر و پایین‌تر یا به سمت راست میانی جابه‌جا کن. هیچ بخشی از صورت زیر کادر تیتر نرود؛ کلوزآپ بریده یا سری که به بالای تصویر می‌رسد ممنوع.',
+  'کارت‌ها و نمودارها هم زیر نوار تیتر باشند و روی چهره نیفتند. جای تیتر و کارت‌ها را پیش از ساخت تصویر مشخص کن. '+(farda?'لوگوی اصلی پایین چپ است.':'لوگوی اصلی بالا راست است.')+' خودت تیتر و لوگو تولید نکن.',
+  'این قانون برای هر چهار رسانه، تمام سبک‌ها و هر دو اندازه پست و استوری الزامی است.'
+ ].join(' ');
+}
 function rf01003UrgentPrompt(c){
  const shape=c.size==='story'?'استوری عمودی ۹:۱۶':'مربع ۱:۱';
  const chosen=rf01024CurateNews(c.news,c.headline,c.size);
@@ -1578,7 +1590,7 @@ function rf01003UrgentPrompt(c){
    'موضوع: '+rf01014UrgentSubjectGuide(headline,items),
    'تیتر و لوگو را اصلاً تولید نکن. هیچ عبارت «خبر فوری»، نام کانال، نشان خبری، آیکون برند، لوگوی ساختگی، واترمارک، شناسه یا URL داخل تصویر نگذار. این عناصر فقط توسط وب اضافه می‌شوند.',
    'تیتر این تصویر فقط و فقط در مرحله وب نوشته خواهد شد. هرگز تیتر ورودی را در تصویر تایپ نکن، تکرار نکن و هیچ کلمه‌ای شبیه آن در بالا نساز.',
-   'قانون قطعی تیتر: در ۷۲ درصد بالایی سمت چپِ عرض، به ارتفاع ۲۳ درصد از بالای تصویر، هیچ متن یا کارت اطلاعاتی و هیچ سوژه مهم نباشد؛ اما پس‌زمینه تصویری باید یکسره و طبیعی در این فضا ادامه یابد. سایت تیتر را با فونت اصلی در مرکز این محدوده می‌نویسد.',
+   rf01029SubjectSafeComposition(c),
    rf724LogoSafePrompt(c.brandKey,c.size),
    'در بقیه قاب، چیدمان را دقیقاً با سبک انتخابی کاربر اجرا کن؛ از تحمیل تصویرسازی سه‌بعدی به حالت جدول/نمودار/تایم‌لاین پرهیز کن. حداکثر '+(c.size==='story'?'۷':'۵')+' مورد از آمار زیر را در کارت‌های حجیم، جذاب و درشت جا بده. هر مورد را دقیقاً مطابق منبع بنویس؛ عدد یا واحد جدید اختراع نکن.',
    'فقط اطلاعات خبری در کارت‌ها مجاز است؛ هیچ عبارت «خبر فوری» یا متن تبلیغاتی/برند از مدل قابل قبول نیست.',
@@ -1595,7 +1607,7 @@ function rf01003UrgentPrompt(c){
   :'سوژه اصلی بزرگ و غنی در نیمه راست و مرکز پایین، تقریباً تمام منطقه اختصاصی را پر کند؛ ۵۲٪ چپ برای کارت‌های داده و بالای کادر برای تیتر خوانا باشد؛ پس‌زمینه در تمام قاب از جمله پشت لوگو پیوسته باشد.';
  return [
   'فقط تصویرسازی ممتاز برای اینفوگرافیک خبری بساز. خروجی '+shape+'؛ انتخاب کاربر مقدم بر پیش‌فرض‌ها است.',
-  styleDirective,palette,rf01014UrgentSubjectGuide(headline,items),layout,
+  styleDirective,palette,rf01014UrgentSubjectGuide(headline,items),layout,rf01029SubjectSafeComposition(c),
   'استاندارد زیبایی: کیفیت بصری هم‌سطح پوسترهای خبری حرفه‌ای و تبلیغات تجاری لوکس، پرجزئیات، ترکیب‌بندی چشمگیر و موضوع‌محور؛ طرح ساده و خام مطلقاً ممنوع است.',
   'تم سبز خبر فوری و قالب اصلی ثابت است؛ زمینه طبیعی سبز/کرم با جزئیات موضوعی تا پشت لوگوی بالا راست به‌صورت یکدست ادامه داشته باشد، بدون هیچ لکه روشن یا کادر خالی ساختگی؛ فقط اطلاعات مهم روی خود لوگو قرار نگیرند.',
   'هیچ کارت آماری، جدول، تیتر، کلمه، حرف، رقم، درصد، نماد رسانه، واترمارک یا URL نساز. این عناصر را وب‌سایت با فونت انتخابی، ارقام فارسی و لوگوی PNG اصلی اضافه می‌کند.',
@@ -1616,7 +1628,7 @@ function promptFor(c){
   mode,'ترکیب‌بندی موضوعی خلاق و پرجزئیات، نه جدول‌های کوچک یا ردیف‌های ریز.',
   'هشدار جدی: نام یا هویت هیچ رسانه‌ای را داخل تصویر ننویس. هیچ لوگو، نشان، مهر خبری، واترمارک، نام رسانه، شناسه و URL ایجاد نکن. لوگوی واقعی پس از تولید توسط سایت اضافه می‌شود.',
   'تیتر ورودی را در تصویر ننویس. سایت خودش تیتر را از متن اصلی با فونت انتخابی به‌صورت وسط‌چین روی تصویر درج می‌کند. هیچ تیتر جایگزین یا تکرار تیتر در خود عکس نساز.',
-  'ناحیه تیتر توسط وب پوشانده می‌شود: در ۷۲٪ عرض از سمت چپ، در ۲۳٪ ارتفاع ابتدای تصویر، هیچ کلمه، برچسب خبری، عدد، کارت داده یا سوژه مهم قرار نده. فقط بافت پیوسته پس‌زمینه آنجا باشد؛ نه مستطیل سفید یا ناحیه سفید مصنوعی.',
+  rf01029SubjectSafeComposition(c),
   rf724LogoSafePrompt(c.brandKey,c.size),
   'فقط نکات منتخب زیر را در کارت‌های بزرگ، متنوع و خوانا طراحی کن. اعداد باید فارسی باشند. هیچ داده یا واحد جعلی نساز و موارد را دو بار تکرار نکن.',
   selected.items.join('؛ '),
@@ -1635,10 +1647,10 @@ function reviewPrompt(draft){
   shade.innerHTML=`<section class="rf716-modal" role="dialog" aria-modal="true" aria-labelledby="rf716-heading" dir="rtl">
    <h2 id="rf716-heading">بازبینی پرامپت قبل از ساخت تصویر</h2>
    <p>متن زیر برای مدل GPT Image انتخاب‌شده در AvalAI ارسال می‌شود. می‌توانی آن را ویرایش کنی. تا وقتی «تأیید و ساخت» را نزنی، هیچ درخواست پولی برای تولید تصویر ارسال نمی‌شود.</p>
-   <label for="rf716-prompt">پرامپت نهایی (قابل ویرایش)</label>
+   <label for="rf716-prompt">پرامپت نهایی (دارای محدوده امن تیتر و سوژه؛ قابل ویرایش)</label>
    <textarea id="rf716-prompt" spellcheck="false" dir="rtl"></textarea>
    <p id="rf716-count" aria-live="polite"></p>
-   <p class="rf716-warning">نتیجهٔ GPT Image ممکن است شامل عدد یا متن نادرست باشد. خروجی را قبل از انتشار بررسی کن؛ در خبرهای طولانی سایت فقط آمار و نکات مهم را از متن اصلی انتخاب می‌کند؛ قبل از پرداخت فهرست را بررسی کن. تم خبر فوری همیشه سبز است و لوگوی اصلی بدون تغییر روی خروجی قرار می‌گیرد.</p>
+   <p class="rf716-warning">نتیجهٔ GPT Image ممکن است شامل عدد یا متن نادرست باشد. خروجی را قبل از انتشار بررسی کن؛ در خبرهای طولانی سایت فقط آمار و نکات مهم را از متن اصلی انتخاب می‌کند؛ قبل از پرداخت فهرست را بررسی کن. تیتر سایت در بالا قرار می‌گیرد؛ پیش از پرداخت مطمئن شو مدل، چهره و سوژه را پایین‌تر از تیتر طراحی خواهد کرد. تم خبر فوری همیشه سبز است و لوگوی اصلی بدون تغییر روی خروجی قرار می‌گیرد.</p>
    <div class="rf716-actions"><button type="button" id="rf716-approve">تأیید و ساخت تصویر</button><button type="button" id="rf716-reset">بازسازی متن پیش‌فرض</button><button type="button" id="rf716-cancel">لغو</button></div>
   </section>`;
   const previousFocus=document.activeElement;
