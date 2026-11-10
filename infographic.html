@@ -297,7 +297,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01026</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01027</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -725,7 +725,7 @@ function rf581Render(){
  function rf705TemplatePath(b=brand,z=size){
   if(!rf705TemplateFiles[b])throw new Error('برند انتخابی نامعتبر است.');
   if(z!=='square'&&z!=='story')throw new Error('اندازه انتخابی باید مربع یا استوری باشد.');
-  return 'assets/infographic-templates/'+rf705TemplateFiles[b][z]+'?v=01026';
+  return 'assets/infographic-templates/'+rf705TemplateFiles[b][z]+'?v=01027';
  }
  function rf705LoadTemplate(b=brand,z=size){
   const path=rf705TemplatePath(b,z);
@@ -1035,6 +1035,58 @@ function rf581Render(){
    rf01020StampOriginalTemplate(ctx,template,W,H);
   }finally{ctx.restore();}
  }
+ // 01027: fixed type composer for ALL four brands. The AI MUST NOT print the title.
+ // The source image remains edge-to-edge, the authentic brand PNG is overlaid last.
+ function rf01027BrowserHeadline(){
+  const raw=normalizeText(input.value||'');
+  if(!raw.trim())return;
+  const manual=rf580TitleOn.checked?normalizeText(rf580TitleText.value):'';
+  const selected=window.rf01024CurateNews?.(raw,manual,size);
+  const headline=rf584PersianDigits((selected?.headline||manual||raw.split(/\n/)[0]||'').trim());
+  if(!headline)return;
+  const W=cv.width,H=cv.height,story=size==='story';
+  const isBottomBrand=brand==='farda';
+  // All upper-right brands: right 30% of the headline band is absolutely off limits.
+  const x=W*.038,right=W*(isBottomBrand?.945:.688),w=right-x;
+  const y=H*(story?.036:.034),h=H*(story?.151:.182);
+  const family=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
+  let sizePx=story?67:67,lines=[];
+  const words=headline.split(/\s+/).filter(Boolean);
+  const wrap=(n)=>{
+   ctx.font='900 '+n+'px '+family;
+   const output=[];let row='';
+   for(const word of words){
+    const candidate=row?row+' '+word:word;
+    if(row&&ctx.measureText(candidate).width>w-48){ output.push(row);row=word; }
+    else row=candidate;
+   }
+   if(row)output.push(row);
+   return output;
+  };
+  ctx.save();
+  try{
+   ctx.direction='rtl';
+   for(;sizePx>=17;sizePx-=1){
+    lines=wrap(sizePx);
+    if(lines.length*sizePx*1.18<=h-26&&lines.every(line=>{ctx.font='900 '+sizePx+'px '+family;return ctx.measureText(line).width<=w-48;}))break;
+   }
+   // Extremely long titles never spill into the logo. Last resort: fit and clip locally.
+   sizePx=Math.max(17,sizePx);
+   lines=wrap(sizePx);
+   ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
+   const theme=brand==='urgent'?'rgba(0,85,48,.90)':brand==='mashhad'?'rgba(75,51,0,.85)':brand==='jaryan'?'rgba(20,20,20,.88)':'rgba(104,11,34,.88)';
+   const bg=ctx.createLinearGradient(x,y,x+w,y+h);
+   bg.addColorStop(0,theme);bg.addColorStop(1,theme.replace(/\.8[0-9]\)/,'.72)').replace('.90)','.73)'));
+   ctx.fillStyle=bg;
+   const radius=Math.min(36,h*.22);
+   ctx.beginPath();ctx.roundRect(x,y,w,h,radius);ctx.fill();
+   ctx.fillStyle='#ffffff';ctx.textAlign='center';ctx.textBaseline='middle';
+   ctx.shadowColor='rgba(0,0,0,.2)';ctx.shadowBlur=2;ctx.shadowOffsetY=2;
+   ctx.font='900 '+sizePx+'px '+family;
+   const lh=sizePx*1.18,cy=y+h/2-(lines.length-1)*lh/2;
+   lines.forEach((line,i)=>ctx.fillText(line,x+w/2,cy+i*lh,w-44));
+  }finally{ctx.restore();}
+ }
  // RushFinder 01000: exact source logo always wins over AI generated pixels.
  // A successful draw *requires* the matching brand PNG, never ship an unbranded frame.
  function rf702DrawFinal(){
@@ -1066,8 +1118,9 @@ function rf581Render(){
       // Approved 01001-style newsroom art: preserve complete model composition.
       // Never shrink the AI output into tiny website-rendered data rows.
       // Original brand PNG is overlaid, retaining the exact official logo.
+      rf01027BrowserHeadline();
       rf01020StampOriginalTemplate(ctx,template,W,H);
-      window.rf01012LastStyleLabel='طراحی آزاد حرفه‌ای | تصویر کامل + لوگوی اصلی';
+      window.rf01012LastStyleLabel='طراحی آزاد حرفه‌ای | تیتر وسط‌چین امن + لوگوی اصلی';
     }else{
       rf01007DrawUrgent(pic,template);
     }
@@ -1075,6 +1128,7 @@ function rf581Render(){
     // 01025: Do NOT paint a pale rectangle beneath the original logo.
     // It creates an obvious patch when users switch AI engines or backgrounds.
     // The brand PNG is transparent everywhere except authentic logo pixels.
+    rf01027BrowserHeadline();
     rf01020StampOriginalTemplate(ctx,template,W,H);
    }
   }finally{ctx.restore();}
@@ -1440,10 +1494,10 @@ function rf724LogoSafeZoneMeta(brandKey,sizeKey){
  return zones[brandKey]||null;
 }
 function rf724LogoSafePrompt(brandKey,sizeKey){
- const z=rf724LogoSafeZoneMeta(brandKey,sizeKey);
- const where=brandKey==='farda'?'گوشه پایین چپ':'گوشه بالای راست';
- return 'قالب لوگوی رسمی بعداً روی خروجی قرار می‌گیرد. بافت طبیعی تصویر، نور، پس‌زمینه و منظره را تا هر چهار لبه و دقیقاً پشت لوگوی '+where+' بدون هیچ بریدگی یا تغییر رنگ ادامه بده. زیر لوگو هیچ فضای سفید، کرم روشن مصنوعی، لکه، کادر، هاله، نوار یا محل مخصوص نشان ایجاد نکن. فقط تیتر و عدد و جزئیات حیاتی را از خود ناحیه لوگو دور نگه دار. هیچ لوگو یا نوشته برند جدیدی تولید نکن.';
+ const side=brandKey==='farda'?'پایین چپ':'بالا راست';
+ return 'مهم: نشان اصلی رسانه در گوشه '+side+' بعداً توسط سایت اضافه می‌شود. هیچ لوگو، نوشته برند، نام رسانه، نشان کوچک، نشان جعلی، لوگوی اضافی یا علامت گرافیکی شبیه لوگو تولید نکن. زمینه تصویری در سراسر کادر و زیر لوگوی واقعی یکپارچه بماند؛ زیر آن لکه سفید یا کادر جداگانه نساز. برای تیتر وب، قسمت بالای سمت چپِ قاب را از نوشته و اجزای ضروری آزاد نگه دار ولی بافت و تصویر محیط را پیوسته ادامه بده.';
 }
+
 function rf724PaintLogoSafeZone(ctx,W,H,brandKey,sizeKey){
  // Intentionally no-op: never paint solid color under a transparent logo.
 }
@@ -1488,24 +1542,23 @@ function rf01003UrgentPrompt(c){
  const theme=window.rfUrgentTheme(headline,items);
  if(c.designMode==='editorial'){
   const flat=c.style==='2d'||(c.style==='other'&&/دو.?بعد|فلت|وکتور/.test(c.customPrompt));
-  const mode=flat?'کاملاً دوبعدی، طراحی گرافیکی ادیتوریال سطح بالا با لایه‌بندی، تایپوگرافی جسور، کنتراست و تزئینات هدفمند؛ هیچ رندر سه‌بعدی یا CGI نساز.':'سه‌بعدی بسیار حرفه‌ای با سوژه‌های بزرگ واقعی، متریال فوتورئال PBR، نورپردازی سینمایی، سایه و عمق طبیعی، عکس‌های محصول با وضوح تبلیغاتی؛ نه کارت‌های مینیاتوری و نه جدول کوچک.';
-  const subject=rf01014UrgentSubjectGuide(headline,items);
-  const news=[headline,...items].join('\n');
+  const mode=flat?'کاملاً دوبعدی: طرح گرافیکی حرفه‌ای، بدون حجم یا رندر CGI.':'کاملاً سه‌بعدی: سوژه بزرگ فوتورئال، متریال واقعی، نورپردازی سینمایی و عمق طبیعی.';
   return [
-   'یک اینفوگرافیک خبری فارسی لوکس، یکپارچه و حرفه‌ای داخل قالب اصلی «خبر فوری» بساز. ترکیب‌بندی زنده، سوژه بزرگ، کارت‌های متنوع و تایپوگرافی قدرتمند مثل نمونه حرفه‌ای دیروز؛ هرگز یک جدول ریز و یکنواخت تولید نکن.',
-   'فرمت نهایی '+shape+'؛ کاملاً برای همان نسبت تصویر از ابتدا ترکیب‌بندی کن، نه کشیدن مربع به استوری. انتخاب سبک کاربر الزام‌آور است: '+mode,
-   'قانون کیفیت: از تمام قاب با پس‌زمینه یکپارچه و بافت پیوسته (از جمله پشت لایه لوگو) استفاده کن؛ تصویرهای موضوعی بزرگ، لایه‌بندی حرفه‌ای، تیتر پرقدرت، اعداد بزرگ فارسی، کارت‌ها و برچسب‌های دارای عمق (فقط برای انتخاب سه‌بعدی)، سلسله‌مراتب خوانا. تصویر کوچک کنار یازده ردیف باریک، کارت‌های مینیاتوری، پس‌زمینه خالی گسترده و جدول ساده ممنوع است. اطلاعات زیاد را در بخش‌های درشت و معنادار گروه‌بندی کن؛ ارقام و واقعیت‌ها را جعل یا تغییر نده.',
-   'قانون مطلق برند خبر فوری: رنگ قالب و هویت اصلی همیشه سبز زمردی #00834A، سبز تیره #006D3C و کرم روشن #F6F3EF و سفید است. سبز در تیترهای تأکیدی، برچسب‌ها، عناصر رابط و کارت‌های اطلاعاتی غالب باشد. رنگ واقعی اشیای سوژه (مثلاً رنگ مرغ، آب، طلا) طبیعی و معتبر بماند اما قرمز و زرد و مشکی هرگز به رنگ غالب طراحی و بنرها تبدیل نشوند. تم سبز را حتی در خبر گرانی یا هشدار حفظ کن. این قاعده از هر دستور رنگ در متن کاربر مهم‌تر است.',
-   'موضوع و اشیای مرتبط: '+subject,
-   'تیتر را بزرگ، چشمگیر و با ترکیب‌بندی پوستر خبری در بخش بالایی قرار بده؛ داده‌ها را روی برچسب‌ها و کارت‌های جذاب و خوانا و مرتبط پخش کن؛ نه جدول یکنواخت.',
-   'فقط نکات منتخب زیر را در این تک‌تصویر استفاده کن. متن خام خبر نزد کاربر حفظ شده و موارد کم‌اولویت عمداً برای خوانایی به این تصویر فرستاده نمی‌شوند؛ هیچ عدد، واحد یا نکته جدید اختراع نکن. داده‌های منتخب را عیناً و با رقم فارسی بنویس.',
-   'قالب اصلی خبر فوری در صفحه وب بعد از ساخت، به صورت فایل PNG شفاف و بدون بازطراحی روی تصویر قرار می‌گیرد. لوگوی خبر فوری را دوباره نقاشی نکن. بافت و تصویر پس‌زمینه به‌صورت پیوسته تا پشت لوگوی گوشه بالا راست ادامه داشته باشد؛ هیچ لکه سفید یا کرم مخصوص لوگو، باکس لوگو، کادر خالی، محوشدگی موضعی یا بریدگی رنگ تولید نکن. تیتر و آمار مهم در ناحیه خود لوگو قرار نگیرند؛ متن را در فضای باقی‌مانده خوانا و حرفه‌ای بچین.',
-   'نمودار دایره‌ای سهم از کل فقط برای توزیع واقعی ۱۰۰٪ مجاز است؛ برای درصدهای مستقل ممنوع.',
-   c.customPrompt?'توضیح طراحی کاربر: '+c.customPrompt.slice(0,500):'',
-   'متن اصلی برای طراحی: \n'+news,
-   'فقط یک تصویر نهایی منتشرشدنی و ترکیب‌شده در قاب بساز؛ نه ماکت و نه تصویرسازیِ تنها.'
+   'یک اینفوگرافیک خبری بسیار حرفه‌ای، لوکس و پرجزئیات تولید کن؛ نسبت '+shape+'. '+mode,
+   'هویت رنگی پوستر: سبز زمردی #00834A و سبز تیره #006D3C همراه با کرم #F6F3EF و سفید. سبز رنگ غالب باشد. رنگ واقعی سوژه‌ها طبیعی بماند.',
+   'موضوع: '+rf01014UrgentSubjectGuide(headline,items),
+   'تیتر و لوگو را اصلاً تولید نکن. هیچ عبارت «خبر فوری»، نام کانال، نشان خبری، آیکون برند، لوگوی ساختگی، واترمارک، شناسه یا URL داخل تصویر نگذار. این عناصر فقط توسط وب اضافه می‌شوند.',
+   'تیتر این تصویر فقط و فقط در مرحله وب نوشته خواهد شد. هرگز تیتر ورودی را در تصویر تایپ نکن، تکرار نکن و هیچ کلمه‌ای شبیه آن در بالا نساز.',
+   'قانون قطعی تیتر: در ۷۲ درصد بالایی سمت چپِ عرض، به ارتفاع ۲۳ درصد از بالای تصویر، هیچ متن یا کارت اطلاعاتی و هیچ سوژه مهم نباشد؛ اما پس‌زمینه تصویری باید یکسره و طبیعی در این فضا ادامه یابد. سایت تیتر را با فونت اصلی در مرکز این محدوده می‌نویسد.',
+   rf724LogoSafePrompt(c.brandKey,c.size),
+   'در بقیه قاب، طراحی خلاق و غنی با سوژه سه‌بعدی یا دوبعدی متناسب با انتخاب انجام بده. حداکثر '+(c.size==='story'?'۷':'۵')+' مورد از آمار زیر را در کارت‌های حجیم، جذاب و درشت جا بده. هر مورد را دقیقاً مطابق منبع بنویس؛ عدد یا واحد جدید اختراع نکن.',
+   'فقط اطلاعات خبری در کارت‌ها مجاز است؛ هیچ عبارت «خبر فوری» یا متن تبلیغاتی/برند از مدل قابل قبول نیست.',
+   'متن ورودی جهت انتخاب موضوع و کارت‌های خبری (تیتر را تایپ نکن): '+[headline,...items].join('؛ '),
+   c.customPrompt?'ترجیح تکمیلی: '+c.customPrompt.slice(0,350):'',
+   'خروجی یک تصویر واحد؛ بدون لوگو و بدون تیتر تولیدشده توسط مدل.'
   ].filter(Boolean).join('\n');
  }
+
  const flat=c.style==='2d'||(c.style==='other'&&/دو.?بعد|فلت|وکتور/.test(c.customPrompt));
  const styleDirective=flat
   ?'سبک انتخابی کاربر ۲بعدی است: تصویرسازی دوبعدیِ حرفه‌ای و پرجزئیات، وکتور ادیتوریال با اشکال تخت و مرزبندی دقیق، لایه‌بندی خلاق، ریتم رنگی پویا؛ بدون حجم سه‌بعدی، رندر CGI، سکوی سرامیکی، نور حجمی یا پرسپکتیو سه‌بعدی. دوبعدی به معنی ساده یا کم‌جزئیات نیست.'
@@ -1529,43 +1582,24 @@ function rf01003UrgentPrompt(c){
 
 function promptFor(c){
  if(c.brandKey==='urgent')return rf01003UrgentPrompt(c);
- const styleRules={
-  auto:'یک اینفوگرافیک خبری ممتاز و پویا با انتخاب خودکار بهترین چیدمان بر اساس داده‌ها؛ نه جدول خشک یا کارت‌های تکراری.',
-  '2d':'سبک الزام‌آور: دوبعدی بسیار حرفه‌ای و پوسترگونه، تصویرسازی وکتوری چندلایه با ترکیب‌بندی خلاق، رنگ‌های قوی و جزئیات فراوان؛ نه مینیمال یا جدول ساده. هیچ حجم سه‌بعدی، رندر CGI، متریال فیزیکی یا نورپردازی حجمی تولید نکن.',
-  '3d':'سبک الزام‌آور: سه‌بعدی لوکس، تمام‌حجمی، سوژه‌های بزرگ و چندلایه با متریال واقعی، رندر فوتورئال، نورپردازی سینمایی و عمق واقعی. هیچ کارت خام، گرافیک تخت یا منظره کوچک و بی‌اثر تولید نکن؛ تصویر را با جزئیات موضوعی غنی کن.',
-  minimal:'سبک الزام‌آور: مینیمال و کم‌جزئیات؛ فقط عناصر ضروری، خطوط ظریف، فضای تنفس مناسب، رنگ‌های محدود، بدون تزئین شلوغ و بدون سایه‌های سنگین.',
-  table:'سبک الزام‌آور: جدول خبری بسیار حرفه‌ای با ردیف‌های دقیق، تایپوگرافی برجسته و سلسله‌مراتب واضح؛ بدون فرم سه‌بعدی مگر در صورت درخواست کاربر.',
-  chart:'سبک الزام‌آور: نمودار مستند و دقیق، مقیاس عددی صرفاً بر اساس داده‌های منبع، بدون مقدار پیش‌فرض یا درصد ساختگی.',
-  comparison:'سبک الزام‌آور: مقایسهٔ حرفه‌ای دو یا چند گروه با چیدمان متقارن، تفاوت رنگ کنترل‌شده و فقط داده‌های منبع.',
-  timeline:'سبک الزام‌آور: خط زمانی حرفه‌ای، فقط با تاریخ‌ها و رویدادهای موجود در منبع.',
-  cards:'سبک الزام‌آور: کارت‌های متنوع با ابعاد و ریتم متفاوت، آیکون مرتبط برای هر داده؛ نه مربع‌های یکسان و یکنواخت.',
-  other:'سبک اختصاصی تعریف‌شده توسط کاربر را اولویت بده؛ داده‌ها و لوگوی اصلی تغییر نکنند.'
- };
- const shape=c.size==='story'?'استوری عمودی ۹:۱۶':'مربع ۱:۱';
- const custom=c.customPrompt?'دستور تکمیلی کاربر: '+rf724PersianDigits(c.customPrompt.slice(0,480)):'';
  const selected=rf01024CurateNews(c.news,c.headline,c.size);
- const raw=[selected.headline,...selected.items].filter(Boolean).join('\n');
+ const isFlat=c.style==='2d'||(c.style==='other'&&/دو.?بعد|فلت|وکتور/.test(c.customPrompt));
+ const mode=isFlat?'سبک دوبعدی حقیقی: طراحی ادیتوریال گرافیکی با کیفیت چاپ، بدون حجم سه‌بعدی و بدون CGI.':'سبک سه‌بعدی حقیقی: تصویرسازی پریمیوم فوتورئال، متریال واقعی، سایه و نور سینمایی، سوژه بزرگ و پرجزئیات.';
+ const shape=c.size==='story'?'استوری عمودی ۹:۱۶':'مربع ۱:۱';
  return [
-  'یک اینفوگرافیک فارسی حرفه‌ای و انتشارپذیر بساز.',
-  'ابعاد: '+shape+'. رسانه: '+c.brand+'.',
-  styleRules[c.style]||styleRules.auto,
-  'انتخاب سبک کاربر قطعی است؛ سبک دیگری را با آن ترکیب نکن.',
-  'خط اول متن منبع تیتر است. تیتر را فقط یک‌بار، یکپارچه با طرح و بدون کادر سفید اضافی نمایش بده؛ باقی خطوط محتوای طرح هستند.',
-  'فقط داده‌های منتخب زیر را به‌صورت خوانا بیاور، هر مورد یک‌بار؛ متن، واحد و اعداد را تغییر نده، تکرار نکن و هیچ مقدار ساختگی اضافه نکن. متن کامل خبر در کادر ورودی حفظ می‌شود.',
-  'تمام اعداد واقعی منبع با ارقام فارسی نوشته شوند. از نمایش رشتهٔ آزمایشی ارقام خودداری کن.',
-  'خوانایی، هماهنگی رنگ، آیکون معنادار، ترکیب‌بندی حرفه‌ای، اندازه‌های متنوع و فاصله‌گذاری منظم را رعایت کن.',
-  'تایپوگرافی فارسی باید بزرگ، یکدست، با لبه‌های تیز، بدون درهم‌ریختگی و کاملاً خوانا باشد. از متن‌های ریز و طولانی خودداری کن؛ تیتر و داده‌های منتخب را به بلوک‌های بزرگ تقسیم کن؛ کلمات و ارقام منبع را عوض نکن.',
-  'یک تصویر محتوایی مستقل بساز که همهٔ تیترها، آمار و تصاویر در محدودهٔ خودش و با حاشیهٔ امن ۵ درصد جا شوند. هیچ متن یا عددی از لبه قطع نشود.',
-  ...(['urgent','mashhad','jaryan'].includes(c.brandKey)?['برای این قالب، تصویر و پس‌زمینه باید کل عرض و ارتفاع را بدون نوار کناری زرد، مشکی، سفید یا آبیِ خالی پر کند. خودت لوگو، خط عمودی یا برچسب برند را نکش؛ سایت قالب اصلی برند انتخابی را به صورت لایه ثابت بعداً اضافه می‌کند.']:[]),
+  'یک اینفوگرافیک فارسی بسیار شیک، بزرگ و خوانا برای انتشار بساز؛ ابعاد '+shape+'.',
+  mode,'ترکیب‌بندی موضوعی خلاق و پرجزئیات، نه جدول‌های کوچک یا ردیف‌های ریز.',
+  'هشدار جدی: نام یا هویت هیچ رسانه‌ای را داخل تصویر ننویس. هیچ لوگو، نشان، مهر خبری، واترمارک، نام رسانه، شناسه و URL ایجاد نکن. لوگوی واقعی پس از تولید توسط سایت اضافه می‌شود.',
+  'تیتر ورودی را در تصویر ننویس. سایت خودش تیتر را از متن اصلی با فونت انتخابی به‌صورت وسط‌چین روی تصویر درج می‌کند. هیچ تیتر جایگزین یا تکرار تیتر در خود عکس نساز.',
+  'ناحیه تیتر توسط وب پوشانده می‌شود: در ۷۲٪ عرض از سمت چپ، در ۲۳٪ ارتفاع ابتدای تصویر، هیچ کلمه، برچسب خبری، عدد، کارت داده یا سوژه مهم قرار نده. فقط بافت پیوسته پس‌زمینه آنجا باشد؛ نه مستطیل سفید یا ناحیه سفید مصنوعی.',
   rf724LogoSafePrompt(c.brandKey,c.size),
-  'تأکید: هیچ پچ سفید/کرم و هیچ مستطیل یا جای خالی با مرز مشخص در پشت لوگو یا کناره‌های کادر نساز؛ رنگ و بافت تصویر در تمام نقاط یکپارچه باشد.',
-  'هیچ لوگو، نام رسانه، نام شرکت، واترمارک یا نوار برند نساز؛ لوگوی اصلی به صورت لایهٔ قفل شده بعد از ساخت اضافه می‌شود و نباید توسط مدل بازطراحی شود.',
-  'مهم: در پایین یا بالای تصویر هیچ @، نام کاربری، شناسه شبکه اجتماعی، نوار سفید امضا، جای لوگوی نقاشی‌شده یا مستطیل با رنگ متفاوت نساز. تصویر و بافت پس‌زمینه باید تا هر چهار لبه پیوسته باشد. لوگوی اصلی به صورت PNG شفاف روی همان تصویر کامل قرار می‌گیرد.',
-  'مثل یک اینفوگرافیک تحریریه‌ای حرفه‌ای طراحی کن: تیتر خوانا، بلوک‌های متنوع متناسب با تعداد اقلام، تصویر یا آیکون مرتبط برای هر گروه، سلسله‌مراتب واضح و یک کادر جمع‌بندی در پایین؛ بدون باکس‌های بزرگ خالی.',
-  'تمام محتوای نمایش‌داده‌شده باید دقیقاً از متن کاربر باشد؛ برای خوانایی فقط نکات منتخب نمایش داده شوند و هیچ داده‌ای جعل نشود.',
-  custom,
-  'متن منبع (بدون افزودن هیچ کلمه یا داده):',raw,
-  'خروجی یک تصویر واحد باشد.'
+  'فقط نکات منتخب زیر را در کارت‌های بزرگ، متنوع و خوانا طراحی کن. اعداد باید فارسی باشند. هیچ داده یا واحد جعلی نساز و موارد را دو بار تکرار نکن.',
+  selected.items.join('؛ '),
+  'موضوع کلی برای انتخاب تصاویر، نه برای نوشتن تیتر: '+selected.headline,
+  'نوشته‌ها، داده‌های آماری و کارت‌ها کاملاً پایین‌تر از ناحیه تیتر وب قرار گیرند و به ناحیه لوگوی واقعی هم وارد نشوند.',
+  'تصویر و بافت پس‌زمینه باید تمام عرض و ارتفاع کادر، از جمله پشت لوگو را بدون رنگ‌پریدگی یا پچ سفید پر کند.',
+  c.customPrompt?'ترجیح کاربر (بعد از این قوانین): '+c.customPrompt.slice(0,350):'',
+  'یک خروجی تصویری واحد، بدون تیتر و لوگوی تولیدی.'
  ].filter(Boolean).join('\n');
 }
 
@@ -1681,7 +1715,7 @@ btn.addEventListener('click',async evt=>{
    await window.rf705LoadTemplate();
    if(typeof window.rf702DrawFinal!=='function')throw new Error('تابع نمایش خروجی در این صفحه در دسترس نیست.');
    window.rf702DrawFinal();
-   say((c.brandKey==='urgent'&&c.designMode==='editorial'?'✓ طراحی حرفه‌ای کامل دریافت شد؛ لوگوی اصلی بدون بازطراحی روی خروجی قرار گرفت. متن و ارقام تولیدی مدل را قبل از انتشار دقیق بررسی کن.':'✓ تصویرسازی دریافت شد؛ تیتر و داده‌ها با فونت انتخابی و لوگوی ثابت سایت ترکیب شدند.')+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
+   say((c.brandKey==='urgent'&&c.designMode==='editorial'?'✓ تصویر حرفه‌ای دریافت شد؛ تیتر وسط‌چین و لوگوی اصلی با وب اضافه شدند. کارت‌ها و اعداد تولیدی مدل را قبل از انتشار بررسی کن.':'✓ تصویر دریافت شد؛ تیتر وسط‌چین با فونت انتخابی و لوگوی اصلی به خروجی اضافه شد. اعداد داخل تصویر را بررسی کن.')+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
   }catch(renderError){
    console.error('RF0728 image received but local composition failed',renderError);
    say('✓ تصویر از GPT Image از طریق AvalAI دریافت شده، ولی نمایش یا بارگذاری قالب در سایت خطا دارد: '+(renderError?.message||'خطای نامشخص')+' — از ساخت مجدد تصویر پولی خودداری کن؛ ابتدا فایل قالب را بررسی کن.');
