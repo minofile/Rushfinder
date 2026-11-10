@@ -931,10 +931,17 @@ function rf581Render(){
      const w=story?(dense?W*.76:W*.78):(dense?W*.29:W*.40);
      const h=story?(dense?bodyH*.30:bodyH*.56):bodyH*.91;
      ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
-     // Contain instead of cover: do not cut the subject, icons or 3D props.
-     const scale=Math.min(w/pic.naturalWidth,h/pic.naturalHeight);
-     const dw=pic.naturalWidth*scale,dh=pic.naturalHeight*scale;
-     ctx.drawImage(pic,x+(w-dw)/2,y+(h-dh)/2,dw,dh);ctx.restore();
+     // The generation prompt reserves the top and left of its square artwork
+     // for site-owned copy. Cropping to the illustrated right section keeps the
+     // actual 3D subject large after the site adds its own cards and headline.
+     // Never crop or modify the original logo template (stamped separately).
+     const sw=pic.naturalWidth,sh=pic.naturalHeight;
+     const sourceX=sw*.33,sourceY=sh*.19,sourceW=sw*.67,sourceH=sh*.81;
+     const sourceAspect=sourceW/sourceH,targetAspect=w/h;
+     let sx=sourceX,sy=sourceY,cw=sourceW,ch=sourceH;
+     if(sourceAspect>targetAspect){cw=sourceH*targetAspect;sx=sourceX+(sourceW-cw)*.5;}
+     else{ch=sourceW/targetAspect;sy=sourceY+(sourceH-ch)*.5;}
+     ctx.drawImage(pic,sx,sy,cw,ch,x,y,w,h);ctx.restore();
     }
     if(n===0){
      ctx.fillStyle='#24392e';ctx.textAlign='center';ctx.direction='rtl';ctx.font='600 28px '+family;

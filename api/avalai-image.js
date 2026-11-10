@@ -102,6 +102,7 @@ function safeRemoteHost(url) {
   return h==='storage.googleapis.com' || h.endsWith('.storage.googleapis.com') ||
     h.endsWith('.blob.core.windows.net') || h==='files.oaiusercontent.com' ||
     h.endsWith('.oaiusercontent.com') || h==='avalai.ir' || h.endsWith('.avalai.ir') ||
+    h==='image-proxy-worker.gnbellosc.workers.dev' ||
     configuredImageHosts().has(h);
 }
 function explainRejectedHost(url) {
