@@ -876,8 +876,9 @@ function rf581Render(){
   const headline=manual||raw[0]||'اینفوگرافیک خبر فوری';
   const items=manual?raw:raw.slice(1);
   const family=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
-  const theme=rf01008Theme(headline,items);
+  const theme=rf01012UrgentTheme(headline,items);
   window.rf01008LastTheme=theme;
+   window.rf01012LastStyleLabel=(theme==='share'?'تم سهم‌بندی مرجع خبر فوری':theme==='thematic'?'تم موضوعی مرجع خبر فوری':'تم اقتصادی مرجع خبر فوری');
   ctx.save();try{
    ctx.fillStyle='#f6f3ef';ctx.fillRect(0,0,W,H);
    const headingTop=story?Math.round(H*.036):Math.round(H*.047);
@@ -894,25 +895,35 @@ function rf581Render(){
    }else{
     // Data count determines layout. Never collapse 20 items into 23px strips.
     const n=items.length;
-    const columns=n<=7?1:n<=14?2:3;
+    // RF0111: Never discard the paid 3D artwork simply because there are
+    // more than seven data rows. Keep the approved cards + editorial art split.
+    // Dense square news: two legible card columns at left, 3D art at right.
+    // Dense story news: cards at top, art in the lower portion.
+    const dense=n>7;
+    const columns=dense?2:1;
     const rows=Math.max(1,Math.ceil(n/columns));
-    const gapY=n>14?8:12,gapX=14;
-    // For up to seven values preserve the approved left-card/right-art template.
-    const showIllustration=columns===1;
-    // Keep the approved left-statistics/right-3D split for concise news;
-    // compact dense reports use the width for actual data, not empty art.
-    const left=story?38:36,edge=story?44:36;
-    const dataWidth=showIllustration?W*(story?.87:.55):W-left-edge;
+    const gapY=dense?7:12,gapX=dense?10:14;
+    const left=story?38:36;
+    const dataWidth=story
+     ? (dense?W-left-38:W*.87)
+     : (dense?W*.68:W*.55);
+    const dataBodyH=story&&dense?bodyH*.66:bodyH;
     const cellW=(dataWidth-gapX*(columns-1))/columns;
-    const cellH=Math.min(n<=7?145:122,(bodyH-gapY*(rows-1))/rows);
-    if(n>0&&cellH<50){
-     statusEl.textContent='تعداد ردیف‌ها برای خروجی '+(story?'استوری':'مربع')+' زیاد است. برای خوانایی کامل، متن را به چند اینفوگرافیک تقسیم کنید؛ هیچ داده‌ای عمداً خلاصه یا جایگزین نشده است.';
+    const cellH=Math.min(dense?122:145,(dataBodyH-gapY*(rows-1))/rows);
+    if(n>0&&cellH<62){
+     statusEl.textContent='اطلاعات این خبر زیاد است؛ برای کارت‌های درشت مشابه نمونه‌های مرجع، آن را در دو اینفوگرافیک منتشر کنید. هیچ ردیفی عمداً حذف نشده است.';
     }
-    if(showIllustration&&pic&&pic.naturalWidth){
-     const x=story?W*.17:W*.59,y=story?top+bodyH*.43:top+17;
-     const w=story?W*.78:W*.40,h=story?bodyH*.56:bodyH*.91;
+    // Artwork is always retained, even for long news. The illustration is
+    // clipped to its own rectangle and cannot cover any statistic card.
+    if(pic&&pic.naturalWidth){
+     const x=story?(dense?W*.14:W*.17):(dense?W*.70:W*.59);
+     const y=story?(dense?top+bodyH*.69:top+bodyH*.43):top+17;
+     const w=story?(dense?W*.76:W*.78):(dense?W*.29:W*.40);
+     const h=story?(dense?bodyH*.30:bodyH*.56):bodyH*.91;
      ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
-     const scale=Math.max(w/pic.naturalWidth,h/pic.naturalHeight),dw=pic.naturalWidth*scale,dh=pic.naturalHeight*scale;
+     // Contain instead of cover: do not cut the subject, icons or 3D props.
+     const scale=Math.min(w/pic.naturalWidth,h/pic.naturalHeight);
+     const dw=pic.naturalWidth*scale,dh=pic.naturalHeight*scale;
      ctx.drawImage(pic,x+(w-dw)/2,y+(h-dh)/2,dw,dh);ctx.restore();
     }
     if(n===0){
@@ -922,7 +933,7 @@ function rf581Render(){
     items.forEach((item,i)=>{
      const col=Math.floor(i/rows),row=i%rows;
      const x=left+col*(cellW+gapX),y=top+row*(cellH+gapY);
-     if(y+cellH>bottom+1)return;
+     if(y+cellH>(story&&dense?top+dataBodyH:bottom)+1)return;
      rf01008Card(item,x,y,cellW,cellH,family,i);
     });
    }
@@ -973,6 +984,7 @@ function rf581Render(){
   }finally{ctx.restore();}
   window.rf1000ComposedReady=true;
   layoutName.textContent='محتوا + لوگوی ثابت اصلی '+brands[brand].name;updateMeta();
+  if(brand==='urgent'&&window.rf01012LastStyleLabel){statusEl.textContent='الگوی خودکار خبر فوری: '+window.rf01012LastStyleLabel+' | مدل: '+(($('rf962-model')?.selectedOptions?.[0]?.textContent)||'GPT Image');}
   area.classList.add('rf702-has-image');
   return true;
  }
@@ -1316,26 +1328,45 @@ function rf01003UrgentLayoutGuide(news){
   return 'چیدمان مناسب: کارت‌های اطلاعاتی چندردیفی در سمت چپ و یک تصویرسازی سه‌بعدی مرتبط و خلوت در سمت راست، با سرفصل‌های کوتاه و خوانا.';
  return 'چیدمان مناسب: تیتر قوی در بالا، یک تصویر سه‌بعدی موضوعی در سمت راست و مجموعه کارت‌های خبری سفید با داده‌های قابل مقایسه در سمت چپ.';
 }
+function rf01012UrgentTheme(headline,items){
+ const news=[headline||'',...(items||[])].join(' | ');
+ return (/سهم|توزیع|ترکیب|سهم بازار|درصد/.test(news)&&items.length>=2)?'share':(/هوا|بارش|باران|آلودگی|دما|محیط|شهر|استان|کیفیت هوا/.test(news)?'thematic':'financial');
+}
+function rf01012UrgentReferenceStyle(theme){
+ if(theme==='share')return [
+  'الگوی مرجع تم سهم‌بندی خبر فوری: دقیقاً در خانوادهٔ اینفوی مرجعِ دیروز عمل کن؛ پس‌زمینه کرم روشن، یک pie chart سه‌بعدی بزرگ و لوکس در مرکز یا مرکز-راست روی سکوی گرد سفید، قطعات سبز با عمق واقعی، لبه‌های نرم و حجم تمیز.',
+  'پیرامون نمودار، کال‌اوت‌های سفیدِ تمیز با خط اتصال سبز ظریف و اجزای مرتبط صنعت/موضوع قرار بگیرند. قاب باید پر، متعادل، بدون فضای خالی بیهوده و با حس استودیویی حرفه‌ای باشد.'
+ ].join(' ');
+ if(theme==='thematic')return [
+  'الگوی مرجع تم موضوعی خبر فوری: شبیه اینفوی مرجع بارش/آلودگی عمل کن؛ سمت راست یا مرکز-راست یک تصویرسازی سه‌بعدی بزرگ روی سکوی سفید با موضوع خبر و نور نرم استودیویی قرار بگیرد.',
+  'برای هواشناسی و آلودگی از ابر نرم، قطره آب، چتر، نقشه، شاخص کیفیت هوا، ماسک، شهر یا عناصر کاملاً مرتبط استفاده کن. فرم‌ها گرد، براق و لوکس باشند و ترکیب بدون فضای خالی اضافی کل قاب را متعادل پر کند.'
+ ].join(' ');
+ return [
+  'الگوی مرجع تم اقتصادی خبر فوری: شبیه اینفوی مرجع بازارهای مالی عمل کن؛ سمت راست یک تصویرسازی سه‌بعدی بزرگ و باکیفیت شامل نمودار میله‌ای سبز، فلش روند، تبلت/نمودار، پول، سکه، طلا یا عناصر کاملاً مرتبط با موضوع روی سکوی سفید با لبه سبز.',
+  'حس کلی باید کرم روشن، سبز زمردی، سفید، نور نرم استودیویی، اجزای حجمی مرتب، پریمیوم و بدون فضای خالی اضافه باشد؛ تصویرسازی باید بخش مهمی از قاب را پر کند و به‌هیچ‌وجه ساده یا تخت نشود.'
+ ].join(' ');
+}
 function rf01003UrgentPrompt(c){
  const shape=c.size==='story'?'استوری عمودی ۹:۱۶':'مربع ۱:۱';
  const ls=rf724StructuredNews(c.news).split('\n').filter(Boolean);
  const headline=c.headline||ls[0]||'';
  const items=c.headline?ls:ls.slice(1);
- const theme=(/سهم|توزیع|ترکیب|سهم بازار/.test(c.news)&&items.length>=2)?'share':(/هوا|بارش|باران|آلودگی|دما|محیط|شهر|استان/.test(c.news)?'thematic':'financial');
+ const theme=rf01012UrgentTheme(headline,items);
  const scenes={
-  financial:'آبجکت‌های اقتصاد سه‌بعدی: نمودار میله‌ای سبز زمردی و فلش روند، نمادهای مالی و عناصر سه‌بعدی متناسب با خود موضوع. روی سکوی گرد سفید با لبه سبز ظریف. مثل مرجع بازار مالی، با فرم‌های حجمی خوش‌ساخت.',
-  thematic:'آبجکت‌های سه‌بعدی مرتبط با موضوع واقعی خبر. برای هواشناسی: ابر نرم، قطره آب، چتر، نقشه یا شاخص مربوط؛ برای آلودگی: شاخص کیفیت هوا، شهر و ذرات؛ موضوع خبر تعیین‌کننده است، نه اشیای تصادفی.',
-  share:'یک نمودار حجمی سبز روی سکوی گرد سفید با قطعات و تناسب مناسب موضوع و عناصر مکمل صنعت مربوط. هیچ برچسب و عدد روی نمودار نگذار؛ سایت بعداً داده‌های واقعی را می‌نویسد.'
+  financial:'فقط تصویرسازی موضوعی اقتصادی بساز؛ عناصر سه‌بعدی مالی مرتبط با موضوع خبر مثل نمودار، پول، سکه، شمش، فلش یا داشبورد مالی مجازند.',
+  thematic:'فقط تصویرسازی موضوعی متناسب با خبر بساز؛ برای آلودگی و هواشناسی از ابر، بارش، چتر، نقشه، شاخص سنجش، ماسک یا عناصر دقیقاً مرتبط استفاده کن و اشیای تصادفی نگذار.',
+  share:'فقط یک تصویرسازی سهم‌بندی و مقایسه‌ای بساز؛ pie chart یا قطعات حجمیِ یک کل با عناصر مرتبط صنعت/موضوع مجازند. روی نمودار هیچ عدد یا برچسبی ننویس.'
  };
  return [
   'فقط یک تصویرسازی بدون متن برای بخش تصویری اینفوگرافیک خبر فوری تولید کن؛ '+shape+'.',
-  'این تصویر یکی از مجموعه سه الگوی ثابت خبری است. دستور هنری ثابت: پس‌زمینه کرم روشن یکدست #F6F3EF، سفید گرم، سبز زمردی #00834A و سبز تیره #006D3C؛ حجم سه‌بعدی تمیز، کارت‌ها/اشیا با لبه نرم، سایه طبیعی و نور نرم استودیویی. هیچ رنگ غالب دیگری نگذار.',
+  'این تصویر برای برند خبر فوری است. دستور هنری ثابت: پس‌زمینه کرم روشن یکدست #F6F3EF، سفید گرم، سبز زمردی #00834A و سبز تیره #006D3C؛ حجم سه‌بعدی تمیز، متریال نرم، لبه‌های گرد، سایه طبیعی و نور نرم استودیویی. از این پالت خارج نشو.',
+  rf01012UrgentReferenceStyle(theme),
   scenes[theme],
-  'شیء سه‌بعدی را در مرکز قاب و بزرگ بساز، اطراف آن یک رنگ کرم یکپارچه باشد. اجزا در قاب کامل باشند و شیء از لبه قطع نشود. فضای بیهوده زیاد نگذار.',
-  'ممنوعیت قطعی: حتی یک حرف فارسی، لاتین، رقم، درصد، متن، تیتر، کارت دارای متن، لوگو، نشان خبر فوری، مهر، برند، واترمارک، هندل شبکه اجتماعی، نشانی اینترنتی یا قاب لوگو تولید نکن.',
-  'صفحه وب پس از دریافت تصویر، کارت‌ها، تمام اعداد فارسی، تیتر با فونت انتخابی و فایل اصلی لوگو را جداگانه می‌کشد؛ تو فقط تصویرسازی موضوعی بده.',
+  'ترکیب را طوری بساز که قاب تقریباً پر باشد و فضای خالی بیهوده نداشته باشد. سوژه بزرگ، واضح و کامل در قاب قرار بگیرد و از لبه‌ها بریده نشود.',
+  'ممنوعیت قطعی: هیچ لوگو، تیتر، عدد، درصد، کارت دارای متن، نشان خبر فوری، واترمارک، هندل، URL، آیکون شبکه اجتماعی یا هر نوع نوشته فارسی/لاتین/انگلیسی نکش.',
+  'صفحه وب بعداً تمام متن‌ها، کارت‌ها، اعداد فارسی، تیتر با فونت انتخابی و لوگوی اصلی را جداگانه می‌کشد؛ تو فقط تصویرسازی موضوعی و بک‌گراند مرتبط را بده.',
   'موضوع برای تصویرسازی (بدون ترسیم کلمات آن): '+headline+' | '+items.slice(0,9).join('؛ '),
-  'فقط تصویر بدون هیچ نوشته خروجی بده.'
+  'خروجی فقط تصویر بدون هیچ نوشته باشد. کیفیت باید حرفه‌ای، پریمیوم، سه‌بعدی و نزدیک به اینفوهای مرجع خبر فوری باشد؛ از ظاهر ساده، خالی یا کارت‌گونهٔ بی‌روح پرهیز کن.'
  ].join('\n');
 }
 
@@ -1387,7 +1418,7 @@ function reviewPrompt(draft){
    <label for="rf716-prompt">پرامپت نهایی (قابل ویرایش)</label>
    <textarea id="rf716-prompt" spellcheck="false" dir="rtl"></textarea>
    <p id="rf716-count" aria-live="polite"></p>
-   <p class="rf716-warning">نتیجهٔ GPT Image ممکن است شامل عدد یا متن نادرست باشد. خروجی را قبل از انتشار بررسی کن؛ لوگو و قالب PNG اصلی بدون تغییر روی آن قرار می‌گیرند.</p>
+   <p class="rf716-warning">نتیجهٔ GPT Image ممکن است شامل عدد یا متن نادرست باشد. خروجی را قبل از انتشار بررسی کن؛ در برند خبر فوری، تم مرجع به‌صورت خودکار از متن تشخیص داده می‌شود و لوگوی اصلی بدون تغییر روی خروجی قرار می‌گیرد.</p>
    <div class="rf716-actions"><button type="button" id="rf716-approve">تأیید و ساخت تصویر</button><button type="button" id="rf716-reset">بازسازی متن پیش‌فرض</button><button type="button" id="rf716-cancel">لغو</button></div>
   </section>`;
   const previousFocus=document.activeElement;
