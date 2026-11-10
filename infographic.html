@@ -297,7 +297,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01019</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01023</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -327,6 +327,12 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
           <option value="timeline">◷  خط زمانی</option><option value="cards">▣  کارت‌های اطلاعاتی</option><option value="minimal">◌  مینیمال</option>
           <option value="other">✎  سایر (پرامپت دلخواه)</option>
         </select>
+        <label for="rf01022-design-mode" style="display:block;margin:10px 0 6px;font-weight:800;color:#173962;font-size:13px">نوع چیدمان خروجی</label>
+        <select id="rf01022-design-mode" class="rf580-style-select" aria-label="چیدمان حرفه‌ای یا رندر دقیق سایت">
+          <option value="editorial" selected>★ حرفه‌ای و آزاد (تم سبز خبر فوری + لوگوی اصلی)</option>
+          <option value="verified">چیدمان دقیق سایت (متن و اعداد قابل‌کنترل)</option>
+        </select>
+        <small style="display:block;color:#65758a;line-height:1.9;margin-top:6px">حالت حرفه‌ای: طراحی پوستر خبری پرجزئیات، برای خبر فوری همیشه سبز و روی قالب اصلی؛ مدل متن را می‌نویسد و احتمال خطای املایی دارد. حالت دقیق: متن و اعداد را سایت می‌نویسد؛ در خبرهای طولانی نتیجه ممکن است فشرده شود.</small>
         <div id="rf580-other-wrap" hidden><label class="rf580-prompt-label" for="rf580-other-prompt">پرامپت طراحی دلخواه</label><textarea id="rf580-other-prompt" rows="3" placeholder="سبک، چیدمان، رنگ و جزئیات دلخواه را بنویسید..."></textarea></div>
       </div>
       <div>
@@ -442,7 +448,9 @@ function normalizeText(t){return (t||'').replace(/\r/g,'').replace(/ي/g,'ی').r
 const rf580TitleOn=document.getElementById('rf580-title-on'),rf580SubOn=document.getElementById('rf580-subtitle-on');
 const rf580TitleText=document.getElementById('rf580-title-text'),rf580SubText=document.getElementById('rf580-subtitle-text');
 const rf580Style=document.getElementById('rf580-graphic-style'),rf580Other=document.getElementById('rf580-other-prompt');
-function rf580Sync(){rf580TitleText.hidden=!rf580TitleOn.checked;rf580SubText.hidden=!rf580SubOn.checked;document.getElementById('rf580-other-wrap').hidden=rf580Style.value!=='other';render();if(window.rf702FinalImage){statusEl.textContent='سبک جدید برای ساخت بعدی ذخیره شد؛ تصویر قبلی با سبک قبلی باقی مانده است. برای تغییر تصویر، نیاز به ساخت جدید با تأیید هزینه دارید.';}}
+const rf01022DesignMode=document.getElementById('rf01022-design-mode');
+rf01022DesignMode.addEventListener('change',()=>{if(window.rf702FinalImage){statusEl.textContent='نوع چیدمان جدید فقط برای ساخت بعدی انتخاب شد؛ تصویر قبلی دوباره تولید نمی‌شود.';}else render();});
+function rf580Sync(){rf580TitleText.hidden=!rf580TitleOn.checked;rf580SubText.hidden=!rf580SubOn.checked;document.getElementById('rf580-other-wrap').hidden=rf580Style.value!=='other';render();if(window.rf702FinalImage){statusEl.textContent='انتخاب طراحی برای ساخت بعدی ذخیره شد. تصویر قبلی تغییر نمی‌کند؛ برای تولید جدید ابتدا پرامپت و هزینه را تأیید کن.';}}
 [rf580TitleOn,rf580SubOn,rf580Style].forEach(x=>x.addEventListener('change',rf580Sync));
 [rf580TitleText,rf580SubText,rf580Other].forEach(x=>x.addEventListener('input',()=>render()));
 function rf580EffectiveStyle(){
@@ -717,7 +725,7 @@ function rf581Render(){
  function rf705TemplatePath(b=brand,z=size){
   if(!rf705TemplateFiles[b])throw new Error('برند انتخابی نامعتبر است.');
   if(z!=='square'&&z!=='story')throw new Error('اندازه انتخابی باید مربع یا استوری باشد.');
-  return 'assets/infographic-templates/'+rf705TemplateFiles[b][z]+'?v=01021';
+  return 'assets/infographic-templates/'+rf705TemplateFiles[b][z]+'?v=01023';
  }
  function rf705LoadTemplate(b=brand,z=size){
   const path=rf705TemplatePath(b,z);
@@ -999,7 +1007,7 @@ function rf581Render(){
   const rows=rf01019DisplayRows(manual?raw:raw.slice(1));
   const family=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
   const theme=window.rfUrgentTheme(headline,rows);
-  const pal=rf01021Palette(headline,rows);
+  const pal={accent:'#00834A',dark:'#006D3C',pale:'#e8f5ef',warm:'#d4eee0',bg:'#F6F3EF',type:'urgent-brand'}; // Brand fixed regardless of topic
   const picked=rf580Style.value,visual=picked==='2d'?'2d':picked==='auto'?'3d':picked==='other'?rf580EffectiveStyle():picked;
   window.rf01008LastTheme=theme;
   window.rf01012LastStyleLabel='طراحی '+(visual==='2d'?'دوبعدی حرفه‌ای':'سه‌بعدی پریمیوم')+' | '+(theme==='thematic'?'موضوعی':theme==='share'?'سهم‌بندی':theme==='comparison'?'مقایسه‌ای':'اقتصادی');
@@ -1060,8 +1068,15 @@ function rf581Render(){
     ctx.drawImage(pic,0,0,pic.naturalWidth,pic.naturalHeight,0,0,W,bottom);
    }
    if(brand==='urgent'){
-    // Re-compose from original user text. This replaces the AI layout entirely.
-    rf01007DrawUrgent(pic,template);
+    if(rf01022DesignMode.value==='editorial'){
+      // Approved 01001-style newsroom art: preserve complete model composition.
+      // Never shrink the AI output into tiny website-rendered data rows.
+      // Original brand PNG is overlaid, retaining the exact official logo.
+      rf01020StampOriginalTemplate(ctx,template,W,H);
+      window.rf01012LastStyleLabel='طراحی آزاد حرفه‌ای | تصویر کامل + لوگوی اصلی';
+    }else{
+      rf01007DrawUrgent(pic,template);
+    }
    }else{
     rf702PaintLogoSafeZone(ctx,W,H,brand,size);
     rf01020StampOriginalTemplate(ctx,template,W,H);
@@ -1380,7 +1395,7 @@ function rf724StructuredNews(raw){
  // Preserve exactly the supplied facts. Do not introduce synthetic row numbers.
  return lines.map(rf724PersianDigits).join('\n');
 }
-function current(){const brandKey=rf724ActiveBrandKey();return {news:newsInput.value.trim(),brand:rf724BrandName(brandKey),brandKey,style:$('rf580-graphic-style')?.value||'auto',size:document.querySelector('.sizeBtn.active')?.dataset?.size||'square',customPrompt:($('rf580-other-prompt')?.value||'').trim(),headline:rf726NormalizeText(($('rf580-title-text')?.value||'').trim()),model:$('rf962-model')?.value||'gpt-image-2.5-flare',quality:$('rf962-quality')?.value||'low'};}
+function current(){const brandKey=rf724ActiveBrandKey();return {news:newsInput.value.trim(),brand:rf724BrandName(brandKey),brandKey,style:$('rf580-graphic-style')?.value||'auto',designMode:$('rf01022-design-mode')?.value||'editorial',size:document.querySelector('.sizeBtn.active')?.dataset?.size||'square',customPrompt:($('rf580-other-prompt')?.value||'').trim(),headline:rf726NormalizeText(($('rf580-title-text')?.value||'').trim()),model:$('rf962-model')?.value||'gpt-image-2.5-flare',quality:$('rf962-quality')?.value||'low'};}
 function rf724LogoSafeZoneMeta(brandKey,sizeKey){
  const story=sizeKey==='story';
  const zones={
@@ -1436,13 +1451,31 @@ function rf01003UrgentPrompt(c){
  const headline=c.headline||ls[0]||'';
  const items=c.headline?ls:ls.slice(1);
  const theme=window.rfUrgentTheme(headline,items);
+ if(c.designMode==='editorial'){
+  const flat=c.style==='2d'||(c.style==='other'&&/دو.?بعد|فلت|وکتور/.test(c.customPrompt));
+  const mode=flat?'کاملاً دوبعدی، طراحی گرافیکی ادیتوریال سطح بالا با لایه‌بندی، تایپوگرافی جسور، کنتراست و تزئینات هدفمند؛ هیچ رندر سه‌بعدی یا CGI نساز.':'سه‌بعدی بسیار حرفه‌ای با سوژه‌های بزرگ واقعی، متریال فوتورئال PBR، نورپردازی سینمایی، سایه و عمق طبیعی، عکس‌های محصول با وضوح تبلیغاتی؛ نه کارت‌های مینیاتوری و نه جدول کوچک.';
+  const subject=rf01014UrgentSubjectGuide(headline,items);
+  const news=[headline,...items].join('\n');
+  return [
+   'یک اینفوگرافیک خبری فارسی لوکس، یکپارچه و حرفه‌ای داخل قالب اصلی «خبر فوری» بساز. ترکیب‌بندی زنده، سوژه بزرگ، کارت‌های متنوع و تایپوگرافی قدرتمند مثل نمونه حرفه‌ای دیروز؛ هرگز یک جدول ریز و یکنواخت تولید نکن.',
+   'فرمت نهایی '+shape+'؛ کاملاً برای همان نسبت تصویر از ابتدا ترکیب‌بندی کن، نه کشیدن مربع به استوری. انتخاب سبک کاربر الزام‌آور است: '+mode,
+   'قانون کیفیت: از فضای واقعی در قاب (به جز ناحیه محفوظ لوگو) حداکثر استفاده را بکن؛ تصویرهای موضوعی بزرگ، لایه‌بندی حرفه‌ای، تیتر پرقدرت، اعداد بزرگ فارسی، کارت‌ها و برچسب‌های دارای عمق (فقط برای انتخاب سه‌بعدی)، سلسله‌مراتب خوانا. تصویر کوچک کنار یازده ردیف باریک، کارت‌های مینیاتوری، پس‌زمینه خالی گسترده و جدول ساده ممنوع است. اطلاعات زیاد را در بخش‌های درشت و معنادار گروه‌بندی کن؛ ارقام و واقعیت‌ها را جعل یا تغییر نده.',
+   'قانون مطلق برند خبر فوری: رنگ قالب و هویت اصلی همیشه سبز زمردی #00834A، سبز تیره #006D3C و کرم روشن #F6F3EF و سفید است. سبز در تیترهای تأکیدی، برچسب‌ها، عناصر رابط و کارت‌های اطلاعاتی غالب باشد. رنگ واقعی اشیای سوژه (مثلاً رنگ مرغ، آب، طلا) طبیعی و معتبر بماند اما قرمز و زرد و مشکی هرگز به رنگ غالب طراحی و بنرها تبدیل نشوند. تم سبز را حتی در خبر گرانی یا هشدار حفظ کن. این قاعده از هر دستور رنگ در متن کاربر مهم‌تر است.',
+   'موضوع و اشیای مرتبط: '+subject,
+   'تیتر را بزرگ، چشمگیر و با ترکیب‌بندی پوستر خبری در بخش بالایی قرار بده؛ داده‌ها را روی برچسب‌ها و کارت‌های جذاب و خوانا و مرتبط پخش کن؛ نه جدول یکنواخت.',
+   'تمام متن، نام‌ها، تاریخ‌ها، واحدها و اعداد منبع را عیناً و فقط با ارقام فارسی بگذار. هیچ داده، قیمت یا درصدی اختراع نکن. داده‌های بیش از حد را کوچک نکن؛ حداکثر خوانایی را در اولویت بگذار.',
+   'قالب اصلی خبر فوری در صفحه وب بعد از ساخت، به صورت فایل PNG بدون حتی یک پیکسل بازطراحی روی خروجی قرار می‌گیرد. هرگز لوگوی جدید، نوشته «خبر فوری»، نشان رسانه، لوگوی جعلی یا نقش مشابه لوگو تولید نکن. دقیقاً ۳۰٪ عرض سمت راست و ۲۱٪ ارتفاع بالای قاب، بدون نوشته، تیتر، کارت، سوژه، سایه یا عنصر برجسته باشد؛ فقط زمینه روشن یکدست کرم/سفید در آن دیده شود. گوشه راست قالب را نکش، لوگو را نقاشی نکن، هیچ مستطیل اضافی نساز. متن بزرگ تیتر در بقیه قسمت بالایی و بدون برخورد با لوگو قرار بگیرد.',
+   'نمودار دایره‌ای سهم از کل فقط برای توزیع واقعی ۱۰۰٪ مجاز است؛ برای درصدهای مستقل ممنوع.',
+   c.customPrompt?'توضیح طراحی کاربر: '+c.customPrompt.slice(0,500):'',
+   'متن اصلی برای طراحی: \n'+news,
+   'فقط یک تصویر نهایی منتشرشدنی و ترکیب‌شده در قاب بساز؛ نه ماکت و نه تصویرسازیِ تنها.'
+  ].filter(Boolean).join('\n');
+ }
  const flat=c.style==='2d'||(c.style==='other'&&/دو.?بعد|فلت|وکتور/.test(c.customPrompt));
  const styleDirective=flat
   ?'سبک انتخابی کاربر ۲بعدی است: تصویرسازی دوبعدیِ حرفه‌ای و پرجزئیات، وکتور ادیتوریال با اشکال تخت و مرزبندی دقیق، لایه‌بندی خلاق، ریتم رنگی پویا؛ بدون حجم سه‌بعدی، رندر CGI، سکوی سرامیکی، نور حجمی یا پرسپکتیو سه‌بعدی. دوبعدی به معنی ساده یا کم‌جزئیات نیست.'
   :'سبک انتخابی کاربر سه‌بعدی یا خودکار است: خروجی فوق حرفه‌ای، فوتورئال و سینمایی؛ سوژه اصلی بسیار بزرگ و چشمگیر، هندسه حجمی واقعی، متریال PBR، انعکاس‌ها، عمق میدان دقیق، نورپردازی استودیویی، سکوی سرامیکی چندلایه، سایه‌های طبیعی، جزئیات میکروسکوپی، رنگ‌های غنی و کنتراست کنترل‌شده. از رندر کوچک، منظره تخت، ایزومتریک ساده، انیمیشن کارتونی و فضای خالی بزرگ جلوگیری کن.';
- const palette=/مرغ|قیمت|گرانی|تومان|گوشت|تورم/.test([headline,...items].join(' '))
-  ?'موضوع گرانی یا قیمت: استفاده هنرمندانه از قرمز تیره، زرد طلایی و مشکی در سوژه و تاکیدها؛ اشیای واقعی مرتبط، ظاهر خبری پرقدرت و لوکس.'
-  :'موضوع طبیعی/آبی یا عمومی: کرم روشن #F6F3EF، سبز زمردی #00834A، سبز تیره #006D3C، سفید سرامیکی و رنگ واقعی سوژه. رنگ‌ها زنده، دقیق و غنی باشند.';
+ const palette='تم برند خبر فوری ثابت و اجباری است: سبز زمردی #00834A، سبز تیره #006D3C، کرم روشن #F6F3EF و سفید سرامیکی. سبز همیشه رنگ غالب پوستر است، حتی اخبار قیمت یا گرانی؛ از قرمز/زرد به عنوان تم اصلی استفاده نکن. رنگ واقعی سوژه می‌تواند طبیعی باقی بماند.';
  const layout=c.size==='story'
   ?'سوژه اصلی بزرگ، در نیمه پایین راست با جزئیات فراوان؛ ۵۳٪ سمت چپ برای داده‌های سایت و بالای قاب برای تیتر و لوگوی اصلی خالی باشد. برای استوری ترکیب را دوباره عمودی طراحی کن؛ تصویر مربع کشیده‌شده تولید نکن.'
   :'سوژه اصلی بزرگ و غنی در نیمه راست و مرکز پایین، تقریباً تمام منطقه اختصاصی را پر کند؛ ۵۲٪ چپ فقط برای کارت‌های داده و بالای کادر فقط برای تیتر و لوگوی اصلی محفوظ بماند.';
@@ -1450,7 +1483,7 @@ function rf01003UrgentPrompt(c){
   'فقط تصویرسازی ممتاز برای اینفوگرافیک خبری بساز. خروجی '+shape+'؛ انتخاب کاربر مقدم بر پیش‌فرض‌ها است.',
   styleDirective,palette,rf01014UrgentSubjectGuide(headline,items),layout,
   'استاندارد زیبایی: کیفیت بصری هم‌سطح پوسترهای خبری حرفه‌ای و تبلیغات تجاری لوکس، پرجزئیات، ترکیب‌بندی چشمگیر و موضوع‌محور؛ طرح ساده و خام مطلقاً ممنوع است.',
-  'در گوشه بالای راست تا ۳۰٪ عرض و ۲۱٪ ارتفاع فقط پس‌زمینه خالی بگذار، هیچ مستطیل مصنوعی لوگو یا طرح تزئینی نساز.',
+  'تم سبز خبر فوری و قالب اصلی ثابت است؛ در گوشه بالای راست تا ۳۰٪ عرض و ۲۱٪ ارتفاع فقط پس‌زمینه کرم روشن هموار بگذار، هیچ مستطیل مصنوعی لوگو یا طرح تزئینی نساز.',
   'هیچ کارت آماری، جدول، تیتر، کلمه، حرف، رقم، درصد، نماد رسانه، واترمارک یا URL نساز. این عناصر را وب‌سایت با فونت انتخابی، ارقام فارسی و لوگوی PNG اصلی اضافه می‌کند.',
   'دایره سهم از کل فقط در صورتی مجاز است که واقعاً اجزای یک کل ۱۰۰٪ باشند؛ در بقیه موارد نمودار دایره‌ای ممنوع.',
   c.customPrompt?'ترجیح اضافه کاربر (پس از رعایت قواعد متن و لوگو): '+c.customPrompt.slice(0,500):'',
@@ -1564,12 +1597,24 @@ btn.addEventListener('click',async evt=>{
  const sig=JSON.stringify(c);
  const reviewedPrompt=await reviewPrompt(promptFor(c));
  if(reviewedPrompt===null){say('ساخت لغو شد؛ هیچ درخواستی به AvalAI ارسال نشد.');return;}
+ // 01023: FREE preflight: validate the original logo asset for selected brand/format.
+ // Never charge AvalAI if the required original template is absent or invalid.
+ try{
+   if(typeof window.rf705LoadTemplate!=='function')throw Error('تابع قالب اصلی در سایت بارگذاری نشده است');
+   const originalTemplate=await window.rf705LoadTemplate(c.brandKey,c.size);
+   if(!originalTemplate || !originalTemplate.naturalWidth || !originalTemplate.naturalHeight)throw Error('فایل قالب اصلی خراب یا خالی است');
+   const expectedRatio=c.size==='story'?1080/1920:1;
+   const sourceRatio=originalTemplate.naturalWidth/originalTemplate.naturalHeight;
+   if(c.size==='story' && (sourceRatio<expectedRatio-0.01 || sourceRatio>0.9))throw Error('ابعاد قالب استوری با فایل اصلی سازگار نیست');
+   if(c.size==='square' && Math.abs(sourceRatio-1)>0.01)throw Error('قالب مربعی با فایل اصلی سازگار نیست');
+   if(!document.getElementById('cv')?.getContext('2d'))throw Error('Canvas در مرورگر فعال نیست');
+ }catch(e){say('ساخت پولی شروع نشد؛ قالب اصلی را اصلاح کن: '+(e?.message||e));return;}
  // Check again after user finished reviewing; no stale result or simultaneous request.
  if(running)return;
  const approvedSignature=JSON.stringify({selection:c,prompt:reviewedPrompt});
  const approvedPending=getPending();
  if(approvedPending?.signature===approvedSignature){say('این پرامپت قبلاً ارسال شده و نتیجه نامشخص است. برای جلوگیری از هزینه دوباره، ابتدا گزارش مصرف AvalAI را بررسی کن.');return;}
- if(!window.confirm('پرامپت تأیید شد. اکنون ساخت تصویر با مدل '+c.model+' از AvalAI انجام شود؟ این عملیات از اعتبار API AvalAI هزینه کم می‌کند.')){say('ساخت لغو شد؛ درخواستی ارسال نشد.');return;}
+ if(!window.confirm('پرامپت تأیید شد. اکنون ساخت تصویر با مدل '+c.model+' از AvalAI انجام شود؟ این عملیات از اعتبار API AvalAI هزینه کم می‌کند. قالب اصلی و ابعاد بدون هزینه بررسی شدند؛ کیفیت خروجی مدل هنوز تضمین نیست.')){say('ساخت لغو شد؛ درخواستی ارسال نشد.');return;}
  running=true;btn.disabled=true;savePending({signature:approvedSignature,time:Date.now()});
  let paidImageUrl='';
  try{
@@ -1623,7 +1668,7 @@ btn.addEventListener('click',async evt=>{
    await window.rf705LoadTemplate();
    if(typeof window.rf702DrawFinal!=='function')throw new Error('تابع نمایش خروجی در این صفحه در دسترس نیست.');
    window.rf702DrawFinal();
-   say('✓ تصویرسازی دریافت شد؛ تیتر و داده‌ها با فونت انتخابی و لوگوی ثابت سایت ترکیب شدند.'+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
+   say((c.brandKey==='urgent'&&c.designMode==='editorial'?'✓ طراحی حرفه‌ای کامل دریافت شد؛ لوگوی اصلی بدون بازطراحی روی خروجی قرار گرفت. متن و ارقام تولیدی مدل را قبل از انتشار دقیق بررسی کن.':'✓ تصویرسازی دریافت شد؛ تیتر و داده‌ها با فونت انتخابی و لوگوی ثابت سایت ترکیب شدند.')+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
   }catch(renderError){
    console.error('RF0728 image received but local composition failed',renderError);
    say('✓ تصویر از GPT Image از طریق AvalAI دریافت شده، ولی نمایش یا بارگذاری قالب در سایت خطا دارد: '+(renderError?.message||'خطای نامشخص')+' — از ساخت مجدد تصویر پولی خودداری کن؛ ابتدا فایل قالب را بررسی کن.');
