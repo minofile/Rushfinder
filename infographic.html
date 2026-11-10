@@ -1974,4 +1974,65 @@ btn.addEventListener('click',async evt=>{
 #rf962-image-model select,#rf962-image-model input{width:100%;max-width:100%;min-height:44px;box-sizing:border-box;border:1px solid #d3dfed;border-radius:10px;padding:8px 12px;background:#fff;color:#1b3a5b;direction:rtl}
 #rf962-image-model .rf962-help{font-size:11px;color:#59748f;line-height:1.9;margin:1px 0 0}
 #rf607-test-area{margin-top:0!important}
-</style></body></html>
+</style>
+<script id="rf01031-visual-cards-patch">
+(function(){
+ function rf01031BrandPalette(brandKey, headline, items){
+  if(brandKey==='mashhad') return {accent:'#E0A400',dark:'#6D4A00',pale:'#FFF7DA',warm:'#FFE9A3',bg:'#FFFDF4'};
+  if(brandKey==='jaryan') return {accent:'#E2B719',dark:'#1F2327',pale:'#FFFBE6',warm:'#F5E7A7',bg:'#FFFDF7'};
+  if(brandKey==='farda') return {accent:'#CF2C50',dark:'#7F1830',pale:'#FFF3F6',warm:'#FFD8E3',bg:'#FFF8FA'};
+  const learned = typeof rf01021Palette==='function' ? rf01021Palette(headline||'', items||[]) : null;
+  return learned || {accent:'#00834A',dark:'#006D3C',pale:'#E8F5EF',warm:'#D7EEE0',bg:'#F6F3EF'};
+ }
+ function rf01031CardVisualMode(){
+  try{
+   const picked = (window.rf580Style && rf580Style.value) || 'auto';
+   if(picked==='2d' || picked==='table' || picked==='chart' || picked==='comparison' || picked==='timeline' || picked==='minimal') return '2d';
+   if(picked==='other') return (typeof rf580EffectiveStyle==='function' && rf580EffectiveStyle()==='2d') ? '2d' : '3d';
+   return '3d';
+  }catch(_){ return '3d'; }
+ }
+ window.rf01030DrawExactCards = function(){
+  const raw = (typeof normalizeText==='function'?normalizeText(input.value||''):(input.value||'')).trim();
+  if(!raw) return;
+  const manual = (window.rf580TitleOn && rf580TitleOn.checked && window.rf580TitleText) ? (typeof normalizeText==='function'?normalizeText(rf580TitleText.value):rf580TitleText.value||'') : '';
+  const data = window.rf01024CurateNews ? window.rf01024CurateNews(raw, manual, size) : {headline:'',items:raw.split(/\n+/).slice(0,size==='story'?7:5)};
+  const items = (data.items||[]).map(v=> (typeof rf584PersianDigits==='function'?rf584PersianDigits(String(v||'')):String(v||'')).trim()).filter(Boolean);
+  if(!items.length) return;
+  const W=cv.width,H=cv.height,story=size==='story',isFarda=brand==='farda';
+  const pal = rf01031BrandPalette(brand, data.headline||'', items);
+  const family=(window.rf584FontMap && rf584FontMap[rf584FontSelector.value]) || 'RF584Doran';
+  const visual = rf01031CardVisualMode();
+  const top = H*(story ? 0.59 : 0.61);
+  const bottom = H*(isFarda ? (story ? 0.855 : 0.85) : (story ? 0.962 : 0.956));
+  const left = W*0.037, totalW = W*0.926;
+  const count = items.length;
+  const cols = story ? 2 : (count>=5 ? 3 : count===1 ? 1 : 2);
+  const rows = Math.ceil(count/cols);
+  const gapX = story ? 18 : 16;
+  const gapY = story ? 18 : 17;
+  const cardW = (totalW - (cols-1)*gapX) / cols;
+  let cardH = (bottom - top - (rows-1)*gapY) / rows;
+  cardH = Math.max(cardH, story ? 122 : 110);
+  if(cardH < 96){
+   if(window.statusEl) statusEl.textContent='برای نمایش خوانا و تصویری کارت‌ها، تعداد نکات را در بازبینی کمی کمتر کن.';
+   return;
+  }
+  ctx.save();
+  try{
+   ctx.direction='rtl';
+   items.forEach((item, i)=>{
+    const col=i%cols, row=Math.floor(i/cols);
+    const x=left + col*(cardW+gapX), y=top + row*(cardH+gapY);
+    if(typeof rf01019RenderCard==='function'){
+      rf01019RenderCard(item, x, y, cardW, cardH, family, i, visual, pal);
+    }
+   });
+  } finally { ctx.restore(); }
+ };
+ // Refresh the preview immediately when this patch is loaded.
+ try{ if(typeof render==='function') render(); }catch(_e){}
+})();
+</script>
+
+</body></html>
