@@ -297,7 +297,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01024</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01026</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -366,7 +366,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 </div>
 <div id="rf1000-brand-lock" role="status" style="background:#eaf8f0;color:#17693e;border:1px solid #c2ead4;border-radius:11px;padding:10px 13px;font-size:12px;line-height:1.9;font-weight:700">🔒 لوگو و قالب انتخابی ثابت هستند؛ هوش مصنوعی فقط محتوای اینفوگرافیک را تولید می‌کند.</div>
 <div id="rf607-test-area"><button type="button" id="rf607-test-button">بررسی اتصال AvalAI</button><span id="rf607-test-output" role="status" aria-live="polite"></span></div>
-<div class="actions rf601-actions"><button id="generate" class="primary">✦ ساخت اینفوگرافیک</button><button id="reroll" class="ghost">↻ طرح متفاوت</button></div><div id="rf594-status" role="status" aria-live="polite" style="font-size:12px;line-height:1.9;color:#27546b;white-space:pre-wrap;margin-top:7px" hidden></div>
+<div class="actions rf601-actions"><button id="generate" class="primary">✦ ساخت اینفوگرافیک</button></div><div id="rf594-status" role="status" aria-live="polite" style="font-size:12px;line-height:1.9;color:#27546b;white-space:pre-wrap;margin-top:7px" hidden></div>
     </section>
     <section class="panel">
       <div class="previewHead"><h2 class="rf550-heading"><span class="rf550-head-icon rf550-eye" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.4-6 10-6 10 6 10 6-3.4 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3.1"/></svg></span>پیش‌نمایش</h2><div><span id="metaLabel" class="previewMeta">۱۰۸۰ × ۱۰۸۰ | تشخیص خودکار چیدمان</span><span id="dimensions" hidden>۱۰۸۰ × ۱۰۸۰</span><span id="layoutName" hidden>تشخیص خودکار چیدمان</span></div></div>
@@ -443,7 +443,7 @@ function updateMeta(){const d=(dimsEl.textContent||'').trim();let l=(layoutName.
 Object.entries(brands).forEach(([k,v])=>{const b=document.createElement('button');b.className='brandBtn'+(k===brand?' active':'');b.innerHTML='<span class="brandTxt"><strong>'+v.name+'</strong><span>تم اختصاصی '+v.name+'</span></span><span class="brandIconBox"></span>';b.onclick=()=>{window.rf1000ComposedReady=false;brand=k;brandsEl.querySelectorAll('.brandBtn').forEach(x=>x.classList.remove('active'));b.classList.add('active');render()};brandsEl.appendChild(b)});
 document.querySelectorAll('.sizeBtn').forEach(btn=>btn.onclick=()=>{window.rf1000ComposedReady=false;size=btn.dataset.size;document.querySelectorAll('.sizeBtn').forEach(x=>x.classList.toggle('active',x===btn));render()});
 document.getElementById('generate').onclick=()=>{variant++;render()};
-document.getElementById('reroll').onclick=()=>{variant++;render();statusEl.textContent='طرح حرفه‌ای با چیدمان متفاوت ساخته شد.'};
+// 01026: «طرح متفاوت» button removed at user request.
 function normalizeText(t){return (t||'').replace(/\r/g,'').replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/ۀ/g,'ه').replace(/\s+:/g,':').replace(/:+/g,':').replace(/\u200c{2,}/g,'‌').replace(/می باشد/g,'می‌باشد').replace(/نمی باشد/g,'نمی‌باشد').replace(/[ \t]+$/gm,'').trim()}
 const rf580TitleOn=document.getElementById('rf580-title-on'),rf580SubOn=document.getElementById('rf580-subtitle-on');
 const rf580TitleText=document.getElementById('rf580-title-text'),rf580SubText=document.getElementById('rf580-subtitle-text');
@@ -725,7 +725,7 @@ function rf581Render(){
  function rf705TemplatePath(b=brand,z=size){
   if(!rf705TemplateFiles[b])throw new Error('برند انتخابی نامعتبر است.');
   if(z!=='square'&&z!=='story')throw new Error('اندازه انتخابی باید مربع یا استوری باشد.');
-  return 'assets/infographic-templates/'+rf705TemplateFiles[b][z]+'?v=01025';
+  return 'assets/infographic-templates/'+rf705TemplateFiles[b][z]+'?v=01026';
  }
  function rf705LoadTemplate(b=brand,z=size){
   const path=rf705TemplatePath(b,z);
@@ -1427,21 +1427,25 @@ function rf724StructuredNews(raw){
  return lines.map(rf724PersianDigits).join('\n');
 }
 function current(){const brandKey=rf724ActiveBrandKey();return {news:newsInput.value.trim(),brand:rf724BrandName(brandKey),brandKey,style:$('rf580-graphic-style')?.value||'auto',designMode:$('rf01022-design-mode')?.value||'editorial',size:document.querySelector('.sizeBtn.active')?.dataset?.size||'square',customPrompt:($('rf580-other-prompt')?.value||'').trim(),headline:rf726NormalizeText(($('rf580-title-text')?.value||'').trim()),model:$('rf962-model')?.value||'gpt-image-2.5-flare',quality:$('rf962-quality')?.value||'low'};}
+// 01026: Logos are authentic transparent PNG overlays. Background must continue
+// beneath the logo, not turn into a light-color placeholder rectangle.
 function rf724LogoSafeZoneMeta(brandKey,sizeKey){
  const story=sizeKey==='story';
  const zones={
-  urgent:{x:story?.73:.70,y:0,w:story?.27:.30,h:story?.20:.205,fill:'#f6f4f0',prompt:'ناحیه رزرو لوگو: مستطیل ۳۰٪ راستِ تصویر در ۲۱٪ بالای کادر. هیچ بخشی از تیتر یا نوشته، عدد، جدول یا شکل مهم وارد این مستطیل نشود. تیتر دو انتخاب مجاز دارد: یا فقط در ۶۸٪ سمت چپ کادر با شکست سطر مناسب قرار بگیرد، یا تماماً پایین‌تر از ۲۲٪ ارتفاع آغاز شود. تیتر بلند را هرگز در یک خط تا زیر لوگو ادامه نده. در این محدوده فقط پس‌زمینه روشن یکدست باشد.'},
-  mashhad:{x:story?.745:.735,y:.018,w:story?.235:.245,h:story?.182:.2,fill:'#fffdf6',prompt:'در ۲۴٪ عرض و ۲۰٪ ارتفاع گوشهٔ بالای راست، هیچ تیتر، عدد، آیکون یا عنصر مهمی نگذار؛ این ناحیه باید ساده و خلوت بماند تا لوگوی ثابت اخبار مشهد روی نوشته نیفتد.'},
-  jaryan:{x:story?.745:.735,y:.018,w:story?.235:.245,h:story?.182:.2,fill:'#fffdf7',prompt:'در ۲۴٪ عرض و ۲۰٪ ارتفاع گوشهٔ بالای راست، هیچ تیتر، عدد، آیکون یا عنصر مهمی نگذار؛ این ناحیه باید ساده و خلوت بماند تا لوگوی ثابت جریان روی نوشته نیفتد.'},
-  farda:{x:.02,y:story?.84:.855,w:story?.31:.29,h:story?.12:.105,fill:'#fff3f6',prompt:'در ۳۰٪ عرض و ۱۲٪ ارتفاع گوشهٔ پایین چپ، هیچ تیتر، عدد، جدول یا عنصر مهمی نگذار؛ این ناحیه باید ساده و خلوت بماند تا لوگوی ثابت خبرفردا روی متن نیفتد.'}
+  urgent:{x:story?.73:.70,y:0,w:story?.27:.30,h:story?.20:.205},
+  mashhad:{x:story?.745:.735,y:.018,w:story?.235:.245,h:story?.182:.20},
+  jaryan:{x:story?.745:.735,y:.018,w:story?.235:.245,h:story?.182:.20},
+  farda:{x:.02,y:story?.84:.855,w:story?.31:.29,h:story?.12:.105}
  };
  return zones[brandKey]||null;
 }
-function rf724LogoSafePrompt(brandKey,sizeKey){return rf724LogoSafeZoneMeta(brandKey,sizeKey)?.prompt||'';}
+function rf724LogoSafePrompt(brandKey,sizeKey){
+ const z=rf724LogoSafeZoneMeta(brandKey,sizeKey);
+ const where=brandKey==='farda'?'گوشه پایین چپ':'گوشه بالای راست';
+ return 'قالب لوگوی رسمی بعداً روی خروجی قرار می‌گیرد. بافت طبیعی تصویر، نور، پس‌زمینه و منظره را تا هر چهار لبه و دقیقاً پشت لوگوی '+where+' بدون هیچ بریدگی یا تغییر رنگ ادامه بده. زیر لوگو هیچ فضای سفید، کرم روشن مصنوعی، لکه، کادر، هاله، نوار یا محل مخصوص نشان ایجاد نکن. فقط تیتر و عدد و جزئیات حیاتی را از خود ناحیه لوگو دور نگه دار. هیچ لوگو یا نوشته برند جدیدی تولید نکن.';
+}
 function rf724PaintLogoSafeZone(ctx,W,H,brandKey,sizeKey){
- const z=rf724LogoSafeZoneMeta(brandKey,sizeKey);if(!z)return;
- const x=Math.round(W*z.x),y=Math.round(H*z.y),w=Math.round(W*z.w),h=Math.round(H*z.h),r=Math.max(8,Math.round(Math.min(w,h)*.08));
- ctx.save();ctx.fillStyle=z.fill;ctx.beginPath();if(typeof ctx.roundRect==='function'){ctx.roundRect(x,y,w,h,r);ctx.fill();}else{ctx.fillRect(x,y,w,h);}ctx.restore();
+ // Intentionally no-op: never paint solid color under a transparent logo.
 }
 function rf01003UrgentLayoutGuide(news){
  const raw=String(news||'');
@@ -1490,12 +1494,12 @@ function rf01003UrgentPrompt(c){
   return [
    'یک اینفوگرافیک خبری فارسی لوکس، یکپارچه و حرفه‌ای داخل قالب اصلی «خبر فوری» بساز. ترکیب‌بندی زنده، سوژه بزرگ، کارت‌های متنوع و تایپوگرافی قدرتمند مثل نمونه حرفه‌ای دیروز؛ هرگز یک جدول ریز و یکنواخت تولید نکن.',
    'فرمت نهایی '+shape+'؛ کاملاً برای همان نسبت تصویر از ابتدا ترکیب‌بندی کن، نه کشیدن مربع به استوری. انتخاب سبک کاربر الزام‌آور است: '+mode,
-   'قانون کیفیت: از فضای واقعی در قاب (به جز ناحیه محفوظ لوگو) حداکثر استفاده را بکن؛ تصویرهای موضوعی بزرگ، لایه‌بندی حرفه‌ای، تیتر پرقدرت، اعداد بزرگ فارسی، کارت‌ها و برچسب‌های دارای عمق (فقط برای انتخاب سه‌بعدی)، سلسله‌مراتب خوانا. تصویر کوچک کنار یازده ردیف باریک، کارت‌های مینیاتوری، پس‌زمینه خالی گسترده و جدول ساده ممنوع است. اطلاعات زیاد را در بخش‌های درشت و معنادار گروه‌بندی کن؛ ارقام و واقعیت‌ها را جعل یا تغییر نده.',
+   'قانون کیفیت: از تمام قاب با پس‌زمینه یکپارچه و بافت پیوسته (از جمله پشت لایه لوگو) استفاده کن؛ تصویرهای موضوعی بزرگ، لایه‌بندی حرفه‌ای، تیتر پرقدرت، اعداد بزرگ فارسی، کارت‌ها و برچسب‌های دارای عمق (فقط برای انتخاب سه‌بعدی)، سلسله‌مراتب خوانا. تصویر کوچک کنار یازده ردیف باریک، کارت‌های مینیاتوری، پس‌زمینه خالی گسترده و جدول ساده ممنوع است. اطلاعات زیاد را در بخش‌های درشت و معنادار گروه‌بندی کن؛ ارقام و واقعیت‌ها را جعل یا تغییر نده.',
    'قانون مطلق برند خبر فوری: رنگ قالب و هویت اصلی همیشه سبز زمردی #00834A، سبز تیره #006D3C و کرم روشن #F6F3EF و سفید است. سبز در تیترهای تأکیدی، برچسب‌ها، عناصر رابط و کارت‌های اطلاعاتی غالب باشد. رنگ واقعی اشیای سوژه (مثلاً رنگ مرغ، آب، طلا) طبیعی و معتبر بماند اما قرمز و زرد و مشکی هرگز به رنگ غالب طراحی و بنرها تبدیل نشوند. تم سبز را حتی در خبر گرانی یا هشدار حفظ کن. این قاعده از هر دستور رنگ در متن کاربر مهم‌تر است.',
    'موضوع و اشیای مرتبط: '+subject,
    'تیتر را بزرگ، چشمگیر و با ترکیب‌بندی پوستر خبری در بخش بالایی قرار بده؛ داده‌ها را روی برچسب‌ها و کارت‌های جذاب و خوانا و مرتبط پخش کن؛ نه جدول یکنواخت.',
    'فقط نکات منتخب زیر را در این تک‌تصویر استفاده کن. متن خام خبر نزد کاربر حفظ شده و موارد کم‌اولویت عمداً برای خوانایی به این تصویر فرستاده نمی‌شوند؛ هیچ عدد، واحد یا نکته جدید اختراع نکن. داده‌های منتخب را عیناً و با رقم فارسی بنویس.',
-   'قالب اصلی خبر فوری در صفحه وب بعد از ساخت، به صورت فایل PNG بدون حتی یک پیکسل بازطراحی روی خروجی قرار می‌گیرد. هرگز لوگوی جدید، نوشته «خبر فوری»، نشان رسانه، لوگوی جعلی یا نقش مشابه لوگو تولید نکن. دقیقاً ۳۰٪ عرض سمت راست و ۲۱٪ ارتفاع بالای قاب، بدون نوشته، تیتر، کارت، سوژه، سایه یا عنصر برجسته باشد؛ فقط زمینه روشن یکدست کرم/سفید در آن دیده شود. گوشه راست قالب را نکش، لوگو را نقاشی نکن، هیچ مستطیل اضافی نساز. متن بزرگ تیتر در بقیه قسمت بالایی و بدون برخورد با لوگو قرار بگیرد.',
+   'قالب اصلی خبر فوری در صفحه وب بعد از ساخت، به صورت فایل PNG شفاف و بدون بازطراحی روی تصویر قرار می‌گیرد. لوگوی خبر فوری را دوباره نقاشی نکن. بافت و تصویر پس‌زمینه به‌صورت پیوسته تا پشت لوگوی گوشه بالا راست ادامه داشته باشد؛ هیچ لکه سفید یا کرم مخصوص لوگو، باکس لوگو، کادر خالی، محوشدگی موضعی یا بریدگی رنگ تولید نکن. تیتر و آمار مهم در ناحیه خود لوگو قرار نگیرند؛ متن را در فضای باقی‌مانده خوانا و حرفه‌ای بچین.',
    'نمودار دایره‌ای سهم از کل فقط برای توزیع واقعی ۱۰۰٪ مجاز است؛ برای درصدهای مستقل ممنوع.',
    c.customPrompt?'توضیح طراحی کاربر: '+c.customPrompt.slice(0,500):'',
    'متن اصلی برای طراحی: \n'+news,
@@ -1508,13 +1512,13 @@ function rf01003UrgentPrompt(c){
   :'سبک انتخابی کاربر سه‌بعدی یا خودکار است: خروجی فوق حرفه‌ای، فوتورئال و سینمایی؛ سوژه اصلی بسیار بزرگ و چشمگیر، هندسه حجمی واقعی، متریال PBR، انعکاس‌ها، عمق میدان دقیق، نورپردازی استودیویی، سکوی سرامیکی چندلایه، سایه‌های طبیعی، جزئیات میکروسکوپی، رنگ‌های غنی و کنتراست کنترل‌شده. از رندر کوچک، منظره تخت، ایزومتریک ساده، انیمیشن کارتونی و فضای خالی بزرگ جلوگیری کن.';
  const palette='تم برند خبر فوری ثابت و اجباری است: سبز زمردی #00834A، سبز تیره #006D3C، کرم روشن #F6F3EF و سفید سرامیکی. سبز همیشه رنگ غالب پوستر است، حتی اخبار قیمت یا گرانی؛ از قرمز/زرد به عنوان تم اصلی استفاده نکن. رنگ واقعی سوژه می‌تواند طبیعی باقی بماند.';
  const layout=c.size==='story'
-  ?'سوژه اصلی بزرگ، در نیمه پایین راست با جزئیات فراوان؛ ۵۳٪ سمت چپ برای داده‌های سایت و بالای قاب برای تیتر و لوگوی اصلی خالی باشد. برای استوری ترکیب را دوباره عمودی طراحی کن؛ تصویر مربع کشیده‌شده تولید نکن.'
-  :'سوژه اصلی بزرگ و غنی در نیمه راست و مرکز پایین، تقریباً تمام منطقه اختصاصی را پر کند؛ ۵۲٪ چپ فقط برای کارت‌های داده و بالای کادر فقط برای تیتر و لوگوی اصلی محفوظ بماند.';
+  ?'سوژه اصلی بزرگ، در نیمه پایین راست با جزئیات فراوان؛ ۵۳٪ سمت چپ برای داده‌های سایت اختصاص یابد؛ تصویر پس‌زمینه در همه جای قاب از جمله پشت لوگو امتداد یابد. برای استوری ترکیب را دوباره عمودی طراحی کن؛ تصویر مربع کشیده‌شده تولید نکن.'
+  :'سوژه اصلی بزرگ و غنی در نیمه راست و مرکز پایین، تقریباً تمام منطقه اختصاصی را پر کند؛ ۵۲٪ چپ برای کارت‌های داده و بالای کادر برای تیتر خوانا باشد؛ پس‌زمینه در تمام قاب از جمله پشت لوگو پیوسته باشد.';
  return [
   'فقط تصویرسازی ممتاز برای اینفوگرافیک خبری بساز. خروجی '+shape+'؛ انتخاب کاربر مقدم بر پیش‌فرض‌ها است.',
   styleDirective,palette,rf01014UrgentSubjectGuide(headline,items),layout,
   'استاندارد زیبایی: کیفیت بصری هم‌سطح پوسترهای خبری حرفه‌ای و تبلیغات تجاری لوکس، پرجزئیات، ترکیب‌بندی چشمگیر و موضوع‌محور؛ طرح ساده و خام مطلقاً ممنوع است.',
-  'تم سبز خبر فوری و قالب اصلی ثابت است؛ در گوشه بالای راست تا ۳۰٪ عرض و ۲۱٪ ارتفاع فقط پس‌زمینه کرم روشن هموار بگذار، هیچ مستطیل مصنوعی لوگو یا طرح تزئینی نساز.',
+  'تم سبز خبر فوری و قالب اصلی ثابت است؛ زمینه طبیعی سبز/کرم با جزئیات موضوعی تا پشت لوگوی بالا راست به‌صورت یکدست ادامه داشته باشد، بدون هیچ لکه روشن یا کادر خالی ساختگی؛ فقط اطلاعات مهم روی خود لوگو قرار نگیرند.',
   'هیچ کارت آماری، جدول، تیتر، کلمه، حرف، رقم، درصد، نماد رسانه، واترمارک یا URL نساز. این عناصر را وب‌سایت با فونت انتخابی، ارقام فارسی و لوگوی PNG اصلی اضافه می‌کند.',
   'دایره سهم از کل فقط در صورتی مجاز است که واقعاً اجزای یک کل ۱۰۰٪ باشند؛ در بقیه موارد نمودار دایره‌ای ممنوع.',
   c.customPrompt?'ترجیح اضافه کاربر (پس از رعایت قواعد متن و لوگو): '+c.customPrompt.slice(0,500):'',
@@ -1554,6 +1558,7 @@ function promptFor(c){
   'یک تصویر محتوایی مستقل بساز که همهٔ تیترها، آمار و تصاویر در محدودهٔ خودش و با حاشیهٔ امن ۵ درصد جا شوند. هیچ متن یا عددی از لبه قطع نشود.',
   ...(['urgent','mashhad','jaryan'].includes(c.brandKey)?['برای این قالب، تصویر و پس‌زمینه باید کل عرض و ارتفاع را بدون نوار کناری زرد، مشکی، سفید یا آبیِ خالی پر کند. خودت لوگو، خط عمودی یا برچسب برند را نکش؛ سایت قالب اصلی برند انتخابی را به صورت لایه ثابت بعداً اضافه می‌کند.']:[]),
   rf724LogoSafePrompt(c.brandKey,c.size),
+  'تأکید: هیچ پچ سفید/کرم و هیچ مستطیل یا جای خالی با مرز مشخص در پشت لوگو یا کناره‌های کادر نساز؛ رنگ و بافت تصویر در تمام نقاط یکپارچه باشد.',
   'هیچ لوگو، نام رسانه، نام شرکت، واترمارک یا نوار برند نساز؛ لوگوی اصلی به صورت لایهٔ قفل شده بعد از ساخت اضافه می‌شود و نباید توسط مدل بازطراحی شود.',
   'مهم: در پایین یا بالای تصویر هیچ @، نام کاربری، شناسه شبکه اجتماعی، نوار سفید امضا، جای لوگوی نقاشی‌شده یا مستطیل با رنگ متفاوت نساز. تصویر و بافت پس‌زمینه باید تا هر چهار لبه پیوسته باشد. لوگوی اصلی به صورت PNG شفاف روی همان تصویر کامل قرار می‌گیرد.',
   'مثل یک اینفوگرافیک تحریریه‌ای حرفه‌ای طراحی کن: تیتر خوانا، بلوک‌های متنوع متناسب با تعداد اقلام، تصویر یا آیکون مرتبط برای هر گروه، سلسله‌مراتب واضح و یک کادر جمع‌بندی در پایین؛ بدون باکس‌های بزرگ خالی.',
@@ -1593,32 +1598,8 @@ function reviewPrompt(draft){
   edit.focus();
  });
 }
-// Recovery never calls paid image generation, only downloads the old image.
-const restoreButton=document.createElement('button');
-restoreButton.type='button';restoreButton.textContent='بازیابی تصویر قبلی (رایگان)';
-restoreButton.style.cssText='margin:8px;padding:9px 13px;background:#e8f6ee;border:1px solid #83c49e;border-radius:10px;color:#086c43;cursor:pointer;font-weight:700';
-btn.parentNode?.appendChild(restoreButton);
-restoreButton.hidden=true;
-restoreButton.addEventListener('click',async()=>{
- const oldUrl=(()=>{try{return sessionStorage.getItem('rf-last-paid-image-url')||''}catch{return ''}})();
- if(!/^https:\/\//.test(oldUrl)){say('لینک تصویر قبلی در این تب وجود ندارد.');return}
- restoreButton.disabled=true;
- try{
-  const r=await fetch('/api/avalai-image?recover=image&url='+encodeURIComponent(oldUrl),{
-   method:'GET',cache:'no-store',headers:{'X-RushFinder-Info-Code':document.getElementById('rf962-access')?.value||''}
-  });
-  if(!r.ok){let e;try{e=await r.json()}catch{}throw Error(e?.error||'دانلود تصویر قبلی ناموفق بود.');}
-  const blob=await r.blob();const objectUrl=URL.createObjectURL(blob);
-  const pic=new Image();
-  try{await new Promise((resolve,reject)=>{pic.onload=resolve;pic.onerror=()=>reject(Error('فایل دریافت‌شده تصویر نیست.'));pic.src=objectUrl});}
-  finally{URL.revokeObjectURL(objectUrl)}
-  window.rf702FinalImage=pic;window.rf602Artwork=null;
-  await window.rf705LoadTemplate();window.rf702DrawFinal();
-  savePending(null);say('✓ تصویر قبلی بدون ساخت و هزینه جدید بازیابی شد.');
- }catch(e){say('بازیابی فایل قبلی ناموفق بود: '+(e?.message||'خطای نامشخص')+'؛ ساخت جدید نزن.');showPaidImageLink(oldUrl)}
- finally{restoreButton.disabled=false}
-});
-try{const oldUrl=sessionStorage.getItem('rf-last-paid-image-url');if(oldUrl&&/^https:\/\//.test(oldUrl)){restoreButton.hidden=false;showPaidImageLink(oldUrl);}}catch{}
+// 01026: «بازیابی تصویر قبلی (رایگان)» button deliberately removed from UI.
+// Server-side /api/avalai-image recovery endpoint remains unchanged.
 btn.addEventListener('click',async evt=>{
  if(internalClick||!evt.isTrusted)return;
  evt.preventDefault();evt.stopImmediatePropagation();
