@@ -297,7 +297,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01002</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01019</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -379,8 +379,8 @@ const brands={
   farda:{name:'خبرفردا',base:'#1e1f25',accent:'#ef4458',light:'#fff0f3',dark:'#101218',bg2:'#661824'}
 };
 let brand='urgent', size='square', variant=0;
-const urgentTemplate=new Image();urgentTemplate.src='assets/infographic-logos/urgent-exact-template.png';urgentTemplate.onload=()=>document.getElementById('generate')?.click();
-const urgentStoryTemplate=new Image();urgentStoryTemplate.src='assets/infographic-logos/urgent-story-original.png';urgentStoryTemplate.onload=()=>document.getElementById('generate')?.click();
+const urgentTemplate=new Image();urgentTemplate.src='assets/infographic-logos/urgent-exact-template.png';urgentTemplate.onload=()=>render();
+const urgentStoryTemplate=new Image();urgentStoryTemplate.src='assets/infographic-logos/urgent-story-original.png';urgentStoryTemplate.onload=()=>render();
 const mashhadSquareTemplate=new Image();mashhadSquareTemplate.src='assets/infographic-logos/mashhad-square-original.png';mashhadSquareTemplate.onload=()=>{if(brand==='mashhad')render()};
 const mashhadStoryTemplate=new Image();mashhadStoryTemplate.src='assets/infographic-logos/mashhad-story-original.png';mashhadStoryTemplate.onload=()=>{if(brand==='mashhad')render()};
 
@@ -392,7 +392,7 @@ const fardaSquare=new Image();fardaSquare.src='assets/infographic-logos/farda-sq
 fardaSquare.onload=()=>{if(brand==='farda')render()};
 const fardaStory=new Image();fardaStory.src='assets/infographic-logos/farda-story-549.png';
 fardaStory.onload=()=>{if(brand==='farda')render()};
-for(const img of [jaryanSquare,jaryanStory,fardaSquare,fardaStory])img.onload=()=>document.getElementById('generate')?.click();
+for(const img of [jaryanSquare,jaryanStory,fardaSquare,fardaStory])img.onload=()=>render();
 const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
 
 // RF584: Font selection applies to canvas only; the website UI remains unchanged.
@@ -715,7 +715,9 @@ function rf581Render(){
   farda:{square:'farda-square.png',story:'farda-story.png'}
  };
  function rf705TemplatePath(b=brand,z=size){
-  return 'assets/infographic-templates/'+(rf705TemplateFiles[b]||rf705TemplateFiles.urgent)[z]+'?v=01002';
+  if(!rf705TemplateFiles[b])throw new Error('برند انتخابی نامعتبر است.');
+  if(z!=='square'&&z!=='story')throw new Error('اندازه انتخابی باید مربع یا استوری باشد.');
+  return 'assets/infographic-templates/'+rf705TemplateFiles[b][z]+'?v=01020';
  }
  function rf705LoadTemplate(b=brand,z=size){
   const path=rf705TemplatePath(b,z);
@@ -737,6 +739,20 @@ function rf581Render(){
   });
  }
  window.rf705LoadTemplate=rf705LoadTemplate;
+ // 01020: Copy the literal approved overlay, preserving its logo proportions.
+ // Uploaded story PNGs are 1280x1920, while exported stories are 1080x1920.
+ // Crop the blank area on the LEFT; never squeeze/scale the right-hand logo.
+ function rf01020StampOriginalTemplate(ctx,img,W,H){
+  const sw=img.naturalWidth,sh=img.naturalHeight;
+  const requestedRatio=W/H,sourceRatio=sw/sh;
+  if(sourceRatio>requestedRatio+0.0001){
+   const viewW=sh*requestedRatio;
+   ctx.drawImage(img,sw-viewW,0,viewW,sh,0,0,W,H);
+  }else if(sourceRatio<requestedRatio-0.0001){
+   const viewH=sw/requestedRatio;
+   ctx.drawImage(img,0,0,sw,viewH,0,0,W,H);
+  }else ctx.drawImage(img,0,0,W,H);
+ }
  // RF01006: Composer-local helper. The paid-image handler runs in a separate
  // script closure, so its same-named helper is NOT visible here.
  // Keep this function inside the renderer's own scope to prevent ReferenceError.
@@ -768,23 +784,32 @@ function rf581Render(){
  }
  // V01010: headline is geometrically centred in the usable space LEFT of the
  // fixed top-right logo, not moved far below it and not clipped afterwards.
+ // Locked news-brand header: title belongs to a centred safe rectangle left of the authentic logo.
  function rf01007Heading(text,W,top,maxBottom){
   const family=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
-  const isStory=size==='story';
-  const usableRight=Math.round(W*(isStory?.735:.735));
-  const left=Math.round(W*.045),width=usableRight-left;
-  const center=left+width/2,maxHeight=maxBottom-top;
-  let lines=[],fontSize=isStory?62:65;
-  for(;fontSize>=24;fontSize-=1){
-   lines=rf01007Lines(rf584PersianDigits(text),width-14,'900 '+fontSize+'px '+family);
-   if(lines.length*fontSize*1.23<=maxHeight)break;
+  const story=size==='story',left=Math.round(W*.035),right=Math.round(W*.725);
+  const width=right-left,mid=(left+right)/2,maxH=maxBottom-top;
+  const string=rf584PersianDigits(String(text||''));
+  let fontSize=story?65:65,lines=[];
+  for(;fontSize>=23;fontSize--){
+   lines=rf01007Lines(string,width-10,'900 '+fontSize+'px '+family);
+   if(lines.length*fontSize*1.20<=maxH)break;
   }
-  const lh=fontSize*1.23;
-  ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#1b211d';
-  ctx.font='900 '+fontSize+'px '+family;
-  for(let i=0;i<lines.length;i++)ctx.fillText(lines[i],center,top+(i+.52)*lh,width-14);
+  const highlight=/بازار|مالی|بارش|آلودگی|آب|دریاچه|سد|خودروساز|سهم|افزایش|کاهش|ارومیه|تازه|جدید/;
+  const lineH=fontSize*1.20;
+  ctx.save();ctx.direction='rtl';ctx.textBaseline='middle';ctx.font='900 '+fontSize+'px '+family;
+  for(let i=0;i<lines.length;i++){
+   const words=lines[i].split(/\s+/).filter(Boolean),space=ctx.measureText(' ').width;
+   const widths=words.map(word=>ctx.measureText(word).width),total=widths.reduce((x,y)=>x+y,0)+space*(words.length-1);
+   let x=mid+total/2;
+   words.forEach((word,j)=>{
+    ctx.textAlign='right';ctx.fillStyle=highlight.test(word)?'#00834a':'#202322';
+    ctx.fillText(word,x,top+(i+.58)*lineH);
+    x-=widths[j]+space;
+   });
+  }
   ctx.restore();
-  return top+lines.length*lh;
+  return Math.min(maxBottom,top+lines.length*lineH);
  }
  function rf01007CardText(text,x,y,w,h,family,accent){
   let sz=Math.min(34,Math.floor(h*.38)),lines=[];
@@ -879,83 +904,107 @@ function rf581Render(){
   ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff';
   angle=-Math.PI/2;values.forEach((v,i)=>{const span=2*Math.PI*v/100;if(v>=8){const mid=angle+span/2;ctx.font='bold '+Math.max(15,Math.min(30,r*.23))+'px '+family;ctx.fillText(String(items[i].match(/[-−]?[۰-۹٠-٩0-9]+(?:[.,٫][۰-۹٠-٩0-9]+)?/)?.[0]||v)+'٪',cx+Math.cos(mid)*r*.64,cy+Math.sin(mid)*r*.64,r*.55);}angle+=span;});ctx.restore();
  }
+ // RushFinder 01019: ONE fixed, approved Khabar Fori square/story design.
+ // Geometry never changes with topic: warm cream, big top headline, six-ish
+ // raised white statistic cards on LEFT, 3D subject on RIGHT, source PNG last.
+ function rf01019CardIcon(item,x,y,r){
+  const t=String(item||'');
+  ctx.save();ctx.translate(x,y);ctx.strokeStyle='#087b43';ctx.fillStyle='#13834c';ctx.lineWidth=Math.max(2,r*.13);
+  ctx.lineCap='round';ctx.lineJoin='round';
+  if(/سد|دریاچه|آب|مخزن|بارش|باران|رودخانه|تراز/.test(t)){
+   ctx.beginPath();ctx.moveTo(0,-r*.9);ctx.bezierCurveTo(r*.65,-r*.14,r*.71,r*.42,0,r*.83);ctx.bezierCurveTo(-r*.71,r*.42,-r*.65,-r*.14,0,-r*.9);ctx.fill();
+   ctx.beginPath();ctx.strokeStyle='#e8faf0';ctx.moveTo(-r*.28,r*.37);ctx.quadraticCurveTo(0,r*.56,r*.28,r*.35);ctx.stroke();
+  }else if(/خودرو|سایپا|ایران خودرو|ماشین/.test(t)){
+   ctx.fillRect(-r*.83,-r*.13,r*1.66,r*.55);ctx.beginPath();ctx.moveTo(-r*.48,-r*.13);ctx.lineTo(-r*.24,-r*.56);ctx.lineTo(r*.44,-r*.56);ctx.lineTo(r*.65,-r*.13);ctx.fill();
+   for(const xx of [-r*.52,r*.52]){ctx.beginPath();ctx.arc(xx,r*.49,r*.19,0,Math.PI*2);ctx.fillStyle='#e4f1e5';ctx.fill();ctx.stroke();}
+  }else if(/بازار|بورس|سکه|طلا|ارز|قیمت|درصد|سهم|رشد|کاهش|تورم/.test(t)){
+   for(let i=0;i<3;i++)ctx.fillRect(-r*.7+i*r*.48,r*.12-i*r*.35,r*.31,r*.65+i*r*.35);
+   ctx.beginPath();ctx.moveTo(-r*.8,-r*.45);ctx.lineTo(-r*.2,-r*.61);ctx.lineTo(r*.24,-r*.24);ctx.lineTo(r*.78,-r*.81);ctx.stroke();
+  }else{
+   ctx.beginPath();ctx.arc(0,0,r*.67,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(-r*.33,0);ctx.lineTo(-r*.07,r*.28);ctx.lineTo(r*.4,-r*.36);ctx.stroke();
+  }
+  ctx.restore();
+ }
+ function rf01019RenderCard(item,x,y,w,h,family,idx){
+  const p=rf01009SplitRow(item),rad=Math.min(23,h*.22),iconW=Math.max(60,Math.min(98,h*.91));
+  ctx.save();ctx.shadowColor='rgba(40,42,31,.18)';ctx.shadowBlur=15;ctx.shadowOffsetY=8;
+  ctx.fillStyle='#fffdfc';ctx.beginPath();ctx.roundRect(x,y,w,h,rad);ctx.fill();ctx.restore();
+  ctx.save();ctx.strokeStyle='#ffffff';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(x+3,y+3,w-6,h-6,rad-2);ctx.stroke();ctx.restore();
+  ctx.save();ctx.shadowColor='rgba(32,66,42,.11)';ctx.shadowBlur=5;ctx.shadowOffsetY=3;
+  ctx.fillStyle='#f5f8f3';ctx.beginPath();ctx.roundRect(x+8,y+7,iconW-12,h-14,Math.min(20,h*.20));ctx.fill();ctx.restore();
+  rf01019CardIcon(item,x+iconW*.49,y+h/2,Math.min(32,h*.32));
+  const bodyLeft=x+iconW+9,bodyRight=x+w-12,avail=bodyRight-bodyLeft;
+  // Keep three distinct zones as in the original reference: icon | name | value.
+  if(p.value){
+   const numericWidth=Math.max(92,Math.min(avail*.36,155));
+   const sepX=bodyRight-numericWidth-8;
+   ctx.save();ctx.strokeStyle='#9cafa2';ctx.lineWidth=1.7;ctx.beginPath();ctx.moveTo(sepX,y+14);ctx.lineTo(sepX,y+h-14);ctx.stroke();ctx.restore();
+   const fs=Math.max(18,Math.min(35,h*.40));
+   const f=rf01009Fit(p.value,numericWidth-12,h-12,family,fs);
+   ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#00773e';
+   ctx.font='900 '+f.size+'px '+family;
+   const lh=f.size*1.22;
+   f.lines.forEach((t,j)=>ctx.fillText(t,bodyRight-numericWidth/2,y+h/2+(j-(f.lines.length-1)/2)*lh,numericWidth-12));ctx.restore();
+   const labelWidth=Math.max(70,sepX-bodyLeft-12),label=rf01009Fit(p.label,labelWidth-8,h-12,family,Math.min(34,h*.33));
+   ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#262626';ctx.font='700 '+label.size+'px '+family;
+   label.lines.forEach((t,j)=>ctx.fillText(t,bodyLeft+labelWidth/2,y+h/2+(j-(label.lines.length-1)/2)*label.size*1.23,labelWidth-8));ctx.restore();
+  }else{
+   const label=rf01009Fit(p.label,avail-18,h-10,family,Math.min(32,h*.36));
+   ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#252a25';ctx.font='700 '+label.size+'px '+family;
+   label.lines.forEach((t,j)=>ctx.fillText(t,bodyLeft+avail/2,y+h/2+(j-(label.lines.length-1)/2)*label.size*1.23,avail-18));ctx.restore();
+  }
+ }
+ function rf01019DisplayRows(rows){
+  // Editorial category labels are headings, not zero-value statistic cards.
+  return rows.map(s=>String(s||'').trim()).filter(Boolean).filter(s=>!/(?:[:：]\s*)$/.test(s));
+ }
+ function rf01019DrawArtwork(pic,x,y,w,h){
+  if(!pic||!pic.naturalWidth)return;
+  const sw=pic.naturalWidth,sh=pic.naturalHeight;
+  // AI was prompted to keep LEFT/TOP empty. Extract and magnify only the
+  // richly illustrated lower-right portion; no blank AI margin survives.
+  let sx=sw*.37,sy=sh*.19,cw=sw*.63,ch=sh*.81;
+  const sourceAspect=cw/ch,targetAspect=w/h;
+  if(sourceAspect>targetAspect){const next=ch*targetAspect;sx+=(cw-next)*.52;cw=next;}
+  else{const next=cw/targetAspect;sy+=(ch-next)*.53;ch=next;}
+  ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
+  ctx.drawImage(pic,sx,sy,cw,ch,x,y,w,h);
+  // Blend the hard left border of the illustration into the unchanged cream.
+  const fade=ctx.createLinearGradient(x,y,x+Math.min(45,w*.15),y);
+  fade.addColorStop(0,'#f6f3ef');fade.addColorStop(1,'rgba(246,243,239,0)');
+  ctx.fillStyle=fade;ctx.fillRect(x,y,Math.min(45,w*.15),h);ctx.restore();
+ }
  function rf01007DrawUrgent(pic,template){
   const W=cv.width,H=cv.height,story=size==='story';
-  const raw=normalizeText(input.value).split(/\n+/).map(x=>x.trim()).filter(Boolean);
+  const raw=normalizeText(input.value).split(/\n+/).map(v=>v.trim()).filter(Boolean);
   const manual=rf580TitleOn.checked?normalizeText(rf580TitleText.value):'';
   const headline=manual||raw[0]||'اینفوگرافیک خبر فوری';
-  const items=manual?raw:raw.slice(1);
+  const rows=rf01019DisplayRows(manual?raw:raw.slice(1));
   const family=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
-  const theme=window.rfUrgentTheme(headline,items);
+  const theme=window.rfUrgentTheme(headline,rows);
   window.rf01008LastTheme=theme;
-   window.rf01012LastStyleLabel=(theme==='share'?'تم سهم‌بندی مرجع خبر فوری':theme==='thematic'?'تم موضوعی مرجع خبر فوری':theme==='comparison'?'تم مقایسه‌ای مرجع خبر فوری':'تم اقتصادی مرجع خبر فوری');
+  window.rf01012LastStyleLabel='قالب ثابت خبر فوری | تصویرسازی '+(theme==='thematic'?'موضوعی':theme==='share'?'سهم‌بندی':theme==='comparison'?'مقایسه‌ای':'اقتصادی');
   ctx.save();try{
    ctx.fillStyle='#f6f3ef';ctx.fillRect(0,0,W,H);
-   const headingTop=story?Math.round(H*.036):Math.round(H*.047);
-   const maxHeadlineBottom=story?Math.round(H*.205):Math.round(H*.224);
-   const titleEnd=rf01007Heading(headline,W,headingTop,maxHeadlineBottom);
-   const ruleY=Math.max(story?Math.round(H*.21):Math.round(H*.237),titleEnd+12);
-   // Keep the subtle editorial spacing of the three approved references.
-   const top=ruleY+18,bottom=H-(story?72:45),bodyH=bottom-top;
-   if(theme==='share'&&!story&&items.length<=7){
-    const cx=W*.51,cy=top+bodyH*.49,r=Math.min(W*.29,bodyH*.35);
-    rf01008Pie(items,cx,cy,r,family);
-    const cardW=W*.25,cardH=Math.min(126,(bodyH-20)/Math.ceil(items.length/2)-13),left=22,right=W-cardW-22;
-    items.forEach((item,i)=>{const side=i%2,idx=Math.floor(i/2),rows=Math.ceil(items.length/2),cyCard=top+(idx+.5)*(bodyH/rows);rf01008Card(item,side?right:left,cyCard-cardH/2,cardW,cardH,family,i);});
-   }else{
-    // Data count determines layout. Never collapse 20 items into 23px strips.
-    const n=items.length;
-    // RF0111: Never discard the paid 3D artwork simply because there are
-    // more than seven data rows. Keep the approved cards + editorial art split.
-    // Dense square news: two legible card columns at left, 3D art at right.
-    // Dense story news: cards at top, art in the lower portion.
-    const dense=n>7;
-    const columns=dense?2:1;
-    const rows=Math.max(1,Math.ceil(n/columns));
-    const gapY=dense?7:12,gapX=dense?10:14;
-    const left=story?38:36;
-    const dataWidth=story
-     ? (dense?W-left-38:W*.87)
-     : (dense?W*.68:W*.55);
-    const dataBodyH=story&&dense?bodyH*.66:bodyH;
-    const cellW=(dataWidth-gapX*(columns-1))/columns;
-    const cellH=Math.min(dense?122:145,(dataBodyH-gapY*(rows-1))/rows);
-    if(n>0&&cellH<62){
-     statusEl.textContent='اطلاعات این خبر زیاد است؛ برای کارت‌های درشت مشابه نمونه‌های مرجع، آن را در دو اینفوگرافیک منتشر کنید. هیچ ردیفی عمداً حذف نشده است.';
-    }
-    // Artwork is always retained, even for long news. The illustration is
-    // clipped to its own rectangle and cannot cover any statistic card.
-    if(pic&&pic.naturalWidth){
-     const x=story?(dense?W*.14:W*.17):(dense?W*.70:W*.59);
-     const y=story?(dense?top+bodyH*.69:top+bodyH*.43):top+17;
-     const w=story?(dense?W*.76:W*.78):(dense?W*.29:W*.40);
-     const h=story?(dense?bodyH*.30:bodyH*.56):bodyH*.91;
-     ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
-     // The generation prompt reserves the top and left of its square artwork
-     // for site-owned copy. Cropping to the illustrated right section keeps the
-     // actual 3D subject large after the site adds its own cards and headline.
-     // Never crop or modify the original logo template (stamped separately).
-     const sw=pic.naturalWidth,sh=pic.naturalHeight;
-     const sourceX=sw*.33,sourceY=sh*.19,sourceW=sw*.67,sourceH=sh*.81;
-     const sourceAspect=sourceW/sourceH,targetAspect=w/h;
-     let sx=sourceX,sy=sourceY,cw=sourceW,ch=sourceH;
-     if(sourceAspect>targetAspect){cw=sourceH*targetAspect;sx=sourceX+(sourceW-cw)*.5;}
-     else{ch=sourceW/targetAspect;sy=sourceY+(sourceH-ch)*.5;}
-     ctx.drawImage(pic,sx,sy,cw,ch,x,y,w,h);ctx.restore();
-    }
-    if(n===0){
-     ctx.fillStyle='#24392e';ctx.textAlign='center';ctx.direction='rtl';ctx.font='600 28px '+family;
-     ctx.fillText('برای نمایش داده‌ها، متن خبر را با سطرهای جداگانه وارد کنید.',W*.5,top+90,W*.83);
-    }
-    items.forEach((item,i)=>{
-     const col=Math.floor(i/rows),row=i%rows;
-     const x=left+col*(cellW+gapX),y=top+row*(cellH+gapY);
-     if(y+cellH>(story&&dense?top+dataBodyH:bottom)+1)return;
-     rf01008Card(item,x,y,cellW,cellH,family,i);
-    });
+   const headerTop=story?H*.035:H*.049,headerEnd=story?H*.175:H*.195;
+   rf01007Heading(headline,W,headerTop,headerEnd);
+   // Fixed approved composition: editorial cards left; sizeable 3D render right.
+   const left=W*.038,cardW=W*.515,artX=W*.567,artW=W*.417;
+   const bodyTop=story?H*.192:H*.202,bodyBottom=story?H*.957:H*.963;
+   const bodyH=bodyBottom-bodyTop;
+   rf01019DrawArtwork(pic,artX,bodyTop+7,artW,bodyH-10);
+   const n=rows.length,gap=(n>8?7:12),minH=story?65:53;
+   const cardH=n?Math.min(story?165:147,(bodyH-gap*(n-1))/n):0;
+   if(n && cardH<minH){
+    statusEl.textContent='متن بسیار طولانی است؛ برای خوانایی کامل در قالب ثابت خبر فوری، داده‌ها را میان چند اینفوگرافیک تقسیم کنید.';
    }
-   // Only the actual source asset is the brand. No generated or added handle.
-   ctx.drawImage(template,0,0,W,H);
+   for(let i=0;i<n;i++){
+    const y=bodyTop+i*(cardH+gap);
+    if(y+cardH>bodyBottom+1)break;
+    rf01019RenderCard(rows[i],left,y,cardW,cardH,family,i);
+   }
+   // Brand PNG must be the literal source asset, stamped LAST, never redrawn.
+   rf01020StampOriginalTemplate(ctx,template,W,H);
   }finally{ctx.restore();}
  }
  // RushFinder 01000: exact source logo always wins over AI generated pixels.
@@ -996,7 +1045,7 @@ function rf581Render(){
     rf01007DrawUrgent(pic,template);
    }else{
     rf702PaintLogoSafeZone(ctx,W,H,brand,size);
-    ctx.drawImage(template,0,0,W,H);
+    rf01020StampOriginalTemplate(ctx,template,W,H);
    }
   }finally{ctx.restore();}
   window.rf1000ComposedReady=true;
@@ -1347,7 +1396,7 @@ function rf01003UrgentLayoutGuide(news){
 }
 function rf01012UrgentReferenceStyle(theme){
  const base='هویت بصری سه نمونه تاییدشده خبر فوری را حفظ کن: پس زمینه کرم روشن #F6F3EF، سبز زمردی #00834A و سبز تیره #006D3C، سکوی سفید سرامیکی، سایه نرم، متریال واقعی، عمق سه بعدی طبیعی و نورپردازی استودیویی. کیفیت حرفه ای و خبری باشد، نه کارتونی یا تخت.';
- if(theme==='share')return base+' تصویرسازی بزرگ سه بعدیِ بخش های یک کل روی سکوی سفید در سمت راست؛ نمودار دونات یا دایره ای فقط برای سهم های واقعی یک کل مناسب است. هیچ درصد یا برچسبی روی نمودار رسم نکن.';
+ if(theme==='share')return base+' در همان قاب ثابتِ کارت‌های آماری سمت چپ و تصویر سه‌بعدی سمت راست، یک مدل سهم‌بندی حجمیِ بزرگ روی سکوی سفید بساز؛ نمودار دایره‌ای فقط برای سهم‌های واقعی یک کل، بدون نوشته.';
  if(theme==='thematic')return base+' تم موضوعی شبیه نمونه بارندگی: مدل سه بعدی بزرگ و دقیقِ خود موضوع، مثلاً سد و مخزن و آب برای خبر سدها، دریاچه و کوه برای خبر دریاچه، ابر و چتر برای بارش، شهر و سنجشگر برای آلودگی؛ نمودار میله ای مجاز است، دایره ای سهم از کل ممنوع.';
  if(theme==='comparison')return base+' تم مقایسه ای: تصویرسازی موضوعی سه بعدی بزرگ در سمت راست همراه با میله های مقایسه ای بدون نوشته، یا نشانگرهای حجمی متناسب با سوژه؛ نمودار سهم از کل و دایره ای ممنوع. اشیای بی ربط قرار نده.';
  return base+' تم اقتصادی: تصویرسازی سه بعدی بزرگ متناسب با خبر در سمت راست؛ نمودار میله ای، داشبورد، پول، سکه یا اجزای دقیقاً مرتبط؛ نه اشیای اقتصادی تصادفی برای خبر غیرمالی.';
@@ -1378,7 +1427,7 @@ function rf01003UrgentPrompt(c){
   rf01014UrgentSubjectGuide(headline,items),
   layout,
   'حاشیه امن لوگوی خبر فوری: ۳۰ درصد عرض بالای راست تا ۲۱ درصد ارتفاع کاملاً خلوت باشد؛ فقط پس زمینه روشن هموار در آن ناحیه دیده شود. هیچ مستطیل رنگی اضافه یا شبیه لوگو نساز.',
-  'هدف: جلوه تصویری لوکس مشابه سه نمونه تاییدشده، حجم سه بعدی با جزئیات واقعی، سکوی سفید، ترکیب طبیعی سبز و کرم؛ بدون فضای خالی بزرگ در محدوده مجاز تصویرسازی. در مناطق محفوظ متن و لوگو سوژه قرار نده.',
+  'هندسه اصلی همیشه ثابت است: کارت‌های بزرگ سفید سرامیکی برجسته در ستون چپ با حدود ۵۲٪ عرض، تصویرسازی حجمی مرتبط در سمت راست با حدود ۴۲٪ عرض. برای هیچ موضوعی رنگ‌ها، نسبت ستون‌ها، جای لوگو یا شکل کارت‌ها تغییر نمی‌کند. سوژه سه‌بعدی قسمت راست را با حجم زیاد پر کند، اما سمت چپ برای لایه‌های متنی سایت آزاد باشد.',
   'ممنوعیت مطلق: لوگو، نشان رسانه، تیتر، کلمات، حروف، شماره، درصد، برچسب، کارت نوشته دار، واترمارک، هندل، URL، نوشته فارسی یا لاتین تولید نکن. همچنین از نمودار دایره ای برای درصدهای مستقل یا رتبه بندی استفاده نکن.',
   'صفحه وب تیتر وسط چین، فونت انتخابی کاربر (از جمله کهربا)، اعداد فارسی، کارت ها و لوگوی اصلی بدون تغییر را خود رسم می کند. فقط المان های تصویری را بساز.',
   'شرح موضوع فقط برای انتخاب اشیای مرتبط است؛ متن و ارقام آن نباید در تصویر نوشته شوند: '+[headline,...items.slice(0,8)].join('؛ '),
