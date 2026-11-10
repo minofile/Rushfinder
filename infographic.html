@@ -1446,6 +1446,32 @@ function reviewPrompt(draft){
   edit.focus();
  });
 }
+// Recovery never calls paid image generation, only downloads the old image.
+const restoreButton=document.createElement('button');
+restoreButton.type='button';restoreButton.textContent='بازیابی تصویر قبلی (رایگان)';
+restoreButton.style.cssText='margin:8px;padding:9px 13px;background:#e8f6ee;border:1px solid #83c49e;border-radius:10px;color:#086c43;cursor:pointer;font-weight:700';
+btn.parentNode?.appendChild(restoreButton);
+restoreButton.hidden=true;
+restoreButton.addEventListener('click',async()=>{
+ const oldUrl=(()=>{try{return sessionStorage.getItem('rf-last-paid-image-url')||''}catch{return ''}})();
+ if(!/^https:\/\//.test(oldUrl)){say('لینک تصویر قبلی در این تب وجود ندارد.');return}
+ restoreButton.disabled=true;
+ try{
+  const r=await fetch('/api/avalai-image?recover=image&url='+encodeURIComponent(oldUrl),{
+   method:'GET',cache:'no-store',headers:{'X-RushFinder-Info-Code':document.getElementById('rf962-access')?.value||''}
+  });
+  if(!r.ok){let e;try{e=await r.json()}catch{}throw Error(e?.error||'دانلود تصویر قبلی ناموفق بود.');}
+  const blob=await r.blob();const objectUrl=URL.createObjectURL(blob);
+  const pic=new Image();
+  try{await new Promise((resolve,reject)=>{pic.onload=resolve;pic.onerror=()=>reject(Error('فایل دریافت‌شده تصویر نیست.'));pic.src=objectUrl});}
+  finally{URL.revokeObjectURL(objectUrl)}
+  window.rf702FinalImage=pic;window.rf602Artwork=null;
+  await window.rf705LoadTemplate();window.rf702DrawFinal();
+  savePending(null);say('✓ تصویر قبلی بدون ساخت و هزینه جدید بازیابی شد.');
+ }catch(e){say('بازیابی فایل قبلی ناموفق بود: '+(e?.message||'خطای نامشخص')+'؛ ساخت جدید نزن.');showPaidImageLink(oldUrl)}
+ finally{restoreButton.disabled=false}
+});
+try{const oldUrl=sessionStorage.getItem('rf-last-paid-image-url');if(oldUrl&&/^https:\/\//.test(oldUrl)){restoreButton.hidden=false;showPaidImageLink(oldUrl);}}catch{}
 btn.addEventListener('click',async evt=>{
  if(internalClick||!evt.isTrusted)return;
  evt.preventDefault();evt.stopImmediatePropagation();
@@ -1481,12 +1507,34 @@ btn.addEventListener('click',async evt=>{
     throw e;
   }
   if(!data.image)throw Error('تصویر در پاسخ دریافتی وجود ندارد.');
-  if(data.remoteImage && typeof data.image==='string' && data.image.startsWith('https://'))paidImageUrl=data.image;
+  if(data.remoteImage && typeof data.image==='string' && data.image.startsWith('https://')){
+    paidImageUrl=data.image;
+    try{sessionStorage.setItem('rf-last-paid-image-url',paidImageUrl);}catch{}
+    showPaidImageLink(paidImageUrl);
+  }
+  // Proxy through our own Vercel function: same-origin Blob works in Canvas,
+  // even when AvalAI's remote CDN does not permit browser CORS.
+  let displaySrc=data.image;
+  if(paidImageUrl){
+    const proxy='/api/avalai-image?recover=image&url='+encodeURIComponent(paidImageUrl);
+    const recovered=await fetch(proxy,{method:'GET',cache:'no-store',headers:{'X-RushFinder-Info-Code':document.getElementById('rf962-access')?.value||''}});
+    if(!recovered.ok){
+      let info;try{info=await recovered.json()}catch{}
+      throw Error((info?.error||'دانلود فایل ساخته‌شده از طریق سرور ممکن نیست.')+' لینک فایل قبلی در همین صفحه برای بازیابی موجود است؛ ساخت جدید نزن.');
+    }
+    const blob=await recovered.blob();
+    if(!blob.type.startsWith('image/'))throw Error('پاسخ سرور تصویر معتبر نیست؛ ساخت جدید نزن.');
+    displaySrc=URL.createObjectURL(blob);
+  }
   const pic=new Image();
-  // AvalAI may return a CDN URL instead of Base64. Preserve Canvas export by
-  // requesting CORS where the CDN supports it. Never trigger a new paid request.
-  if(data.remoteImage){pic.crossOrigin='anonymous';pic.referrerPolicy='no-referrer';}
-  await new Promise((resolve,reject)=>{pic.onload=resolve;pic.onerror=()=>reject(Error(data.remoteImage?'آدرس تصویر AvalAI دریافت شد ولی سرور فایل اجازه بارگیری/CORS نداد. درخواست جدید نساز؛ ابتدا مصرف AvalAI و لینک فایل را بررسی کن.':'تصویر دریافتی قابل نمایش نیست.'));pic.src=data.image;});
+  try{
+    await new Promise((resolve,reject)=>{
+      pic.onload=resolve;
+      pic.onerror=()=>reject(Error('تصویر دریافت‌شده قابل نمایش نیست؛ درخواست تولید را دوباره نفرست.'));
+      pic.src=displaySrc;
+    });
+  }finally{if(displaySrc.startsWith('blob:'))URL.revokeObjectURL(displaySrc);}
+
   // Request delivered and image decoded successfully: clear the billing-uncertainty lock BEFORE local rendering.
   // A later canvas/UI error must never masquerade as an undelivered paid request.
   lastSignature=sig;lastPicture=pic;savePending(null);

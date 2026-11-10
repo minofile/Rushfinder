@@ -130,6 +130,52 @@ export default async function handler(req, res) {
   if (!secureEqual(req.headers['x-rushfinder-info-code'], accessCode)) {
     return imageError(res, 403, 'کد دسترسی مدیر اشتباه است؛ این کد با کلید AvalAI فرق دارد.');
   }
+  // Same-origin recovery proxy for an ALREADY GENERATED image URL.
+  // Never calls /images/generations; it only downloads existing image bytes.
+  if (req.method === 'GET' && req.query?.recover === 'image') {
+    const remote = safeHttpsImageUrl(String(req.query?.url || ''));
+    if (!remote || !safeRemoteHost(remote)) {
+      return imageError(res, 400, 'آدرس تصویر خارج از میزبان‌های مجاز یا نامعتبر است.');
+    }
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 20000);
+    try {
+      const upstream = await fetch(remote, {
+        method:'GET',signal:controller.signal,redirect:'error',
+        headers:{Accept:'image/png,image/jpeg,image/webp,*/*'}
+      });
+      if (!upstream.ok) return imageError(res, 502, 'فایل تصویر در میزبان AvalAI قابل دریافت نیست (HTTP '+upstream.status+'). ساخت دوباره نزن.', false);
+      const rawType = String(upstream.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
+      // Some signed download endpoints use application/octet-stream.
+      if (!['image/png','image/jpeg','image/webp','application/octet-stream'].includes(rawType)) {
+        return imageError(res, 502, 'پاسخ لینک تصویر، فایل تصویری معتبر نیست.', false);
+      }
+      const maxBytes = 3_700_000; // Stay below Vercel's function payload ceiling.
+      const reader = upstream.body?.getReader();
+      if (!reader) return imageError(res,502,'بدنه فایل تصویر در دسترس نیست.',false);
+      let total=0,parts=[];
+      for(;;){
+        const {done,value} = await reader.read();
+        if(done)break;
+        total+=value.byteLength;
+        if(total>maxBytes){await reader.cancel();return imageError(res,413,'حجم تصویر برای پروکسی Vercel بیش از حد است؛ از لینک اصلی بازیابی کن، ساخت جدید نزن.',false);}
+        parts.push(Buffer.from(value));
+      }
+      const bytes=Buffer.concat(parts,total);
+      if(bytes.length<100) return imageError(res,502,'فایل تصویر ناقص است.',false);
+      let mime;
+      if(bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])))mime='image/png';
+      else if(bytes[0]===255&&bytes[1]===216&&bytes[2]===255)mime='image/jpeg';
+      else if(bytes.toString('ascii',0,4)==='RIFF'&&bytes.toString('ascii',8,12)==='WEBP')mime='image/webp';
+      else return imageError(res,502,'محتوای لینک، تصویر PNG/JPEG/WebP نیست.',false);
+      res.setHeader('Content-Type',mime);
+      res.setHeader('Cache-Control','private, no-store');
+      res.setHeader('X-Content-Type-Options','nosniff');
+      return res.status(200).send(bytes);
+    } catch (e) {
+      return imageError(res,502, e?.name==='AbortError' ? 'مهلت دانلود تصویر قبلی تمام شد؛ ساخت جدید نزن.' : 'دانلود تصویر قبلی از میزبان فایل ناموفق بود؛ ساخت جدید نزن.',false);
+    } finally {clearTimeout(timer);}
+  }
   if (req.method === 'GET' && req.query?.probe === 'avalai') {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 18000);
