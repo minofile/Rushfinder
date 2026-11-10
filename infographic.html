@@ -994,7 +994,7 @@ function rf581Render(){
   }finally{ctx.restore();}
   window.rf1000ComposedReady=true;
   layoutName.textContent='محتوا + لوگوی ثابت اصلی '+brands[brand].name;updateMeta();
-  if(brand==='urgent'&&window.rf01012LastStyleLabel){statusEl.textContent='الگوی خودکار خبر فوری: '+window.rf01012LastStyleLabel+' | مدل: '+(($('rf962-model')?.selectedOptions?.[0]?.textContent)||'GPT Image');}
+  if(brand==='urgent'&&window.rf01012LastStyleLabel){statusEl.textContent='الگوی خودکار خبر فوری: '+window.rf01012LastStyleLabel+' | مدل: '+((document.getElementById('rf962-model')?.selectedOptions?.[0]?.textContent)||'GPT Image');}
   area.classList.add('rf702-has-image');
   return true;
  }
