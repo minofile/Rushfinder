@@ -758,6 +758,122 @@ function rf581Render(){
   try{canvasCtx.fillStyle=zone.fill;canvasCtx.fillRect(x,y,w,h);}
   finally{canvasCtx.restore();}
  }
+ // RF01007: deterministic, editable, Persian typesetting above AI illustration.
+ // The AI image is NEVER used for the title, statistics, logo, or footer.
+ function rf01007Lines(text,width,font){
+  ctx.font=font;
+  const words=String(text||'').trim().split(/\s+/).filter(Boolean),out=[];let row='';
+  for(const w of words){const next=row?row+' '+w:w;if(row&&ctx.measureText(next).width>width){out.push(row);row=w;}else row=next;}
+  if(row)out.push(row);return out;
+ }
+ function rf01007Heading(text,W,top,maxBottom){
+  const family=rf584FontMap[rf584FontSelector.value]||'RF584Doran',maxWidth=W*.89;
+  let lines=[],fontSize=70;
+  for(;fontSize>=27;fontSize-=2){lines=rf01007Lines(text,maxWidth,'700 '+fontSize+'px '+family);if(lines.length*fontSize*1.29<=maxBottom-top)break;}
+  const lh=fontSize*1.29;
+  ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#18211c';
+  ctx.font='700 '+fontSize+'px '+family;
+  for(let i=0;i<lines.length;i++)ctx.fillText(lines[i],W/2,top+(i+.52)*lh,maxWidth);
+  ctx.restore();return top+lines.length*lh;
+ }
+ function rf01007CardText(text,x,y,w,h,family,accent){
+  let sz=Math.min(34,Math.floor(h*.38)),lines=[];
+  for(;sz>=16;sz--){lines=rf01007Lines(text,w-42,'700 '+sz+'px '+family);if(lines.length*(sz*1.27)<=h-15)break;}
+  ctx.save();ctx.direction='rtl';ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillStyle='#20352b';ctx.font='700 '+Math.max(16,sz)+'px '+family;
+  const lh=Math.max(16,sz)*1.27;
+  lines.forEach((line,i)=>ctx.fillText(line,x+w-21,y+h/2+(i-(lines.length-1)/2)*lh,w-42));
+  ctx.restore();
+ }
+ // RF01008: three locked newsroom compositions inspired by the approved references.
+ // The site paints the copy and statistics. AI is only the illustrative artwork.
+ function rf01008Number(value){
+  const str=String(value||'').replace(/[۰-۹]/g,c=>String('۰۱۲۳۴۵۶۷۸۹'.indexOf(c))).replace(/[٠-٩]/g,c=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(c))).replace(/٫/g,'.');
+  const match=str.match(/[-−]?\s*\d+(?:[.,]\d+)?/);
+  return match?Number(match[0].replace('−','-').replace(/\s/g,'').replace(',','.')):null;
+ }
+ function rf01008Theme(headline,items){
+  const text=([headline,...items]).join(' ');
+  const weather=/بارش|باران|برف|هواشناسی|دما|آلودگی|هوا|اقلیم|شهر|استان|محیط/.test(text);
+  const share=/سهم|ترکیب|توزیع|درصد از کل|سهم بازار|سهم‌بندی/.test(text);
+  const vals=items.map(x=>/[%٪]|درصد/.test(x)?rf01008Number(x):null);
+  const allPercent=items.length>=2 && items.length<=7 && vals.every(x=>x!==null&&x>=0);
+  const sum=vals.reduce((a,b)=>a+(b||0),0);
+  // A pie is valid only for exclusive parts of one whole summing to 100%.
+  if(share&&allPercent&&Math.abs(sum-100)<.6)return 'share';
+  return weather?'thematic':'financial';
+ }
+ function rf01008Card(item,x,y,w,h,family,idx){
+  ctx.save();
+  ctx.shadowColor='rgba(25,47,31,.14)';ctx.shadowBlur=14;ctx.shadowOffsetY=5;
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.roundRect(x,y,w,h,Math.min(23,h*.22));ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle='#e4e7df';ctx.lineWidth=1.3;ctx.beginPath();ctx.roundRect(x,y,w,h,Math.min(23,h*.22));ctx.stroke();
+  const iconW=Math.min(75,w*.18),rightW=Math.min(115,w*.29);
+  ctx.strokeStyle='#a6b0aa';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x+w-rightW,y+12);ctx.lineTo(x+w-rightW,y+h-12);ctx.stroke();
+  ctx.save();ctx.fillStyle='#edf6f0';ctx.beginPath();ctx.roundRect(x+9,y+9,iconW-14,h-18,14);ctx.fill();
+  ctx.fillStyle='#087a44';ctx.font='bold '+Math.max(18,Math.min(34,h*.39))+'px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(['◆','●','▲','◈','✦','⬟'][idx%6],x+iconW/2,y+h/2);
+  ctx.restore();
+  const numerical=String(item).match(/(?:[-−]?[۰-۹٠-٩0-9]+(?:[.,٫،][۰-۹٠-٩0-9]+)?\s*(?:٪|%|درصد|میلی‌متر|میلیون|میلیارد|تومان|ریال))\s*$/);
+  let label=item,value='';if(numerical){value=numerical[0].trim();label=item.slice(0,numerical.index).replace(/[:：،\-\s]+$/,'').trim();}
+  if(!value){rf01007CardText(item,x+iconW,y,w-iconW,h,family,'#087b49');return;}
+  rf01007CardText(label||item,x+iconW,y,w-iconW-rightW,h,family,'#20352b');
+  ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#087b49';
+  let f=Math.min(28,h*.34);while(f>14){ctx.font='700 '+f+'px '+family;if(ctx.measureText(value).width<rightW-14)break;f-=1;}
+  ctx.fillText(value,x+w-rightW/2,y+h/2,rightW-12);ctx.restore();
+ }
+ function rf01008Pie(items,cx,cy,r,family){
+  const values=items.map(rf01008Number),colors=['#0a6940','#318551','#68a076','#a6c6a4','#d4e6ce','#e8efe0','#88b495'];
+  let angle=-Math.PI/2;
+  ctx.save();ctx.shadowColor='rgba(18,55,37,.20)';ctx.shadowBlur=22;ctx.shadowOffsetY=17;
+  values.forEach((v,i)=>{const part=2*Math.PI*v/100;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,angle,angle+part);ctx.closePath();ctx.fillStyle=colors[i%colors.length];ctx.fill();angle+=part;});ctx.restore();
+  ctx.strokeStyle='#f8f8f3';ctx.lineWidth=4;angle=-Math.PI/2;
+  values.forEach((v,i)=>{ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(angle)*r,cy+Math.sin(angle)*r);ctx.stroke();angle+=2*Math.PI*v/100;});
+  ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff';
+  angle=-Math.PI/2;values.forEach((v,i)=>{const span=2*Math.PI*v/100;if(v>=8){const mid=angle+span/2;ctx.font='bold '+Math.max(15,Math.min(30,r*.23))+'px '+family;ctx.fillText(String(items[i].match(/[-−]?[۰-۹٠-٩0-9]+(?:[.,٫][۰-۹٠-٩0-9]+)?/)?.[0]||v)+'٪',cx+Math.cos(mid)*r*.64,cy+Math.sin(mid)*r*.64,r*.55);}angle+=span;});ctx.restore();
+ }
+ function rf01007DrawUrgent(pic,template){
+  const W=cv.width,H=cv.height,story=size==='story';
+  const raw=normalizeText(input.value).split(/\n+/).map(x=>x.trim()).filter(Boolean);
+  const manual=rf580TitleOn.checked?normalizeText(rf580TitleText.value):'';
+  const headline=manual||raw[0]||'اینفوگرافیک خبر فوری';
+  const items=manual?raw:raw.slice(1);
+  const family=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
+  const theme=rf01008Theme(headline,items);
+  window.rf01008LastTheme=theme;
+  ctx.save();try{
+   ctx.fillStyle='#f6f3ef';ctx.fillRect(0,0,W,H);
+   // Headline is centered BELOW the original logo, so the whole title remains visible.
+   const logoBottom=story?Math.round(H*.16):Math.round(H*.235);
+   const headingTop=logoBottom+14,maxHeadlineBottom=story?Math.round(H*.31):Math.round(H*.39);
+   const titleEnd=rf01007Heading(headline,W,headingTop,maxHeadlineBottom);
+   const ruleY=Math.min(maxHeadlineBottom+8,titleEnd+12);
+   ctx.fillStyle='#06824e';ctx.fillRect(W*.065,ruleY,W*.87,3);
+   const top=ruleY+25,bottom=H-(story?94:64),bodyH=bottom-top;
+   if(theme==='share'&&!story){
+    const cx=W*.52,cy=top+bodyH*.49,r=Math.min(W*.31,bodyH*.39);
+    rf01008Pie(items,cx,cy,r,family);
+    const cardW=W*.24,cardH=Math.min(138,bodyH*.22),left=34,right=W-cardW-34;
+    items.forEach((item,i)=>{const side=i%2,idx=Math.floor(i/2),count=Math.ceil(items.length/2),cyCard=top+(idx+.5)*(bodyH/count);rf01008Card(item,side?right:left,cyCard-cardH/2,cardW,cardH,family,i);});
+   }else{
+    const left=40,cardW=W*(story?.84:.53),gap=items.length>9?7:12;
+    // Keep illustration away from all editable copy and the authentic brand mark.
+    if(pic&&pic.naturalWidth){
+     const x=story?W*.22:W*.56,y=story?top+bodyH*.48:top+7;
+     const w=story?W*.75:W*.43,h=story?bodyH*.50:bodyH*.92;
+     ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
+     const scale=Math.max(w/pic.naturalWidth,h/pic.naturalHeight),dw=pic.naturalWidth*scale,dh=pic.naturalHeight*scale;
+     ctx.drawImage(pic,x+(w-dw)/2,y+(h-dh)/2,dw,dh);ctx.restore();
+    }
+    const useH=story?bodyH*.47:bodyH,slot=(useH-gap*(items.length-1))/Math.max(items.length,1);
+    if(slot<27&&items.length)statusEl.textContent='داده‌ها برای این ابعاد زیاد است؛ برای خوانایی بهتر، تعداد سطرها را کاهش دهید.';
+    const cardH=Math.max(23,Math.min(story?155:145,slot));
+    items.forEach((item,i)=>{const y=top+i*(cardH+gap);if(y+cardH>top+useH+1)return;rf01008Card(item,left,y,cardW,cardH,family,i);});
+   }
+   // No handle or generated watermark; the original PNG is stamped exactly once.
+   ctx.drawImage(template,0,0,W,H);
+  }finally{ctx.restore();}
+ }
  // RushFinder 01000: exact source logo always wins over AI generated pixels.
  // A successful draw *requires* the matching brand PNG, never ship an unbranded frame.
  function rf702DrawFinal(){
@@ -791,12 +907,13 @@ function rf581Render(){
     const bottom=Math.round(H*(isStory?0.925:0.89));
     ctx.drawImage(pic,0,0,pic.naturalWidth,pic.naturalHeight,0,0,W,bottom);
    }
-   // Before stamping the fixed logo template, blank the logo safe-area so no
-   // generated text remains visible under the preserved brand mark.
-   rf702PaintLogoSafeZone(ctx,W,H,brand,size);
-   // The selected brand's pixel-identical, transparent source PNG is always
-   // stamped LAST. Never draw another brand's logo or a substitute bar.
-   ctx.drawImage(template,0,0,W,H);
+   if(brand==='urgent'){
+    // Re-compose from original user text. This replaces the AI layout entirely.
+    rf01007DrawUrgent(pic,template);
+   }else{
+    rf702PaintLogoSafeZone(ctx,W,H,brand,size);
+    ctx.drawImage(template,0,0,W,H);
+   }
   }finally{ctx.restore();}
   window.rf1000ComposedReady=true;
   layoutName.textContent='محتوا + لوگوی ثابت اصلی '+brands[brand].name;updateMeta();
@@ -1009,7 +1126,7 @@ const rf586OriginalRender=render;
     if(!blob)throw new Error('ساخت فایل PNG امکان‌پذیر نیست.');
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');a.href=url;
-    a.download='RushFinder-Infographic-01003-'+brand+'-'+size+'.png';
+    a.download='RushFinder-Infographic-01007-'+brand+'-'+size+'.png';
     document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);
    }catch(err){console.error(err);statusEl.textContent=err.message;}
    finally{b.disabled=false;}
@@ -1145,37 +1262,20 @@ function rf01003UrgentLayoutGuide(news){
 }
 function rf01003UrgentPrompt(c){
  const shape=c.size==='story'?'استوری عمودی ۹:۱۶':'مربع ۱:۱';
- const styleMap={
-  auto:'سه‌بعدی تحریریه‌ای با عمق طبیعی و نمایش واضح داده‌ها',
-  '3d':'سه‌بعدی با حجم و نورپردازی استودیویی نرم',
-  '2d':'دوبعدی فلت؛ تم سفید/سبز و کارت‌ها حفظ شوند',
-  minimal:'مینیمال و بسیار خلوت، با همان هویت سفید/سبز',
-  table:'جدول و کارت‌های منظم با همان هویت سفید/سبز',
-  chart:'نمودار دقیق طبق اعداد منبع، با همان هویت سفید/سبز',
-  comparison:'مقایسهٔ تمیز و هندسی در قالب سفید/سبز',
-  timeline:'تایم‌لاین با تاریخ‌های واقعی منبع در قالب سفید/سبز',
-  cards:'کارت‌های برجسته سفید در قالب سفید/سبز',
-  other:'ترجیح سبک کاربر با حفظ رنگ و لوگوی ثابت رسانه'
- };
+ // RF01007: the model makes only visual art. Typography and fixed brand logo
+ // are rendered on Canvas from the exact editable source, with selected font.
  return [
-  'یک اینفوگرافیک فارسی بسیار حرفه‌ای، خوانا و آماده انتشار بساز. اندازه: '+shape+'. برند: خبر فوری.',
-  'هویت بصری ثابت: زمینه سفید گرم یا کرم خیلی روشن (#F6F4F0)، سبز زمردی تیره (#006D3C)، مشکی زغالی و سبز ملایم. ظاهر روشن و مینیمال؛ نه تم تیره یا قرمز/زرد جیغ.',
-  'طراحی سریالی اجباری مطابق سه مرجع تأییدشده کاربر: بک‌گراند سفید گرم/کرم مات، تیتر بسیار درشت فارسی با وزن مشکی و چند کلیدواژه سبز، کارت‌های افقی سفید سرامیکی برجسته با گوشه‌های گرد و سایه خاکستری ملایم، اعداد سبز زمردی بزرگ و خوانا، آیکون کوچک سه‌بعدی موضوعی در هر کارت، تصویرسازی سه‌بعدی استودیویی ممتاز با متریال واقعی و نور نرم. از قالب خبر فوری دیگری استفاده نکن.',
-  'طرح پایه برای اخبار دارای چند داده: بالای کادر تیتر بولد با رعایت ناحیه لوگو؛ از حدود ۲۳٪ ارتفاع به پایین، ستون چپ شامل ردیف‌های اطلاعاتی مرتب با نام و مقدار دقیق، ستون راست تصویرسازی سه‌بعدی موضوع خبر. اگر خبر سهم از یک کل با جمع دقیقاً ۱۰۰ درصد است، مجاز به نمودار دایره‌ای سبز سه‌بعدی با برچسب‌های شکیل هستی. اگر متن درباره بارش است، ابر بارانی سه‌بعدی و نقشهٔ مفهومی ایران؛ اگر بورس و اقتصاد است، میله، نمودار سبز و نماد موضوعات مرتبط؛ اگر خودروسازان است، نمودار و خودرو. از نمادسازی بی‌ارتباط اجتناب کن.',
-  'هماهنگی سریالی الزام‌آور: حاشیه سفید منظم، ترازبندی دقیق و فضای تنفس، حداکثر دو ستون؛ بی‌نظمی تایپوگرافی، قرارگیری ردیف روی تصویر، تیتر قطع شده، عناصر خارج از کادر و هر نوع سبک کارتونی یا پوستر تبلیغاتی ممنوع.',
-  'سبک انتخابی کاربر: '+(styleMap[c.style]||styleMap.auto)+'.',
-  rf01003UrgentLayoutGuide(c.news),
-  'نوشته‌ها و اعداد فقط از متن منبع باشند؛ هیچ قیمت، درصد، عنوان، واحد، تاریخ یا منبعی را جعل یا حذف نکن. خط نخست تیتر است، بقیه داده‌ها؛ هر مورد دقیقاً یک‌بار. تمام ارقام فارسی و متون راست‌به‌چپ خوانا باشند.',
-  'نمودار دایره‌ای فقط اگر مقادیر واقعاً سهم یک کل و جمع آن‌ها ۱۰۰٪ است؛ برای بازدهی مستقل، نمودار میله‌ای مناسب‌تر است.',
-  'لوگوی رسمی خبر فوری، همان لوگوی اصلی فایل PNG سایت است و در پایان توسط وب‌سایت بدون هیچ بازطراحی روی تصویر قرار می‌گیرد. مدل نباید خودش هیچ لوگو، متن خبر فوری، نوار برند، واترمارک یا نام کاربری بسازد.',
-  rf724LogoSafePrompt('urgent',c.size),
-  'پس‌زمینه کرم را بدون نوار کناری خالی تا لبه راست ادامه بده.',
-  'چیدمان یکپارچه، کارت‌های داده و شکل سه‌بعدی بدون شلوغی؛ هیچ نوشته خارج از کادر نباشد.',
-  c.customPrompt?'دستور تکمیلی کاربر: '+rf724PersianDigits(c.customPrompt.slice(0,400)):'',
-  'متن منبع:',rf724StructuredNews(c.news),
-  'فقط یک تصویر واحد تولید کن.'
- ].filter(Boolean).join('\n');
+  'فقط تصویرسازی سه‌بعدی و بدون متن بساز. اندازه: '+shape+'.',
+  'طرح سه‌بعدی خبری حرفه‌ای مطابق نمونه‌های خبر فوری، رنگ غالب سبز زمردی، سفید و کرم روشن؛ نور نرم استودیویی، متریال باکیفیت و پس‌زمینه یکپارچه.',
+  'تصویرسازی باید موضوع همین خبر را نشان دهد، اما هیچ عدد، حرف، کلمه، تیتر، نوشتهٔ فارسی یا لاتین، برچسب، لوگو، نشان تجاری، آرم، واترمارک، آیدی یا مُهر رسانه نداشته باشد.',
+  'هیچ لوگوی خبر فوری یا لوگوی دیگری در هیچ کجای تصویر تولید نکن. جایگاه لوگوی اصلی بعداً توسط سایت اضافه می‌شود.',
+  'تمام تصویر فقط عناصر تصویری مرتبط، اشیای سه‌بعدی، نمودار بی‌نوشته و نقش‌های غیرنوشتاری باشد.',
+  'فضای پشت تصویر کرم بسیار روشن و یکدست باشد. هیچ کادر سفیدِ مجزا یا مربع خالی مخصوص لوگو طراحی نکن.',
+  'موضوع برای انتخاب تصویرسازی (نه برای نوشتن در تصویر): '+c.news.slice(0,1500),
+  'فقط یک تصویر بدون هیچ نوشته تولید کن.'
+ ].join('\n');
 }
+
 function promptFor(c){
  if(c.brandKey==='urgent')return rf01003UrgentPrompt(c);
  const styleRules={
@@ -1288,7 +1388,7 @@ btn.addEventListener('click',async evt=>{
    await window.rf705LoadTemplate();
    if(typeof window.rf702DrawFinal!=='function')throw new Error('تابع نمایش خروجی در این صفحه در دسترس نیست.');
    window.rf702DrawFinal();
-   say('✓ تصویر دریافت و با قالب اصلی برند ترکیب شد؛ PNG دانلودی همان پیش‌نمایش است.'+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
+   say('✓ تصویرسازی دریافت شد؛ تیتر و داده‌ها با فونت انتخابی و لوگوی ثابت سایت ترکیب شدند.'+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
   }catch(renderError){
    console.error('RF0728 image received but local composition failed',renderError);
    say('✓ تصویر از GPT Image از طریق AvalAI دریافت شده، ولی نمایش یا بارگذاری قالب در سایت خطا دارد: '+(renderError?.message||'خطای نامشخص')+' — از ساخت مجدد تصویر پولی خودداری کن؛ ابتدا فایل قالب را بررسی کن.');
