@@ -90,11 +90,24 @@ function safeHttpsImageUrl(raw) {
     return u.href;
   } catch {return null;}
 }
+// Optional exact HTTPS media hostnames configured privately in Vercel, not in browser code.
+// Example: RF_IMAGE_ALLOWED_HOSTS=images.example-cdn.com,storage.example-cdn.com
+// Do NOT use wildcard or broad suffix entries here. Never accept the client URL alone as authorization.
+function configuredImageHosts() {
+  return new Set(String(process.env.RF_IMAGE_ALLOWED_HOSTS || '').split(',')
+    .map(h=>h.trim().toLowerCase()).filter(h=>/^(?=.{4,200}$)[a-z0-9-]+(?:\.[a-z0-9-]+)+$/.test(h)));
+}
 function safeRemoteHost(url) {
   const h = new URL(url).hostname.toLowerCase();
   return h==='storage.googleapis.com' || h.endsWith('.storage.googleapis.com') ||
     h.endsWith('.blob.core.windows.net') || h==='files.oaiusercontent.com' ||
-    h.endsWith('.oaiusercontent.com') || h.endsWith('.avalai.ir');
+    h.endsWith('.oaiusercontent.com') || h==='avalai.ir' || h.endsWith('.avalai.ir') ||
+    configuredImageHosts().has(h);
+}
+function explainRejectedHost(url) {
+  let h='ناشناخته';
+  try { h=new URL(url).hostname.toLowerCase().slice(0,200); } catch {}
+  return 'میزبان فایل تصویر مجاز نیست: '+h+'. برای بازیابی رایگان، فقط نام همین میزبان را در متغیر RF_IMAGE_ALLOWED_HOSTS پروژه Vercel ثبت کن و Deploy بگیر. از ساخت مجدد تصویر خودداری کن.';
 }
 async function tryFetchImageUrl(url, signal) {
   // Only access vetted storage endpoints, and never follow redirects (SSRF defense).
@@ -135,7 +148,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET' && req.query?.recover === 'image') {
     const remote = safeHttpsImageUrl(String(req.query?.url || ''));
     if (!remote || !safeRemoteHost(remote)) {
-      return imageError(res, 400, 'آدرس تصویر خارج از میزبان‌های مجاز یا نامعتبر است.');
+      return imageError(res, 400, remote ? explainRejectedHost(remote) : 'آدرس HTTPS تصویر نامعتبر است؛ ساخت مجدد نزن.', false);
     }
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 20000);
