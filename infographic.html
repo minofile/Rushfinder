@@ -297,7 +297,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01023</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01024</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -1003,8 +1003,9 @@ function rf581Render(){
   const W=cv.width,H=cv.height,story=size==='story';
   const raw=normalizeText(input.value).split(/\n+/).map(v=>v.trim()).filter(Boolean);
   const manual=rf580TitleOn.checked?normalizeText(rf580TitleText.value):'';
-  const headline=manual||raw[0]||'اینفوگرافیک خبر فوری';
-  const rows=rf01019DisplayRows(manual?raw:raw.slice(1));
+  const headline=rf01024CurateNews(input.value,manual,size).headline||'اینفوگرافیک خبر فوری';
+  const curated=rf01024CurateNews(input.value,manual,size);
+  const rows=rf01019DisplayRows(curated.items);
   const family=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
   const theme=window.rfUrgentTheme(headline,rows);
   const pal={accent:'#00834A',dark:'#006D3C',pale:'#e8f5ef',warm:'#d4eee0',bg:'#F6F3EF',type:'urgent-brand'}; // Brand fixed regardless of topic
@@ -1390,6 +1391,41 @@ function rf724ActiveBrandKey(){
 function rf724BrandName(key){
  return ({urgent:'خبر فوری',mashhad:'اخبار مشهد',jaryan:'جریان',farda:'خبرفردا'})[key]||'خبر فوری';
 }
+// 01024: deterministic, no-API curation of raw Persian news into one readable design.
+// Never fabricate a figure or rewrite an extracted fact. The full news stays in the editor.
+function rf01024CurateNews(raw,manualTitle='',sizeKey='square'){
+ const clean=s=>rf724PersianDigits(rf726NormalizeText(s).replace(/^[\s•●▪🔹🔸\-*]+/u,'').trim());
+ const full=rf726NormalizeText(raw);
+ const paragraphs=full.split(/\n+/u).map(clean).filter(Boolean);
+ let headline=clean(manualTitle)||(paragraphs[0]||'');
+ // A raw article paragraph may have dozens of facts; use only its first headline-like clause.
+ if(!manualTitle&&headline.length>130){headline=headline.split(/[.!؟؛]/u)[0].slice(0,112).trim()||headline.slice(0,112).trim();}
+ let pool=manualTitle?paragraphs:paragraphs.slice(1);
+ // A single long article is divided into its ORIGINAL sentences, without paraphrasing.
+ if(pool.length<3&&full.length>360){
+  const base=manualTitle?full:full.slice((paragraphs[0]||'').length);
+  pool=base.split(/(?<=[.!؟؛])\s+|\n+/u).map(clean).filter(Boolean);
+ }
+ const candidates=[];
+ for(const entry of pool){
+  const line=clean(entry);
+  if(!line||line===headline||/^منبع\s*[:：]/u.test(line)||/^https?:\/\//i.test(line))continue;
+  if(/[:：]\s*$/u.test(line)&&line.length<105)continue; // section heading only
+  if(!/[\p{L}\p{N}]/u.test(line))continue;
+  if(candidates.some(c=>c.text===line))continue;
+  const numberCount=(line.match(/[۰-۹0-9]+(?:[٫.,٬][۰-۹0-9]+)*/g)||[]).length;
+  const hasUnits=/(?:میلیارد|میلیون|هزار|درصد|٪|مترمکعب|کیلومتر|میلی‌متر|تومان|ریال|نفر|سال|ماه|مگاوات|هکتار|درجه)/u.test(line);
+  const isComparison=/(?:افزایش|کاهش|رشد|سقوط|تغییر|مقایسه|نسبت به|برابر|بیشتر|کمتر|بالاتر|پایین‌تر)/u.test(line);
+  const date=/(?:آبان|آذر|دی|بهمن|اسفند|فروردین|اردیبهشت|خرداد|تیر|مرداد|شهریور|مهر|۱۴۰[۰-۹]|۲۰۲[۰-۹])/u.test(line);
+  const score=(numberCount?5+Math.min(numberCount,3):0)+(hasUnits?3:0)+(isComparison?3:0)+(date?1:0)+(line.length>170?-3:0)+(line.length>280?-4:0);
+  candidates.push({text:line,score,index:candidates.length});
+ }
+ // One coherent infographic: 5 key facts for square, 7 for story. Keep source order.
+ const limit=sizeKey==='story'?7:5;
+ const chosen=candidates.slice().sort((a,b)=>b.score-a.score||a.index-b.index).slice(0,limit).sort((a,b)=>a.index-b.index);
+ return {headline,items:chosen.map(x=>x.text),total:candidates.length,omitted:Math.max(0,candidates.length-chosen.length),limit,curated:candidates.length>limit};
+}
+window.rf01024CurateNews=rf01024CurateNews;
 function rf724StructuredNews(raw){
  const lines=rf726NormalizeText(raw).split(/\n+/).map(s=>s.trim()).filter(Boolean);
  // Preserve exactly the supplied facts. Do not introduce synthetic row numbers.
@@ -1447,9 +1483,9 @@ function rf01014UrgentSubjectGuide(headline,items){
 }
 function rf01003UrgentPrompt(c){
  const shape=c.size==='story'?'استوری عمودی ۹:۱۶':'مربع ۱:۱';
- const ls=rf724StructuredNews(c.news).split('\n').filter(Boolean);
- const headline=c.headline||ls[0]||'';
- const items=c.headline?ls:ls.slice(1);
+ const chosen=rf01024CurateNews(c.news,c.headline,c.size);
+ const headline=chosen.headline;
+ const items=chosen.items;
  const theme=window.rfUrgentTheme(headline,items);
  if(c.designMode==='editorial'){
   const flat=c.style==='2d'||(c.style==='other'&&/دو.?بعد|فلت|وکتور/.test(c.customPrompt));
@@ -1463,7 +1499,7 @@ function rf01003UrgentPrompt(c){
    'قانون مطلق برند خبر فوری: رنگ قالب و هویت اصلی همیشه سبز زمردی #00834A، سبز تیره #006D3C و کرم روشن #F6F3EF و سفید است. سبز در تیترهای تأکیدی، برچسب‌ها، عناصر رابط و کارت‌های اطلاعاتی غالب باشد. رنگ واقعی اشیای سوژه (مثلاً رنگ مرغ، آب، طلا) طبیعی و معتبر بماند اما قرمز و زرد و مشکی هرگز به رنگ غالب طراحی و بنرها تبدیل نشوند. تم سبز را حتی در خبر گرانی یا هشدار حفظ کن. این قاعده از هر دستور رنگ در متن کاربر مهم‌تر است.',
    'موضوع و اشیای مرتبط: '+subject,
    'تیتر را بزرگ، چشمگیر و با ترکیب‌بندی پوستر خبری در بخش بالایی قرار بده؛ داده‌ها را روی برچسب‌ها و کارت‌های جذاب و خوانا و مرتبط پخش کن؛ نه جدول یکنواخت.',
-   'تمام متن، نام‌ها، تاریخ‌ها، واحدها و اعداد منبع را عیناً و فقط با ارقام فارسی بگذار. هیچ داده، قیمت یا درصدی اختراع نکن. داده‌های بیش از حد را کوچک نکن؛ حداکثر خوانایی را در اولویت بگذار.',
+   'فقط نکات منتخب زیر را در این تک‌تصویر استفاده کن. متن خام خبر نزد کاربر حفظ شده و موارد کم‌اولویت عمداً برای خوانایی به این تصویر فرستاده نمی‌شوند؛ هیچ عدد، واحد یا نکته جدید اختراع نکن. داده‌های منتخب را عیناً و با رقم فارسی بنویس.',
    'قالب اصلی خبر فوری در صفحه وب بعد از ساخت، به صورت فایل PNG بدون حتی یک پیکسل بازطراحی روی خروجی قرار می‌گیرد. هرگز لوگوی جدید، نوشته «خبر فوری»، نشان رسانه، لوگوی جعلی یا نقش مشابه لوگو تولید نکن. دقیقاً ۳۰٪ عرض سمت راست و ۲۱٪ ارتفاع بالای قاب، بدون نوشته، تیتر، کارت، سوژه، سایه یا عنصر برجسته باشد؛ فقط زمینه روشن یکدست کرم/سفید در آن دیده شود. گوشه راست قالب را نکش، لوگو را نقاشی نکن، هیچ مستطیل اضافی نساز. متن بزرگ تیتر در بقیه قسمت بالایی و بدون برخورد با لوگو قرار بگیرد.',
    'نمودار دایره‌ای سهم از کل فقط برای توزیع واقعی ۱۰۰٪ مجاز است؛ برای درصدهای مستقل ممنوع.',
    c.customPrompt?'توضیح طراحی کاربر: '+c.customPrompt.slice(0,500):'',
@@ -1508,14 +1544,15 @@ function promptFor(c){
  };
  const shape=c.size==='story'?'استوری عمودی ۹:۱۶':'مربع ۱:۱';
  const custom=c.customPrompt?'دستور تکمیلی کاربر: '+rf724PersianDigits(c.customPrompt.slice(0,480)):'';
- const raw=rf724StructuredNews(c.news);
+ const selected=rf01024CurateNews(c.news,c.headline,c.size);
+ const raw=[selected.headline,...selected.items].filter(Boolean).join('\n');
  return [
   'یک اینفوگرافیک فارسی حرفه‌ای و انتشارپذیر بساز.',
   'ابعاد: '+shape+'. رسانه: '+c.brand+'.',
   styleRules[c.style]||styleRules.auto,
   'انتخاب سبک کاربر قطعی است؛ سبک دیگری را با آن ترکیب نکن.',
   'خط اول متن منبع تیتر است. تیتر را فقط یک‌بار، یکپارچه با طرح و بدون کادر سفید اضافی نمایش بده؛ باقی خطوط محتوای طرح هستند.',
-  'همهٔ اقلام منبع را دقیقاً یک‌بار بیاور. متن، واحد و اعداد را تغییر نده، تکرار نکن و هیچ مقدار ساختگی مثل درصد، شماره تماس یا ردیف نمونه اضافه نکن.',
+  'فقط داده‌های منتخب زیر را به‌صورت خوانا بیاور، هر مورد یک‌بار؛ متن، واحد و اعداد را تغییر نده، تکرار نکن و هیچ مقدار ساختگی اضافه نکن. متن کامل خبر در کادر ورودی حفظ می‌شود.',
   'تمام اعداد واقعی منبع با ارقام فارسی نوشته شوند. از نمایش رشتهٔ آزمایشی ارقام خودداری کن.',
   'خوانایی، هماهنگی رنگ، آیکون معنادار، ترکیب‌بندی حرفه‌ای، اندازه‌های متنوع و فاصله‌گذاری منظم را رعایت کن.',
   'یک تصویر محتوایی مستقل بساز که همهٔ تیترها، آمار و تصاویر در محدودهٔ خودش و با حاشیهٔ امن ۵ درصد جا شوند. هیچ متن یا عددی از لبه قطع نشود.',
@@ -1523,7 +1560,7 @@ function promptFor(c){
   rf724LogoSafePrompt(c.brandKey,c.size),
   'هیچ لوگو، نام رسانه، نام شرکت، واترمارک یا نوار برند نساز؛ لوگوی اصلی به صورت لایهٔ قفل شده بعد از ساخت اضافه می‌شود و نباید توسط مدل بازطراحی شود.',
   'مثل یک اینفوگرافیک تحریریه‌ای حرفه‌ای طراحی کن: تیتر خوانا، بلوک‌های متنوع متناسب با تعداد اقلام، تصویر یا آیکون مرتبط برای هر گروه، سلسله‌مراتب واضح و یک کادر جمع‌بندی در پایین؛ بدون باکس‌های بزرگ خالی.',
-  'همهٔ محتوا، اعداد و نام‌ها باید فقط از متن کاربر باشند؛ موردی را حذف یا جعل نکن. برای متن‌های بلند فونت را مناسب کن.',
+  'تمام محتوای نمایش‌داده‌شده باید دقیقاً از متن کاربر باشد؛ برای خوانایی فقط نکات منتخب نمایش داده شوند و هیچ داده‌ای جعل نشود.',
   custom,
   'متن منبع (بدون افزودن هیچ کلمه یا داده):',raw,
   'خروجی یک تصویر واحد باشد.'
@@ -1540,7 +1577,7 @@ function reviewPrompt(draft){
    <label for="rf716-prompt">پرامپت نهایی (قابل ویرایش)</label>
    <textarea id="rf716-prompt" spellcheck="false" dir="rtl"></textarea>
    <p id="rf716-count" aria-live="polite"></p>
-   <p class="rf716-warning">نتیجهٔ GPT Image ممکن است شامل عدد یا متن نادرست باشد. خروجی را قبل از انتشار بررسی کن؛ در برند خبر فوری، تم مرجع به‌صورت خودکار از متن تشخیص داده می‌شود و لوگوی اصلی بدون تغییر روی خروجی قرار می‌گیرد.</p>
+   <p class="rf716-warning">نتیجهٔ GPT Image ممکن است شامل عدد یا متن نادرست باشد. خروجی را قبل از انتشار بررسی کن؛ در خبرهای طولانی سایت فقط آمار و نکات مهم را از متن اصلی انتخاب می‌کند؛ قبل از پرداخت فهرست را بررسی کن. تم خبر فوری همیشه سبز است و لوگوی اصلی بدون تغییر روی خروجی قرار می‌گیرد.</p>
    <div class="rf716-actions"><button type="button" id="rf716-approve">تأیید و ساخت تصویر</button><button type="button" id="rf716-reset">بازسازی متن پیش‌فرض</button><button type="button" id="rf716-cancel">لغو</button></div>
   </section>`;
   const previousFocus=document.activeElement;
@@ -1590,11 +1627,9 @@ btn.addEventListener('click',async evt=>{
  evt.preventDefault();evt.stopImmediatePropagation();
  if(running)return;
  const c=current();if(!c.news){say('ابتدا متن خبر را وارد کن.');return}
- if(c.brandKey==='urgent'){
-  const count=c.news.split(/\n/).map(x=>x.trim()).filter(Boolean).length-(c.headline?0:1);
-  if(count>18){say('بیش از ۱۸ ردیف داده در یک تصویر خوانا نیست. لطفاً متن را به چند اینفوگرافیک تقسیم کن. هیچ درخواست پولی ارسال نشد.');return;}
- }
  const sig=JSON.stringify(c);
+ const summary=rf01024CurateNews(c.news,c.headline,c.size);
+ if(summary.curated){say('✓ از '+summary.total+' نکتهٔ قابل‌نمایش، '+summary.items.length+' نکتهٔ مهم برای یک '+(c.size==='story'?'استوری':'پست مربع')+' انتخاب شد. متن خام شما حفظ شده است؛ فهرست دقیق را در پنجره تأیید بررسی کن. هنوز هزینه‌ای مصرف نشده.');}
  const reviewedPrompt=await reviewPrompt(promptFor(c));
  if(reviewedPrompt===null){say('ساخت لغو شد؛ هیچ درخواستی به AvalAI ارسال نشد.');return;}
  // 01023: FREE preflight: validate the original logo asset for selected brand/format.
