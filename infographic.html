@@ -297,7 +297,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01036</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01038</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -359,7 +359,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
   <label for="rf962-model">GPT Image — AvalAI (اوَل‌ای‌آی)</label>
   <select id="rf962-model" aria-label="انتخاب مدل تصویر AvalAI"><option value="gpt-image-2.5-flare" selected>GPT Image 2.5 Flare — تصویرسازی</option><option value="gpt-image-2.5-sunburst">GPT Image 2.5 Sunburst — جزئیات بیشتر</option><option value="gpt-image-2">GPT Image 2 — مدل جایگزین</option></select>
   <label for="rf962-quality">کیفیت</label>
-  <select id="rf962-quality" aria-label="کیفیت تصویر"><option value="high">بالا (هزینه بیشتر)</option><option value="medium" selected>متوسط — کیفیت بهتر (هزینه بیشتر از پایین)</option><option value="low">پایین (فقط آزمایش کم‌هزینه)</option></select>
+  <select id="rf962-quality" aria-label="کیفیت تصویر"><option value="high" selected>بالا — خروجی نهایی حرفه‌ای (هزینه بیشتر)</option><option value="medium">متوسط — اقتصادی‌تر</option><option value="low">پایین (فقط آزمایش کم‌هزینه)</option></select>
   <p style="color:#99622d;font-size:11px;line-height:1.9">برای خروجی بهتر، کیفیت متوسط پیش‌فرض است؛ هزینه آن ممکن است بیشتر از Low باشد. پیش از هر ساخت، پرامپت و درخواست پولی را تأیید می‌کنی.</p>
   <label for="rf962-access">کد دسترسی مدیر (غیر از API Key)</label>
   <input id="rf962-access" type="password" autocomplete="off" spellcheck="false" placeholder="کد اختصاصی مدیر را وارد کنید" aria-label="کد دسترسی مدیر">
@@ -1207,80 +1207,82 @@ function rf581Render(){
   const raw=normalizeText(input.value||'');if(!raw.trim())return;
   const manual=rf580TitleOn.checked?normalizeText(rf580TitleText.value):'';
   const data=window.rf01024CurateNews?.(raw,manual,'square');
-  const items=(data?.items||[]).filter(Boolean);
-  if(!items.length)return;
-  const W=cv.width,H=cv.height,farda=brand==='farda';
-  const pal={urgent:['#00834A','#006D3C','#F6F3EF'],mashhad:['#E5B600','#765300','#FFF9E9'],jaryan:['#E5BC17','#222222','#FAFAF5'],farda:['#D02D4B','#821128','#FFF8FA']}[brand]||['#00834A','#006D3C','#fff'];
-  const font=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
+  const items=(data?.items||[]).filter(Boolean);if(!items.length)return;
+  const W=cv.width,H=cv.height;
+  // Match the normalized AI art geometry exactly in pixels.
+  const top=.58,bottom=brand==='farda'?.845:.968,cols=items.length>=5?3:items.length===1?1:2;
+  const rows=Math.ceil(items.length/cols),gapX=18/W,gapY=16/H,x0=.035,fullW=.93;
+  const cardW=(fullW-(cols-1)*gapX)*W/cols;
+  const cardH=(bottom-top-(rows-1)*gapY)*H/rows;
+  if(cardH<116){statusEl.textContent='متن برای یک تصویر مربع زیاد است؛ ساخت متوقف شود و نکات کمتری انتخاب شوند.';return;}
+  const sidePhoto=items.length<=4;
+  const colors={urgent:['#00834A','#006D3C','#F6F3EF'],mashhad:['#E5B600','#765300','#FFF9E9'],jaryan:['#E5BC17','#222222','#FAFAF5'],farda:['#D02D4B','#821128','#FFF8FA']}[brand]||['#00834A','#006D3C','#F6F3EF'];
+  const family=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
   const st=rf580Style.value,volumetric=st==='3d'||st==='auto'||st==='cards'||(st==='other'&&rf580EffectiveStyle()==='3d');
-  const top=H*.58,bottom=H*(farda?.845:.968),x0=W*.035,totalW=W*.93;
-  const n=items.length,cols=n>=5?3:n===1?1:2,rows=Math.ceil(n/cols),gapX=18,gapY=16;
-  const cardW=(totalW-(cols-1)*gapX)/cols,cardH=(bottom-top-(rows-1)*gapY)/rows;
-  if(cardH<116){statusEl.textContent='کارت‌ها فضای کافی ندارند؛ داده‌ها را در بازبینی بررسی کن.';return;}
   const round=(x,y,w,h,r)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r)};
-  const availableType=(text,boxW,boxH,max=31,min=14)=>{
-   const words=String(text||'').split(/\s+/u).filter(Boolean);
-   for(let px=Math.min(max,Math.floor(boxH*.63));px>=min;px--){
-    ctx.font='800 '+px+'px '+font;const lines=[];let line='';
+  const photo=window.rf702FinalImage;
+  let anyOverflow=false;
+  function fit(text,maxW,maxH,preferred,min=13){
+   const words=String(text||'').trim().split(/\s+/u).filter(Boolean);
+   for(let fs=preferred;fs>=min;fs--){
+    ctx.font='800 '+fs+'px '+family;
+    const lines=[];let line='';
     for(const word of words){const next=line?line+' '+word:word;
-     if(line&&ctx.measureText(next).width>boxW){lines.push(line);line=word;}else line=next;}
+     if(line&&ctx.measureText(next).width>maxW){lines.push(line);line=word;}else line=next;}
     if(line)lines.push(line);
-    if(lines.length*px*1.30<=boxH&&lines.every(line=>ctx.measureText(line).width<=boxW))return {px,lines};
+    if(lines.every(l=>ctx.measureText(l).width<=maxW)&&lines.length*fs*1.32<=maxH)return {lines,fs};
    }
    return null;
-  };
-  function drawText(value,x,cy,w,h,max,min=14,color=pal[1]){
-   const fitted=availableType(value,w,h,max,min);if(!fitted){window.rf01035Unfit=true;return;}
-   ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='middle';ctx.direction='rtl';
-   ctx.font='800 '+fitted.px+'px '+font;
-   const lh=fitted.px*1.30;
-   fitted.lines.forEach((line,j)=>ctx.fillText(line,x,cy+(j-(fitted.lines.length-1)/2)*lh,w));
   }
-  const photo=window.rf702FinalImage;
-  window.rf01035Unfit=false;
+  function centered(text,x,y,w,h,desired,color){
+   const fitted=fit(text,w,h,desired);
+   if(!fitted){anyOverflow=true;return;}
+   ctx.save();ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=color;
+   ctx.font='800 '+fitted.fs+'px '+family;
+   const lh=fitted.fs*1.32;
+   fitted.lines.forEach((line,j)=>ctx.fillText(line,x,y+(j-(fitted.lines.length-1)/2)*lh,w));
+   ctx.restore();
+  }
   ctx.save();try{
-   // Eliminate baked-in AI placeholder outlines; rebuild exactly one aligned card grid.
-   const back=ctx.createLinearGradient(0,top,0,H);back.addColorStop(0,'rgba(246,249,243,.65)');back.addColorStop(1,brand==='urgent'?'rgba(231,243,232,.87)':'rgba(251,249,246,.86)');
-   ctx.fillStyle=back;ctx.fillRect(0,top,W,H-top);
+   // No opaque blanket over the bottom half: preserve photorealistic scene between cards.
    items.forEach((item,i)=>{
-    const row=Math.floor(i/cols),inRow=Math.min(cols,n-row*cols),col=inRow-1-(i%cols);
-    const offset=(cols-inRow)*(cardW+gapX)/2;
-    const x=x0+offset+col*(cardW+gapX),y=top+row*(cardH+gapY),radius=26;
-    const card=data.cards?.[i]||null;
-    const labelH=card?cardH*.49:cardH*.45,photoH=cardH-labelH;
-    ctx.save();if(volumetric){ctx.shadowColor='rgba(0,50,30,.24)';ctx.shadowBlur=20;ctx.shadowOffsetY=12;}
-    round(x,y,cardW,cardH-3,radius);ctx.fillStyle='#fff';ctx.fill();ctx.restore();
-    ctx.save();round(x+5,y+5,cardW-10,photoH+1,Math.max(14,radius-6));ctx.clip();
-    if(photo&&photo.naturalWidth){
-      // Crop exactly the source image cell, avoiding duplicate model-painted frames/text.
-      // The AI is instructed to place each distinct photo within this coordinate grid.
-      const r=Math.floor(i/cols),c=col,srcX=Math.max(0,Math.min(photo.naturalWidth-1,((x+6)/W)*photo.naturalWidth));
-      const srcY=Math.max(0,Math.min(photo.naturalHeight-1,((y+5)/H)*photo.naturalHeight));
-      const srcW=Math.min(photo.naturalWidth-srcX,((cardW-12)/W)*photo.naturalWidth);
-      const srcH=Math.min(photo.naturalHeight-srcY,((photoH-8)/H)*photo.naturalHeight);
-      if(srcW>2&&srcH>2)ctx.drawImage(photo,srcX,srcY,srcW,srcH,x+5,y+5,cardW-10,photoH-4);
+    const row=Math.floor(i/cols),inRow=Math.min(cols,items.length-row*cols),col=inRow-1-(i%cols);
+    const offset=(cols-inRow)*(cardW+18)/2;
+    const x=x0*W+offset+col*(cardW+18),y=top*H+row*(cardH+16),radius=23;
+    const card=data.cards?.[i];
+    const photoBox=sidePhoto
+     ?{x:x+6,y:y+6,w:cardW*.425-10,h:cardH-14}
+     :{x:x+6,y:y+6,w:cardW-12,h:cardH*(card?.51:.55)-8};
+    ctx.save();if(volumetric){ctx.shadowColor='rgba(0,40,25,.31)';ctx.shadowBlur=25;ctx.shadowOffsetY=12;}
+    const bg=ctx.createLinearGradient(x,y,x,y+cardH);
+    bg.addColorStop(0,'rgba(255,255,255,.98)');bg.addColorStop(1,colors[2]);
+    round(x,y,cardW,cardH-3,radius);ctx.fillStyle=bg;ctx.fill();ctx.restore();
+    // Crop photo from precisely its painted location in the source AI image.
+    ctx.save();round(photoBox.x,photoBox.y,photoBox.w,photoBox.h,16);ctx.clip();
+    if(photo&&photo.naturalWidth&&photoBox.w>0&&photoBox.h>0){
+     const sx=(photoBox.x/W)*photo.naturalWidth,sy=(photoBox.y/H)*photo.naturalHeight;
+     const sw=(photoBox.w/W)*photo.naturalWidth,sh=(photoBox.h/H)*photo.naturalHeight;
+     ctx.drawImage(photo,sx,sy,sw,sh,photoBox.x,photoBox.y,photoBox.w,photoBox.h);
     }
     ctx.restore();
-    const textY=y+photoH;
-    const label=ctx.createLinearGradient(x,textY,x,textY+labelH);
-    label.addColorStop(0,'#fff');label.addColorStop(1,pal[2]);
-    ctx.save();round(x+5,textY-2,cardW-10,labelH-4,16);ctx.fillStyle=label;ctx.fill();ctx.restore();
-    ctx.save();ctx.fillStyle=pal[0];round(x+cardW*.15,textY-1,cardW*.7,5,2.5);ctx.fill();ctx.restore();
-    ctx.save();ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=4;round(x+2,y+2,cardW-4,cardH-7,radius);ctx.stroke();ctx.restore();
-    ctx.save();round(x+14,textY+9,cardW-28,labelH-24,9);ctx.clip();
-    const centerX=x+cardW/2;
+    // Text occupies its own, nonoverlapping panel, with a defined padding and height.
+    const t=sidePhoto
+     ?{x:x+cardW*.425+11,y:y+10,w:cardW*.575-23,h:cardH-24}
+     :{x:x+12,y:y+cardH*(card?.51:.55)+5,w:cardW-24,h:cardH*(card?.49:.45)-17};
+    ctx.save();round(t.x,t.y,t.w,t.h,12);ctx.clip();
+    const center=t.x+t.w/2;
     if(card){
-      const nameY=textY+labelH*.22,weightY=textY+labelH*.51,priceY=textY+labelH*.79;
-      drawText(card.title,centerX,nameY,cardW-33,labelH*.30,30,15,pal[1]);
-      drawText(card.weight,centerX,weightY,cardW-35,labelH*.24,25,14,pal[1]);
-      drawText(card.price,centerX,priceY,cardW-31,labelH*.30,25,14,pal[0]);
-    }else{
-      drawText(item,centerX,textY+labelH*.54,cardW-35,labelH*.72,30,14,pal[1]);
-    }
+     centered(card.title,center,t.y+t.h*.215,t.w-12,t.h*.32,sidePhoto?29:26,colors[1]);
+     centered(card.weight,center,t.y+t.h*.49,t.w-12,t.h*.21,sidePhoto?22:20,colors[1]);
+     centered(card.price,center,t.y+t.h*.79,t.w-10,t.h*.32,sidePhoto?24:22,colors[0]);
+    }else centered(item,center,t.y+t.h*.5,t.w-12,t.h*.88,sidePhoto?26:23,colors[1]);
     ctx.restore();
+    ctx.save();ctx.strokeStyle=volumetric?'rgba(255,255,255,.88)':colors[0];ctx.lineWidth=volumetric?3:2;
+    round(x+2,y+2,cardW-4,cardH-7,radius);ctx.stroke();ctx.restore();
+    ctx.save();ctx.fillStyle=colors[0];round(t.x+t.w*.19,y+3,t.w*.62,4,2);ctx.fill();ctx.restore();
    });
   }finally{ctx.restore();}
-  if(window.rf01035Unfit)statusEl.textContent='برخی توضیحات در کارت جا نشد؛ برای جلوگیری از نوشته ناقص، بازبینی متن لازم است.';
+  if(anyOverflow)statusEl.textContent='توضیح طولانی در برخی کارت‌ها جا نشد؛ متن ناقص چاپ نشده است.';
  }
  // RushFinder 01000: exact source logo always wins over AI generated pixels.
  // A successful draw *requires* the matching brand PNG, never ship an unbranded frame.
@@ -1724,7 +1726,7 @@ function rf724StructuredNews(raw){
  // Preserve exactly the supplied facts. Do not introduce synthetic row numbers.
  return lines.map(rf724PersianDigits).join('\n');
 }
-function current(){const brandKey=rf724ActiveBrandKey();return {news:newsInput.value.trim(),brand:rf724BrandName(brandKey),brandKey,style:$('rf580-graphic-style')?.value||'auto',designMode:$('rf01022-design-mode')?.value||'editorial',size:'square',customPrompt:($('rf580-other-prompt')?.value||'').trim(),headline:rf726NormalizeText(($('rf580-title-text')?.value||'').trim()),model:$('rf962-model')?.value||'gpt-image-2.5-flare',quality:$('rf962-quality')?.value||'low'};}
+function current(){const brandKey=rf724ActiveBrandKey();return {news:newsInput.value.trim(),brand:rf724BrandName(brandKey),brandKey,style:$('rf580-graphic-style')?.value||'auto',designMode:$('rf01022-design-mode')?.value||'editorial',size:'square',customPrompt:($('rf580-other-prompt')?.value||'').trim(),headline:rf726NormalizeText(($('rf580-title-text')?.value||'').trim()),model:$('rf962-model')?.value||'gpt-image-2.5-flare',quality:$('rf962-quality')?.value||'high'};}
 // 01026: Logos are authentic transparent PNG overlays. Background must continue
 // beneath the logo, not turn into a light-color placeholder rectangle.
 function rf724LogoSafeZoneMeta(brandKey,sizeKey){
@@ -1841,18 +1843,23 @@ function rf01034ObjectFor(text,used){
 // 01036: EXACT shared photo positions. These use precisely the same geometry as
 // rf01030DrawExactCards, so the model receives physical crop coordinates.
 function rf01036CardGeometry(n,brandKey,structured){
+ // Geometry is the single source of truth for both the AI art prompt and Canvas crop.
+ // For up to four cards, use a photo/text split SIDE BY SIDE: images are not squashed into shallow strips.
  const top=.58,bottom=brandKey==='farda'?.845:.968,cols=n>=5?3:n===1?1:2;
  const rows=Math.ceil(n/cols),gapX=18/1080,gapY=16/1080,x0=.035,fullW=.93;
  const cardW=(fullW-(cols-1)*gapX)/cols,cardH=(bottom-top-(rows-1)*gapY)/rows;
+ const sidePhoto=n<=4;
  const data=[];
  for(let i=0;i<n;i++){
   const row=Math.floor(i/cols),inRow=Math.min(cols,n-row*cols),col=inRow-1-(i%cols);
   const offset=(cols-inRow)*(cardW+gapX)/2;
   const x=x0+offset+col*(cardW+gapX),y=top+row*(cardH+gapY);
-  const photoH=cardH*(structured?.51:.55); // Same as renderer's product (49%) or news (45%) label area
-  data.push({x,y,w:cardW,h:cardH,photo:{x:x+.006,y:y+.005,w:cardW-.012,h:photoH-.008}});
+  const photo=sidePhoto
+   ?{x:x+.006,y:y+.006,w:cardW*.425-.01,h:cardH-.014}
+   :{x:x+.006,y:y+.006,w:cardW-.012,h:cardH*(structured?.51:.55)-.008};
+  data.push({x,y,w:cardW,h:cardH,photo,sidePhoto});
  }
- return {cards:data,cols,rows};
+ return {cards:data,cols,rows,sidePhoto};
 }
 function rf01036VisualFor(item,title,index,used){
  const s=String(title||item||'').replace(/ي/g,'ی').replace(/ك/g,'ک');
@@ -1884,34 +1891,68 @@ function rf01036VisualFor(item,title,index,used){
  used.add(choice);
  return choice;
 }
-function rf01030VerifiedPrompt(c){
+// 01037: deterministic prompt architect. Product/fact grouping and pixel geometry are
+// calculated from the same browser layout. No manual inspection of coordinates needed.
+function rf01037DesignPlan(c){
  const chosen=rf01024CurateNews(c.news,c.headline,'square');
- const items=chosen.items||[],num=items.length,geom=rf01036CardGeometry(num,c.brandKey,Boolean(chosen.cards));
+ const items=(chosen.items||[]).slice(0,5),count=items.length;
+ if(!count)throw Error('برای طراحی هیچ داده‌ای از خبر پیدا نشد.');
+ const geom=rf01036CardGeometry(count,c.brandKey,Boolean(chosen.cards));
+ if(geom.cards.some(card=>card.h*1080<116))throw Error('تعداد کارت‌ها برای چیدمان خوانا بیش از حد است.');
  const used=new Set();
- const photoInstructions=items.map((item,i)=>{
-  const card=geom.cards[i],v=rf01036VisualFor(item,chosen.cards?.[i]?.title||item,i,used);
-  const q=n=>Math.round(n*100);
-  return 'عکس '+(i+1)+' '+q(card.photo.x)+' تا '+q(card.photo.x+card.photo.w)+' درصد عرض و '+q(card.photo.y)+' تا '+q(card.photo.y+card.photo.h)+' درصد ارتفاع: '+v+'؛ مرتبط با '+String(item).slice(0,63)+'.';
- });
- const visual=['2d','minimal','table','chart','timeline','comparison'].includes(c.style)?
-   'دوبعدی گرافیکی حرفه‌ای با المان‌های تصویری متفاوت و بدون پرسپکتیو سه‌بعدی.':
-   'سه‌بعدی فوتورئال بسیار لوکس؛ PBR، نور استودیویی، سطوح سرامیکی/شیشه‌ای، سایه واقعی، عمق طبیعی و جزئیات ممتاز.';
- const brandTheme=c.brandKey==='urgent'? 'پالت غالب سبز زمردی #00834A و سبز تیره #006D3C، کرم روشن #F6F3EF و سفید؛ رنگ حقیقی اشیا محفوظ.':
-   c.brandKey==='mashhad'?'ترکیب رنگ اختصاصی زرد و قرمز اخبار مشهد، بدون لوگو.':
-   c.brandKey==='jaryan'?'رنگ‌های زرد و مشکی رسانه جریان، بدون لوگو.':'رنگ‌های قرمز و سفید اختصاصی خبرفردا، بدون لوگو.';
- return [
-  'تصویرسازی یکپارچه خبری ممتاز مربع ۱:۱، بدون متن، برای یک پوستر حرفه‌ای و لوکس؛ '+visual+' '+brandTheme+' '+rf01028StyleContract(c),
-  'ترکیب‌بندی ثابت سه بخش: ۰ تا ۲۴٪ ارتفاع، پس‌زمینه ملایم برای کادر تیتر وب و لوگوی اصلی؛ هیچ چهره یا سوژه حساس در این بخش نباشد. ۲۵ تا ۵۷٪ یک سوژه اصلی بزرگ و کاملاً مرتبط، با کیفیت تبلیغاتی. ۵۸ تا ۹۷٪ زمینه و تصاویر اختصاصی کارت‌ها.',
-  'در نیمه پایین، جای دقیق تصاویر را طبق مختصات زیر رعایت کن. در همان قسمت فقط اشیای موردنظر و پس‌زمینه طبیعی نشان بده؛ مدل هیچ کادر، نوار سفید، تیتر، برچسب یا متن نسازد، چون سایت خودش قاب و متن را اضافه می‌کند.',
-  'هیچ دو مورد نباید دقیقاً یک شیء، زاویه دید، نماد یا عکس یکسان داشته باشند. انتخاب هر شیء از معنای همان داده باشد، نه از تیتر عمومی.',
-  ...photoInstructions,
-  'خارج از جایگاه‌های عکس، تصویر طبیعی با نورپردازی هماهنگ ادامه پیدا کند. هیچ کارت ساختگی یا دایره کوچک تکراری در ناحیه کارت‌ها نساز.',
-  'نام رسانه، لوگو، تیتر، عدد، حرف فارسی/لاتین، متن، قیمت، درصد، URL، واترمارک و تکرار نقش برند مطلقاً ممنوع است. زمینه تا پشت لوگوی شفاف اصلی پیوسته بماند؛ هیچ مستطیل خالی/سفید زیر لوگو ایجاد نشود.',
-  'موضوع اصلی فقط برای انتخاب سوژه: '+String(chosen.headline||'').slice(0,110),
-  c.customPrompt?'راهنمای تکمیلی کاربر: '+c.customPrompt.slice(0,160):'',
-  'یک تصویر باکیفیت واحد و بدون هرگونه نوشته تولید کن.'
- ].filter(Boolean).join('\n');
+ const photos=items.map((item,i)=>({
+  fact:item,visual:rf01036VisualFor(item,chosen.cards?.[i]?.title||item,i,used),
+  rect:geom.cards[i].photo,card:geom.cards[i]
+ }));
+ return {chosen,items,photos,geom};
 }
+function rf01037AutoPrompt(c){
+ const plan=rf01037DesignPlan(c),pct=v=>String(Math.round(v*100))+'٪';
+ const colors={
+  urgent:'سبز زمردی #00834A، سبز تیره #006D3C، کرم #F6F3EF و سفید؛ اشیا با رنگ طبیعی',
+  mashhad:'زرد و قرمز رسانه اخبار مشهد، با رنگ طبیعی اشیا',
+  jaryan:'مشکی و زرد رسانه جریان، با رنگ طبیعی اشیا',
+  farda:'قرمز تیره و سفید رسانه خبرفردا، با رنگ طبیعی اشیا'
+ };
+ const style=String(c.style||'auto');
+ const styleGuide={
+  '3d':'سه‌بعدی فوتورئال، PBR، نور استودیویی واقعی، اشیای برجسته با جزئیات و سایه سینمایی',
+  '2d':'گرافیک دوبعدی ممتاز و فلت، اشکال دقیق، بافت ظریف و عمق صرفاً با رنگ',
+  'table':'چیدمان جدولی حرفه‌ای با اشیای مختص هر داده، بدون نوشتن حروف',
+  'chart':'تصویرسازی داده‌محور با عناصر مجسمه‌ای واقعی؛ هیچ عدد یا محور جعلی نساز',
+  'comparison':'تصویرسازی مقایسه‌ای یکپارچه با تفاوت موضوعی واضح و بدون نوشته',
+  'timeline':'ترتیب مرحله‌ای تصویری با اشیای متفاوت و بدون نوشته',
+  'cards':'عکس تبلیغاتی سه‌بعدی و نورپردازی ممتاز برای هر کارت',
+  'minimal':'مینیمال لوکس با یک سوژه اصلی قوی و تصاویر کوچک دقیق و اختصاصی',
+  'auto':'بهترین سبک خبری موضوع‌محور؛ واقعی، پرجزئیات و لوکس، با عناصر سه‌بعدی',
+  'other':String(c.customPrompt||'').slice(0,180)||'تصویرسازی خبری موضوعی و ممتاز'
+ }[style]||'تصویرسازی خبری سه‌بعدی ممتاز';
+ const lines=[
+  'پوستر خبری بسیار حرفه‌ای مربع ۱:۱، کیفیت عکاسی تبلیغاتی و تصویرسازی هنری سطح بالا؛ یک صحنه یکپارچه. بدون نوشته، عدد، لوگو، کارت گرافیکی یا واترمارک.',
+  'پالت: '+(colors[c.brandKey]||colors.urgent)+'. سبک: '+styleGuide+'.',
+  'ترکیب‌بندی دقیق: ۰–۲۴٪ ارتفاع زمینه طبیعی آزاد برای تیتر و لوگوی اصلی سایت؛ ۲۵–۵۷٪ یک صحنه تبلیغاتی بزرگ و اختصاصی با مضمون '+String(plan.chosen.headline||'').slice(0,90)+'؛ ۵۸–۹۷٪ تصویرهای اختصاصی داده‌ها.',
+  'در نیمه پایین، هر تصویر دقیقاً در ناحیه عکسِ کارت متناظر قرار بگیرد؛ خارج از محدوده خود و روی ناحیه متنِ همان کارت یا کارت مجاور نیفتد. فضای متن کاملاً آرام با بافت طبیعی کرم باشد. هر شیء بزرگ، کامل، قابل تشخیص، با فاصله داخلی کافی و جزئیات واقعی بماند.',
+  'تصاویر کارت‌ها، طبق هندسه محاسبه‌شده خود سایت:'
+ ];
+ plan.photos.forEach((p,i)=>{
+  const r=p.rect;
+  const scene=String(p.visual).slice(0,115);
+  lines.push('مورد '+(i+1)+': فقط '+scene+'؛ محدوده عکس X='+pct(r.x)+' تا '+pct(r.x+r.w)+'، Y='+pct(r.y)+' تا '+pct(r.y+r.h)+'.');
+ });
+ lines.push(
+  'محصولات مشابه باید در مواد، تزئینات و نوع ظرف واقعاً متفاوت باشند؛ صرف تغییر زاویه کافی نیست. هیچ دو عکس از یک شیء/ترکیب تکراری استفاده نکن. آیکون ساده، نمودار بی‌معنا یا علامت تزئینی جایگزین شیء واقعی نساز.',
+  'مدل کادر، پس‌زمینه سفید یکدست، برچسب قیمت، اعداد، متن و لوگو تولید نکند؛ سایت دقیقاً یک قاب و متن فارسی با فونت انتخاب‌شده را خودش اضافه می‌کند.',
+  'جنس سطوح PBR و طبیعی، جزئیات دقیق محصول، نور استودیویی حجمی ملایم، پرسپکتیو طبیعی، سایه‌های تماس، عمق و انعکاس واقعی، رنگ‌بندی ثابت رسانه؛ زمینه یکپارچه تمام‌بِلید تا پشت لوگوی شفاف، بدون نوار خالی. هیچ تیتر در خود عکس ننویس.',
+  'اگر اشیا مشابه‌اند، تفاوت واقعی محصول/شکل/مواد/زاویه دید را برجسته کن. سوژه اصلی در بالای منطقه کارت‌ها؛ پایین آن‌ها را نپوشاند.',
+  'فقط یک تصویر واحد بدون هرگونه نوشتار.'
+ );
+ // API prompt limit is 3500 characters. The generator trims optional explanation,
+ // NEVER position lines or selected subjects. Fail closed rather than send an invalid draft.
+ const draft=lines.join('\n');
+ if(draft.length>3500)throw Error('خبر برای پرامپت دقیق بیش از حد طولانی است؛ تعداد موارد را کمتر کن.');
+ return draft;
+}
+function rf01030VerifiedPrompt(c){return rf01037AutoPrompt(c);}
 
 function rf01003UrgentPrompt(c){
  const shape=c.size==='story'?'استوری عمودی ۹:۱۶':'مربع ۱:۱';
@@ -1979,34 +2020,32 @@ function promptFor(c){
 }
 
 // RF0716: explicit paid-generation approval. Never submit a draft before user confirms.
-function reviewPrompt(draft){
+// 01038: show a one-click paid confirmation, not the technical prompt editor.
+// Prompt geometry/content have already been generated automatically and preflighted.
+function reviewPrompt(draft,c,summary){
  return new Promise(resolve=>{
+  if(!draft||draft.length>3500||draft.length<30){resolve(null);return;}
   const shade=document.createElement('div');shade.id='rf716-review-shade';shade.setAttribute('role','presentation');
-  shade.innerHTML=`<section class="rf716-modal" role="dialog" aria-modal="true" aria-labelledby="rf716-heading" dir="rtl">
-   <h2 id="rf716-heading">بازبینی پرامپت قبل از ساخت تصویر</h2>
-   <p>متن زیر برای مدل GPT Image انتخاب‌شده در AvalAI ارسال می‌شود. می‌توانی آن را ویرایش کنی. تا وقتی «تأیید و ساخت» را نزنی، هیچ درخواست پولی برای تولید تصویر ارسال نمی‌شود.</p>
-   <label for="rf716-prompt">پرامپت نهایی (دارای محدوده امن تیتر و سوژه؛ قابل ویرایش)</label>
-   <textarea id="rf716-prompt" spellcheck="false" dir="rtl"></textarea>
-   <p id="rf716-count" aria-live="polite"></p>
-   <p class="rf716-warning">نتیجهٔ GPT Image ممکن است شامل عدد یا متن نادرست باشد. خروجی را قبل از انتشار بررسی کن؛ در خبرهای طولانی سایت فقط آمار و نکات مهم را از متن اصلی انتخاب می‌کند؛ قبل از پرداخت فهرست را بررسی کن. تیتر سایت در بالا قرار می‌گیرد؛ پیش از پرداخت مطمئن شو مدل، چهره و سوژه را پایین‌تر از تیتر طراحی خواهد کرد. تم خبر فوری همیشه سبز است و لوگوی اصلی بدون تغییر روی خروجی قرار می‌گیرد.</p>
-   <div class="rf716-actions"><button type="button" id="rf716-approve">تأیید و ساخت تصویر</button><button type="button" id="rf716-reset">بازسازی متن پیش‌فرض</button><button type="button" id="rf716-cancel">لغو</button></div>
-  </section>`;
-  const previousFocus=document.activeElement;
-  document.body.appendChild(shade);
-  const edit=shade.querySelector('#rf716-prompt'),count=shade.querySelector('#rf716-count');
-  const approve=shade.querySelector('#rf716-approve');
-  edit.value=draft;
-  const check=()=>{let n=edit.value.trim().length;count.textContent='تعداد نویسه: '+n+' از حداکثر ۳۵۰۰';count.style.color=n>3500||n<30?'#ae2830':'#346078';approve.disabled=n>3500||n<30;};
-  edit.addEventListener('input',check);check();
-  function done(v){document.removeEventListener('keydown',keyboard,true);shade.remove();previousFocus?.focus?.();resolve(v)}
-  const keyboard=e=>{if(e.key==='Escape'){e.preventDefault();done(null)}};
-  document.addEventListener('keydown',keyboard,true);
-  shade.querySelector('#rf716-approve').onclick=()=>{const text=edit.value.trim();if(text.length>=30&&text.length<=3500)done(text)};
-  shade.querySelector('#rf716-reset').onclick=()=>{edit.value=draft;check();edit.focus()};
-  shade.querySelector('#rf716-cancel').onclick=()=>done(null);
-  edit.focus();
+  const section=document.createElement('section');section.className='rf716-modal';section.setAttribute('role','dialog');section.setAttribute('aria-modal','true');section.dir='rtl';
+  const heading=document.createElement('h2');heading.textContent='ساخت اینفوگرافیک با پرامپت خودکار';section.appendChild(heading);
+  const expl=document.createElement('p');expl.textContent='چیدمان، جای تصویرهای اختصاصی و دستور کیفیت به‌صورت خودکار آماده شده‌اند. نیازی به اصلاح پرامپت نیست.';section.appendChild(expl);
+  const info=document.createElement('p');info.style.lineHeight='2.1';
+  info.textContent='رسانه: '+c.brand+' | پست مربع | '+(summary.items?.length||0)+' کارت | مدل: '+c.model+' | کیفیت: '+({'low':'پایین','medium':'متوسط','high':'بالا'}[c.quality]||c.quality);section.appendChild(info);
+  const warning=document.createElement('p');warning.className='rf716-warning';warning.textContent='«تأیید و ساخت» درخواست هزینه‌دار به AvalAI می‌فرستد. کیفیت نهایی مدل قابل تضمین نیست. هیچ درخواست خودکار یا تکراری قبل از تأیید ارسال نمی‌شود.';section.appendChild(warning);
+  const details=document.createElement('details');const cap=document.createElement('summary');cap.textContent='نمایش پرامپت فنی (اختیاری)';details.appendChild(cap);
+  const pre=document.createElement('pre');pre.dir='rtl';pre.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;max-height:190px;overflow:auto;font-size:11px';pre.textContent=draft;details.appendChild(pre);section.appendChild(details);
+  const actions=document.createElement('div');actions.className='rf716-actions';
+  const approve=document.createElement('button');approve.type='button';approve.textContent='تأیید هزینه و ساخت';
+  const cancel=document.createElement('button');cancel.type='button';cancel.textContent='لغو بدون هزینه';
+  actions.append(approve,cancel);section.appendChild(actions);shade.appendChild(section);
+  const old=document.activeElement;document.body.appendChild(shade);
+  const keyboard=e=>{if(e.key==='Escape'){e.preventDefault();finish(null);}};
+  const finish=value=>{document.removeEventListener('keydown',keyboard,true);shade.remove();old?.focus?.();resolve(value);};
+  approve.onclick=()=>finish(draft);cancel.onclick=()=>finish(null);
+  document.addEventListener('keydown',keyboard,true);cancel.focus();
  });
 }
+
 // 01026: «بازیابی تصویر قبلی (رایگان)» button deliberately removed from UI.
 // Server-side /api/avalai-image recovery endpoint remains unchanged.
 btn.addEventListener('click',async evt=>{
@@ -2018,7 +2057,9 @@ btn.addEventListener('click',async evt=>{
  const summary=rf01024CurateNews(c.news,c.headline,c.size);
  if(summary.duplicates>0)say('✓ '+summary.duplicates+' مورد تکراری حذف شد. نام، وزن و قیمت هر محصول به‌صورت یک کارت یکپارچه حفظ شده‌اند؛ هنوز هزینه‌ای مصرف نشده است.');
  if(summary.curated){say('✓ از '+summary.total+' نکتهٔ قابل‌نمایش، '+summary.items.length+' نکتهٔ مهم برای یک '+(c.size==='story'?'استوری':'پست مربع')+' انتخاب شد. متن خام شما حفظ شده است؛ فهرست دقیق را در پنجره تأیید بررسی کن. هنوز هزینه‌ای مصرف نشده.');}
- const reviewedPrompt=await reviewPrompt(promptFor(c));
+ let automaticPrompt;
+ try{automaticPrompt=promptFor(c);}catch(e){say('ساخت رایگان متوقف شد: '+(e?.message||e));return;}
+ const reviewedPrompt=await reviewPrompt(automaticPrompt,c,summary);
  if(reviewedPrompt===null){say('ساخت لغو شد؛ هیچ درخواستی به AvalAI ارسال نشد.');return;}
  // 01023: FREE preflight: validate the original logo asset for selected brand/format.
  // Never charge AvalAI if the required original template is absent or invalid.
@@ -2037,7 +2078,7 @@ btn.addEventListener('click',async evt=>{
  const approvedSignature=JSON.stringify({selection:c,prompt:reviewedPrompt});
  const approvedPending=getPending();
  if(approvedPending?.signature===approvedSignature){say('این پرامپت قبلاً ارسال شده و نتیجه نامشخص است. برای جلوگیری از هزینه دوباره، ابتدا گزارش مصرف AvalAI را بررسی کن.');return;}
- if(!window.confirm('پرامپت تأیید شد. اکنون ساخت تصویر با مدل '+c.model+' از AvalAI انجام شود؟ این عملیات از اعتبار API AvalAI هزینه کم می‌کند. قالب اصلی و ابعاد بدون هزینه بررسی شدند؛ کیفیت خروجی مدل هنوز تضمین نیست.')){say('ساخت لغو شد؛ درخواستی ارسال نشد.');return;}
+ // 01038: paid approval occurs exactly once in reviewPrompt; do not demand a second confirmation.
  running=true;btn.disabled=true;savePending({signature:approvedSignature,time:Date.now()});
  let paidImageUrl='';
  try{
