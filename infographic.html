@@ -297,7 +297,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01030</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01032</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -1102,78 +1102,138 @@ function rf581Render(){
  }
  // 01030: Render ALL content cards in the browser, never ask the image model
  // to paint Persian letters. Keep visual artwork beneath, custom font above.
+ // RF01032: each fact has its OWN contextual visual motif and exact user-selected type.
+ // This runs inside the real canvas compositor, not in a disconnected script.
+ function rf01032MotifKind(value){
+   const t=String(value||'').replace(/ي/g,'ی').replace(/ك/g,'ک').toLowerCase();
+   if(/بارش|باران|رگبار|میلی.?متر|ابر|برف/.test(t))return 'rain';
+   if(/سد|مخزن|دریاچه|حجم آب|پهنه آبی/.test(t))return 'reservoir';
+   if(/خط انتقال|لوله|آبرسانی/.test(t))return 'pipeline';
+   if(/تصفیه|فیلتر|پالایش/.test(t))return 'filter';
+   if(/آزمایش|کیفیت آب|سنجش/.test(t))return 'lab';
+   if(/شهر|شهری|برج آب|آب شرب/.test(t))return 'city';
+   if(/عفونت|باکتری|ویروس|میکروب/.test(t))return 'microbe';
+   if(/خونریزی|خون/.test(t))return 'blood';
+   if(/رحم|جنین|باروری|نابارور|باردار|زایمان/.test(t))return 'health';
+   if(/آموزش|مدرسه|دانش|دانشجو|دانش‌آموز/.test(t))return 'book';
+   if(/بازار|بورس|سهام|رشد|قیمت|تورم|اقتصاد/.test(t))return 'chart';
+   if(/طلا|سکه|پول|دلار|تومان|ریال/.test(t))return 'coin';
+   if(/درصد|٪|آمار|نفر|جمعیت/.test(t))return 'chart';
+   if(/زمان|سال|روز|تاریخ|ماه/.test(t))return 'clock';
+   return 'info';
+ }
+ function rf01032Visual(ctx,kind,cx,cy,r,primary,light,volumetric){
+  ctx.save();ctx.translate(cx,cy);ctx.lineCap='round';ctx.lineJoin='round';
+  // Sculpted ceramic token with a distinct subject icon. Flat modes omit cast shadows.
+  if(volumetric){ctx.shadowColor='rgba(1,40,24,.25)';ctx.shadowBlur=r*.34;ctx.shadowOffsetY=r*.17;}
+  const grad=ctx.createLinearGradient(-r,-r,r,r);
+  grad.addColorStop(0,light);grad.addColorStop(.48,'#ffffff');grad.addColorStop(1,volumetric?'#b8d6c4':light);
+  ctx.fillStyle=grad;ctx.strokeStyle='rgba(255,255,255,.92)';ctx.lineWidth=Math.max(1.5,r*.045);
+  ctx.beginPath();ctx.roundRect(-r,-r,2*r,2*r,r*.3);ctx.fill();ctx.stroke();
+  ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+  ctx.strokeStyle=primary;ctx.fillStyle=primary;ctx.lineWidth=Math.max(2.5,r*.09);
+  const p=()=>{ctx.beginPath();};
+  if(kind==='rain'){
+   p();ctx.arc(-r*.2,-r*.21,r*.27,Math.PI,Math.PI*1.87);ctx.arc(r*.11,-r*.31,r*.32,Math.PI*1.05,Math.PI*1.94);ctx.arc(r*.42,-r*.12,r*.2,Math.PI*1.15,Math.PI*1.95);ctx.stroke();
+   for(const x of [-.42,0,.4]){p();ctx.moveTo(x*r,r*.08);ctx.lineTo((x-.13)*r,r*.5);ctx.stroke();}
+  }else if(kind==='reservoir'){
+   p();ctx.moveTo(-r*.7,-r*.37);ctx.lineTo(-r*.27,-r*.2);ctx.lineTo(-r*.05,r*.32);ctx.lineTo(r*.54,r*.1);ctx.stroke();
+   for(const y of [.33,.52]){p();ctx.moveTo(-r*.7,y*r);ctx.quadraticCurveTo(-r*.35,(y-.18)*r,0,y*r);ctx.quadraticCurveTo(r*.32,(y+.16)*r,r*.7,y*r);ctx.stroke();}
+  }else if(kind==='pipeline'){
+   p();ctx.moveTo(-r*.64,-r*.34);ctx.lineTo(-r*.2,-r*.34);ctx.quadraticCurveTo(0,-r*.34,0,-r*.06);ctx.lineTo(0,r*.25);ctx.quadraticCurveTo(0,r*.47,r*.3,r*.47);ctx.lineTo(r*.63,r*.47);ctx.stroke();
+   p();ctx.arc(-r*.57,-r*.34,r*.12,0,Math.PI*2);ctx.stroke();p();ctx.arc(r*.56,r*.47,r*.12,0,Math.PI*2);ctx.stroke();
+  }else if(kind==='filter'){
+   p();ctx.moveTo(-r*.62,-r*.58);ctx.lineTo(r*.62,-r*.58);ctx.lineTo(r*.22,-r*.06);ctx.lineTo(r*.22,r*.53);ctx.lineTo(-r*.22,r*.32);ctx.lineTo(-r*.22,-r*.06);ctx.closePath();ctx.stroke();
+   p();ctx.moveTo(-r*.36,-r*.14);ctx.lineTo(r*.36,-r*.14);ctx.stroke();
+  }else if(kind==='lab'){
+   p();ctx.moveTo(-r*.16,-r*.63);ctx.lineTo(r*.16,-r*.63);ctx.moveTo(-r*.07,-r*.63);ctx.lineTo(-r*.07,-r*.09);ctx.lineTo(-r*.46,r*.4);ctx.quadraticCurveTo(-r*.47,r*.61,-r*.24,r*.61);ctx.lineTo(r*.42,r*.61);ctx.quadraticCurveTo(r*.61,r*.58,r*.46,r*.37);ctx.lineTo(r*.07,-r*.09);ctx.lineTo(r*.07,-r*.63);ctx.stroke();
+   p();ctx.moveTo(-r*.29,r*.28);ctx.lineTo(r*.3,r*.28);ctx.stroke();
+  }else if(kind==='city'){
+   for(const [x,y,w,h] of [[-.6,-.25,.3,.83],[-.1,-.58,.28,1.16],[.37,-.06,.24,.64]]){ctx.strokeRect(x*r,y*r,w*r,h*r);}
+   p();ctx.moveTo(-r*.73,r*.58);ctx.lineTo(r*.72,r*.58);ctx.stroke();
+  }else if(kind==='microbe'){
+   p();ctx.arc(0,0,r*.42,0,Math.PI*2);ctx.stroke();
+   for(let k=0;k<8;k++){const a=Math.PI*k/4;p();ctx.moveTo(Math.cos(a)*r*.45,Math.sin(a)*r*.45);ctx.lineTo(Math.cos(a)*r*.67,Math.sin(a)*r*.67);ctx.stroke();}
+   for(const [x,y] of [[-.18,-.1],[.19,.1],[-.06,.22]]){p();ctx.arc(x*r,y*r,r*.07,0,Math.PI*2);ctx.fill();}
+  }else if(kind==='blood'){
+   p();ctx.moveTo(0,-r*.66);ctx.bezierCurveTo(r*.48,-r*.06,r*.59,r*.23,0,r*.62);ctx.bezierCurveTo(-r*.59,r*.23,-r*.48,-r*.06,0,-r*.66);ctx.closePath();ctx.fill();
+   ctx.fillStyle='#ffffff';p();ctx.ellipse(-r*.16,r*.15,r*.10,r*.23,-.5,0,Math.PI*2);ctx.fill();
+  }else if(kind==='health'){
+   p();ctx.moveTo(0,-r*.31);ctx.bezierCurveTo(-r*.1,-r*.64,-r*.37,-r*.52,-r*.37,-r*.14);ctx.bezierCurveTo(-r*.7,-r*.18,-r*.6,r*.05,-r*.39,r*.09);ctx.bezierCurveTo(-r*.22,r*.12,-r*.26,r*.49,0,r*.54);ctx.bezierCurveTo(r*.26,r*.49,r*.22,r*.12,r*.39,r*.09);ctx.bezierCurveTo(r*.6,r*.05,r*.7,-r*.18,r*.37,-r*.14);ctx.bezierCurveTo(r*.37,-r*.52,r*.1,-r*.64,0,-r*.31);ctx.stroke();
+  }else if(kind==='book'){
+   p();ctx.moveTo(0,-r*.46);ctx.quadraticCurveTo(-r*.4,-r*.63,-r*.65,-r*.38);ctx.lineTo(-r*.65,r*.42);ctx.quadraticCurveTo(-r*.32,r*.27,0,r*.45);ctx.quadraticCurveTo(r*.32,r*.27,r*.65,r*.42);ctx.lineTo(r*.65,-r*.38);ctx.quadraticCurveTo(r*.4,-r*.63,0,-r*.46);ctx.closePath();ctx.stroke();p();ctx.moveTo(0,-r*.46);ctx.lineTo(0,r*.45);ctx.stroke();
+  }else if(kind==='chart'){
+   for(const [i,h] of [[-.54,.42],[-.12,.68],[.32,.96]])ctx.fillRect(i*r,(.56-h)*r,r*.24,h*r);
+   p();ctx.moveTo(-r*.64,-r*.22);ctx.lineTo(-r*.15,-r*.51);ctx.lineTo(r*.19,-r*.18);ctx.lineTo(r*.64,-r*.55);ctx.stroke();
+  }else if(kind==='coin'){
+   p();ctx.arc(0,0,r*.58,0,Math.PI*2);ctx.stroke();p();ctx.arc(0,0,r*.44,0,Math.PI*2);ctx.stroke();
+   ctx.font='900 '+Math.round(r*.8)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('٪',0,0);
+  }else if(kind==='clock'){
+   p();ctx.arc(0,0,r*.57,0,Math.PI*2);ctx.stroke();p();ctx.moveTo(0,-r*.34);ctx.lineTo(0,0);ctx.lineTo(r*.35,r*.18);ctx.stroke();
+  }else{
+   p();ctx.arc(0,0,r*.52,0,Math.PI*2);ctx.stroke();ctx.font='bold '+Math.round(r*.9)+'px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('✓',0,0);
+  }
+  ctx.restore();
+ }
  function rf01030DrawExactCards(){
-  const raw=normalizeText(input.value||'');
-  if(!raw.trim())return;
+  const raw=normalizeText(input.value||'');if(!raw.trim())return;
   const manual=rf580TitleOn.checked?normalizeText(rf580TitleText.value):'';
   const data=window.rf01024CurateNews?.(raw,manual,size);
   const items=(data?.items||[]).map(v=>rf584PersianDigits(v).trim()).filter(Boolean);
   if(!items.length)return;
-  const W=cv.width,H=cv.height,story=size==='story',is3D=rf580Style.value==='3d'||rf580Style.value==='auto';
-  const isFarda=brand==='farda';
-  const pal={urgent:['#00834A','#006D3C','#F6F3EF'],mashhad:['#F3B500','#A52D16','#FFF9E8'],jaryan:['#E5BC17','#252525','#FAFAF5'],farda:['#D02D4B','#821128','#FFF8FA']}[brand]||['#00834A','#006D3C','#fff'];
+  const W=cv.width,H=cv.height,story=size==='story';
+  const pal={urgent:['#00834A','#006D3C','#F6F3EF'],mashhad:['#E5B600','#765300','#FFF9E9'],jaryan:['#E5BC17','#222222','#FAFAF5'],farda:['#D02D4B','#821128','#FFF8FA']}[brand]||['#00834A','#006D3C','#fff'];
   const font=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
-  // The authentic KhabarFarda logo is at lower left; avoid this area.
-  const start=H*(story?.585:.608),end=H*(isFarda?(story?.855:.85):(story?.962:.956));
-  const x0=W*.037,fullW=W*.926;
-  const cols=story?2:(items.length>=5?3:items.length===1?1:2);
-  const rows=Math.ceil(items.length/cols),gapX=story?19:16,gapY=story?18:17;
+  const st=rf580Style.value,volumetric=st==='3d'||st==='auto'||st==='cards'||(st==='other'&&rf580EffectiveStyle()==='3d');
+  const start=H*(story?.578:.603),end=H*(brand==='farda'?(story?.854:.844):(story?.962:.954));
+  const x0=W*.037,fullW=W*.926,cols=story?2:(items.length>=5?3:items.length===1?1:2);
+  const rows=Math.ceil(items.length/cols),gapX=story?17:16,gapY=story?18:18;
   const cardW=(fullW-(cols-1)*gapX)/cols;
   const cardH=(end-start-(rows-1)*gapY)/rows;
-  if(cardH<64){statusEl.textContent='کارت‌ها برای متن انتخاب‌شده کوچک هستند؛ تعداد نکات را در بازبینی کاهش بده.';return;}
+  if(cardH<78){statusEl.textContent='متن بسیار زیاد است؛ کارت‌ها برای این ابعاد خوانا نیستند. نکات منتخب را پیش از ساخت بررسی کن.';return;}
   const round=(x,y,w,h,r)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r)};
-  function wrapText(text,allowedWidth,px){
-   ctx.font='700 '+px+'px '+font;
-   const words=String(text).split(/\s+/u).filter(Boolean),lines=[];let current='';
-   for(const word of words){
-    const test=current?current+' '+word:word;
-    if(current&&ctx.measureText(test).width>allowedWidth){lines.push(current);current=word;}
-    else current=test;
-    // Handle rare unbroken strings without allowing overflow.
-    if(ctx.measureText(current).width>allowedWidth){
-     let fragment='';
-     for(const ch of Array.from(current)){
-      if(fragment&&ctx.measureText(fragment+ch).width>allowedWidth){lines.push(fragment);fragment=ch;}
-      else fragment+=ch;
-     }
-     current=fragment;
-    }
+  function fitLines(text,availableW,availableH){
+   const words=String(text).split(/\s+/u).filter(Boolean);let best=[];
+   const min=cardW<340?17:20,max=Math.min(story?34:32,cardH*.31);
+   for(let fs=max;fs>=min;fs-=1){
+    ctx.font='700 '+fs+'px '+font;
+    let lines=[],row='';
+    for(const word of words){const next=row?row+' '+word:word;
+     if(row&&ctx.measureText(next).width>availableW){lines.push(row);row=word;}else row=next;}
+    if(row)lines.push(row);best=lines;
+    if(lines.every(t=>ctx.measureText(t).width<=availableW)&&lines.length*fs*1.34<=availableH)return {lines,fs};
    }
-   if(current)lines.push(current);
-   return lines;
+   return {lines:best,fs:min};
   }
   ctx.save();
   try{
    ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
    items.forEach((item,i)=>{
-    const col=i%cols,row=Math.floor(i/cols),x=x0+col*(cardW+gapX),y=start+row*(cardH+gapY);
-    const rad=Math.min(28,cardH*.20),padX=Math.max(16,cardW*.09),padY=Math.max(12,cardH*.10);
+    const row=Math.floor(i/cols),col=i%cols;
+    const inRow=Math.min(cols,items.length-row*cols);
+    const offset=(cols-inRow)*(cardW+gapX)/2;
+    const x=x0+offset+col*(cardW+gapX),y=start+row*(cardH+gapY);
+    const radius=Math.min(27,cardH*.19);
     ctx.save();
-    if(is3D){ctx.shadowColor='rgba(0,0,0,.35)';ctx.shadowBlur=18;ctx.shadowOffsetY=9;}
-    round(x+1,y+2,cardW-2,cardH-4,rad);
-    ctx.fillStyle=pal[1];ctx.fill();ctx.restore();
+    if(volumetric){ctx.shadowColor='rgba(8,34,26,.27)';ctx.shadowBlur=20;ctx.shadowOffsetY=10;}
+    const bg=ctx.createLinearGradient(x,y,x,y+cardH);
+    bg.addColorStop(0,'#ffffff');bg.addColorStop(.7,pal[2]);bg.addColorStop(1,volumetric?'#dce8df':pal[2]);
+    round(x,y,cardW,cardH-5,radius);ctx.fillStyle=bg;ctx.fill();ctx.restore();
+    ctx.strokeStyle=pal[0];ctx.lineWidth=volumetric?2.6:2;round(x+2,y+2,cardW-4,cardH-9,radius);ctx.stroke();
+    const visualSize=Math.min(cardH*.34,cardW*.20,58),visualX=x+visualSize+15;
+    const visualY=y+cardH/2;
+    rf01032Visual(ctx,rf01032MotifKind(item),visualX,visualY,visualSize,pal[0],pal[2],volumetric);
+    // Give the visual its own space, but center the TEXT in its reserved right-hand panel.
+    const tx0=x+visualSize*2+33,tx1=x+cardW-12;
+    const textW=Math.max(55,tx1-tx0-12);
+    const textX=(tx0+tx1)/2;
+    const availableH=cardH-31;
+    const fitted=fitLines(item,textW,availableH);
     ctx.save();
-    if(is3D){ctx.shadowColor='rgba(0,0,0,.14)';ctx.shadowBlur=8;ctx.shadowOffsetY=3;}
-    const fill=ctx.createLinearGradient(x,y,x,y+cardH);
-    fill.addColorStop(0,'#ffffff');fill.addColorStop(.62,pal[2]);fill.addColorStop(1,is3D?'#e3e9e4':pal[2]);
-    ctx.fillStyle=fill;round(x+3,y+2,cardW-6,cardH-9,rad);ctx.fill();ctx.restore();
-    ctx.lineWidth=is3D?3:2;ctx.strokeStyle=is3D?'rgba(255,255,255,.88)':pal[0];
-    round(x+5,y+4,cardW-10,cardH-13,rad);ctx.stroke();
-    const stripeH=is3D?9:6;
-    ctx.fillStyle=pal[0];round(x+22,y+10,cardW-44,stripeH,Math.min(6,stripeH/2));ctx.fill();
-    const usableW=cardW-2*padX,usableH=cardH-2*padY-stripeH;
-    let fs=Math.min(story?35:33,Math.max(21,cardH*.24)),lines=[];
-    for(;fs>=17;fs-=1){
-     lines=wrapText(item,usableW,fs);
-     if(lines.length*fs*1.43<=usableH&&lines.every(t=>ctx.measureText(t).width<=usableW))break;
-    }
-    fs=Math.max(fs,17);lines=wrapText(item,usableW,fs);
-    // Hide overflow rather than letting type cross the card border; never
-    // change stored news content. Review dialog warns if facts are lengthy.
-    ctx.save();round(x+padX,y+padY,cardW-2*padX,cardH-2*padY,Math.min(12,rad));ctx.clip();
-    ctx.fillStyle=pal[1];ctx.font='700 '+fs+'px '+font;
-    const lineH=fs*1.43,totalH=lines.length*lineH,top=y+cardH/2-totalH/2+lineH/2+4;
-    lines.forEach((line,j)=>ctx.fillText(line,x+cardW/2,top+j*lineH,usableW));
+    round(tx0,y+10,Math.max(1,tx1-tx0),cardH-26,Math.min(16,radius));ctx.clip();
+    ctx.font='700 '+fitted.fs+'px '+font;ctx.fillStyle=pal[1];
+    const lh=fitted.fs*1.34,cy=y+(cardH-5)/2;
+    fitted.lines.forEach((line,j)=>ctx.fillText(line,textX,cy+(j-(fitted.lines.length-1)/2)*lh,textW));
     ctx.restore();
    });
   }finally{ctx.restore();}
@@ -1673,7 +1733,7 @@ function rf01030VerifiedPrompt(c){
   'این اثر برای ترکیب قطعی متن به‌وسیله نرم‌افزار است. مطلقاً هیچ نوشته‌ای تولید نکن: بدون تیتر، حروف، اعداد، ارقام، فارسی، انگلیسی، درصد، برچسب کارت، لوگو، نشان خبری، واترمارک و URL. متن‌ها تماماً بعداً توسط سایت با فونت واقعی کاربر افزوده می‌شوند.',
   'نکته تعیین‌کننده چیدمان: ۲۴٪ بالای کادر برای تیتر سایت و '+(c.size==='story'?'۴۱':'۴۰')+'٪ پایین کادر برای کارت‌های اطلاعاتی وب در نظر گرفته شده است؛ در این نواحی فقط بافت طبیعیِ پیوسته، رنگ و نور موضوعی طراحی کن. هیچ صورت، سر، فرد مهم، آمار، جدول یا شئ مهم پشت این بخش‌ها نباشد. این فضاها نباید لکه سفید یا خالیِ مصنوعی شوند.',
   'چهره و سوژه اصلی را در محدوده میانی حدود ارتفاع ۲۵٪ تا ۶۰٪ پوستر، با مقیاس مناسب و واضح بچین؛ اگر لازم شد کوچک‌تر کن تا صورت و عناصر مهم زیر کارت‌ها یا تیتر نروند.',
-  'هیچ کارت نوشته‌دار یا کادر عنوانی در خود تصویر نساز؛ سایت به‌صورت مستقل کارت‌های لوکس سه‌بعدی یا دوبعدی را مطابق انتخاب کاربر می‌کشد. فقط محیط و عناصر بصری هماهنگ با موضوع را طراحی کن.',
+  'هیچ کارت نوشته‌دار یا کادر عنوانی در خود تصویر نساز؛ سایت بعداً برای تک‌تک نکته‌ها کارت حرفه‌ای با المان موضوعی اختصاصی و متن فارسی دقیق با فونت انتخابی می‌کشد. تصویرسازی تو فقط محیط و سوژه اصلی خبر را در فضای میانی بسازد.',
   rf724LogoSafePrompt(c.brandKey,c.size),
   'زمینه زیر لوگو باید همان بافت طبیعی پیوسته باشد و هیچ لکه سفید/کرم جداگانه‌ای نداشته باشد.',
   'موضوع خبر فقط برای انتخاب اشیای تصویرسازی و نه نوشتن: '+[chosen.headline,...chosen.items].join('؛ ').slice(0,1100),
@@ -1975,64 +2035,4 @@ btn.addEventListener('click',async evt=>{
 #rf962-image-model .rf962-help{font-size:11px;color:#59748f;line-height:1.9;margin:1px 0 0}
 #rf607-test-area{margin-top:0!important}
 </style>
-<script id="rf01031-visual-cards-patch">
-(function(){
- function rf01031BrandPalette(brandKey, headline, items){
-  if(brandKey==='mashhad') return {accent:'#E0A400',dark:'#6D4A00',pale:'#FFF7DA',warm:'#FFE9A3',bg:'#FFFDF4'};
-  if(brandKey==='jaryan') return {accent:'#E2B719',dark:'#1F2327',pale:'#FFFBE6',warm:'#F5E7A7',bg:'#FFFDF7'};
-  if(brandKey==='farda') return {accent:'#CF2C50',dark:'#7F1830',pale:'#FFF3F6',warm:'#FFD8E3',bg:'#FFF8FA'};
-  const learned = typeof rf01021Palette==='function' ? rf01021Palette(headline||'', items||[]) : null;
-  return learned || {accent:'#00834A',dark:'#006D3C',pale:'#E8F5EF',warm:'#D7EEE0',bg:'#F6F3EF'};
- }
- function rf01031CardVisualMode(){
-  try{
-   const picked = (window.rf580Style && rf580Style.value) || 'auto';
-   if(picked==='2d' || picked==='table' || picked==='chart' || picked==='comparison' || picked==='timeline' || picked==='minimal') return '2d';
-   if(picked==='other') return (typeof rf580EffectiveStyle==='function' && rf580EffectiveStyle()==='2d') ? '2d' : '3d';
-   return '3d';
-  }catch(_){ return '3d'; }
- }
- window.rf01030DrawExactCards = function(){
-  const raw = (typeof normalizeText==='function'?normalizeText(input.value||''):(input.value||'')).trim();
-  if(!raw) return;
-  const manual = (window.rf580TitleOn && rf580TitleOn.checked && window.rf580TitleText) ? (typeof normalizeText==='function'?normalizeText(rf580TitleText.value):rf580TitleText.value||'') : '';
-  const data = window.rf01024CurateNews ? window.rf01024CurateNews(raw, manual, size) : {headline:'',items:raw.split(/\n+/).slice(0,size==='story'?7:5)};
-  const items = (data.items||[]).map(v=> (typeof rf584PersianDigits==='function'?rf584PersianDigits(String(v||'')):String(v||'')).trim()).filter(Boolean);
-  if(!items.length) return;
-  const W=cv.width,H=cv.height,story=size==='story',isFarda=brand==='farda';
-  const pal = rf01031BrandPalette(brand, data.headline||'', items);
-  const family=(window.rf584FontMap && rf584FontMap[rf584FontSelector.value]) || 'RF584Doran';
-  const visual = rf01031CardVisualMode();
-  const top = H*(story ? 0.59 : 0.61);
-  const bottom = H*(isFarda ? (story ? 0.855 : 0.85) : (story ? 0.962 : 0.956));
-  const left = W*0.037, totalW = W*0.926;
-  const count = items.length;
-  const cols = story ? 2 : (count>=5 ? 3 : count===1 ? 1 : 2);
-  const rows = Math.ceil(count/cols);
-  const gapX = story ? 18 : 16;
-  const gapY = story ? 18 : 17;
-  const cardW = (totalW - (cols-1)*gapX) / cols;
-  let cardH = (bottom - top - (rows-1)*gapY) / rows;
-  cardH = Math.max(cardH, story ? 122 : 110);
-  if(cardH < 96){
-   if(window.statusEl) statusEl.textContent='برای نمایش خوانا و تصویری کارت‌ها، تعداد نکات را در بازبینی کمی کمتر کن.';
-   return;
-  }
-  ctx.save();
-  try{
-   ctx.direction='rtl';
-   items.forEach((item, i)=>{
-    const col=i%cols, row=Math.floor(i/cols);
-    const x=left + col*(cardW+gapX), y=top + row*(cardH+gapY);
-    if(typeof rf01019RenderCard==='function'){
-      rf01019RenderCard(item, x, y, cardW, cardH, family, i, visual, pal);
-    }
-   });
-  } finally { ctx.restore(); }
- };
- // Refresh the preview immediately when this patch is loaded.
- try{ if(typeof render==='function') render(); }catch(_e){}
-})();
-</script>
-
 </body></html>
