@@ -304,7 +304,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01050</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01051</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -1355,34 +1355,41 @@ function rf581Render(){
   }
   // Choose a font size using REAL Canvas text measurement and available height.
   // If source is unusually long, show a readable semantic excerpt; source stays in editor.
+  // 01051: only text pixels are painted.  Never create an additional
+  // rectangle, face, fill, border, bevel, shadow or separator over the
+  // ivory sculpted face provided by Flare.
   function drawBlock(value,cx,cy,availableW,availableH,maxFont,minFont=17){
-   let text=normalized(value),fit=null;
-   for(let pass=0;pass<2&&!fit;pass++){
-    for(let fs=Math.floor(maxFont);fs>=minFont;fs--){
-     const lines=measuredLines(text,availableW,fs);
-     if(lines.length*fs*1.30<=availableH&&lines.every(line=>ctx.measureText(line).width<=availableW)){
+   const text=normalized(value);if(!text)return true;
+   let fit=null;
+   for(let fs=Math.floor(maxFont);fs>=minFont;fs--){
+    const lines=measuredLines(text,availableW,fs);
+    ctx.font='800 '+fs+'px '+family;
+    if(lines.length*fs*1.32<=availableH && lines.every(line=>ctx.measureText(line).width<=availableW)){
       fit={fs,lines};break;
-     }
-    }
-    if(!fit){
-     // Do not display 8px microscopic text. Only a source excerpt is shown.
-     const limit=Math.max(22,Math.floor(text.length*.74));
-     let shorter=text.slice(0,limit);const stop=shorter.lastIndexOf(' ');
-     if(stop>limit*.7)shorter=shorter.slice(0,stop);
-     text=shorter.replace(/[،؛\s]+$/u,'')+'…';
     }
    }
+   // Preserve the source copy. Do not cut it to an arbitrary number of chars.
+   // Where it cannot fit at a readable size, show a compact preview here and
+   // flag the card before paid generation; source remains available in editor.
    if(!fit){
-    const fs=minFont,lines=measuredLines(text,availableW,fs);
-    const maxLines=Math.max(1,Math.floor(availableH/(fs*1.30)));
-    fit={fs,lines:lines.slice(0,maxLines)};
-    if(lines.length>maxLines){let last=fit.lines[maxLines-1];while(last.length>1&&ctx.measureText(last+'…').width>availableW)last=last.slice(0,-1);fit.lines[maxLines-1]=last.trim()+'…';}
+    const fs=minFont, lines=measuredLines(text,availableW,fs);
+    const count=Math.max(1,Math.floor(availableH/(fs*1.32)));
+    fit={fs,lines:lines.slice(0,count)};
+    if(lines.length>count){
+     let last=fit.lines[count-1];
+     ctx.font='800 '+fs+'px '+family;
+     while(last.length>1&&ctx.measureText(last+'…').width>availableW)last=last.slice(0,-1);
+     fit.lines[count-1]=last.trim()+'…';
+     window.rf01051TextOverflow=true;
+    }
    }
    ctx.font='800 '+fit.fs+'px '+family;
-   const lh=fit.fs*1.30;
+   const lh=fit.fs*1.32;
    const first=cy-(fit.lines.length-1)*lh/2;
    fit.lines.forEach((line,j)=>ctx.fillText(line,cx,first+j*lh));
+   return !window.rf01051TextOverflow;
   }
+  window.rf01051TextOverflow=false;
   ctx.save();
   try{
    ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
@@ -1396,21 +1403,15 @@ function rf581Render(){
     const ph=horizontal?h*.83:h*.395;
     const inset=Math.max(9,Math.min(20,pw*.05));
     const radius=Math.max(11,Math.min(22,ph*.18));
-    // One complete ceramic face hides untrusted model glyphs throughout the
-    // reserved caption region; extends to its intended integrated border.
-    ctx.save();ctx.shadowColor='rgba(9,35,20,.14)';ctx.shadowBlur=9;ctx.shadowOffsetY=3;
-    const fill=ctx.createLinearGradient(px,py,px,py+ph);
-    fill.addColorStop(0,'#fffefa');fill.addColorStop(.58,'#faf8f2');fill.addColorStop(1,'#ede9df');
-    ctx.beginPath();ctx.roundRect(px,py,pw,ph,radius);ctx.fillStyle=fill;ctx.fill();ctx.restore();
-    ctx.save();ctx.beginPath();ctx.roundRect(px,py,pw,ph,radius);ctx.clip();
-    ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(px+1.5,py+1.5,pw-3,ph-3,radius);ctx.stroke();
+    // NO second box. The premade integrated cream face is already in the
+    // generated image. Clip the ink to its exact interior, nothing else.
+    ctx.save();
+    ctx.beginPath();ctx.rect(px+inset,py+inset,pw-2*inset,ph-2*inset);ctx.clip();
     ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
     const [label,detail]=partsFor(item),cx=px+pw/2,innerW=pw-inset*2;
     if(detail){
      ctx.fillStyle='#243328';
      drawBlock(label,cx,py+ph*.27,innerW,ph*.40,Math.min(30,pw*.125));
-     ctx.strokeStyle='rgba(0,131,74,.25)';ctx.lineWidth=1.5;
-     ctx.beginPath();ctx.moveTo(px+inset,py+ph*.52);ctx.lineTo(px+pw-inset,py+ph*.52);ctx.stroke();
      ctx.fillStyle=accent;
      drawBlock(detail,cx,py+ph*.76,innerW,ph*.40,Math.min(27,pw*.115));
     }else{
@@ -1455,7 +1456,7 @@ function rf581Render(){
    }
    rf01027BrowserHeadline();
    rf01020StampOriginalTemplate(ctx,template,W,H);
-   window.rf01012LastStyleLabel='طراحی کامل سه‌بعدی توسط Flare + متن دقیق و لوگوی اصلی';
+   window.rf01012LastStyleLabel='کادر سرامیکی اصلی Flare + فقط متن دقیق فارسی و لوگوی اصلی';
   }finally{ctx.restore();}
   window.rf1000ComposedReady=true;
   layoutName.textContent=(rf01022DesignMode.value==='verified'?'متن و کارت دقیق سایت + لوگوی اصلی ':'محتوا + لوگوی ثابت اصلی ')+brands[brand].name;updateMeta();
@@ -2204,7 +2205,7 @@ function rf01043FlarePrompt(c){
   'The authentic media logo will be composited by RushFinder at the original upper-right location. NEVER draw, repeat, imitate or reserve a rectangular patch for this logo. Continue a seamless natural background under it.',
   'EXACT HEADER SAFE GEOMETRY: center the intended headline plaque on the physical canvas X=50%. Keep X=16–84%, Y=2–24%; glossy green volumetric headline plate integrated with the scene, BLANK surface (RushFinder writes the headline later). Never move the panel toward the left; no writing or icons inside it.',
   'TEXT SYSTEM: model creates only luxurious 3D artwork, physical cards, blank integrated ivory text facets and distinct accurate visual objects. RushFinder will write ALL exact Persian facts using the user-selected font. Do NOT produce ANY letters, digits, labels, badges, symbols resembling words, numbers, brand names, flags with lettering, watermarks or URLs, even in small illustrations.',
-  'CARD CONTRACT: exactly '+items.length+' physically aligned EQUAL-DIMENSION sculpted cards, consistent gaps, matched illumination. Each contains ONE topic-specific 3D object, and ONE LARGE INTEGRATED BLANK TEXT FACE in the precise area below. Never make a second small white label inside a card, never cover a text face with objects. The text face MUST appear as an organic ceramic part of the object, not a flat website sticker.',
+  'CARD CONTRACT: exactly '+items.length+' physically aligned EQUAL-DIMENSION sculpted cards, consistent gaps, matched illumination. Each contains ONE topic-specific 3D object, and ONE LARGE INTEGRATED BLANK TEXT FACE in the precise area below. The text face is the ONE AND ONLY integrated cream ceramic surface, clean, large, and blank. Avoid overlay labels, nested capsules, additional rectangles or writing, and keep face boundaries physically clear. Never make a second small white label inside a card, never cover a text face with objects. The text face MUST appear as an organic ceramic part of the object, not a flat website sticker.',
   'SUBJECT: '+String(selected.headline||'').slice(0,105)+'. Choose imagery from the semantic meaning of EACH data row and the overall headline, not simply numbers or currency tokens. Different data rows must have different relevant objects, viewpoints or scenes. No random groceries, cash registers, fake maps or unrelated pictures.',
   'PHYSICAL CARD LOCATIONS (% of full square) WITH MATCHING TEXT AREAS:'
  ];
