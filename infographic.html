@@ -1,4 +1,4 @@
-<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>اینفوگرافیک هوشمند | RushFinder 01044</title>
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>اینفوگرافیک هوشمند | RushFinder 01046</title>
 <style>
 @font-face{font-family:Yekan;src:url('fonts/Yekan.woff2') format('woff2');font-display:swap}
 *{box-sizing:border-box}html,body{margin:0}body{font-family:Yekan,Tahoma,sans-serif;background:#edf3fa;color:#17314e;font-size:15px}
@@ -297,7 +297,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01045</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01046</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -1285,6 +1285,8 @@ function rf581Render(){
      return {x:left+(cols-remain)*(w+gapX)/2+c*(w+gapX),y:top+r*(h+gapY),w,h};});
  }
  window.rf01044Grid=rf01044Grid;
+ // 01046: one aligned layout contract; Flare sculpts the object and panel,
+ // RushFinder paints exact user text into the reserved panel. No flat white sticker.
  function rf01043EditorialText(){
   const raw=normalizeText(input.value||'');
   const manual=rf580TitleOn.checked?normalizeText(rf580TitleText.value):'';
@@ -1295,40 +1297,77 @@ function rf581Render(){
   const family=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
   const accent={urgent:'#006D3C',mashhad:'#8f3419',jaryan:'#27241b',farda:'#9f203e'}[brand]||'#006D3C';
   const normalize=v=>rf584PersianDigits(String(v||'').replace(/[\r\n]+/g,' ').trim());
-  const paintText=(value,cx,cy,maxW,maxH,initial,min=13)=>{
-    const words=normalize(value).split(/\s+/).filter(Boolean);
-    let fs=initial,lines=[];
-    const layout=px=>{ctx.font='800 '+px+'px '+family;const out=[];let line='';for(const word of words){const next=line?line+' '+word:word;if(line&&ctx.measureText(next).width>maxW){out.push(line);line=word;}else line=next;}if(line)out.push(line);return out;};
-    for(;fs>=min;fs--){lines=layout(fs);if(lines.length*fs*1.27<=maxH&&lines.every(x=>ctx.measureText(x).width<=maxW))break;}
-    fs=Math.max(min,fs);lines=layout(fs);
-    if(lines.length*fs*1.27>maxH){statusEl.textContent='متن بعضی کارت‌ها برای ابعاد مربع بیش از حد بلند است؛ قبل از انتشار بررسی کن.';}
-    const lh=fs*1.27,start=cy-(lines.length-1)*lh/2;
-    ctx.font='800 '+fs+'px '+family;
-    lines.forEach((ln,j)=>ctx.fillText(ln,cx,start+j*lh,maxW));
-  };
+  function partsFor(item){
+   const t=String(item).trim();
+   const colon=t.match(/^(.{2,70}?)\s*[:：]\s*(.+)$/u);
+   if(colon)return [colon[1],colon[2]];
+   const product=t.split(/\s+[—–]\s+/u);
+   if(product.length>1)return [product[0],product.slice(1).join(' — ')];
+   const at=t.search(/[۰-۹0-9]/);
+   if(at>2)return [t.slice(0,at).trim(),t.slice(at).trim()];
+   return [t,''];
+  }
+  function wrapExact(value,maxWidth,px){
+   ctx.font='800 '+px+'px '+family;
+   const words=normalize(value).split(/\s+/u).filter(Boolean);
+   const output=[];let line='';
+   for(const word of words){
+    const candidate=line?line+' '+word:word;
+    if(line&&ctx.measureText(candidate).width>maxWidth){output.push(line);line=word;}else line=candidate;
+   }
+   if(line)output.push(line);
+   return output;
+  }
+  function drawFitted(value,x,y,maxW,maxH,maxFS){
+   if(!value)return;
+   let fit=null;
+   for(let fs=Math.floor(maxFS);fs>=16;fs--){
+    const lines=wrapExact(value,maxW,fs);
+    if(lines.length*fs*1.26<=maxH&&lines.every(line=>ctx.measureText(line).width<=maxW)){
+     fit={fs,lines};break;
+    }
+   }
+   if(!fit){
+    // Never paint microscopic or overflowing text on a paid picture.
+    // Preflight prevents this case before payment; this is a safe last resort.
+    fit={fs:16,lines:wrapExact(value,maxW,16)};
+    if(fit.lines.length*20>maxH){
+     statusEl.textContent='هشدار خوانایی: داده بلندتر از فضای کارت است؛ از ساخت دوباره پولی خودداری کن.';
+     return;
+    }
+   }
+   ctx.font='800 '+fit.fs+'px '+family;
+   const lineH=fit.fs*1.26;
+   fit.lines.forEach((ln,j)=>ctx.fillText(ln,x,y+(j-(fit.lines.length-1)/2)*lineH,maxW));
+  }
   ctx.save();
   try{
    ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
    items.forEach((item,i)=>{
-    const r=grid[i],x=r.x*W,y=r.y*H,w=r.w*W,h=r.h*H;
-    // Mask accidental AI lettering in the lower plate. Preserve the AI-made 3D upper sculpture.
-    const plateY=y+h*.58,plateH=h*.39,ix=x+w*.047,iw=w*.906;
-    ctx.save();ctx.shadowColor='rgba(19,37,26,.20)';ctx.shadowBlur=9;ctx.shadowOffsetY=4;
-    ctx.beginPath();ctx.roundRect(ix,plateY,iw,plateH,[8,8,Math.min(21,w*.07),Math.min(21,w*.07)]);
-    ctx.fillStyle='#f9f7f2';ctx.fill();ctx.restore();
-    ctx.save();ctx.beginPath();ctx.roundRect(ix,plateY,iw,plateH,[8,8,Math.min(21,w*.07),Math.min(21,w*.07)]);ctx.clip();
-    const shine=ctx.createLinearGradient(0,plateY,0,plateY+plateH);shine.addColorStop(0,'#ffffff');shine.addColorStop(.62,'#fbfaf7');shine.addColorStop(1,'#e9e6df');ctx.fillStyle=shine;ctx.fillRect(ix,plateY,iw,plateH);
-    ctx.strokeStyle='rgba(255,255,255,.97)';ctx.lineWidth=3;ctx.strokeRect(ix+2,plateY+2,iw-4,plateH-4);
-    const parts=String(item).split(/\s*[:：]\s*/);let label='',detail='';
-    if(parts.length>1){label=parts.shift().trim();detail=parts.join(':').trim();}
-    else {const at=String(item).search(/[۰-۹0-9]/);if(at>2){label=String(item).slice(0,at).trim();detail=String(item).slice(at).trim();}else label=String(item).trim();}
-    const center=x+w/2, maxW=iw*.91;
+    const rect=grid[i],x=rect.x*W,y=rect.y*H,w=rect.w*W,h=rect.h*H;
+    const plateY=y+h*.58,plateH=h*.39,pad=Math.max(9,w*.048),ix=x+pad,iw=w-2*pad;
+    const radius=Math.min(22,w*.11);
+    // A deliberate inset sculpted in the same material: soft ivory to cream,
+    // consistent with the AI generated object below it, not a flat white bar.
+    ctx.save();ctx.shadowColor='rgba(8,46,27,.14)';ctx.shadowBlur=12;ctx.shadowOffsetY=4;
+    ctx.beginPath();ctx.roundRect(ix,plateY,iw,plateH,radius);
+    const ceramic=ctx.createLinearGradient(ix,plateY,ix+iw,plateY+plateH);
+    ceramic.addColorStop(0,'#fffefa');ceramic.addColorStop(.54,'#f9f6ed');ceramic.addColorStop(1,'#ece9dd');
+    ctx.fillStyle=ceramic;ctx.fill();ctx.restore();
+    ctx.save();ctx.beginPath();ctx.roundRect(ix,plateY,iw,plateH,radius);ctx.clip();
+    const sheen=ctx.createLinearGradient(0,plateY,0,plateY+plateH*.45);
+    sheen.addColorStop(0,'rgba(255,255,255,.85)');sheen.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=sheen;ctx.fillRect(ix,plateY,iw,plateH*.45);
+    ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.roundRect(ix+1.5,plateY+1.5,iw-3,plateH-3,radius);ctx.stroke();
+    const [label,detail]=partsFor(item),cx=x+w/2,available=iw-20;
     if(detail){
-      ctx.fillStyle='#20231e';paintText(label,center,plateY+plateH*.29,maxW,plateH*.37,Math.min(27,w*.12));
-      ctx.strokeStyle='rgba(0,131,74,.35)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ix+iw*.15,plateY+plateH*.51);ctx.lineTo(ix+iw*.85,plateY+plateH*.51);ctx.stroke();
-      ctx.fillStyle=accent;paintText(detail,center,plateY+plateH*.75,maxW,plateH*.43,Math.min(26,w*.112));
+      ctx.fillStyle='#24372b';drawFitted(label,cx,plateY+plateH*.27,available,plateH*.42,Math.min(29,w*.124));
+      ctx.strokeStyle='rgba(0,131,74,.21)';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(ix+iw*.17,plateY+plateH*.51);ctx.lineTo(ix+iw*.83,plateY+plateH*.51);ctx.stroke();
+      ctx.fillStyle=accent;drawFitted(detail,cx,plateY+plateH*.74,available,plateH*.42,Math.min(27,w*.117));
     }else{
-      ctx.fillStyle=accent;paintText(label,center,plateY+plateH*.5,maxW,plateH*.84,Math.min(27,w*.105));
+      ctx.fillStyle=accent;drawFitted(label,cx,plateY+plateH*.50,available,plateH*.89,Math.min(29,w*.13));
     }
     ctx.restore();
    });
@@ -1735,7 +1774,7 @@ function rf01024CurateNews(raw,manualTitle='',sizeKey='square'){
  let headline=clean(manualTitle)||(paragraphs[0]||'');
  if(!manualTitle&&headline.length>130)headline=headline.split(/[.!؟؛]/u)[0].slice(0,112).trim()||headline.slice(0,112).trim();
  let pool=manualTitle?paragraphs:paragraphs.slice(1);
- // 01045: Year headers are context, not independent infographic facts.
+ // 01046: Year headers are context, not independent infographic facts.
  // Attach them to the following quantified facts, preserving the user's numbers.
  const groupedPool=[];let yearContext='';
  for(const rawPart of pool){
@@ -2082,7 +2121,7 @@ function rf01043FlarePrompt(c){
   'MANDATORY MEDIA PALETTE: '+palette+'. Original brand PNG will be overlaid by the website; do NOT generate a logo.',
   'Topic: '+selected.headline.slice(0,88)+'. Render 100% relevant physical subject miniatures; no generic or unrelated icons.',
   'Layout: top 0–17% clear for headline/logo, 17–32% stunning thematic hero. '+n+' premium sculpted 3D cards, '+cols+' by '+rows+', Y 34–95%. Upper 57% of each card: unique realistic object; lower 43%: EMPTY ivory text panel for the site.',
-  'CRITICAL: Do not put any tiny cards inside another card. No extra bars, fake text strips or invented extra card. Each card is one premium coherent sculpted object. Different exact factual subjects per card.',
+  'CRITICAL: Create exactly ONE coherent ceramic sculptural card per item, with a lower recessed ivory nameplate integrated into the material, never a detached white overlay or extra text strip. The upper visual has a miniature of the precise subject. No tiny cards inside cards, no invented extra card. Cards must be elegant, premium, physically dimensional and matched in lighting.',
   'PRIORITY: factual visual identity is more important than decorative details. For a food/item list, each illustration MUST visibly show that EXACT named item, not an approximate repeated substitute. For numbers/categories, create an appropriate distinct visual metaphor. Do not decorate cards with text or misleading repeated stock objects.',
 
   'Strict grid locations (x and y in percentages of entire canvas):'
@@ -2092,7 +2131,7 @@ function rf01043FlarePrompt(c){
   const x=left+extra+col*(cw+gapX),y=top+row*(ch+gapY);
   lines.push((i+1)+'. CARD X '+pct(x)+'–'+pct(x+cw)+' Y '+pct(y)+'–'+pct(y+ch)+': realistic distinct visual for «'+fact.slice(0,76)+'». Top visual area Y '+pct(y)+'–'+pct(y+ch*.57)+'; bottom text panel Y '+pct(y+ch*.58)+'–'+pct(y+ch*.97)+' absolutely empty, NO lettering.');
  });
- lines.push('NO lettering, digits, Persian or Latin characters, logos, labels or watermark anywhere. Lower ivory text panels completely blank; website will overlay exact Persian writing and logo.');
+ lines.push('ABSOLUTELY NO lettering, digits, Persian or Latin characters, logos, labels or watermarks anywhere. Every lower ivory nameplate is an integrated sculpted blank surface; website will print exact Persian writing and original logo.');
  lines.push('Premium tactile PBR ceramic 3D, studio highlights, soft realistic shadows, no flat web UI; seamless background beneath transparent original logo.');
  if(c.customPrompt)lines.push('User visual preference (only if consistent with no-writing requirement): '+c.customPrompt.slice(0,160));
  let prompt=lines.join('\n');
@@ -2115,7 +2154,14 @@ function reviewPrompt(draft,c,summary){
   const expl=document.createElement('p');expl.textContent='پرامپت به‌طور خودکار نوشته شده است. در صورت تمایل اصلاحش کن؛ دقیقاً همین متنِ نهایی برای ساخت استفاده خواهد شد.';section.appendChild(expl);
   const info=document.createElement('p');info.style.lineHeight='2.1';
   info.textContent='رسانه: '+c.brand+' | پست مربع | '+(summary.items?.length||0)+' کارت | مدل: '+c.model+' | کیفیت: '+({'low':'پایین','medium':'متوسط','high':'بالا'}[c.quality]||c.quality);section.appendChild(info);
-  if(summary.omitted>0){const omitted=document.createElement('p');omitted.style.cssText='color:#9c2929;background:#fff5f1;border:1px solid #efc8bb;padding:9px;border-radius:10px;font-weight:700';omitted.textContent='هشدار: '+summary.omitted+' مورد در مربع جا نشده و در تصویر نهایی نمایش داده نمی‌شود. اگر تمام موارد لازم‌اند، این ساخت را لغو کن؛ هیچ هزینه‌ای پیش از تأیید نمی‌شود.';section.appendChild(omitted);}
+  let omissionApproval=null;
+  if(summary.omitted>0){
+   const omitted=document.createElement('p');omitted.style.cssText='color:#9c2929;background:#fff5f1;border:1px solid #efc8bb;padding:9px;border-radius:10px;font-weight:700';
+   omitted.textContent='هشدار: '+summary.omitted+' مورد در مربع جا نشده و نمایش داده نمی‌شود. برای ادامه باید آگاهانه تأیید کنی؛ یا بدون هزینه انصراف بده.';section.appendChild(omitted);
+   const check=document.createElement('label');check.style.cssText='display:flex;align-items:center;gap:8px;color:#9c2929';
+   omissionApproval=document.createElement('input');omissionApproval.type='checkbox';omissionApproval.id='rf01046-omission-ok';
+   check.append(omissionApproval,document.createTextNode('می‌دانم بعضی داده‌ها در خروجی نمایش داده نمی‌شوند.'));section.appendChild(check);
+  }
 
   const facts=document.createElement('details');facts.open=true;const factsHead=document.createElement('summary');factsHead.textContent='فهرست داده‌های انتخاب‌شده برای خروجی (بازبینی رایگان)';facts.appendChild(factsHead);const factList=document.createElement('ol');factList.style.cssText='padding-right:25px;line-height:2;max-height:130px;overflow:auto';for(const it of summary.items||[]){const li=document.createElement('li');li.textContent=it;factList.appendChild(li);}facts.appendChild(factList);section.appendChild(facts);
   const label=document.createElement('label');label.textContent='متن کامل پرامپت (قابل ویرایش)';label.setAttribute('for','rf716-prompt');section.appendChild(label);
@@ -2127,12 +2173,12 @@ function reviewPrompt(draft,c,summary){
   const reset=document.createElement('button');reset.type='button';reset.textContent='بازگردانی پرامپت خودکار';
   const cancel=document.createElement('button');cancel.type='button';cancel.textContent='انصراف (بدون هزینه)';
   actions.append(approve,reset,cancel);section.appendChild(actions);shade.appendChild(section);
-  const update=()=>{const n=editor.value.trim().length;count.textContent=n+' / ۳۵۰۰ نویسه';approve.disabled=n<30||n>3500;count.style.color=approve.disabled?'#a32222':'#34635e';};
-  editor.addEventListener('input',update);reset.onclick=()=>{editor.value=draft;update();editor.focus();};update();
+  const update=()=>{const n=editor.value.trim().length;count.textContent=n+' / ۳۵۰۰ نویسه';approve.disabled=n<30||n>3500||(!!omissionApproval&&!omissionApproval.checked);count.style.color=approve.disabled?'#a32222':'#34635e';};
+  editor.addEventListener('input',update);omissionApproval?.addEventListener('change',update);reset.onclick=()=>{editor.value=draft;update();editor.focus();};update();
   const old=document.activeElement;document.body.appendChild(shade);
   const keyboard=e=>{if(e.key==='Escape'){e.preventDefault();finish(null);}};
   const finish=value=>{document.removeEventListener('keydown',keyboard,true);shade.remove();old?.focus?.();resolve(value);};
-  approve.onclick=()=>{const edited=editor.value.trim();if(edited.length>=30&&edited.length<=3500)finish(edited);};
+  approve.onclick=()=>{const edited=editor.value.trim();if(edited.length>=30&&edited.length<=3500&&(!omissionApproval||omissionApproval.checked))finish(edited);};
   cancel.onclick=()=>finish(null);
   document.addEventListener('keydown',keyboard,true);editor.focus();
  });
@@ -2148,7 +2194,12 @@ btn.addEventListener('click',async evt=>{
  const sig=JSON.stringify(c);
  const summary=rf01024CurateNews(c.news,c.headline,c.size);
  if(!summary.items?.length){say('از خبر، داده قابل نمایش تشخیص داده نشد. هیچ هزینه‌ای انجام نشده است.');return;}
- if(summary.items.some(item=>item.length>150)){say('یک یا چند داده بیش از حد طولانی است و در کارت خوانا نمی‌شود؛ پیش از ساخت متن را کوتاه کن. هیچ هزینه‌ای مصرف نشده.');return;}
+ // 01046: conservative no-cost typography gate for overcrowded cards.
+ // If eight cards are needed, a 240px-wide nameplate cannot hold a paragraph.
+ const perCardLimit=summary.items.length>=7?66:summary.items.length>=5?92:145;
+ if(summary.items.some(item=>item.length>perCardLimit)){
+   say('ساخت رایگان متوقف شد: متن یک یا چند کارت برای '+summary.items.length+' کارت در پست مربع بلند است. اطلاعات را کوتاه‌تر کن یا موارد کمتری انتخاب کن. هیچ هزینه‌ای مصرف نشد.');return;
+ }
  if(summary.duplicates>0)say('✓ '+summary.duplicates+' مورد تکراری حذف شد. نام، وزن و قیمت هر محصول به‌صورت یک کارت یکپارچه حفظ شده‌اند؛ هنوز هزینه‌ای مصرف نشده است.');
  if(summary.curated){say('✓ از '+summary.total+' نکتهٔ قابل‌نمایش، '+summary.items.length+' نکتهٔ مهم برای یک '+(c.size==='story'?'استوری':'پست مربع')+' انتخاب شد. متن خام شما حفظ شده است؛ فهرست دقیق را در پنجره تأیید بررسی کن. هنوز هزینه‌ای مصرف نشده.');}
  let automaticPrompt;
