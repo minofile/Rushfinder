@@ -304,7 +304,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01052</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01053</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -1324,95 +1324,162 @@ function rf581Render(){
  // RushFinder paints exact user text into the reserved panel. No flat white sticker.
  // 01050: measured RTL copy. The site owns ONE integrated nameplate per AI card.
  // No nested labels and no unsupported arbitrary CSS/text width squashing.
+ // 01053: No extra text-box paints. Detect the REAL cream facet created by Flare
+ // from the generated bitmap, then put the ENTIRE copy inside that same face.
+ // Geometric percentages remain fallback only; model-generated cards drift.
  function rf01043EditorialText(){
   const raw=normalizeText(input.value||'');
   const manual=rf580TitleOn.checked?normalizeText(rf580TitleText.value):'';
   const data=window.rf01024CurateNews?.(raw,manual,'square');
-  const items=(data?.items||[]).slice(0,8);if(!items.length)return;
-  const W=cv.width,H=cv.height,plan=window.rf01047Plan(items,{headline:data?.headline||manual}),grid=plan.cards;
+  const items=(data?.items||[]).slice(0,8);
+  if(!items.length)return;
+  const W=cv.width,H=cv.height;
+  const plan=window.rf01047Plan(items,{headline:data?.headline||manual});
+  const grid=plan.cards;
   const family=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
   const accent=({urgent:'#006D3C',mashhad:'#873916',jaryan:'#28241b',farda:'#a22243'})[brand]||'#006D3C';
-  const normalized=v=>rf584PersianDigits(String(v||'').replace(/[\r\n]+/gu,' ').replace(/\s+/gu,' ').trim());
-  function partsFor(item){
-   const t=normalized(item);
-   const dash=t.match(/^(.{2,90}?)\s+[—–]\s+(.+)$/u);
-   if(dash)return[dash[1],dash[2]];
-   const colon=t.match(/^(.{2,90}?)\s*[:：]\s*(.+)$/u);
-   if(colon)return[colon[1],colon[2]];
-   const numeric=t.search(/[۰-۹0-9]/u);
-   if(numeric>3)return[t.slice(0,numeric).trim(),t.slice(numeric).trim()];
-   return[t,''];
+  const normalized=value=>rf584PersianDigits(String(value||'').replace(/[\r\n]+/gu,' ').replace(/\s+/gu,' ').trim());
+  let bitmap=null;
+  try{bitmap=ctx.getImageData(0,0,W,H);}catch(e){console.warn('RF01053: cream-face sampling unavailable',e);}
+  const pixels=bitmap?.data;
+  function pale(x,y){
+    if(!pixels||x<0||y<0||x>=W||y>=H)return false;
+    const j=(Math.floor(y)*W+Math.floor(x))*4;
+    const r=pixels[j],g=pixels[j+1],b=pixels[j+2];
+    // Ivory / warm white ceramic, not green object panels.
+    return r>=176&&g>=159&&b>=138&&r-g<57&&g-b<62&&r>=g-3;
   }
-  function measuredLines(value,available,px){
-   ctx.font='800 '+px+'px '+family;
-   const words=normalized(value).split(/\s+/u).filter(Boolean);let line='',lines=[];
-   for(const word of words){
-    const candidate=line?line+' '+word:word;
-    if(line&&ctx.measureText(candidate).width>available){lines.push(line);line=word;}else line=candidate;
-   }
-   if(line)lines.push(line);
-   return lines;
-  }
-  // Choose a font size using REAL Canvas text measurement and available height.
-  // If source is unusually long, show a readable semantic excerpt; source stays in editor.
-  // 01051: only text pixels are painted.  Never create an additional
-  // rectangle, face, fill, border, bevel, shadow or separator over the
-  // ivory sculpted face provided by Flare.
-  function drawBlock(value,cx,cy,availableW,availableH,maxFont,minFont=13){
-   const text=normalized(value);if(!text)return true;
-   let fit=null;
-   for(let fs=Math.floor(maxFont);fs>=minFont;fs--){
-    const lines=measuredLines(text,availableW,fs);
-    ctx.font='800 '+fs+'px '+family;
-    if(lines.length*fs*1.25<=availableH && lines.every(line=>ctx.measureText(line).width<=availableW)){
-     fit={fs,lines};break;
+  function locateFace(rect){
+    if(!pixels)return null;
+    const x=rect.x*W,y=rect.y*H,w=rect.w*W,h=rect.h*H;
+    const centerX=x+w*.5;
+    const sampleX=[.27,.37,.50,.63,.73].map(t=>Math.max(0,Math.min(W-1,Math.round(x+w*t))));
+    const begin=Math.max(0,Math.round(y-h*.16));
+    const stop=Math.min(H-1,Math.round(y+h*1.14));
+    const positions=[];
+    for(let yy=begin;yy<=stop;yy+=3){
+      const match=sampleX.reduce((count,xx)=>count+(pale(xx,yy)?1:0),0);
+      positions.push({yy,valid:match>=3});
     }
-   }
-   if(!fit){
-    // Never silently replace a source fact with an ellipsis. This is a genuine
-    // geometry warning; unpaid preflight and layout must address dense copy.
-    window.rf01051TextOverflow=true;
-    return false;
-   }
-   ctx.font='800 '+fit.fs+'px '+family;
-   const lh=fit.fs*1.25;
-   const first=cy-(fit.lines.length-1)*lh/2;
-   fit.lines.forEach((line,j)=>ctx.fillText(line,cx,first+j*lh));
-   return true;
+    let segments=[],first=-1,last=-1;
+    for(const entry of positions){
+      if(entry.valid){if(first<0)first=entry.yy;last=entry.yy;}
+      else if(first>=0){segments.push({top:first,bottom:last});first=-1;}
+    }
+    if(first>=0)segments.push({top:first,bottom:last});
+    // Text that the model accidentally drew can interrupt otherwise continuous
+    // ivory. Merge adjacent runs of the same face rather than selecting one line.
+    segments.sort((a,b)=>a.top-b.top);
+    let merged=[];
+    for(const piece of segments){
+      const prior=merged[merged.length-1];
+      if(prior && piece.top-prior.bottom<=44)prior.bottom=piece.bottom;
+      else merged.push({...piece});
+    }
+    const candidates=merged.filter(s=>s.bottom-s.top>=Math.max(34,h*.17));
+    const lowerBound=y+h*.29;
+    const selected=candidates.filter(s=>s.bottom>=lowerBound)
+      .sort((a,b)=>{
+        const score=s=>(s.bottom-s.top)-Math.abs((s.top+s.bottom)/2-(y+h*.71))*.38;
+        return score(b)-score(a);
+      })[0];
+    if(!selected)return null;
+    // Determine the true horizontal cream edges too. Flare often shifts the
+    // entire physical card versus the requested x percentages, so percent-only
+    // left/right bounds can put the first or last letter outside the panel.
+    const probeY=[.24,.49,.73].map(t=>Math.max(0,Math.min(H-1,Math.round(selected.top+(selected.bottom-selected.top)*t))));
+    const xs=Math.max(0,Math.round(x-w*.12)),xe=Math.min(W-1,Math.round(x+w*1.12));
+    const horizontalRuns=[];let runStart=-1,runEnd=-1;
+    for(let xx=xs;xx<=xe;xx+=2){
+      const matching=probeY.reduce((a,yy)=>a+(pale(xx,yy)?1:0),0);
+      if(matching>=2){if(runStart<0)runStart=xx;runEnd=xx;}
+      else if(runStart>=0){horizontalRuns.push({left:runStart,right:runEnd});runStart=-1;}
+    }
+    if(runStart>=0)horizontalRuns.push({left:runStart,right:runEnd});
+    // Glyph strokes within an already annotated test image may fragment the run.
+    const joined=[];
+    for(const run of horizontalRuns){
+      const prev=joined[joined.length-1];
+      if(prev&&run.left-prev.right<=16)prev.right=run.right;
+      else joined.push({...run});
+    }
+    const horizontal=joined.filter(r=>r.right-r.left>=w*.35)
+      .sort((a,b)=>{
+       const rank=r=>(r.right-r.left)-Math.abs((r.left+r.right)/2-centerX)*.7;
+       return rank(b)-rank(a);
+      })[0];
+    const left=horizontal?Math.max(x+3,horizontal.left+12):x+w*.075;
+    const right=horizontal?Math.min(x+w-3,horizontal.right-12):x+w*.925;
+    if(right-left<w*.32)return null;
+    return {x:left,y:selected.top+5,w:right-left,h:selected.bottom-selected.top-10,detected:true};
+  }
+  function fitLines(text,maxW,px){
+    ctx.font='800 '+px+'px '+family;
+    const words=normalized(text).split(/\s+/u).filter(Boolean);
+    const result=[];let line='';
+    const flush=()=>{if(line){result.push(line);line='';}};
+    for(const word of words){
+      // Split overlong unbroken tokens at grapheme boundaries. No text loss.
+      const glyphs=Array.from(word);let chunks=[],piece='';
+      for(const glyph of glyphs){
+        const add=piece+glyph;
+        if(piece&&ctx.measureText(add).width>maxW){chunks.push(piece);piece=glyph;}else piece=add;
+      }
+      if(piece)chunks.push(piece);
+      for(let k=0;k<chunks.length;k++){
+        const part=chunks[k],proposed=line?line+(k===0?' ':'')+part:part;
+        if(line&&ctx.measureText(proposed).width>maxW){flush();line=part;}
+        else line=proposed;
+        if(k<chunks.length-1)flush();
+      }
+    }
+    flush();return result;
+  }
+  function paintFullCopy(text,face){
+    const content=normalized(text);if(!content)return true;
+    const marginX=Math.min(22,Math.max(12,face.w*.052));
+    const marginY=Math.min(15,Math.max(9,face.h*.075));
+    const x=face.x+marginX,y=face.y+marginY;
+    const w=face.w-2*marginX,h=face.h-2*marginY;
+    if(w<35||h<18)return false;
+    let found=null;
+    for(let fs=Math.min(34,Math.floor(face.h*.36));fs>=8;fs--){
+      const lines=fitLines(content,w,fs);
+      const lh=fs*1.24;
+      if(lines.length*lh<=h && lines.every(t=>ctx.measureText(t).width<=w)){
+        found={fs,lines,lh};break;
+      }
+    }
+    if(!found)return false;
+    ctx.save();
+    ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
+    ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillStyle=accent;
+    ctx.font='800 '+found.fs+'px '+family;
+    const center=x+w/2,first=y+h/2-(found.lines.length-1)*found.lh/2;
+    found.lines.forEach((t,i)=>ctx.fillText(t,center,first+i*found.lh));
+    ctx.restore();return true;
   }
   window.rf01051TextOverflow=false;
+  window.rf01053DetectedFaces=[];
+  window.rf01053RenderedItems=[];
   ctx.save();
   try{
-   ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
-   items.forEach((item,i)=>{
-    const rect=grid[i],x=rect.x*W,y=rect.y*H,w=rect.w*W,h=rect.h*H;
-    // Exact same geometry is advertised in the Flare prompt.
-    const horizontal=plan.horizontal;
-    const px=horizontal?x+w*.255:x+w*.020;
-    const py=horizontal?y+h*.085:y+h*.515;
-    const pw=horizontal?w*.715:w*.960;
-    const ph=horizontal?h*.83:h*.455;
-    const inset=Math.max(9,Math.min(20,pw*.05));
-    const radius=Math.max(11,Math.min(22,ph*.18));
-    // 01052: NO extra rectangle, mask or face. The premade single integrated cream face is already in the
-    // generated image. Clip the ink to its exact interior, nothing else.
-    ctx.save();
-    ctx.beginPath();ctx.rect(px+inset,py+inset,pw-2*inset,ph-2*inset);ctx.clip();
-    ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
-    const [label,detail]=partsFor(item),cx=px+pw/2,innerW=pw-inset*2;
-    if(detail){
-     ctx.fillStyle='#243328';
-     drawBlock(label,cx,py+ph*.27,innerW,ph*.47,Math.min(30,pw*.125));
-     ctx.fillStyle=accent;
-     drawBlock(detail,cx,py+ph*.75,innerW,ph*.46,Math.min(27,pw*.115));
-    }else{
-     ctx.fillStyle=accent;
-     drawBlock(label,cx,py+ph*.50,innerW,ph*.86,Math.min(29,pw*.115));
+    for(let i=0;i<items.length;i++){
+      const card=grid[i],x=card.x*W,y=card.y*H,w=card.w*W,h=card.h*H;
+      const fallback=plan.horizontal?
+       {x:x+w*.255,y:y+h*.12,w:w*.715,h:h*.77,detected:false}:
+       {x:x+w*.043,y:y+h*.49,w:w*.914,h:h*.47,detected:false};
+      const face=locateFace(card)||fallback;
+      const ok=paintFullCopy(items[i],face);
+      window.rf01053DetectedFaces.push(face);
+      window.rf01053RenderedItems.push({text:normalized(items[i]),ok});
+      if(!ok)window.rf01051TextOverflow=true;
     }
-    ctx.restore();
-   });
   }finally{ctx.restore();}
-  if(window.rf01051TextOverflow){statusEl.textContent='هشدار: متن یکی از کارت‌ها کامل در سطح کرم جا نمی‌شود. متن اصلی حفظ شده؛ این تصویر را بدون بررسی منتشر نکن.';}
+  if(window.rf01051TextOverflow){
+    statusEl.textContent='هشدار: متن بسیار بلند است و حتی با فونت کوچک در کادر مدل جا نشد. هیچ قسمتی از متن را عمداً حذف نکردیم؛ این خروجی را برای انتشار بررسی کن.';
+  }
  }
  // RushFinder 01000: exact source logo always wins over AI generated pixels.
  // A successful draw *requires* the matching brand PNG, never ship an unbranded frame.
@@ -1834,7 +1901,7 @@ function rf01024CurateNews(raw,manualTitle='',sizeKey='square'){
   const limit=sizeKey==='story'?7:8;
   const chosen=article.cards.slice(0,limit);
   return {headline:article.headline,
-   items:chosen.map(g=>[g.title,g.weight,g.price].filter(Boolean).join(' — ')).map(x=>rf01048CompactFact(x,80)),
+   items:chosen.map(g=>[g.title,g.weight,g.price].filter(Boolean).join(' — ')),
    cards:chosen,total:article.cards.length,
    omitted:Math.max(0,article.cards.length-chosen.length),
    duplicates:article.duplicates,structured:true,limit,curated:article.cards.length>limit};
@@ -1880,7 +1947,7 @@ function rf01024CurateNews(raw,manualTitle='',sizeKey='square'){
  }
  const limit=sizeKey==='story'?7:8;
  const chosen=candidates.slice().sort((a,b)=>b.score-a.score||a.index-b.index).slice(0,limit).sort((a,b)=>a.index-b.index);
- return {headline,items:chosen.map(x=>rf01048CompactFact(x.text,70)),cards:null,total:candidates.length,omitted:Math.max(0,candidates.length-chosen.length),limit,curated:candidates.length>limit,structured:false};
+ return {headline,items:chosen.map(x=>x.text),cards:null,total:candidates.length,omitted:Math.max(0,candidates.length-chosen.length),limit,curated:candidates.length>limit,structured:false};
 }
 window.rf01024CurateNews=rf01024CurateNews;
 function rf724StructuredNews(raw){
@@ -2197,6 +2264,7 @@ function rf01043FlarePrompt(c){
   'The authentic media logo will be composited by RushFinder at the original upper-right location. NEVER draw, repeat, imitate or reserve a rectangular patch for this logo. Continue a seamless natural background under it.',
   'EXACT HEADER SAFE GEOMETRY: center the intended headline plaque on the physical canvas X=50%. Keep X=16–84%, Y=2–24%; glossy green volumetric headline plate integrated with the scene, BLANK surface (RushFinder writes the headline later). Never move the panel toward the left; no writing or icons inside it.',
   'TEXT SYSTEM: ONE baked-in cream LOWER HALF per card, not a separately layered white sticker; model creates only luxurious 3D artwork, physical cards, blank integrated ivory text facets and distinct accurate visual objects. RushFinder will write ALL exact Persian facts using the user-selected font. Do NOT produce ANY letters, digits, labels, badges, symbols resembling words, numbers, brand names, flags with lettering, watermarks or URLs, even in small illustrations.',
+  'LAYOUT FINISH: warm ivory ceramic text surfaces must be one broad contiguous uninterrupted pale region, visually distinct from dark emerald image area. Each ivory region should cover at least the lower 43–48% of the card with no overlapping layers. The site detects the actual pale region from the resulting artwork and fits every Persian word into it; never put type or ornamentation there.',
   'CARD CONTRACT: exactly '+items.length+' physically aligned EQUAL-DIMENSION sculpted cards, consistent gaps, matched illumination. Each contains ONE topic-specific 3D object, and ONE LARGE INTEGRATED BLANK TEXT FACE in the precise area below. CRITICAL: Each card has EXACTLY ONE cream text zone, physically built into the card itself, taking the ENTIRE designated lower section. It must be a flush integrated cream ceramic lower half of the SAME card, bounded by its ORIGINAL GOLD/EMERALD CARD FRAME. Absolutely NO second tier, floating white rectangle, overlay label, protruding plaque, inset capsule, overlapping beige/white panel, pop-out strip or duplicated face. The green illustration upper section and cream text lower section form exactly ONE seamless gold-trimmed sculpted card. The cream area must remain completely BLANK, flat enough for accurate website ink, with wide safe padding. Do NOT put any second white label anywhere, even as decoration.',
   'SUBJECT: '+String(selected.headline||'').slice(0,105)+'. Choose imagery from the semantic meaning of EACH data row and the overall headline, not simply numbers or currency tokens. Different data rows must have different relevant objects, viewpoints or scenes. No random groceries, cash registers, fake maps or unrelated pictures.',
   'PHYSICAL CARD LOCATIONS (% of full square) WITH MATCHING TEXT AREAS:'
@@ -2312,21 +2380,11 @@ btn.addEventListener('click',async evt=>{
     }return false;
    });
  }
- // Editorial digest instead of rejecting arbitrary-length user input.
- // The visible, editable source stays untouched; only card copy is shortened.
- let shortened=0;
+ // 01053: Preserve every selected fact VERBATIM in the prompt/review and compositor.
+ // Never swap a full sentence for an ellipsis during unpaid preflight.
  if(summary.items.some(item=>!fits(item))){
-   for(let i=0;i<summary.items.length;i++){
-     if(fits(summary.items[i]))continue;
-     const original=summary.items[i];
-     for(const limit of [78,60,44,32]){
-       const compact=rf01048CompactFact(original,limit);
-       if(fits(compact)){summary.items[i]=compact;break;}
-     }
-     if(summary.items[i]!==original)shortened++;
-   }
+   say('✓ متن بلند است. RushFinder فونت را در سطح کرم خود کارت کوچک می‌کند؛ متن منتخب بدون حذف حفظ شده است. هنوز هزینه‌ای انجام نشده.');
  }
- if(shortened){say('✓ '+shortened+' نکته برای خوانایی تصویر به‌صورت خلاصه درآمد. متن اصلی در ویرایشگر محفوظ است؛ متن کارت‌ها را در پنجره تأیید می‌بینی. هنوز هزینه‌ای انجام نشده است.');}
  if(summary.duplicates>0)say('✓ '+summary.duplicates+' مورد تکراری حذف شد. نام، وزن و قیمت هر محصول به‌صورت یک کارت یکپارچه حفظ شده‌اند؛ هنوز هزینه‌ای مصرف نشده است.');
  if(summary.curated){say('✓ از '+summary.total+' نکتهٔ قابل‌نمایش، '+summary.items.length+' نکتهٔ مهم برای یک '+(c.size==='story'?'استوری':'پست مربع')+' انتخاب شد. متن خام شما حفظ شده است؛ فهرست دقیق را در پنجره تأیید بررسی کن. هنوز هزینه‌ای مصرف نشده.');}
  let automaticPrompt;
