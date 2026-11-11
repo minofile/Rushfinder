@@ -297,7 +297,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01047</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01048</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -1787,13 +1787,42 @@ function rf01035ItemGroups(raw, manualTitle=''){
  if(dedup.length<2)return null;
  return {headline:rf724PersianDigits(headline),cards:dedup,duplicates:productGroups.length-dedup.length};
 }
+// 01048: Arbitrary-length source text is allowed. A square image can contain
+// only a finite editorial digest. Preserve numerals and the identifying subject;
+// retain the entire original source in the editor, never claim it all fits.
+function rf01048CompactFact(value,maxChars=92){
+ const t=rf724PersianDigits(String(value||'').replace(/\s+/gu,' ').trim());
+ if(t.length<=maxChars)return t;
+ const sep=t.search(/\s+[—–]\s+|\s*[:：]\s*/u);
+ if(sep>1 && sep<52){
+  const label=t.slice(0,sep).trim(),detail=t.slice(sep).replace(/^[\s—–:：]+/u,'').trim();
+  const budget=Math.max(22,maxChars-label.length-4);
+  if(detail.length>budget){
+   const pieces=detail.match(/[^،؛.!؟]+/gu)||[detail];
+   const withNums=pieces.filter(x=>/[۰-۹0-9]/u.test(x));
+   const ordered=withNums.length?withNums:pieces;
+   const brief=ordered.join('؛ ').slice(0,budget).trim();
+   return label+' — '+brief.replace(/[،؛\s]+$/u,'')+'…';
+  }
+ }
+ // Keep the principal clause and, where possible, the essential number/unit.
+ const clauses=t.split(/[؛.!؟]/u).map(x=>x.trim()).filter(Boolean);
+ let selected=clauses.find(x=>/[۰-۹0-9]/u.test(x))||clauses[0]||t;
+ if(selected.length>maxChars){
+  let brief=selected.slice(0,maxChars-1);
+  const end=brief.lastIndexOf(' ');
+  if(end>maxChars*.70)brief=brief.slice(0,end);
+  selected=brief;
+ }
+ return selected.replace(/[،؛\s]+$/u,'')+'…';
+}
 function rf01024CurateNews(raw,manualTitle='',sizeKey='square'){
  const article=rf01035ItemGroups(raw,manualTitle);
  if(article){
   const limit=sizeKey==='story'?7:8;
   const chosen=article.cards.slice(0,limit);
   return {headline:article.headline,
-   items:chosen.map(g=>[g.title,g.weight,g.price].filter(Boolean).join(' — ')),
+   items:chosen.map(g=>[g.title,g.weight,g.price].filter(Boolean).join(' — ')).map(x=>rf01048CompactFact(x,80)),
    cards:chosen,total:article.cards.length,
    omitted:Math.max(0,article.cards.length-chosen.length),
    duplicates:article.duplicates,structured:true,limit,curated:article.cards.length>limit};
@@ -1838,8 +1867,8 @@ function rf01024CurateNews(raw,manualTitle='',sizeKey='square'){
   candidates.push({text:line,score,index:candidates.length});
  }
  const limit=sizeKey==='story'?7:8;
- const chosen=candidates.filter(x=>x.text.length<=150).slice().sort((a,b)=>b.score-a.score||a.index-b.index).slice(0,limit).sort((a,b)=>a.index-b.index);
- return {headline,items:chosen.map(x=>x.text),cards:null,total:candidates.length,omitted:Math.max(0,candidates.length-chosen.length),limit,curated:candidates.length>limit,structured:false};
+ const chosen=candidates.slice().sort((a,b)=>b.score-a.score||a.index-b.index).slice(0,limit).sort((a,b)=>a.index-b.index);
+ return {headline,items:chosen.map(x=>rf01048CompactFact(x.text,70)),cards:null,total:candidates.length,omitted:Math.max(0,candidates.length-chosen.length),limit,curated:candidates.length>limit,structured:false};
 }
 window.rf01024CurateNews=rf01024CurateNews;
 function rf724StructuredNews(raw){
@@ -2163,7 +2192,7 @@ function rf01043FlarePrompt(c){
  if(c.customPrompt)lines.push('User visual preference (only if consistent with no-writing requirement): '+c.customPrompt.slice(0,160));
  let prompt=lines.join('\n');
  if(prompt.length>3500){prompt=prompt.replace(/realistic distinct visual for «[^»]*»/g,'distinct topic-specific CGI object').replace('Premium tactile PBR ceramic 3D, studio highlights, soft realistic shadows, no flat web UI; seamless background beneath transparent original logo.','Premium realistic CGI, no flat UI.');}
- if(prompt.length>3500)throw Error('پرامپت از سقف مجاز بیشتر است؛ پیش از ساخت باید تعداد نکات کمتر شود.');
+ if(prompt.length>3500){const head=lines.slice(0,6).join('\n');const key=lines.slice(6,6+Math.min(items.length,8)).map(x=>x.slice(0,125)).join('\n');prompt=(head+'\n'+key+'\nNo text, no letters, no extra logo; luxury coherent 3D CGI.').slice(0,3480);}
  return prompt;
 }
 function promptFor(c){return rf01043FlarePrompt(c);}
@@ -2243,9 +2272,21 @@ btn.addEventListener('click',async evt=>{
     }return false;
    });
  }
+ // Editorial digest instead of rejecting arbitrary-length user input.
+ // The visible, editable source stays untouched; only card copy is shortened.
+ let shortened=0;
  if(summary.items.some(item=>!fits(item))){
-   say('این متن برای پست مربع با فونت خوانا در کارت‌ها جا نمی‌شود. بدون مصرف اعتبار متوقف شد؛ پیشنهاد: خلاصه‌سازی متن هر کارت یا تقسیم خبر به چند پست، بدون حذف اطلاعات.');return;
+   for(let i=0;i<summary.items.length;i++){
+     if(fits(summary.items[i]))continue;
+     const original=summary.items[i];
+     for(const limit of [78,60,44,32]){
+       const compact=rf01048CompactFact(original,limit);
+       if(fits(compact)){summary.items[i]=compact;break;}
+     }
+     if(summary.items[i]!==original)shortened++;
+   }
  }
+ if(shortened){say('✓ '+shortened+' نکته برای خوانایی تصویر به‌صورت خلاصه درآمد. متن اصلی در ویرایشگر محفوظ است؛ متن کارت‌ها را در پنجره تأیید می‌بینی. هنوز هزینه‌ای انجام نشده است.');}
  if(summary.duplicates>0)say('✓ '+summary.duplicates+' مورد تکراری حذف شد. نام، وزن و قیمت هر محصول به‌صورت یک کارت یکپارچه حفظ شده‌اند؛ هنوز هزینه‌ای مصرف نشده است.');
  if(summary.curated){say('✓ از '+summary.total+' نکتهٔ قابل‌نمایش، '+summary.items.length+' نکتهٔ مهم برای یک '+(c.size==='story'?'استوری':'پست مربع')+' انتخاب شد. متن خام شما حفظ شده است؛ فهرست دقیق را در پنجره تأیید بررسی کن. هنوز هزینه‌ای مصرف نشده.');}
  let automaticPrompt;
