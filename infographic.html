@@ -297,7 +297,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01038</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01040</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -1707,6 +1707,9 @@ function rf01024CurateNews(raw,manualTitle='',sizeKey='square'){
  const candidates=[],seen=new Set();
  for(const entry of pool){
   const line=clean(entry),key=line.replace(/[\s\u200c.,،:：]/g,'').toLowerCase();
+  if(/^(?:امکانات(?:\s+واحدها)?|مشخصات(?:\s+واحدها)?|توضیحات|نکته|منبع|قیمت\s*ها|یادداشت)\s*[:：]?/u.test(line))continue;
+  if(/^(?:\d+|[۰-۹]+)\s*(?:خواب|خوابه|اتاق|انباری|آسانسور|پارکینگ)/u.test(line))continue;
+  if(/(?:قیمت\s*ها\s*به\s*صورت|بر\s*اساس\s*هر\s*متر|منبع\s*[:：])/u.test(line))continue;
   if(!line||line===headline||/^منبع\s*[:：]/u.test(line)||/^https?:\/\//i.test(line)||/[:：]\s*$/u.test(line)&&line.length<105||!/[\p{L}\p{N}]/u.test(line)||seen.has(key))continue;
   seen.add(key);
   const numberCount=(line.match(/[۰-۹0-9]+(?:[٫.,٬][۰-۹0-9]+)*/g)||[]).length;
@@ -1861,35 +1864,59 @@ function rf01036CardGeometry(n,brandKey,structured){
  }
  return {cards:data,cols,rows,sidePhoto};
 }
-function rf01036VisualFor(item,title,index,used){
- const s=String(title||item||'').replace(/ي/g,'ی').replace(/ك/g,'ک');
- // Specific object selection wins over general generic subject triggers.
- const catalog=[
-  [/نونی|قیفی|نان بستنی/,['بستنی سنتی زعفرانی در نان بستنی ترد و طلایی']],
-  [/مغزدار|پسته|گردو|بادام/,['بستنی سنتی ایرانی با تکه‌های پسته و گردو','بستنی پسته‌ای در ظرف مسی با آجیل طبیعی']],
-  [/خامه|سرشیر/,['کاسه مسی بستنی سنتی زعفرانی با خامه تازه','بستنی خامه‌ای سنتی در کاسه سرامیکی']],
-  [/بستنی|فالوده/,['بستنی سنتی زعفرانی در پیاله مسی','بستنی سنتی با گلاب و زعفران']],
-  [/سد|تاج|سرریز/,['ماکت واقع‌گرایانه سازه سد بتنی و سرریز','نمای نزدیک دریچه‌های خروجی سد']],
-  [/مخزن|ذخیره|آبگیری/,['مخزن آب زمینی با سطح آب شفاف','حوضچه سد و تراز آب']],
-  [/تصفیه|فیلتر/,['بخش تصفیه‌خانه آب مدرن با فیلترهای شیشه‌ای','تانک‌های تصفیه در کارخانه آب']],
-  [/انتقال|لوله|خط/,['خط لوله انتقال آب با شیرهای صنعتی','لوله بزرگ آب آبی رنگ در دامنه طبیعت']],
-  [/آزمایش|کیفیت|سنجش/,['میکروسکوپ آزمایشگاهی و بشر آب تمیز','آزمایش آب با لوله‌های نمونه شیشه‌ای']],
-  [/بارش|باران|ابر/,['ابر بارانی حجمی و قطرات شفاف بر فراز جنگل','باران واقعی روی چتر سبز']],
-  [/پزشک|بیمار|درمان|دارو/,['گوشی پزشکی و پرونده درمانی بدون نوشته','مدل علمی دستگاه مرتبط با بیماری']],
-  [/بورس|بازار|سود|بازده/,['ستون‌های مقایسه اقتصادی فلزی با نور سبز','نمای بورس با چراغ‌های سبز بدون اعداد']],
-  [/طلا|سکه/,['شمش‌های طلای واقعی روی سکوی سرامیکی','سکه‌های فلزی طلایی با جزییات واقعی']],
-  [/خودرو|ماشین/,['مدل مقیاس کوچک خودرو در استودیو','جزئیات بدنه خودرو با پرداخت براق']],
-  [/مدرسه|دانش|آموزش/,['کتاب و کوله دانش‌آموزی روی میز','کلاس درس با تخته بدون نوشته']],
-  [/قیمت|هزینه|تومان/,['ترازوی فروشگاهی کنار کالای واقعی','صندوق فروش کوچک و برچسب خالی']],
-  [/شهر|شهری/,['ماکت شهر با ساختمان‌های واقعی','چشم‌انداز ساختمان‌های شهر']],
- ];
- let opts=null;
- for(const [rx,options] of catalog){if(rx.test(s)){opts=options;break;}}
- if(!opts) opts=['ماکت سه‌بعدی علمی/واقعی از مفهوم مشخص این مورد','نمای جزئیات فیزیکی متفاوت از موضوع این مورد'];
- let choice=opts.find(t=>!used.has(t));
- if(!choice){choice=opts[index%opts.length]+'، نمای منحصربه‌فرد شماره '+(index+1);}
- used.add(choice);
- return choice;
+// 01039: ALL visual choices are scoped to the meaning of the headline.
+// Monetary units must NEVER trigger unrelated retail objects in real-estate news.
+function rf01039Topic(headline,news){
+ const h=String(headline||'').replace(/ي/g,'ی').replace(/ك/g,'ک');
+ const body=String(news||'').replace(/ي/g,'ی').replace(/ك/g,'ک');
+ if(/(?:مسکن|آپارتمان|ملک|املاک|خانه|متر\s*(?:مربع|مسکن)|ساختمان\s*مسکونی|محله.{0,35}(?:قیمت|متری)|قیمت.{0,35}محله|رهن|اجاره)/u.test(h))return 'housing';
+ if(/(?:بستنی|فالوده|خامه\s*ای|زعفرانی)/u.test(h))return 'icecream';
+ if(/(?:سد|مخزن\s*آب|ذخایر\s*آب|آبگیری)/u.test(h))return 'dam';
+ if(/(?:بارش|باران|هواشناسی|برف)/u.test(h))return 'weather';
+ if(/(?:خوراکی|مواد\s*غذایی|سفره|قیمت\s*غذا)/u.test(h))return 'food';
+ if(/(?:خودرو|اتومبیل|ماشین)/u.test(h))return 'auto';
+ if(/(?:بورس|بازار\s*سهام|سود|بازدهی|تورم)/u.test(h))return 'finance';
+ if(/(?:آموزش|مدرسه|دانشجو)/u.test(h))return 'education';
+ // Consider broader article context only when the headline is generic.
+ if(/(?:ساختمان\s*مسکونی|قیمت\s*هر\s*متر|آپارتمان)/u.test(body))return 'housing';
+ return 'general';
+}
+// 01040: Never use price, number or generic topic to infer a physical prop.
+// For every card, anchor the image to the SPECIFIC fact and constrain to the domain.
+// Unknown subjects go to semantic model instruction instead of a mismatched stock icon.
+function rf01040Normalize(v){return String(v||'').replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/\s+/g,' ').trim();}
+function rf01040SpecificObject(fact,topic,index,used,headline){
+ const f=rf01040Normalize(fact);
+ const variants={
+  housing:['ماکت معماری ساختمان مسکونی با نمای سنگ روشن و بالکن','ماکت متفاوت مجتمع مسکونی آجری با محوطه شهری','ماکت معماری برج‌های مسکونی با پنجره و حیاط','نمای سه‌ربع آپارتمان نوساز با درختان شهری','مقطع ماکت مجتمع آپارتمانی با واحدهای واقعی'],
+  dam:['سد بتنی با دریچه سرریز آب','مخزن آب پشت سد و خطوط ساحلی','توربین مهندسی آبی و لوله خروج','دریچه تخلیه سد و جریان آب','مدل مهندسی سطح آب مخزن سد'],
+  weather:['ابر بارانی روی کوه و قطره شیشه‌ای','چتر بارانی خیس زیر قطره‌های واقعی','سنجشگر باران در منظره طبیعی','کوه پوشیده از برف زیر ابر','باران روی سطح رودخانه و برگ'],
+  auto:['مدل واقعی اتومبیل سواری','بدنه و چرخ خودرو از نمای سه‌ربع','خط مونتاژ خودروسازی','موتور و اجزای فنی خودرو','خودروی مسافری در جاده'],
+  education:['کتاب و دفتر در کلاس درس','مدل ساختمان مدرسه','وسایل آزمایشگاه آموزشی','کیف و وسایل آموزشی','کتابخانه و میز مطالعه'],
+  finance:['نمودار فیزیکی میله‌ای مقایسه مالی بدون رقم','سکه و دارایی مالی مطابق داده','شمش فلزی مربوط به دارایی مالی','نمودار تغییر شاخص بدون حروف','نماد فیزیکی معامله بازار سرمایه']
+ };
+ let candidate='';
+ if(topic==='icecream'){
+  if(/نونی|قیفی|نان بستنی/u.test(f))candidate='بستنی سنتی زعفرانی داخل نان بستنی طلایی و ترد';
+  else if(/مغزدار|پسته|گردو|بادام/u.test(f))candidate='بستنی سنتی مغزدار با خلال پسته و گردو در پیاله سفالی';
+  else if(/خامه|سرشیر/u.test(f))candidate='پیاله مسی بستنی زعفرانی با لایه خامه تازه';
+  else candidate='بستنی سنتی ساده زعفرانی در پیاله مسی سنتی';
+ }else if(topic==='food'){
+  if(/روغن/u.test(f))candidate='بطری روغن خوراکی واقعی کنار قطره روغن طلایی';
+  else if(/شیر|لبنیات|پنیر|ماست|تخم.?مرغ/u.test(f))candidate='محصول لبنی واقعی یا تخم‌مرغ مطابق همین داده';
+  else if(/ماهی|صدف/u.test(f))candidate='ماهی تازه یا صدف خوراکی متناسب با این داده';
+  else if(/حبوبات|سبزی/u.test(f))candidate='سبزیجات تازه و حبوبات واقعی متناسب با این داده';
+  else candidate='خوراکی واقعی دقیقاً نام‌برده‌شده در همین داده: '+f.slice(0,95);
+ }else if(variants[topic])candidate=variants[topic][index%variants[topic].length];
+ else {
+  // This is deliberate: inventing an object for unrecognized news is worse
+  // than letting the image model interpret the fact in its native semantics.
+  candidate='بر اساس موضوع «'+rf01040Normalize(headline).slice(0,65)+'» و این داده، یک شیء یا صحنه واقعی اختصاصی انتخاب کن که دقیقاً این داده را نمایش دهد: «'+f.slice(0,70)+'». از نمادهای عمومی و اشیای بی‌ربط بپرهیز';
+ }
+ let unique=candidate;
+ if(used.has(unique))unique=candidate+' با ترکیب و پرسپکتیو متفاوت مخصوص مورد '+(index+1);
+ used.add(unique);
+ return unique;
 }
 // 01037: deterministic prompt architect. Product/fact grouping and pixel geometry are
 // calculated from the same browser layout. No manual inspection of coordinates needed.
@@ -1900,11 +1927,12 @@ function rf01037DesignPlan(c){
  const geom=rf01036CardGeometry(count,c.brandKey,Boolean(chosen.cards));
  if(geom.cards.some(card=>card.h*1080<116))throw Error('تعداد کارت‌ها برای چیدمان خوانا بیش از حد است.');
  const used=new Set();
+ const topic=rf01039Topic(chosen.headline,c.news);
  const photos=items.map((item,i)=>({
-  fact:item,visual:rf01036VisualFor(item,chosen.cards?.[i]?.title||item,i,used),
+  fact:item,visual:rf01040SpecificObject(item,topic,i,used,chosen.headline),
   rect:geom.cards[i].photo,card:geom.cards[i]
  }));
- return {chosen,items,photos,geom};
+ return {chosen,items,photos,geom,topic};
 }
 function rf01037AutoPrompt(c){
  const plan=rf01037DesignPlan(c),pct=v=>String(Math.round(v*100))+'٪';
@@ -1932,17 +1960,18 @@ function rf01037AutoPrompt(c){
   'پالت: '+(colors[c.brandKey]||colors.urgent)+'. سبک: '+styleGuide+'.',
   'ترکیب‌بندی دقیق: ۰–۲۴٪ ارتفاع زمینه طبیعی آزاد برای تیتر و لوگوی اصلی سایت؛ ۲۵–۵۷٪ یک صحنه تبلیغاتی بزرگ و اختصاصی با مضمون '+String(plan.chosen.headline||'').slice(0,90)+'؛ ۵۸–۹۷٪ تصویرهای اختصاصی داده‌ها.',
   'در نیمه پایین، هر تصویر دقیقاً در ناحیه عکسِ کارت متناظر قرار بگیرد؛ خارج از محدوده خود و روی ناحیه متنِ همان کارت یا کارت مجاور نیفتد. فضای متن کاملاً آرام با بافت طبیعی کرم باشد. هر شیء بزرگ، کامل، قابل تشخیص، با فاصله داخلی کافی و جزئیات واقعی بماند.',
+  'حوزه معنایی خبر: '+({housing:'قیمت ملک و آپارتمان مسکونی؛ همه اشیای کوچک الزاماً ساختمان مسکونی هستند؛ ترازوی فروشگاهی، صندوق فروش، دستگاه کارتخوان، میوه، ماهی و هر کالای فروشگاهی مطلقاً ممنوع است.',icecream:'بستنی سنتی؛ هر محصول باید واقعاً بستنی با ترکیب متفاوت باشد.',dam:'سد و آب؛ اشیای فقط مرتبط با سازه سد و مخزن آب.',weather:'بارش و هواشناسی؛ اشیای مربوط به باران و برف.',food:'خوراکی و سفره؛ اشیای غذایی واقعی.',auto:'خودرو؛ اشیای مرتبط با خودرو.',finance:'بازارهای مالی؛ دارایی و نمودار مالی.',education:'آموزش؛ وسایل آموزشی.'}[plan.topic]||'هر شیء باید از خود معنای خبر انتخاب شود و نه از واحد پول یا عدد.') ,
   'تصاویر کارت‌ها، طبق هندسه محاسبه‌شده خود سایت:'
  ];
  plan.photos.forEach((p,i)=>{
   const r=p.rect;
   const scene=String(p.visual).slice(0,115);
-  lines.push('مورد '+(i+1)+': فقط '+scene+'؛ محدوده عکس X='+pct(r.x)+' تا '+pct(r.x+r.w)+'، Y='+pct(r.y)+' تا '+pct(r.y+r.h)+'.');
+  lines.push('مورد '+(i+1)+': داده مرجع «'+String(p.fact).slice(0,115)+'»؛ تصویر فقط '+scene+'؛ محدوده عکس X='+pct(r.x)+' تا '+pct(r.x+r.w)+'، Y='+pct(r.y)+' تا '+pct(r.y+r.h)+'.');
  });
  lines.push(
-  'محصولات مشابه باید در مواد، تزئینات و نوع ظرف واقعاً متفاوت باشند؛ صرف تغییر زاویه کافی نیست. هیچ دو عکس از یک شیء/ترکیب تکراری استفاده نکن. آیکون ساده، نمودار بی‌معنا یا علامت تزئینی جایگزین شیء واقعی نساز.',
+  'برای تک‌تک موارد، ارتباط دقیق شیء با متن همان داده شرط اصلی است. موارد هم‌حوزه از لحاظ شیء یا پرسپکتیو متفاوت باشند. ابزار فروشگاهی، نماد پولی و نمودار صرفاً به دلیل وجود واژه «قیمت» یا عدد ممنوع. اگر داده شیء فیزیکی ندارد، استعاره مستندِ مستقیم به مضمون آن بساز؛ هیچ دو تصویر یکسان نباشند.',
   'مدل کادر، پس‌زمینه سفید یکدست، برچسب قیمت، اعداد، متن و لوگو تولید نکند؛ سایت دقیقاً یک قاب و متن فارسی با فونت انتخاب‌شده را خودش اضافه می‌کند.',
-  'جنس سطوح PBR و طبیعی، جزئیات دقیق محصول، نور استودیویی حجمی ملایم، پرسپکتیو طبیعی، سایه‌های تماس، عمق و انعکاس واقعی، رنگ‌بندی ثابت رسانه؛ زمینه یکپارچه تمام‌بِلید تا پشت لوگوی شفاف، بدون نوار خالی. هیچ تیتر در خود عکس ننویس.',
+  'جنس سطوح PBR و طبیعی، جزئیات دقیق سوژه، نور استودیویی حجمی ملایم، پرسپکتیو طبیعی، سایه‌های تماس، عمق و انعکاس واقعی، رنگ‌بندی ثابت رسانه؛ زمینه یکپارچه تمام‌بِلید تا پشت لوگوی شفاف، بدون نوار خالی. هیچ تیتر در خود عکس ننویس.',
   'اگر اشیا مشابه‌اند، تفاوت واقعی محصول/شکل/مواد/زاویه دید را برجسته کن. سوژه اصلی در بالای منطقه کارت‌ها؛ پایین آن‌ها را نپوشاند.',
   'فقط یک تصویر واحد بدون هرگونه نوشتار.'
  );
@@ -2022,27 +2051,33 @@ function promptFor(c){
 // RF0716: explicit paid-generation approval. Never submit a draft before user confirms.
 // 01038: show a one-click paid confirmation, not the technical prompt editor.
 // Prompt geometry/content have already been generated automatically and preflighted.
+// 01040: ALWAYS show the complete, editable prompt before ANY paid call.
 function reviewPrompt(draft,c,summary){
  return new Promise(resolve=>{
   if(!draft||draft.length>3500||draft.length<30){resolve(null);return;}
   const shade=document.createElement('div');shade.id='rf716-review-shade';shade.setAttribute('role','presentation');
-  const section=document.createElement('section');section.className='rf716-modal';section.setAttribute('role','dialog');section.setAttribute('aria-modal','true');section.dir='rtl';
-  const heading=document.createElement('h2');heading.textContent='ساخت اینفوگرافیک با پرامپت خودکار';section.appendChild(heading);
-  const expl=document.createElement('p');expl.textContent='چیدمان، جای تصویرهای اختصاصی و دستور کیفیت به‌صورت خودکار آماده شده‌اند. نیازی به اصلاح پرامپت نیست.';section.appendChild(expl);
+  const section=document.createElement('section');section.className='rf716-modal';section.setAttribute('role','dialog');section.setAttribute('aria-modal','true');section.setAttribute('aria-label','بازبینی پرامپت ساخت');section.dir='rtl';
+  const heading=document.createElement('h2');heading.textContent='بازبینی و ویرایش پرامپت اینفوگرافیک';section.appendChild(heading);
+  const expl=document.createElement('p');expl.textContent='پرامپت به‌طور خودکار نوشته شده است. در صورت تمایل اصلاحش کن؛ دقیقاً همین متنِ نهایی برای ساخت استفاده خواهد شد.';section.appendChild(expl);
   const info=document.createElement('p');info.style.lineHeight='2.1';
   info.textContent='رسانه: '+c.brand+' | پست مربع | '+(summary.items?.length||0)+' کارت | مدل: '+c.model+' | کیفیت: '+({'low':'پایین','medium':'متوسط','high':'بالا'}[c.quality]||c.quality);section.appendChild(info);
-  const warning=document.createElement('p');warning.className='rf716-warning';warning.textContent='«تأیید و ساخت» درخواست هزینه‌دار به AvalAI می‌فرستد. کیفیت نهایی مدل قابل تضمین نیست. هیچ درخواست خودکار یا تکراری قبل از تأیید ارسال نمی‌شود.';section.appendChild(warning);
-  const details=document.createElement('details');const cap=document.createElement('summary');cap.textContent='نمایش پرامپت فنی (اختیاری)';details.appendChild(cap);
-  const pre=document.createElement('pre');pre.dir='rtl';pre.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;max-height:190px;overflow:auto;font-size:11px';pre.textContent=draft;details.appendChild(pre);section.appendChild(details);
+  const label=document.createElement('label');label.textContent='متن کامل پرامپت (قابل ویرایش)';label.setAttribute('for','rf716-prompt');section.appendChild(label);
+  const editor=document.createElement('textarea');editor.id='rf716-prompt';editor.dir='rtl';editor.spellcheck=false;editor.value=draft;editor.setAttribute('aria-label','پرامپت قابل ویرایش');section.appendChild(editor);
+  const count=document.createElement('p');count.id='rf716-count';section.appendChild(count);
+  const warning=document.createElement('p');warning.className='rf716-warning';warning.textContent='فقط دکمه «تأیید و ساخت» درخواست هزینه‌دار به AvalAI می‌فرستد. درخواست به‌طور خودکار تکرار نمی‌شود.';section.appendChild(warning);
   const actions=document.createElement('div');actions.className='rf716-actions';
-  const approve=document.createElement('button');approve.type='button';approve.textContent='تأیید هزینه و ساخت';
-  const cancel=document.createElement('button');cancel.type='button';cancel.textContent='لغو بدون هزینه';
-  actions.append(approve,cancel);section.appendChild(actions);shade.appendChild(section);
+  const approve=document.createElement('button');approve.type='button';approve.id='rf716-approve';approve.textContent='تأیید و ساخت تصویر';
+  const reset=document.createElement('button');reset.type='button';reset.textContent='بازگردانی پرامپت خودکار';
+  const cancel=document.createElement('button');cancel.type='button';cancel.textContent='انصراف (بدون هزینه)';
+  actions.append(approve,reset,cancel);section.appendChild(actions);shade.appendChild(section);
+  const update=()=>{const n=editor.value.trim().length;count.textContent=n+' / ۳۵۰۰ نویسه';approve.disabled=n<30||n>3500;count.style.color=approve.disabled?'#a32222':'#34635e';};
+  editor.addEventListener('input',update);reset.onclick=()=>{editor.value=draft;update();editor.focus();};update();
   const old=document.activeElement;document.body.appendChild(shade);
   const keyboard=e=>{if(e.key==='Escape'){e.preventDefault();finish(null);}};
   const finish=value=>{document.removeEventListener('keydown',keyboard,true);shade.remove();old?.focus?.();resolve(value);};
-  approve.onclick=()=>finish(draft);cancel.onclick=()=>finish(null);
-  document.addEventListener('keydown',keyboard,true);cancel.focus();
+  approve.onclick=()=>{const edited=editor.value.trim();if(edited.length>=30&&edited.length<=3500)finish(edited);};
+  cancel.onclick=()=>finish(null);
+  document.addEventListener('keydown',keyboard,true);editor.focus();
  });
 }
 
