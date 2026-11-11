@@ -1,4 +1,4 @@
-<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>اینفوگرافیک هوشمند | RushFinder 0728</title>
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>اینفوگرافیک هوشمند | RushFinder 01043</title>
 <style>
 @font-face{font-family:Yekan;src:url('fonts/Yekan.woff2') format('woff2');font-display:swap}
 *{box-sizing:border-box}html,body{margin:0}body{font-family:Yekan,Tahoma,sans-serif;background:#edf3fa;color:#17314e;font-size:15px}
@@ -297,7 +297,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01042</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01043</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -322,17 +322,17 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
       <div class="rf580-style-section">
         <div class="secTitle"><span class="stepNumber">۴</span><span>سبک گرافیکی</span></div>
         <select id="rf580-graphic-style" aria-label="سبک گرافیکی" class="rf580-style-select">
-          <option value="auto">✦  خودکار (AUTO)</option><option value="2d">▧  دوبعدی (2D)</option><option value="3d">⬡  سه‌بعدی (3D)</option>
+          <option value="auto">✦  خودکار (AUTO)</option><option value="2d">▧  دوبعدی (2D)</option><option value="3d" selected>⬡  سه‌بعدی (3D)</option>
           <option value="table">▦  جدولی</option><option value="chart">▥  نموداری</option><option value="comparison">⇄  مقایسه‌ای</option>
           <option value="timeline">◷  خط زمانی</option><option value="cards">▣  کارت‌های اطلاعاتی</option><option value="minimal">◌  مینیمال</option>
           <option value="other">✎  سایر (پرامپت دلخواه)</option>
         </select>
         <label for="rf01022-design-mode" style="display:block;margin:10px 0 6px;font-weight:800;color:#173962;font-size:13px">نوع چیدمان خروجی</label>
         <select id="rf01022-design-mode" class="rf580-style-select" aria-label="چیدمان حرفه‌ای یا رندر دقیق سایت">
-          <option value="editorial">★ طراحی حرفه‌ای مدل‌ساخته (متن مدل نیاز به بازبینی دارد)</option>
-          <option value="verified" selected>★ تصویرسازی اختصاصی هر کارت + متن دقیق با فونت انتخابی (پیشنهادی)</option>
+          <option value="editorial" selected>★ طراحی کامل کارت‌ها با GPT Image 2.5 Flare + نوشته دقیق سایت</option>
+          <option value="verified">حالت قدیمی: کارت‌سازی Canvas (توصیه نمی‌شود)</option>
         </select>
-        <small style="display:block;color:#65758a;line-height:1.9;margin-top:6px">حالت پیشنهادی: مدل برای هر نکته یک تصویرسازی اختصاصی و غیرتکراری درون کارت می‌سازد؛ سایت فقط متن دقیق فارسی را با فونت انتخابی روی کارت می‌نویسد. حالت آزاد: مدل خودش کارت‌ها را هم طراحی می‌کند و متن فارسی آن ممکن است غلط یا نامنظم باشد.</small>
+        <small style="display:block;color:#65758a;line-height:1.9;margin-top:6px">حالت پیش‌فرض جدید: Flare کل صحنه، کارت‌های سه‌بعدی و المان‌های مربوط به هر داده را می‌سازد؛ سایت بدون رسم مستطیل ساده، فقط متن فارسی دقیق و لوگوی اصلی را اضافه می‌کند. پیش از پرداخت، پرامپت قابل ویرایش نمایش داده می‌شود.</small>
         <div id="rf580-other-wrap" hidden><label class="rf580-prompt-label" for="rf580-other-prompt">پرامپت طراحی دلخواه</label><textarea id="rf580-other-prompt" rows="3" placeholder="سبک، چیدمان، رنگ و جزئیات دلخواه را بنویسید..."></textarea></div>
       </div>
       <div>
@@ -357,10 +357,10 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div id="rf962-image-model">
   <div class="secTitle">مدل ساخت تصویر</div>
   <label for="rf962-model">GPT Image — AvalAI (اوَل‌ای‌آی)</label>
-  <select id="rf962-model" aria-label="انتخاب مدل تصویر AvalAI"><option value="gpt-image-2.5-flare" selected>GPT Image 2.5 Flare — تصویرسازی</option><option value="gpt-image-2.5-sunburst">GPT Image 2.5 Sunburst — جزئیات بیشتر</option><option value="gpt-image-2">GPT Image 2 — مدل جایگزین</option></select>
+  <select id="rf962-model" aria-label="انتخاب مدل تصویر AvalAI"><option value="gpt-image-2.5-flare" selected>GPT Image 2.5 Flare — موتور اصلی</option></select>
   <label for="rf962-quality">کیفیت</label>
   <select id="rf962-quality" aria-label="کیفیت تصویر"><option value="high" selected>بالا — خروجی نهایی حرفه‌ای (هزینه بیشتر)</option><option value="medium">متوسط — اقتصادی‌تر</option><option value="low">پایین (فقط آزمایش کم‌هزینه)</option></select>
-  <p style="color:#99622d;font-size:11px;line-height:1.9">برای خروجی بهتر، کیفیت متوسط پیش‌فرض است؛ هزینه آن ممکن است بیشتر از Low باشد. پیش از هر ساخت، پرامپت و درخواست پولی را تأیید می‌کنی.</p>
+  <p style="color:#99622d;font-size:11px;line-height:1.9">کیفیت بالا برای خروجی سه‌بعدی انتخاب شده و ممکن است هزینه بیشتری داشته باشد. پیش از هر ساخت، پرامپت و درخواست پولی را تأیید می‌کنی.</p>
   <label for="rf962-access">کد دسترسی مدیر (غیر از API Key)</label>
   <input id="rf962-access" type="password" autocomplete="off" spellcheck="false" placeholder="کد اختصاصی مدیر را وارد کنید" aria-label="کد دسترسی مدیر">
   <p class="rf962-help">کلید AvalAI فقط روی سرور Vercel با نام AVALAI_API_KEY ثبت می‌شود و هرگز در مرورگر قرار نمی‌گیرد. برای جلوگیری از مصرف ناخواسته، ساخت تصویر به کد دسترسی مدیر نیاز دارد.</p>
@@ -1275,6 +1275,54 @@ function rf581Render(){
   }finally{ctx.restore();}
   if(anyOverflow)statusEl.textContent='یک داده برای کادر خیلی بلند است؛ متن آن کامل نمایش داده نشد. ساخت دوباره نزن؛ متن را کوتاه کن.';
  }
+
+ // 01043: Flare is the designer of the actual cards. Web draws NO card backgrounds.
+ // The coordinates below match the AI art plan in rf01043FlarePrompt.
+ function rf01043EditorialText(){
+  const raw=normalizeText(input.value||'');
+  const manual=rf580TitleOn.checked?normalizeText(rf580TitleText.value):'';
+  const data=window.rf01024CurateNews?.(raw,manual,'square');
+  const items=(data?.items||[]).slice(0,8),n=items.length;
+  if(!n)return;
+  const W=cv.width,H=cv.height,cols=n===1?1:2,rows=Math.ceil(n/cols);
+  const left=.045*W,right=.955*W,top=.47*H,bottom=.945*H;
+  const gapX=.025*W,gapY=.014*H;
+  const w=(right-left-(cols-1)*gapX)/cols;
+  const h=(bottom-top-(rows-1)*gapY)/rows;
+  const fontFamily=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
+  ctx.save();
+  try{
+   ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
+   items.forEach((item,i)=>{
+    const row=Math.floor(i/cols),col=i%cols;
+    const countInRow=Math.min(cols,n-row*cols);
+    const extra=(cols-countInRow)*(w+gapX)/2;
+    const x=left+extra+col*(w+gapX),y=top+row*(h+gapY);
+    // Text must land in the BELOW-PHOTO portion of each AI-generated card.
+    const tx=x+w/2,ty=y+h*.755,textW=w*.89,textH=h*.37;
+    let text=rf584PersianDigits(String(item).replace(/[\r\n]+/g,' ').trim());
+    const words=text.split(/\s+/).filter(Boolean);
+    const fit=size=>{
+     ctx.font='800 '+size+'px '+fontFamily;
+     const out=[];let line='';
+     for(const word of words){const candidate=line?line+' '+word:word;if(line&&ctx.measureText(candidate).width>textW){out.push(line);line=word;}else line=candidate;}
+     if(line)out.push(line);return out;
+    };
+    let fs=Math.min(n>6?22:27,Math.max(17,h*.20)),lines=fit(fs);
+    while(fs>13&&(lines.length*fs*1.22>textH||lines.some(z=>ctx.measureText(z).width>textW))){fs-=1;lines=fit(fs);}
+    if(lines.length*fs*1.22>textH || lines.length>4){
+      // Do not silently truncate factual text: make it visible as a quality alert.
+      statusEl.textContent='بعضی داده‌ها برای این اندازه طولانی‌اند؛ پیش از انتشار خوانایی متن را بررسی کن.';
+    }
+    // Baked-in dark-on-ivory text region is created by Flare. A thin readable
+    // contour is used, but NO rectangle/canvas card gets painted here.
+    ctx.font='800 '+fs+'px '+fontFamily;
+    ctx.fillStyle='#173828';ctx.strokeStyle='rgba(255,255,255,.70)';ctx.lineWidth=2.4;ctx.lineJoin='round';
+    const lh=fs*1.22,startY=ty-(lines.length-1)*lh/2;
+    lines.forEach((line,k)=>{ctx.strokeText(line,tx,startY+k*lh,textW);ctx.fillText(line,tx,startY+k*lh,textW);});
+   });
+  }finally{ctx.restore();}
+ }
  // RushFinder 01000: exact source logo always wins over AI generated pixels.
  // A successful draw *requires* the matching brand PNG, never ship an unbranded frame.
  function rf702DrawFinal(){
@@ -1302,29 +1350,14 @@ function rf581Render(){
    ctx.imageSmoothingQuality='high';
    ctx.drawImage(pic,0,0,pic.naturalWidth,pic.naturalHeight,0,0,W,H);
    if(rf01022DesignMode.value==='verified'){
-    // Full-bleed subject art + true browser typography on attractive cards.
-    rf01030DrawExactCards();
-    rf01027BrowserHeadline();
-    rf01020StampOriginalTemplate(ctx,template,W,H);
-    window.rf01012LastStyleLabel='تصویرسازی اختصاصی مدل در هر کارت + متن دقیق سایت';
-   }else if(brand==='urgent'){
-    if(rf01022DesignMode.value==='editorial'){
-      // Approved 01001-style newsroom art: preserve complete model composition.
-      // Never shrink the AI output into tiny website-rendered data rows.
-      // Original brand PNG is overlaid, retaining the exact official logo.
-      rf01027BrowserHeadline();
-      rf01020StampOriginalTemplate(ctx,template,W,H);
-      window.rf01012LastStyleLabel='طراحی آزاد حرفه‌ای | تیتر وسط‌چین امن + لوگوی اصلی';
-    }else{
-      rf01007DrawUrgent(pic,template);
-    }
+     rf01030DrawExactCards();
    }else{
-    // 01025: Do NOT paint a pale rectangle beneath the original logo.
-    // It creates an obvious patch when users switch AI engines or backgrounds.
-    // The brand PNG is transparent everywhere except authentic logo pixels.
-    rf01027BrowserHeadline();
-    rf01020StampOriginalTemplate(ctx,template,W,H);
+     // Premium default: AI-created cards remain untouched; only exact text is overlaid.
+     rf01043EditorialText();
    }
+   rf01027BrowserHeadline();
+   rf01020StampOriginalTemplate(ctx,template,W,H);
+   window.rf01012LastStyleLabel='طراحی کامل سه‌بعدی توسط Flare + متن دقیق و لوگوی اصلی';
   }finally{ctx.restore();}
   window.rf1000ComposedReady=true;
   layoutName.textContent=(rf01022DesignMode.value==='verified'?'متن و کارت دقیق سایت + لوگوی اصلی ':'محتوا + لوگوی ثابت اصلی ')+brands[brand].name;updateMeta();
@@ -1678,7 +1711,7 @@ function rf01035ItemGroups(raw, manualTitle=''){
 function rf01024CurateNews(raw,manualTitle='',sizeKey='square'){
  const article=rf01035ItemGroups(raw,manualTitle);
  if(article){
-  const limit=sizeKey==='story'?7:6;
+  const limit=sizeKey==='story'?7:8;
   const chosen=article.cards.slice(0,limit);
   return {headline:article.headline,
    items:chosen.map(g=>[g.title,g.weight,g.price].filter(Boolean).join(' — ')),
@@ -1712,7 +1745,7 @@ function rf01024CurateNews(raw,manualTitle='',sizeKey='square'){
   const score=(numberCount?5+Math.min(numberCount,3):0)+(hasUnits?3:0)+(isComparison?3:0)+(date?1:0)+(line.length>170?-3:0)+(line.length>280?-4:0);
   candidates.push({text:line,score,index:candidates.length});
  }
- const limit=sizeKey==='story'?7:6;
+ const limit=sizeKey==='story'?7:8;
  const chosen=candidates.filter(x=>x.text.length<=150).slice().sort((a,b)=>b.score-a.score||a.index-b.index).slice(0,limit).sort((a,b)=>a.index-b.index);
  return {headline,items:chosen.map(x=>x.text),cards:null,total:candidates.length,omitted:Math.max(0,candidates.length-chosen.length),limit,curated:candidates.length>limit,structured:false};
 }
@@ -1930,7 +1963,7 @@ function rf01037DesignPlan(c){
  }));
  return {chosen,items,photos,geom,topic};
 }
-function rf01042PickLayout(plan,c){
+function rf01043PickLayout(plan,c){
  const whole=/(?:سهم|ترکیب|از کل|سهم بازار|سهم خودروساز)/u.test(plan.chosen.headline||'');
  const values=plan.items.map(x=>{const m=String(x).match(/([۰-۹0-9]+(?:[٫.][۰-۹0-9]+)?)\s*(?:٪|درصد)/u);return m?Number(m[1].replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace('٫','.')):NaN;});
  const wholePie=whole&&values.length>=2&&values.every(Number.isFinite)&&Math.abs(values.reduce((a,b)=>a+b,0)-100)<1;
@@ -1948,7 +1981,7 @@ function rf01037AutoPrompt(c){
  const lines=[
  'یک پوستر اینفوگرافیک حرفه‌ای خبری مربع ۱:۱؛ این اثر باید مثل طراحی هنری یک استودیوی ممتاز CGI باشد، نه عکس استوک و نه جدول ساده. فقط تصویرسازی، مطلقاً بدون متن یا رقم.',
  'هویت رنگی الزام‌آور: '+palette+'؛ رنگ طبیعی خوراکی، ساختمان و سایر سوژه‌های واقعی حفظ شود.',
- 'سبک انتخابی: '+style+'. ساختار موضوعی: '+rf01042PickLayout(plan,c)+'.',
+ 'سبک انتخابی: '+style+'. ساختار موضوعی: '+rf01043PickLayout(plan,c)+'.',
  'موضوع دقیق: «'+plan.chosen.headline.slice(0,105)+'». تمام اجزا باید از معنای خبر پیروی کنند؛ از اشیای نامرتبط با حوزه خبر اکیداً پرهیز کن.',
  'ترکیب‌بندی مرجع: فضای بالای تصویر (۰ تا ۲۴٪ ارتفاع) ساده، تمیز و پیوسته برای تیتر سایت و نشان واقعی؛ سمت راست (حدود ۵۶ تا ۹۷٪ عرض، ارتفاع ۲۷ تا ۹۴٪) یک صحنه یکپارچه بسیار باکیفیت با قهرمان بصری سه‌بعدی مرتبط، روی پایه سرامیکی/شیشه‌ای، با نور واقعی و عناصر مکمل موضوعی؛ سمت چپ (۴ تا ۵۵٪ عرض) ردیف‌های منظم برای داده‌ها.',
  'مهم: روی ناحیه سمت چپ، مدل هیچ متن، عدد، کارت سفید، برچسب، کادر، نشانک یا نوار جداگانه نسازد. سایت خودش کارت‌های حجمی و متن دقیق را روی این ناحیه قرار می‌دهد. فقط اشیای واقع‌گرای اختصاصی را در جایگاه‌های کوچک زیر تصویرسازی کن. برای هر شیء، زمینه و نور صحنه پیوسته بماند.',
@@ -2010,28 +2043,40 @@ function rf01003UrgentPrompt(c){
  ].filter(Boolean).join('\n');
 }
 
-function promptFor(c){
- if(c.designMode==='verified')return rf01030VerifiedPrompt(c);
- if(c.brandKey==='urgent')return rf01003UrgentPrompt(c);
- const selected=rf01024CurateNews(c.news,c.headline,c.size);
- const mode=rf01028StyleContract(c);
- const shape=c.size==='story'?'استوری عمودی ۹:۱۶':'مربع ۱:۱';
- return [
-  'یک اینفوگرافیک فارسی بسیار شیک، بزرگ و خوانا برای انتشار بساز؛ ابعاد '+shape+'.',
-  mode,'ترکیب‌بندی موضوعی خلاق و پرجزئیات، نه جدول‌های کوچک یا ردیف‌های ریز.',
-  'هشدار جدی: نام یا هویت هیچ رسانه‌ای را داخل تصویر ننویس. هیچ لوگو، نشان، مهر خبری، واترمارک، نام رسانه، شناسه و URL ایجاد نکن. لوگوی واقعی پس از تولید توسط سایت اضافه می‌شود.',
-  'تیتر ورودی را در تصویر ننویس. سایت خودش تیتر را از متن اصلی با فونت انتخابی به‌صورت وسط‌چین روی تصویر درج می‌کند. هیچ تیتر جایگزین یا تکرار تیتر در خود عکس نساز.',
-  rf01029SubjectSafeComposition(c),
-  rf724LogoSafePrompt(c.brandKey,c.size),
-  'فقط نکات منتخب زیر را در کارت‌های بزرگ، متنوع و خوانا طراحی کن. اعداد باید فارسی باشند. هیچ داده یا واحد جعلی نساز و موارد را دو بار تکرار نکن.',
-  selected.items.join('؛ '),
-  'موضوع کلی برای انتخاب تصاویر، نه برای نوشتن تیتر: '+selected.headline,
-  'نوشته‌ها، داده‌های آماری و کارت‌ها کاملاً پایین‌تر از ناحیه تیتر وب قرار گیرند و به ناحیه لوگوی واقعی هم وارد نشوند.',
-  'تصویر و بافت پس‌زمینه باید تمام عرض و ارتفاع کادر، از جمله پشت لوگو را بدون رنگ‌پریدگی یا پچ سفید پر کند.',
-  c.customPrompt?'ترجیح کاربر (بعد از این قوانین): '+c.customPrompt.slice(0,350):'',
-  'یک خروجی تصویری واحد، بدون تیتر و لوگوی تولیدی.'
- ].filter(Boolean).join('\n');
+function rf01043FlarePrompt(c){
+ const selected=rf01024CurateNews(c.news,c.headline,'square');
+ const items=(selected.items||[]).slice(0,8),n=items.length;
+ if(!n)throw Error('هیچ داده‌ای برای ساخت اینفوگرافیک یافت نشد.');
+ const cols=n===1?1:2,rows=Math.ceil(n/cols),left=.045,right=.955,top=.47,bottom=.945,gapX=.025,gapY=.014;
+ const cw=(right-left-(cols-1)*gapX)/cols,ch=(bottom-top-(rows-1)*gapY)/rows;
+ const pct=n=>Math.round(100*n);
+ const palette={urgent:'Emerald green #00834A and deep forest green #006D3C, ivory #F6F3EF, bright ceramic white. GREEN must dominate.',mashhad:'Authentic Mashhad News yellow and red identity, premium materials.',jaryan:'Authentic Jaryan black and yellow identity, premium materials.',farda:'Authentic Khabar Farda red identity, premium materials.'}[c.brandKey]||'Emerald green and ivory';
+ const mode=c.style==='2d'?'luxurious precisely aligned premium 2D flat editorial illustration, no 3D':c.style==='minimal'?'luxurious restrained 3D editorial minimalism':c.style==='table'?'premium 3D data table with generous legibility':c.style==='timeline'?'premium sequential 3D timeline':c.style==='chart'?'luxury data visualization with statistically accurate bars (do NOT fabricate values)':c.style==='comparison'?'luxurious 3D comparison tableau':'ULTRA-PREMIUM 3D editorial infographic, photorealistic CGI, PBR realistic materials, artistic studio light, soft ambient occlusion and true contact shadows';
+ const lines=[
+  'Create ONE SQUARE 1:1 professionally art-directed newspaper INFOGRAPHIC ARTWORK, not a stock photo with website rectangles. '+mode+'.',
+  'MEDIA PALETTE (MANDATORY): '+palette+' Real objects retain natural color. The result must match a high-budget studio-produced editorial 3D infographic.',
+  'Semantic topic: '+selected.headline.slice(0,90)+'. Every illustration MUST represent its EXACT OWN FACT, not generic objects inferred from price, currency or numbers.',
+  'Create the actual beautiful PBR sculpted 3D cards, natural shadows and individual topic-specific miniatures, not flat website cards.',
+  'COMPOSITION: top 0-24% blank for website headline and upper-right logo. 24-45% luxurious thematic hero scene, never overpowering facts. 47-95% EXACTLY '+n+' large 3D cards, '+cols+' columns and '+rows+' rows.',
+  'CARD CONTRACT: each rectangle is one fully 3D sculpted card. Upper 56% = unique matching CGI subject. Lower 44% = BLANK ivory text plate inside card, NOT another box; text is added later. Exact positions:',
+ ];
+ items.forEach((fact,i)=>{
+  const row=Math.floor(i/cols),col=i%cols,remaining=Math.min(cols,n-row*cols),extra=(cols-remaining)*(cw+gapX)/2;
+  const x=left+extra+col*(cw+gapX),y=top+row*(ch+gapY);
+  lines.push((i+1)+') X '+pct(x)+'–'+pct(x+cw)+'%, Y '+pct(y)+'–'+pct(y+ch)+'%: Visualize the EXACT fact «'+fact.slice(0,93)+'» as its OWN distinctly recognizable physical miniature / real relevant subject; no duplicate object or angle. The blank bottom text plate must occupy Y '+pct(y+ch*.57)+'–'+pct(y+ch*.94)+'%.');
+ });
+ lines.push('No unrelated or repeated objects, no generic symbols, no collisions. All cards unique.');
+ lines.push('NO TEXT, NO NUMERALS, NO LABELS, NO LETTERS, NO LOGO, NO WATERMARK. Website adds exact Persian facts and original transparent logo afterward.');
+ if(c.customPrompt)lines.push('Additional preference: '+c.customPrompt.slice(0,220));
+ let prompt=lines.join('\n');
+ if(prompt.length>3500){
+   // Keep semantic facts but shorten generic language to stay within UI/server limits.
+   prompt=prompt.replace('Create the actual beautiful PBR sculpted 3D cards, natural shadows and individual topic-specific miniatures, not flat website cards.','YOU create all premium sculpted PBR 3D cards with unique topical objects and shadows.').replace('No unrelated or repeated objects, no generic symbols, no collisions. All cards unique.','No generic, repeated or unrelated objects. No overlap.');
+ }
+ if(prompt.length>3500)throw Error('پرامپت از سقف قابل ویرایش فراتر رفت؛ متن خبر را خلاصه کن. هیچ هزینه‌ای کم نشد.');
+ return prompt;
 }
+function promptFor(c){return rf01043FlarePrompt(c);}
 
 // RF0716: explicit paid-generation approval. Never submit a draft before user confirms.
 // 01038: show a one-click paid confirmation, not the technical prompt editor.
