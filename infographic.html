@@ -297,7 +297,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01044</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01045</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -1735,6 +1735,19 @@ function rf01024CurateNews(raw,manualTitle='',sizeKey='square'){
  let headline=clean(manualTitle)||(paragraphs[0]||'');
  if(!manualTitle&&headline.length>130)headline=headline.split(/[.!؟؛]/u)[0].slice(0,112).trim()||headline.slice(0,112).trim();
  let pool=manualTitle?paragraphs:paragraphs.slice(1);
+ // 01045: Year headers are context, not independent infographic facts.
+ // Attach them to the following quantified facts, preserving the user's numbers.
+ const groupedPool=[];let yearContext='';
+ for(const rawPart of pool){
+  const part=String(rawPart||'').trim();
+  const ym=part.match(/^(?:در\s+)?(?:سال\s+)?([۱۲۳۴۵۶۷۸۹۰0-9]{4})(?:\s*[:：])?$/u);
+  if(ym){yearContext='سال '+ym[1];continue;}
+  const header=part.match(/^سال\s+([۱۲۳۴۵۶۷۸۹۰0-9]{4})\s*[:：]\s*(.+)$/u);
+  if(header){yearContext='سال '+header[1];groupedPool.push(yearContext+' — '+header[2]);continue;}
+  if(yearContext && /[۰-۹0-9]/u.test(part) && !/سال\s*[۰-۹0-9]{4}/u.test(part))groupedPool.push(yearContext+' — '+part);
+  else groupedPool.push(part);
+ }
+ pool=groupedPool;
  if(pool.length<3&&full.length>360){
   const base=manualTitle?full:full.slice((paragraphs[0]||'').length);
   pool=base.split(/(?<=[.!؟؛])\s+|\n+/u).map(clean).filter(Boolean);
@@ -2068,8 +2081,10 @@ function rf01043FlarePrompt(c){
   'SQUARE 1:1 premium magazine-news infographic BACKGROUND ART, polished museum-quality CGI. '+mode+'.',
   'MANDATORY MEDIA PALETTE: '+palette+'. Original brand PNG will be overlaid by the website; do NOT generate a logo.',
   'Topic: '+selected.headline.slice(0,88)+'. Render 100% relevant physical subject miniatures; no generic or unrelated icons.',
-  'Art direction: top 0–17% calm clean artwork for website headline and upper-right logo; 17–32% sophisticated premium thematic hero object, centered and balanced. '+n+' large ornate 3D cards below, '+cols+' columns by '+rows+' rows, from 34% to 95% image height. Each card occupies its full cell and has a large, unique realistic subject on the UPPER 57%; the LOWER 43% is completely blank warm-ivory smooth inset panel for later website typography.',
+  'Layout: top 0–17% clear for headline/logo, 17–32% stunning thematic hero. '+n+' premium sculpted 3D cards, '+cols+' by '+rows+', Y 34–95%. Upper 57% of each card: unique realistic object; lower 43%: EMPTY ivory text panel for the site.',
   'CRITICAL: Do not put any tiny cards inside another card. No extra bars, fake text strips or invented extra card. Each card is one premium coherent sculpted object. Different exact factual subjects per card.',
+  'PRIORITY: factual visual identity is more important than decorative details. For a food/item list, each illustration MUST visibly show that EXACT named item, not an approximate repeated substitute. For numbers/categories, create an appropriate distinct visual metaphor. Do not decorate cards with text or misleading repeated stock objects.',
+
   'Strict grid locations (x and y in percentages of entire canvas):'
  ];
  items.forEach((fact,i)=>{
@@ -2077,11 +2092,11 @@ function rf01043FlarePrompt(c){
   const x=left+extra+col*(cw+gapX),y=top+row*(ch+gapY);
   lines.push((i+1)+'. CARD X '+pct(x)+'–'+pct(x+cw)+' Y '+pct(y)+'–'+pct(y+ch)+': realistic distinct visual for «'+fact.slice(0,76)+'». Top visual area Y '+pct(y)+'–'+pct(y+ch*.57)+'; bottom text panel Y '+pct(y+ch*.58)+'–'+pct(y+ch*.97)+' absolutely empty, NO lettering.');
  });
- lines.push('ABSOLUTE TYPOGRAPHY BAN: not even a single letter, word, Persian/Arabic/Latin glyph, numeral, price, percentage, calendar label, caption, watermarked mark or logo ANYWHERE. No AI-generated text, even inside illustrations. Website will accurately overlay ALL Persian writing and original logo. Leave every ivory lower text panel completely blank.');
- lines.push('Keep the material depth, attractive tactile realism, studio highlights, delicate shadows, no flat flat website UI; preserve a continuous painted background under the original transparent logo.');
+ lines.push('NO lettering, digits, Persian or Latin characters, logos, labels or watermark anywhere. Lower ivory text panels completely blank; website will overlay exact Persian writing and logo.');
+ lines.push('Premium tactile PBR ceramic 3D, studio highlights, soft realistic shadows, no flat web UI; seamless background beneath transparent original logo.');
  if(c.customPrompt)lines.push('User visual preference (only if consistent with no-writing requirement): '+c.customPrompt.slice(0,160));
  let prompt=lines.join('\n');
- if(prompt.length>3500){prompt=prompt.replace(/realistic distinct visual for «[^»]*»/g,'distinct topic-specific CGI object').replace('Keep the material depth, attractive tactile realism, studio highlights, delicate shadows, no flat flat website UI; preserve a continuous painted background under the original transparent logo.','Premium realistic CGI, no flat UI.');}
+ if(prompt.length>3500){prompt=prompt.replace(/realistic distinct visual for «[^»]*»/g,'distinct topic-specific CGI object').replace('Premium tactile PBR ceramic 3D, studio highlights, soft realistic shadows, no flat web UI; seamless background beneath transparent original logo.','Premium realistic CGI, no flat UI.');}
  if(prompt.length>3500)throw Error('پرامپت از سقف مجاز بیشتر است؛ پیش از ساخت باید تعداد نکات کمتر شود.');
  return prompt;
 }
@@ -2100,6 +2115,8 @@ function reviewPrompt(draft,c,summary){
   const expl=document.createElement('p');expl.textContent='پرامپت به‌طور خودکار نوشته شده است. در صورت تمایل اصلاحش کن؛ دقیقاً همین متنِ نهایی برای ساخت استفاده خواهد شد.';section.appendChild(expl);
   const info=document.createElement('p');info.style.lineHeight='2.1';
   info.textContent='رسانه: '+c.brand+' | پست مربع | '+(summary.items?.length||0)+' کارت | مدل: '+c.model+' | کیفیت: '+({'low':'پایین','medium':'متوسط','high':'بالا'}[c.quality]||c.quality);section.appendChild(info);
+  if(summary.omitted>0){const omitted=document.createElement('p');omitted.style.cssText='color:#9c2929;background:#fff5f1;border:1px solid #efc8bb;padding:9px;border-radius:10px;font-weight:700';omitted.textContent='هشدار: '+summary.omitted+' مورد در مربع جا نشده و در تصویر نهایی نمایش داده نمی‌شود. اگر تمام موارد لازم‌اند، این ساخت را لغو کن؛ هیچ هزینه‌ای پیش از تأیید نمی‌شود.';section.appendChild(omitted);}
+
   const facts=document.createElement('details');facts.open=true;const factsHead=document.createElement('summary');factsHead.textContent='فهرست داده‌های انتخاب‌شده برای خروجی (بازبینی رایگان)';facts.appendChild(factsHead);const factList=document.createElement('ol');factList.style.cssText='padding-right:25px;line-height:2;max-height:130px;overflow:auto';for(const it of summary.items||[]){const li=document.createElement('li');li.textContent=it;factList.appendChild(li);}facts.appendChild(factList);section.appendChild(facts);
   const label=document.createElement('label');label.textContent='متن کامل پرامپت (قابل ویرایش)';label.setAttribute('for','rf716-prompt');section.appendChild(label);
   const editor=document.createElement('textarea');editor.id='rf716-prompt';editor.dir='rtl';editor.spellcheck=false;editor.value=draft;editor.setAttribute('aria-label','پرامپت قابل ویرایش');section.appendChild(editor);
