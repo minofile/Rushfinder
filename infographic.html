@@ -304,7 +304,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01053</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01054</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -1349,69 +1349,75 @@ function rf581Render(){
     // Ivory / warm white ceramic, not green object panels.
     return r>=176&&g>=159&&b>=138&&r-g<57&&g-b<62&&r>=g-3;
   }
+  // 01054: identify the ACTUAL contiguous cream ceramic surfaces in the AI art.
+  // Row scanning is unsafe: light background, reflections and neighboring cards
+  // can be selected, and a full Persian line ends up outside the real panel.
+  // Connected-component detection gives one measurable pixel rectangle per face.
+  let creamComponents=null;
+  function detectCreamComponents(){
+    if(creamComponents)return creamComponents;
+    creamComponents=[];if(!pixels)return creamComponents;
+    const len=W*H, seen=new Uint8Array(len),queue=new Int32Array(len);
+    const minArea=Math.max(850,Math.round(len*.00065));
+    for(let iy=0;iy<H;iy+=1){
+      for(let ix=0;ix<W;ix+=1){
+        const start=iy*W+ix;
+        if(seen[start])continue;
+        seen[start]=1;
+        if(!pale(ix,iy))continue;
+        let head=0,tail=1,minX=ix,maxX=ix,minY=iy,maxY=iy;
+        queue[0]=start;
+        while(head<tail){
+          const k=queue[head++],xx=k%W,yy=(k/W)|0;
+          if(xx<minX)minX=xx;if(xx>maxX)maxX=xx;
+          if(yy<minY)minY=yy;if(yy>maxY)maxY=yy;
+          function add(next,nx,ny){
+            if(seen[next])return;seen[next]=1;
+            if(!pale(nx,ny))return;
+            queue[tail++]=next;
+          }
+          if(xx>0)add(k-1,xx-1,yy);
+          if(xx+1<W)add(k+1,xx+1,yy);
+          if(yy>0)add(k-W,xx,yy-1);
+          if(yy+1<H)add(k+W,xx,yy+1);
+        }
+        const cw=maxX-minX+1,ch=maxY-minY+1;
+        if(tail>=minArea && cw>=45 && ch>=25 && tail/(cw*ch)>.43){
+          creamComponents.push({x:minX,y:minY,w:cw,h:ch,area:tail,id:creamComponents.length});
+        }
+      }
+    }
+    return creamComponents;
+  }
+  const usedCreamFaces=new Set();
   function locateFace(rect){
     if(!pixels)return null;
     const x=rect.x*W,y=rect.y*H,w=rect.w*W,h=rect.h*H;
-    const centerX=x+w*.5;
-    const sampleX=[.27,.37,.50,.63,.73].map(t=>Math.max(0,Math.min(W-1,Math.round(x+w*t))));
-    const begin=Math.max(0,Math.round(y-h*.16));
-    const stop=Math.min(H-1,Math.round(y+h*1.14));
-    const positions=[];
-    for(let yy=begin;yy<=stop;yy+=3){
-      const match=sampleX.reduce((count,xx)=>count+(pale(xx,yy)?1:0),0);
-      positions.push({yy,valid:match>=3});
-    }
-    let segments=[],first=-1,last=-1;
-    for(const entry of positions){
-      if(entry.valid){if(first<0)first=entry.yy;last=entry.yy;}
-      else if(first>=0){segments.push({top:first,bottom:last});first=-1;}
-    }
-    if(first>=0)segments.push({top:first,bottom:last});
-    // Text that the model accidentally drew can interrupt otherwise continuous
-    // ivory. Merge adjacent runs of the same face rather than selecting one line.
-    segments.sort((a,b)=>a.top-b.top);
-    let merged=[];
-    for(const piece of segments){
-      const prior=merged[merged.length-1];
-      if(prior && piece.top-prior.bottom<=44)prior.bottom=piece.bottom;
-      else merged.push({...piece});
-    }
-    const candidates=merged.filter(s=>s.bottom-s.top>=Math.max(34,h*.17));
-    const lowerBound=y+h*.29;
-    const selected=candidates.filter(s=>s.bottom>=lowerBound)
-      .sort((a,b)=>{
-        const score=s=>(s.bottom-s.top)-Math.abs((s.top+s.bottom)/2-(y+h*.71))*.38;
-        return score(b)-score(a);
-      })[0];
-    if(!selected)return null;
-    // Determine the true horizontal cream edges too. Flare often shifts the
-    // entire physical card versus the requested x percentages, so percent-only
-    // left/right bounds can put the first or last letter outside the panel.
-    const probeY=[.24,.49,.73].map(t=>Math.max(0,Math.min(H-1,Math.round(selected.top+(selected.bottom-selected.top)*t))));
-    const xs=Math.max(0,Math.round(x-w*.12)),xe=Math.min(W-1,Math.round(x+w*1.12));
-    const horizontalRuns=[];let runStart=-1,runEnd=-1;
-    for(let xx=xs;xx<=xe;xx+=2){
-      const matching=probeY.reduce((a,yy)=>a+(pale(xx,yy)?1:0),0);
-      if(matching>=2){if(runStart<0)runStart=xx;runEnd=xx;}
-      else if(runStart>=0){horizontalRuns.push({left:runStart,right:runEnd});runStart=-1;}
-    }
-    if(runStart>=0)horizontalRuns.push({left:runStart,right:runEnd});
-    // Glyph strokes within an already annotated test image may fragment the run.
-    const joined=[];
-    for(const run of horizontalRuns){
-      const prev=joined[joined.length-1];
-      if(prev&&run.left-prev.right<=16)prev.right=run.right;
-      else joined.push({...run});
-    }
-    const horizontal=joined.filter(r=>r.right-r.left>=w*.35)
-      .sort((a,b)=>{
-       const rank=r=>(r.right-r.left)-Math.abs((r.left+r.right)/2-centerX)*.7;
-       return rank(b)-rank(a);
-      })[0];
-    const left=horizontal?Math.max(x+3,horizontal.left+12):x+w*.075;
-    const right=horizontal?Math.min(x+w-3,horizontal.right-12):x+w*.925;
-    if(right-left<w*.32)return null;
-    return {x:left,y:selected.top+5,w:right-left,h:selected.bottom-selected.top-10,detected:true};
+    const wantedX=x+w*.5,wantedY=y+h*(plan.horizontal?.52:.73);
+    const candidates=detectCreamComponents().filter(c=>{
+      const cx=c.x+c.w/2,cy=c.y+c.h/2;
+      if(usedCreamFaces.has(c.id))return false;
+      if(c.w<w*(plan.horizontal?.25:.35)||c.w>w*1.2)return false;
+      if(c.h<h*.11||c.h>h*.77)return false;
+      if(cx<x-w*.12||cx>x+w*1.12)return false;
+      if(cy<y+h*.20||cy>y+h*1.12)return false;
+      return true;
+    });
+    candidates.sort((a,b)=>{
+      const score=c=>{
+        const cx=c.x+c.w/2,cy=c.y+c.h/2;
+        const dist=Math.abs(cx-wantedX)/w*.70+Math.abs(cy-wantedY)/h*.95;
+        const widthDiff=Math.abs(c.w-w*.87)/w*.25;
+        return dist+widthDiff;
+      };
+      return score(a)-score(b);
+    });
+    const best=candidates[0];
+    if(!best)return null;
+    usedCreamFaces.add(best.id);
+    const padX=Math.max(8,Math.min(16,best.w*.055));
+    const padY=Math.max(5,Math.min(12,best.h*.065));
+    return {x:best.x+padX,y:best.y+padY,w:best.w-padX*2,h:best.h-padY*2,detected:true,componentId:best.id};
   }
   function fitLines(text,maxW,px){
     ctx.font='800 '+px+'px '+family;
@@ -1467,18 +1473,15 @@ function rf581Render(){
   try{
     for(let i=0;i<items.length;i++){
       const card=grid[i],x=card.x*W,y=card.y*H,w=card.w*W,h=card.h*H;
-      const fallback=plan.horizontal?
-       {x:x+w*.255,y:y+h*.12,w:w*.715,h:h*.77,detected:false}:
-       {x:x+w*.043,y:y+h*.49,w:w*.914,h:h*.47,detected:false};
-      const face=locateFace(card)||fallback;
-      const ok=paintFullCopy(items[i],face);
-      window.rf01053DetectedFaces.push(face);
+      const face=locateFace(card);
+      const ok=face?paintFullCopy(items[i],face):false;
+      window.rf01053DetectedFaces.push(face||{detected:false,unmatched:true});
       window.rf01053RenderedItems.push({text:normalized(items[i]),ok});
       if(!ok)window.rf01051TextOverflow=true;
     }
   }finally{ctx.restore();}
   if(window.rf01051TextOverflow){
-    statusEl.textContent='هشدار: متن بسیار بلند است و حتی با فونت کوچک در کادر مدل جا نشد. هیچ قسمتی از متن را عمداً حذف نکردیم؛ این خروجی را برای انتشار بررسی کن.';
+    statusEl.textContent='هشدار: یک یا چند سطح کرم‌رنگ در خروجی مدل پیدا نشد یا متن کامل در آن جا نشد. این تصویر برای انتشار آماده نیست؛ نوشته را بیرون کادر ترسیم نکردیم.';
   }
  }
  // RushFinder 01000: exact source logo always wins over AI generated pixels.
@@ -1517,9 +1520,10 @@ function rf581Render(){
    rf01020StampOriginalTemplate(ctx,template,W,H);
    window.rf01012LastStyleLabel='کادر سرامیکی اصلی Flare + فقط متن دقیق فارسی و لوگوی اصلی';
   }finally{ctx.restore();}
-  window.rf1000ComposedReady=true;
+  window.rf1000ComposedReady=!(rf01022DesignMode.value!=='verified' && window.rf01051TextOverflow);
   layoutName.textContent=(rf01022DesignMode.value==='verified'?'متن و کارت دقیق سایت + لوگوی اصلی ':'محتوا + لوگوی ثابت اصلی ')+brands[brand].name;updateMeta();
-  if(brand==='urgent'&&window.rf01012LastStyleLabel){statusEl.textContent='الگوی خودکار خبر فوری: '+window.rf01012LastStyleLabel+' | مدل: '+((document.getElementById('rf962-model')?.selectedOptions?.[0]?.textContent)||'GPT Image');}
+  if(window.rf01051TextOverflow && rf01022DesignMode.value!=='verified'){statusEl.textContent='هشدار: یک یا چند کادر متن قابل شناسایی نبود یا متن کامل داخل کادر جا نشد؛ دانلود این تصویر ناقص متوقف شد.';}
+  else if(brand==='urgent'&&window.rf01012LastStyleLabel){statusEl.textContent='الگوی خودکار خبر فوری: '+window.rf01012LastStyleLabel+' | مدل: '+((document.getElementById('rf962-model')?.selectedOptions?.[0]?.textContent)||'GPT Image');}
   area.classList.add('rf702-has-image');
   return true;
  }
@@ -1723,7 +1727,7 @@ const rf586OriginalRender=render;
     if(window.rf702FinalImage){
       await rf705LoadTemplate(brand,size);
       rf702DrawFinal();
-      if(!window.rf1000ComposedReady)throw new Error('قالب لوگوی ثابت هنوز آماده نیست؛ PNG ذخیره نشد.');
+      if(!window.rf1000ComposedReady)throw new Error('متن همه کارت‌ها با فضای کادر اصلی هماهنگ نیست یا قالب آماده نشده است؛ برای جلوگیری از خروجی ناقص دانلود متوقف شد.');
     }else{render();}
     const blob=await new Promise(resolve=>cv.toBlob(resolve,'image/png'));
     if(!blob)throw new Error('ساخت فایل PNG امکان‌پذیر نیست.');
