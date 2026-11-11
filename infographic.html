@@ -297,7 +297,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01048</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01049</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -1053,65 +1053,65 @@ function rf581Render(){
  }
  // 01027: fixed type composer for ALL four brands. The AI MUST NOT print the title.
  // The source image remains edge-to-edge, the authentic brand PNG is overlaid last.
+ // 01049: headline panel AND glyphs centered on the physical canvas axis.
+ // The panel never intersects the fixed original upper-right brand logo.
  function rf01027BrowserHeadline(){
-  const raw=normalizeText(input.value||'');
-  if(!raw.trim())return;
+  const raw=normalizeText(input.value||'');if(!raw.trim())return;
   const manual=rf580TitleOn.checked?normalizeText(rf580TitleText.value):'';
   const picked=window.rf01024CurateNews?.(raw,manual,'square');
   const headline=rf584PersianDigits((manual||picked?.headline||raw.split(/\n/)[0]||'').trim());
   if(!headline)return;
-  const W=cv.width,H=cv.height;
-  // Brand mark occupies the top-right area for urgent/mashhad/jaryan.
-  // The visible headline panel is centered IN THE FREE AREA, not the whole canvas.
-  const left=W*.045, right=W*(brand==='farda'?.953:.695);
-  const safeW=right-left, center=(left+right)/2;
-  const y=H*.035,maxH=H*.185;
-  const fontFamily=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
-  const words=headline.split(/\s+/).filter(Boolean);
+  const W=cv.width,H=cv.height,center=W/2;
+  // For all top-right source logos, end the headline panel BEFORE the logo.
+  // Unlike 01048, the midpoint of the panel is always W/2 (not left of center).
+  const logoSafeRight=brand==='farda'?W*.955:W*.865;
+  const leftSafe=W*.055;
+  const width=Math.min(W*.76,2*Math.min(center-leftSafe,logoSafeRight-center));
+  const x=center-width/2,top=H*.035,maxH=H*.215;
+  const innerW=width-70;
+  const family=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
+  const words=headline.split(/\s+/u).filter(Boolean);
   ctx.save();
   try{
    ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
-   let sizePx=68,lines=[],innerW=safeW-58;
-   const splitAt=px=>{
-    ctx.font='900 '+px+'px '+fontFamily;
-    const out=[];let part='';
+   const wrapAt=px=>{
+    ctx.font='900 '+px+'px '+family;
+    let result=[],line='';
     for(const word of words){
-     const candidate=part?part+' '+word:word;
-     if(part&&ctx.measureText(candidate).width>innerW){out.push(part);part=word;}
-     else part=candidate;
+     const candidate=line?line+' '+word:word;
+     if(line&&ctx.measureText(candidate).width>innerW){result.push(line);line=word;}else line=candidate;
     }
-    if(part)out.push(part);
-    return out;
+    if(line)result.push(line);
+    return result;
    };
-   for(;sizePx>=19;sizePx--){
-    lines=splitAt(sizePx);
-    if(lines.length*sizePx*1.24<=maxH-34&&lines.every(x=>ctx.measureText(x).width<=innerW))break;
+   let fontSize=65,lines=[];
+   for(;fontSize>=20;fontSize--){
+    lines=wrapAt(fontSize);
+    const textHeight=lines.length*fontSize*1.31;
+    if(textHeight<=maxH-35&&lines.every(l=>ctx.measureText(l).width<=innerW))break;
    }
-   sizePx=Math.max(19,sizePx);lines=splitAt(sizePx);
-   const desiredH=Math.min(maxH,Math.max(120,lines.length*sizePx*1.24+40));
-   const widest=Math.max(0,...lines.map(x=>ctx.measureText(x).width));
-   const width=Math.min(safeW,Math.max(safeW*.74,widest+70));
-   const x=center-width/2, h=desiredH,radius=34;
-   const is3D=rf580Style.value==='3d'||rf580Style.value==='auto'||rf580Style.value==='cards'||(rf580Style.value==='other'&&rf580EffectiveStyle()==='3d');
-   const colors={urgent:['#05834C','#004B2D'],mashhad:['#F8C22D','#9E4216'],jaryan:['#292C30','#101014'],farda:['#D13C5B','#72172D']};
-   const pair=colors[brand]||colors.urgent;
-   if(is3D){ctx.save();ctx.shadowColor='rgba(0,0,0,.30)';ctx.shadowBlur=24;ctx.shadowOffsetY=12;
-    ctx.fillStyle=pair[1];ctx.beginPath();ctx.roundRect(x+3,y+8,width-6,h-9,radius);ctx.fill();ctx.restore();}
-   const bg=ctx.createLinearGradient(x,y,x+width,y+h);
-   bg.addColorStop(0,pair[0]);bg.addColorStop(.6,pair[1]);bg.addColorStop(1,pair[1]);
-   ctx.fillStyle=bg;ctx.beginPath();ctx.roundRect(x,y,width,h,radius);ctx.fill();
+   fontSize=Math.max(20,fontSize);lines=wrapAt(fontSize);
+   const lineHeight=fontSize*1.31;
+   const h=Math.min(maxH,Math.max(110,lines.length*lineHeight+34));
+   const radius=30;
+   const is3D=['3d','auto','cards'].includes(rf580Style.value)||(rf580Style.value==='other'&&rf580EffectiveStyle()==='3d');
+   const pair=({urgent:['#00834A','#004C2D'],mashhad:['#F8C22D','#9E4216'],jaryan:['#292C30','#101014'],farda:['#D13C5B','#72172D']})[brand]||['#00834A','#004C2D'];
+   if(is3D){ctx.save();ctx.shadowColor='rgba(0,0,0,.28)';ctx.shadowBlur=23;ctx.shadowOffsetY=11;ctx.fillStyle=pair[1];ctx.beginPath();ctx.roundRect(x+3,top+7,width-6,h-7,radius);ctx.fill();ctx.restore();}
+   const bg=ctx.createLinearGradient(x,top,x+width,top+h);bg.addColorStop(0,pair[0]);bg.addColorStop(.6,pair[1]);bg.addColorStop(1,pair[1]);
+   ctx.fillStyle=bg;ctx.beginPath();ctx.roundRect(x,top,width,h,radius);ctx.fill();
    if(is3D){
-    const shine=ctx.createLinearGradient(x,y,x,y+h);
-    shine.addColorStop(0,'rgba(255,255,255,.30)');shine.addColorStop(.38,'rgba(255,255,255,.055)');shine.addColorStop(1,'rgba(0,0,0,.19)');
-    ctx.fillStyle=shine;ctx.beginPath();ctx.roundRect(x+3,y+3,width-6,h-6,radius);ctx.fill();
-    ctx.strokeStyle='rgba(255,255,255,.44)';ctx.lineWidth=2.5;ctx.beginPath();ctx.roundRect(x+3,y+3,width-6,h-6,radius);ctx.stroke();
+    const shine=ctx.createLinearGradient(x,top,x,top+h);shine.addColorStop(0,'rgba(255,255,255,.28)');shine.addColorStop(.45,'rgba(255,255,255,.025)');shine.addColorStop(1,'rgba(0,0,0,.15)');
+    ctx.fillStyle=shine;ctx.beginPath();ctx.roundRect(x+3,top+3,width-6,h-6,radius);ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.42)';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(x+3,top+3,width-6,h-6,radius);ctx.stroke();
    }
-   ctx.save();ctx.beginPath();ctx.roundRect(x+22,y+12,width-44,h-24,radius*.55);ctx.clip();
-   ctx.fillStyle='#fff';ctx.shadowColor='rgba(0,0,0,.14)';ctx.shadowBlur=3;ctx.shadowOffsetY=2;
-   ctx.font='900 '+sizePx+'px '+fontFamily;
-   const lineH=sizePx*1.24,cy=y+h/2-(lines.length-1)*lineH/2;
-   lines.forEach((ln,i)=>ctx.fillText(ln,center,cy+i*lineH,width-58));
+   ctx.save();ctx.beginPath();ctx.roundRect(x+21,top+12,width-42,h-24,20);ctx.clip();
+   ctx.fillStyle='#fff';ctx.shadowColor='rgba(0,0,0,.13)';ctx.shadowBlur=3;ctx.shadowOffsetY=2;
+   ctx.font='900 '+fontSize+'px '+family;
+   // Vertical center for the entire block, not just the baseline of its first line.
+   const firstY=top+h/2-(lines.length-1)*lineHeight/2;
+   lines.forEach((ln,i)=>ctx.fillText(ln,center,firstY+i*lineHeight,innerW));
    ctx.restore();
+   window.rf01049HeadlineBox={x,y:top,width,height:h,centerX:center,text:headline};
   }finally{ctx.restore();}
  }
  // 01030: Render ALL content cards in the browser, never ask the image model
@@ -1296,107 +1296,100 @@ function rf581Render(){
  window.rf01044Grid=rf01044Grid;
  // 01046: one aligned layout contract; Flare sculpts the object and panel,
  // RushFinder paints exact user text into the reserved panel. No flat white sticker.
+ // 01049: measured RTL copy. The site owns ONE integrated nameplate per AI card.
+ // No nested labels and no unsupported arbitrary CSS/text width squashing.
  function rf01043EditorialText(){
   const raw=normalizeText(input.value||'');
   const manual=rf580TitleOn.checked?normalizeText(rf580TitleText.value):'';
   const data=window.rf01024CurateNews?.(raw,manual,'square');
-  const items=(data?.items||[]).slice(0,8);
-  if(!items.length)return;
+  const items=(data?.items||[]).slice(0,8);if(!items.length)return;
   const W=cv.width,H=cv.height,plan=window.rf01047Plan(items),grid=plan.cards;
   const family=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
-  const accent={urgent:'#006D3C',mashhad:'#8f3419',jaryan:'#27241b',farda:'#9f203e'}[brand]||'#006D3C';
-  const normalize=v=>rf584PersianDigits(String(v||'').replace(/[\r\n]+/g,' ').trim());
+  const accent=({urgent:'#006D3C',mashhad:'#873916',jaryan:'#28241b',farda:'#a22243'})[brand]||'#006D3C';
+  const normalized=v=>rf584PersianDigits(String(v||'').replace(/[\r\n]+/gu,' ').replace(/\s+/gu,' ').trim());
   function partsFor(item){
-   const t=String(item).trim();
-   const colon=t.match(/^(.{2,70}?)\s*[:：]\s*(.+)$/u);
-   if(colon)return [colon[1],colon[2]];
-   const product=t.split(/\s+[—–]\s+/u);
-   if(product.length>1)return [product[0],product.slice(1).join(' — ')];
-   const at=t.search(/[۰-۹0-9]/);
-   if(at>2)return [t.slice(0,at).trim(),t.slice(at).trim()];
-   return [t,''];
+   const t=normalized(item);
+   const dash=t.match(/^(.{2,90}?)\s+[—–]\s+(.+)$/u);
+   if(dash)return[dash[1],dash[2]];
+   const colon=t.match(/^(.{2,90}?)\s*[:：]\s*(.+)$/u);
+   if(colon)return[colon[1],colon[2]];
+   const numeric=t.search(/[۰-۹0-9]/u);
+   if(numeric>3)return[t.slice(0,numeric).trim(),t.slice(numeric).trim()];
+   return[t,''];
   }
-  function wrapExact(value,maxWidth,px){
+  function measuredLines(value,available,px){
    ctx.font='800 '+px+'px '+family;
-   const words=normalize(value).split(/\s+/u).filter(Boolean);
-   const output=[];let line='';
+   const words=normalized(value).split(/\s+/u).filter(Boolean);let line='',lines=[];
    for(const word of words){
     const candidate=line?line+' '+word:word;
-    if(line&&ctx.measureText(candidate).width>maxWidth){output.push(line);line=word;}else line=candidate;
+    if(line&&ctx.measureText(candidate).width>available){lines.push(line);line=word;}else line=candidate;
    }
-   if(line)output.push(line);
-   return output;
+   if(line)lines.push(line);
+   return lines;
   }
-  function drawFitted(value,x,y,maxW,maxH,maxFS){
-   if(!value)return;
-   let fit=null;
-   for(let fs=Math.floor(maxFS);fs>=16;fs--){
-    const lines=wrapExact(value,maxW,fs);
-    if(lines.length*fs*1.26<=maxH&&lines.every(line=>ctx.measureText(line).width<=maxW)){
-     fit={fs,lines};break;
+  // Choose a font size using REAL Canvas text measurement and available height.
+  // If source is unusually long, show a readable semantic excerpt; source stays in editor.
+  function drawBlock(value,cx,cy,availableW,availableH,maxFont,minFont=17){
+   let text=normalized(value),fit=null;
+   for(let pass=0;pass<2&&!fit;pass++){
+    for(let fs=Math.floor(maxFont);fs>=minFont;fs--){
+     const lines=measuredLines(text,availableW,fs);
+     if(lines.length*fs*1.30<=availableH&&lines.every(line=>ctx.measureText(line).width<=availableW)){
+      fit={fs,lines};break;
+     }
+    }
+    if(!fit){
+     // Do not display 8px microscopic text. Only a source excerpt is shown.
+     const limit=Math.max(22,Math.floor(text.length*.74));
+     let shorter=text.slice(0,limit);const stop=shorter.lastIndexOf(' ');
+     if(stop>limit*.7)shorter=shorter.slice(0,stop);
+     text=shorter.replace(/[،؛\s]+$/u,'')+'…';
     }
    }
    if(!fit){
-    // Never paint microscopic or overflowing text on a paid picture.
-    // Preflight prevents this case before payment; this is a safe last resort.
-    fit={fs:16,lines:wrapExact(value,maxW,16)};
-    if(fit.lines.length*20>maxH){
-     statusEl.textContent='هشدار خوانایی: داده بلندتر از فضای کارت است؛ از ساخت دوباره پولی خودداری کن.';
-     return;
-    }
+    const fs=minFont,lines=measuredLines(text,availableW,fs);
+    const maxLines=Math.max(1,Math.floor(availableH/(fs*1.30)));
+    fit={fs,lines:lines.slice(0,maxLines)};
+    if(lines.length>maxLines){let last=fit.lines[maxLines-1];while(last.length>1&&ctx.measureText(last+'…').width>availableW)last=last.slice(0,-1);fit.lines[maxLines-1]=last.trim()+'…';}
    }
    ctx.font='800 '+fit.fs+'px '+family;
-   const lineH=fit.fs*1.26;
-   fit.lines.forEach((ln,j)=>ctx.fillText(ln,x,y+(j-(fit.lines.length-1)/2)*lineH,maxW));
+   const lh=fit.fs*1.30;
+   const first=cy-(fit.lines.length-1)*lh/2;
+   fit.lines.forEach((line,j)=>ctx.fillText(line,cx,first+j*lh));
   }
   ctx.save();
   try{
    ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
    items.forEach((item,i)=>{
     const rect=grid[i],x=rect.x*W,y=rect.y*H,w=rect.w*W,h=rect.h*H;
-    if(plan.horizontal){
-      // Text inside a full-height ceramic panel; model paints a distinct CGI object
-      // in the other part. Large, readable text avoids shrinking to illegibility.
-      const ix=x+w*.42,iy=y+h*.07,iw=w*.545,ih=h*.86;
-      const rad=Math.min(20,h*.12);
-      ctx.save();ctx.shadowColor='rgba(8,46,27,.12)';ctx.shadowBlur=10;ctx.shadowOffsetY=4;
-      ctx.beginPath();ctx.roundRect(ix,iy,iw,ih,rad);
-      const ceramic=ctx.createLinearGradient(ix,iy,ix,iy+ih);
-      ceramic.addColorStop(0,'#fffefa');ceramic.addColorStop(1,'#f2efe6');
-      ctx.fillStyle=ceramic;ctx.fill();ctx.restore();
-      ctx.save();ctx.beginPath();ctx.roundRect(ix,iy,iw,ih,rad);ctx.clip();
-      ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
-      const [label,detail]=partsFor(item),cx=ix+iw/2,maxW=iw-22;
-      if(detail){
-        ctx.fillStyle='#273b30';drawFitted(label,cx,iy+ih*.28,maxW,ih*.40,Math.min(25,w*.06));
-        ctx.strokeStyle='rgba(0,131,74,.25)';ctx.beginPath();ctx.moveTo(ix+iw*.12,iy+ih*.51);ctx.lineTo(ix+iw*.88,iy+ih*.51);ctx.stroke();
-        ctx.fillStyle=accent;drawFitted(detail,cx,iy+ih*.74,maxW,ih*.43,Math.min(23,w*.052));
-      }else{ctx.fillStyle=accent;drawFitted(label,cx,iy+ih*.50,maxW,ih*.91,Math.min(24,w*.057));}
-      ctx.restore();return;
-    }
-    const plateY=y+h*.58,plateH=h*.39,pad=Math.max(9,w*.048),ix=x+pad,iw=w-2*pad;
-    const radius=Math.min(22,w*.11);
-    // A deliberate inset sculpted in the same material: soft ivory to cream,
-    // consistent with the AI generated object below it, not a flat white bar.
-    ctx.save();ctx.shadowColor='rgba(8,46,27,.14)';ctx.shadowBlur=12;ctx.shadowOffsetY=4;
-    ctx.beginPath();ctx.roundRect(ix,plateY,iw,plateH,radius);
-    const ceramic=ctx.createLinearGradient(ix,plateY,ix+iw,plateY+plateH);
-    ceramic.addColorStop(0,'#fffefa');ceramic.addColorStop(.54,'#f9f6ed');ceramic.addColorStop(1,'#ece9dd');
-    ctx.fillStyle=ceramic;ctx.fill();ctx.restore();
-    ctx.save();ctx.beginPath();ctx.roundRect(ix,plateY,iw,plateH,radius);ctx.clip();
-    const sheen=ctx.createLinearGradient(0,plateY,0,plateY+plateH*.45);
-    sheen.addColorStop(0,'rgba(255,255,255,.85)');sheen.addColorStop(1,'rgba(255,255,255,0)');
-    ctx.fillStyle=sheen;ctx.fillRect(ix,plateY,iw,plateH*.45);
-    ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=2;
-    ctx.beginPath();ctx.roundRect(ix+1.5,plateY+1.5,iw-3,plateH-3,radius);ctx.stroke();
-    const [label,detail]=partsFor(item),cx=x+w/2,available=iw-20;
+    // Exact same geometry is advertised in the Flare prompt.
+    const horizontal=plan.horizontal;
+    const px=horizontal?x+w*.422:x+w*.020;
+    const py=horizontal?y+h*.072:y+h*.580;
+    const pw=horizontal?w*.558:w*.960;
+    const ph=horizontal?h*.857:h*.389;
+    const inset=Math.max(12,Math.min(23,pw*.055));
+    const radius=Math.max(11,Math.min(22,ph*.18));
+    // One complete ceramic face hides untrusted model glyphs throughout the
+    // reserved caption region; extends to its intended integrated border.
+    ctx.save();ctx.shadowColor='rgba(9,35,20,.14)';ctx.shadowBlur=9;ctx.shadowOffsetY=3;
+    const fill=ctx.createLinearGradient(px,py,px,py+ph);
+    fill.addColorStop(0,'#fffefa');fill.addColorStop(.58,'#faf8f2');fill.addColorStop(1,'#ede9df');
+    ctx.beginPath();ctx.roundRect(px,py,pw,ph,radius);ctx.fillStyle=fill;ctx.fill();ctx.restore();
+    ctx.save();ctx.beginPath();ctx.roundRect(px,py,pw,ph,radius);ctx.clip();
+    ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(px+1.5,py+1.5,pw-3,ph-3,radius);ctx.stroke();
+    ctx.direction='rtl';ctx.textAlign='center';ctx.textBaseline='middle';
+    const [label,detail]=partsFor(item),cx=px+pw/2,innerW=pw-inset*2;
     if(detail){
-      ctx.fillStyle='#24372b';drawFitted(label,cx,plateY+plateH*.27,available,plateH*.42,Math.min(29,w*.124));
-      ctx.strokeStyle='rgba(0,131,74,.21)';ctx.lineWidth=1.5;
-      ctx.beginPath();ctx.moveTo(ix+iw*.17,plateY+plateH*.51);ctx.lineTo(ix+iw*.83,plateY+plateH*.51);ctx.stroke();
-      ctx.fillStyle=accent;drawFitted(detail,cx,plateY+plateH*.74,available,plateH*.42,Math.min(27,w*.117));
+     ctx.fillStyle='#243328';
+     drawBlock(label,cx,py+ph*.27,innerW,ph*.40,Math.min(30,pw*.125));
+     ctx.strokeStyle='rgba(0,131,74,.25)';ctx.lineWidth=1.5;
+     ctx.beginPath();ctx.moveTo(px+inset,py+ph*.52);ctx.lineTo(px+pw-inset,py+ph*.52);ctx.stroke();
+     ctx.fillStyle=accent;
+     drawBlock(detail,cx,py+ph*.76,innerW,ph*.40,Math.min(27,pw*.115));
     }else{
-      ctx.fillStyle=accent;drawFitted(label,cx,plateY+plateH*.50,available,plateH*.89,Math.min(29,w*.13));
+     ctx.fillStyle=accent;
+     drawBlock(label,cx,py+ph*.50,innerW,ph*.86,Math.min(29,pw*.115));
     }
     ctx.restore();
    });
@@ -2176,15 +2169,15 @@ function rf01043FlarePrompt(c){
   'SQUARE 1:1 premium magazine-news infographic BACKGROUND ART, polished museum-quality CGI. '+mode+'.',
   'MANDATORY MEDIA PALETTE: '+palette+'. Original brand PNG will be overlaid by the website; do NOT generate a logo.',
   'Topic: '+selected.headline.slice(0,88)+'. Render 100% relevant physical subject miniatures; no generic or unrelated icons.',
-  plan.horizontal ? 'Layout: headline and logo safe zone at top 0–26%. '+n+' WIDE landscape sculpted 3D cards, '+cols+' columns by '+rows+' rows. Each card: LEFT 40% distinctive realistic 3D subject, RIGHT 58% EMPTY sculpted ivory text surface. NO writing.' : 'Layout: top 0–17% clear for headline/logo, 17–32% thematic hero. '+n+' premium sculpted 3D cards, '+cols+' by '+rows+', Y 34–95%. Upper 57%: unique object; lower 43%: EMPTY ivory text panel.',
-  'CRITICAL: Create exactly ONE coherent ceramic sculptural card per item, with a lower recessed ivory nameplate integrated into the material, never a detached white overlay or extra text strip. The upper visual has a miniature of the precise subject. No tiny cards inside cards, no invented extra card. Cards must be elegant, premium, physically dimensional and matched in lighting.',
+  plan.horizontal ? 'Layout: headline must be physically centered in the square at X=50%, with green 3D title plate width <=76% and no object near original right-side logo; top 0–26% is reserved. '+n+' WIDE landscape sculpted 3D cards, '+cols+' columns by '+rows+' rows. Each card: LEFT 40% distinctive realistic 3D subject, RIGHT 58% EMPTY sculpted ivory text surface. NO writing.' : 'Layout: top 0–26% reserve space for physically centered headline on canvas, respecting the fixed top-right original logo; thematic hero at 26–33%. '+n+' premium sculpted 3D cards, '+cols+' by '+rows+', Y 34–95%. Upper 57%: unique object; lower 43%: EMPTY ivory text panel.',
+  'CRITICAL: Create exactly ONE coherent ceramic sculptural card per item, with ONE full-width lower recessed ivory nameplate integrated into the material, never a detached white overlay or extra text strip. The upper visual has a miniature of the precise subject. No tiny cards inside cards, no invented extra card. Cards must be elegant, premium, physically dimensional and matched in lighting.',
   'PRIORITY: factual visual identity is more important than decorative details. For a food/item list, each illustration MUST visibly show that EXACT named item, not an approximate repeated substitute. For numbers/categories, create an appropriate distinct visual metaphor. Do not decorate cards with text or misleading repeated stock objects.',
 
   'Strict grid locations (x and y in percentages of entire canvas):'
  ];
  items.forEach((fact,i)=>{
   const rect=plan.cards[i],x=rect.x,y=rect.y,w=rect.w,h=rect.h;
-  const zone=plan.horizontal?'LEFT visual X '+pct(x)+'–'+pct(x+w*.40)+' full card height; RIGHT completely EMPTY raised ivory writing panel X '+pct(x+w*.42)+'–'+pct(x+w*.985)+' Y '+pct(y+h*.07)+'–'+pct(y+h*.93):'Top image Y '+pct(y)+'–'+pct(y+h*.57)+'; bottom completely EMPTY text panel Y '+pct(y+h*.58)+'–'+pct(y+h*.97);
+  const zone=plan.horizontal?'LEFT visual X '+pct(x)+'–'+pct(x+w*.42)+' full card height; RIGHT completely EMPTY raised ivory writing surface X '+pct(x+w*.422)+'–'+pct(x+w*.980)+' Y '+pct(y+h*.072)+'–'+pct(y+h*.929):'Top image Y '+pct(y)+'–'+pct(y+h*.575)+'; bottom entirely EMPTY ceramic text surface X '+pct(x+w*.020)+'–'+pct(x+w*.980)+' Y '+pct(y+h*.580)+'–'+pct(y+h*.969);
   lines.push((i+1)+'. CARD X '+pct(x)+'–'+pct(x+w)+' Y '+pct(y)+'–'+pct(y+h)+': distinct subject-specific 3D object for «'+fact.slice(0,68)+'». '+zone+'. NO letters, digits, labels or price.');
  });
  lines.push('ABSOLUTELY NO lettering, digits, Persian or Latin characters, logos, labels or watermarks anywhere. Every lower ivory nameplate is an integrated sculpted blank surface; website will print exact Persian writing and original logo.');
