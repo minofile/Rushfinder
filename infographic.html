@@ -304,7 +304,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01057</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01058</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -329,17 +329,17 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
       <div class="rf580-style-section">
         <div class="secTitle"><span class="stepNumber">۴</span><span>سبک گرافیکی</span></div>
         <select id="rf580-graphic-style" aria-label="سبک گرافیکی" class="rf580-style-select">
-          <option value="auto">✦  خودکار (AUTO)</option><option value="2d">▧  دوبعدی (2D)</option><option value="3d" selected>⬡  سه‌بعدی (3D)</option>
+          <option value="auto" selected>✦  خودکار (AUTO)</option><option value="2d">▧  دوبعدی (2D)</option><option value="3d">⬡  سه‌بعدی (3D)</option>
           <option value="table">▦  جدولی</option><option value="chart">▥  نموداری</option><option value="comparison">⇄  مقایسه‌ای</option>
           <option value="timeline">◷  خط زمانی</option><option value="cards">▣  کارت‌های اطلاعاتی</option><option value="minimal">◌  مینیمال</option>
           <option value="other">✎  سایر (پرامپت دلخواه)</option>
         </select>
         <label for="rf01022-design-mode" style="display:block;margin:10px 0 6px;font-weight:800;color:#173962;font-size:13px">نوع چیدمان خروجی</label>
         <select id="rf01022-design-mode" class="rf580-style-select" aria-label="چیدمان حرفه‌ای یا رندر دقیق سایت">
-          <option value="editorial" selected>★ طراحی کامل کارت‌ها با GPT Image 2.5 Flare + نوشته دقیق سایت</option>
-          <option value="verified">حالت قدیمی: کارت‌سازی Canvas (توصیه نمی‌شود)</option>
+          <option value="verified" selected>★ حالت دقیق: ساخت قطعی کارت‌ها و متن توسط سایت + هنر سه‌بعدی Flare</option>
+          <option value="editorial">حالت آزمایشی: ساخت خود کارت‌ها توسط Flare (بدون تضمین تطابق)</option>
         </select>
-        <small style="display:block;color:#65758a;line-height:1.9;margin-top:6px">حالت پیش‌فرض جدید: Flare کل صحنه، کارت‌های سه‌بعدی و المان‌های مربوط به هر داده را می‌سازد؛ سایت بدون رسم مستطیل ساده، فقط متن فارسی دقیق و لوگوی اصلی را اضافه می‌کند. پیش از پرداخت، پرامپت قابل ویرایش نمایش داده می‌شود.</small>
+        <small style="display:block;color:#65758a;line-height:1.9;margin-top:6px">حالت پیش‌فرض دقیق: کارت‌های یکپارچه و نوشته‌های کامل را سایت با تعداد قطعی ترسیم می‌کند؛ Flare فقط هنر موضوعی بدون متن می‌سازد. قبل از هر درخواست هزینه‌دار، متن استخراج‌شده و پرامپت قابل ویرایش نمایش داده می‌شود.</small>
         <div id="rf580-other-wrap" hidden><label class="rf580-prompt-label" for="rf580-other-prompt">پرامپت طراحی دلخواه</label><textarea id="rf580-other-prompt" rows="3" placeholder="سبک، چیدمان، رنگ و جزئیات دلخواه را بنویسید..."></textarea></div>
       </div>
       <div>
@@ -424,7 +424,7 @@ const brands={
   urgent:{name:'خبر فوری',base:'#0fa868',accent:'#6cf0b1',light:'#eafff2',dark:'#0b2f25',bg2:'#0e8e59'},
   mashhad:{name:'اخبار مشهد',base:'#f4c316',accent:'#ffe16f',light:'#fff8de',dark:'#48370a',bg2:'#cf9d00'},
   jaryan:{name:'جریان',base:'#20222a',accent:'#f0cf2d',light:'#fff8d0',dark:'#0d1018',bg2:'#10131c'},
-  farda:{name:'خبرفردا',base:'#1e1f25',accent:'#ef4458',light:'#fff0f3',dark:'#101218',bg2:'#661824'}
+  farda:{name:'خبرفردا',base:'#D32639',accent:'#F25B65',light:'#FFF0F1',dark:'#111114',bg2:'#780C19'}
 };
 let brand='urgent', size='square', variant=0;
 const urgentTemplate=new Image();urgentTemplate.src='assets/infographic-logos/urgent-exact-template.png';urgentTemplate.onload=()=>render();
@@ -1121,7 +1121,7 @@ function rf581Render(){
    const h=Math.min(maxH,Math.max(110,lines.length*lineHeight+34));
    const radius=30;
    const is3D=['3d','auto','cards'].includes(rf580Style.value)||(rf580Style.value==='other'&&rf580EffectiveStyle()==='3d');
-   const pair=({urgent:['#00834A','#004C2D'],mashhad:['#F8C22D','#9E4216'],jaryan:['#292C30','#101014'],farda:['#D13C5B','#72172D']})[brand]||['#00834A','#004C2D'];
+   const pair=({urgent:['#00834A','#004C2D'],mashhad:['#F8CE31','#A67A00'],jaryan:['#272727','#090909'],farda:['#D32639','#101015']})[brand]||['#00834A','#004C2D'];
    if(is3D){ctx.save();ctx.shadowColor='rgba(0,0,0,.28)';ctx.shadowBlur=23;ctx.shadowOffsetY=11;ctx.fillStyle=pair[1];ctx.beginPath();ctx.roundRect(x+3,top+7,width-6,h-7,radius);ctx.fill();ctx.restore();}
    const bg=ctx.createLinearGradient(x,top,x+width,top+h);bg.addColorStop(0,pair[0]);bg.addColorStop(.6,pair[1]);bg.addColorStop(1,pair[1]);
    ctx.fillStyle=bg;ctx.beginPath();ctx.roundRect(x,top,width,h,radius);ctx.fill();
@@ -1131,7 +1131,7 @@ function rf581Render(){
     ctx.strokeStyle='rgba(255,255,255,.42)';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(x+3,top+3,width-6,h-6,radius);ctx.stroke();
    }
    ctx.save();ctx.beginPath();ctx.roundRect(x+21,top+12,width-42,h-24,20);ctx.clip();
-   ctx.fillStyle='#fff';ctx.shadowColor='rgba(0,0,0,.13)';ctx.shadowBlur=3;ctx.shadowOffsetY=2;
+   ctx.fillStyle=brand==='mashhad'?'#231A00':'#fff';ctx.shadowColor='rgba(0,0,0,.13)';ctx.shadowBlur=3;ctx.shadowOffsetY=2;
    ctx.font='900 '+fontSize+'px '+family;
    // Vertical center for the entire block, not just the baseline of its first line.
    const firstY=top+h/2-(lines.length-1)*lineHeight/2;
@@ -1253,12 +1253,13 @@ function rf581Render(){
   const top=.277,bottom=brand==='farda'?.805:.936,x0=.042,fullW=.505,gapY=.012;
   const cardH=(bottom-top-gapY*(n-1))*H/n,cardW=fullW*W;
   if(cardH<94){statusEl.textContent='این خبر نکات زیادی دارد؛ قبل از مصرف هزینه متن را خلاصه کن.';return;}
-  const colors={urgent:['#00834A','#006D3C','#F6F3EF'],mashhad:['#E5B600','#765300','#FFF9E9'],jaryan:['#E5BC17','#222222','#FAFAF5'],farda:['#D02D4B','#821128','#FFF8FA']}[brand]||['#00834A','#006D3C','#F6F3EF'];
+  const colors={urgent:['#00834A','#006D3C','#F6F3EF'],mashhad:['#D7A300','#644A00','#FFF9E9'],jaryan:['#F0C319','#161616','#FAFAF5'],farda:['#CE1B2A','#171719','#FFF7F7']}[brand]||['#00834A','#006D3C','#F6F3EF'];
   const family=rf584FontMap[rf584FontSelector.value]||'RF584Doran';
   const st=rf580Style.value,volumetric=!['2d','table'].includes(st);
   const photo=window.rf702FinalImage;
   const round=(x,y,w,h,r)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r)};
   let anyOverflow=false;
+  window.rf01059SafeOverflow=false;
   function fit(text,maxW,maxH,preferred,min=15){
    const words=String(text||'').trim().split(/\s+/u).filter(Boolean);
    for(let fs=preferred;fs>=min;fs--){
@@ -1294,7 +1295,7 @@ function rf581Render(){
     const px=x+.008*W,py=y+.009*H,pw=Math.min(.126,Math.max(.105,(boxH/H)*.95))*W,ph=boxH-.018*H;
     const pr=Math.min(21,ph*.24);
     ctx.save();if(volumetric){ctx.shadowColor='rgba(0,42,19,.17)';ctx.shadowBlur=9;ctx.shadowOffsetY=4;}
-    round(px,py,pw,ph,pr);ctx.fillStyle='#E8F1E8';ctx.fill();ctx.restore();
+    round(px,py,pw,ph,pr);ctx.fillStyle=colors[2];ctx.fill();ctx.restore();
     ctx.save();round(px,py,pw,ph,pr);ctx.clip();
     if(photo&&photo.naturalWidth){
       ctx.drawImage(photo,px/W*photo.naturalWidth,py/H*photo.naturalHeight,pw/W*photo.naturalWidth,ph/H*photo.naturalHeight,px,py,pw,ph);
@@ -1304,9 +1305,14 @@ function rf581Render(){
     ctx.save();ctx.fillStyle=colors[0];ctx.globalAlpha=.25;ctx.fillRect(left+3,y+boxH*.13,tw-6,2);ctx.restore();
     const card=data.cards?.[i];
     if(card){
-      centered(card.title,cx,y+boxH*.27,tw-6,boxH*.33,29,colors[1]);
-      centered(card.weight,cx,y+boxH*.54,tw-6,boxH*.18,23,'#303D35');
-      centered(card.price,cx,y+boxH*.79,tw-6,boxH*.34,29,colors[0]);
+      if(card.detail!==undefined){
+       centered(card.title,cx,y+boxH*.32,tw-6,boxH*.44,26,colors[1]);
+       centered(card.detail,cx,y+boxH*.76,tw-6,boxH*.36,26,colors[0]);
+      }else{
+       centered(card.title,cx,y+boxH*.27,tw-6,boxH*.33,29,colors[1]);
+       if(card.weight)centered(card.weight,cx,y+boxH*.54,tw-6,boxH*.18,23,'#303D35');
+       if(card.price)centered(card.price,cx,y+boxH*.79,tw-6,boxH*.34,29,colors[0]);
+      }
     }else{
       const m=item.match(/^(.{2,55}?)\s*[:：]\s*(.+)$/u);
       if(m){centered(m[1],cx,y+boxH*.32,tw-6,boxH*.40,27,'#26372B');centered(m[2],cx,y+boxH*.74,tw-6,boxH*.42,30,colors[0]);}
@@ -1314,7 +1320,8 @@ function rf581Render(){
     }
    });
   }finally{ctx.restore();}
-  if(anyOverflow)statusEl.textContent='یک داده برای کادر خیلی بلند است؛ متن آن کامل نمایش داده نشد. ساخت دوباره نزن؛ متن را کوتاه کن.';
+  window.rf01059SafeOverflow=anyOverflow;
+  if(anyOverflow)statusEl.textContent='یک داده برای کادر خیلی بلند است؛ این خروجی ناقص است و دانلود آن غیرفعال شد. ساخت پولی مجدد نزن.';
  }
 
  // 01044: shared measured grid. No thin vertical strips for dense stories.
@@ -1518,9 +1525,9 @@ function rf581Render(){
    }
    rf01027BrowserHeadline();
    rf01020StampOriginalTemplate(ctx,template,W,H);
-   window.rf01012LastStyleLabel='کادر سرامیکی اصلی Flare + فقط متن دقیق فارسی و لوگوی اصلی';
+   window.rf01012LastStyleLabel=rf01022DesignMode.value==='verified'?'کادرهای دقیق ساخته‌شده توسط سایت + تصویرسازی Flare + متن فارسی و لوگوی اصلی':'کادر Flare + متن فارسی و لوگوی اصلی';
   }finally{ctx.restore();}
-  window.rf1000ComposedReady=!(rf01022DesignMode.value!=='verified' && window.rf01051TextOverflow);
+  window.rf1000ComposedReady=!(rf01022DesignMode.value!=='verified' && window.rf01051TextOverflow) && !window.rf01059SafeOverflow;
   layoutName.textContent=(rf01022DesignMode.value==='verified'?'متن و کارت دقیق سایت + لوگوی اصلی ':'محتوا + لوگوی ثابت اصلی ')+brands[brand].name;updateMeta();
   if(window.rf01051TextOverflow && rf01022DesignMode.value!=='verified'){statusEl.textContent='هشدار: یک یا چند کادر متن قابل شناسایی نبود یا متن کامل داخل کادر جا نشد؛ دانلود این تصویر ناقص متوقف شد.';}
   else if(brand==='urgent'&&window.rf01012LastStyleLabel){statusEl.textContent='الگوی خودکار خبر فوری: '+window.rf01012LastStyleLabel+' | مدل: '+((document.getElementById('rf962-model')?.selectedOptions?.[0]?.textContent)||'GPT Image');}
@@ -1964,6 +1971,32 @@ function rf01057SemanticSections(raw,manualTitle='',sizeKey='square'){
  return {headline:title,items:chosen.map(v=>v.text),cards:chosen,total:sections.length,
  omitted:Math.max(0,sections.length-chosen.length),limit,curated:sections.length>limit,structured:true,semantic:true};
 }
+// 01058: Colon-based semantic records are each a complete card, e.g.
+// city/province : measurement. They are NOT unrelated lines or decorative hints.
+function rf01058FactRows(raw,manualTitle='',sizeKey='square'){
+ const source=String(raw||'').replace(/&(?:#x20|nbsp);/giu,' ').replace(/\\\s*(?=\n|$)/gu,'').replace(/\r/g,'');
+ const tidy=v=>rf724PersianDigits(String(v||'').replace(/\*\*/gu,'').replace(/^\s*[-•●🔹🔸]+\s*/u,'').replace(/\s+/gu,' ').trim());
+ const lines=source.split(/\n/u).map(tidy).filter(Boolean);
+ if(lines.length<3)return null;
+ const headline=tidy(manualTitle)||lines[0];
+ const sourceFacts=manualTitle?lines:lines.slice(1);
+ const records=[];
+ for(const l of sourceFacts){
+  if(/^(?:منبع|توضیح|یادداشت|نکته)\s*[:：]/u.test(l))continue;
+  const match=l.match(/^(.{2,110}?)\s*[:：]\s*(.{2,190})$/u);
+  if(!match)continue;
+  const title=tidy(match[1]),value=tidy(match[2]);
+  if(!title||!value||/^(?:منبع|نکته)/u.test(title))continue;
+  records.push({title,detail:value,text:title+' — '+value});
+ }
+ // Only switch to fact-row parsing if the majority of source lines represent
+ // real labelled records. A generic article with a stray colon stays unchanged.
+ if(records.length<2||records.length<Math.ceil(sourceFacts.length*.66))return null;
+ const limit=sizeKey==='all'?Infinity:(sizeKey==='story'?7:8);
+ const chosen=records.slice(0,limit);
+ return {headline,items:chosen.map(r=>r.text),cards:chosen,total:records.length,
+   omitted:records.length-chosen.length,limit,structured:true,factRows:true};
+}
 function rf01024CurateNews(raw,manualTitle='',sizeKey='square'){
  // 01056: A selected page is a VIEW over the complete user text, never a destructive truncation.
  // This applies to prompt construction AND final Canvas text placement.
@@ -1973,6 +2006,8 @@ function rf01024CurateNews(raw,manualTitle='',sizeKey='square'){
    total:view.allTotal,omitted:0,limit:view.items.length,curated:false,
    structured:!!view.cards,pageIndex:view.index,pageCount:view.pageCount};
  }
+ const facts=rf01058FactRows(raw,manualTitle,sizeKey);
+ if(facts)return facts;
  const numbered=rf01055NumberedSections(raw,manualTitle,sizeKey);
  if(numbered)return numbered;
  const semantic=rf01057SemanticSections(raw,manualTitle,sizeKey);
@@ -2193,7 +2228,7 @@ function rf01040SpecificObject(fact,topic,index,used,headline){
  const variants={
   housing:['ماکت معماری ساختمان مسکونی با نمای سنگ روشن و بالکن','ماکت متفاوت مجتمع مسکونی آجری با محوطه شهری','ماکت معماری برج‌های مسکونی با پنجره و حیاط','نمای سه‌ربع آپارتمان نوساز با درختان شهری','مقطع ماکت مجتمع آپارتمانی با واحدهای واقعی'],
   dam:['سد بتنی با دریچه سرریز آب','مخزن آب پشت سد و خطوط ساحلی','توربین مهندسی آبی و لوله خروج','دریچه تخلیه سد و جریان آب','مدل مهندسی سطح آب مخزن سد'],
-  weather:['ابر بارانی روی کوه و قطره شیشه‌ای','چتر بارانی خیس زیر قطره‌های واقعی','سنجشگر باران در منظره طبیعی','کوه پوشیده از برف زیر ابر','باران روی سطح رودخانه و برگ'],
+  weather:['ابر بارانی پربارش و قطرات کریستالی روی کوهستان لرستان','ماکت سه‌بعدی کوهستان مرتفع زاگرس زیر ابرهای باران‌زا','ابر بارانی بر فراز جنگل و درختان منطقه اصفهان','باران روی مزرعه و قطرات روی برگ‌های سبز','باران واقعی روی رودخانه و سنگ‌های خیس','باران نرم روی گل‌های بهاری و کوهپایه','باران‌سنج شیشه‌ای با قطرات واقعی و ابر بارشی'],
   auto:['مدل واقعی اتومبیل سواری','بدنه و چرخ خودرو از نمای سه‌ربع','خط مونتاژ خودروسازی','موتور و اجزای فنی خودرو','خودروی مسافری در جاده'],
   education:['کتاب و دفتر در کلاس درس','مدل ساختمان مدرسه','وسایل آزمایشگاه آموزشی','کیف و وسایل آموزشی','کتابخانه و میز مطالعه'],
   finance:['نمودار فیزیکی میله‌ای مقایسه مالی بدون رقم','سکه و دارایی مالی مطابق داده','شمش فلزی مربوط به دارایی مالی','نمودار تغییر شاخص بدون حروف','نماد فیزیکی معامله بازار سرمایه']
@@ -2256,7 +2291,7 @@ function rf01043PickLayout(plan,c){
 function rf01037AutoPrompt(c){
  const plan=rf01037DesignPlan(c);
  const pct=v=>Math.round(v*100)+'٪';
- const palette={urgent:'سبز زمردی #00834A و سبز تیره #006D3C رنگ غالب؛ سفید سرامیکی و کرم #F6F3EF',mashhad:'زرد و قرمز هویت اخبار مشهد',jaryan:'مشکی و زرد هویت جریان',farda:'قرمز تیره و سفید هویت خبرفردا'}[c.brandKey]||'سبز زمردی و کرم';
+ const palette={urgent:'سبز زمردی #00834A و سبز تیره #006D3C؛ کرم',mashhad:'زرد طلایی #F4C316 و زرد تیره؛ کرم',jaryan:'مشکی #121212 و زرد #F0C319؛ کرم',farda:'قرمز #D32639 و مشکی #101015؛ کرم'}[c.brandKey]||'سبز زمردی و کرم';
  const st=c.style||'auto';
  const style=st==='2d'?'دو‌بعدی گرافیکی ممتاز با عمق‌نمایی محدود':st==='minimal'?'مینیمال مجلسی با نور و فضای منفی حساب‌شده':st==='table'?'ردیف‌های منظم خبری با متریال مرغوب':st==='timeline'?'روایت مرحله‌ای ممتاز':'سه‌بعدی فوتورئال PBR با کارت‌های سرامیکی لبه‌دار، شیشه نیمه‌شفاف، نور استودیویی، سایه تماس طبیعی و عمق واقعی';
  const lines=[
@@ -2280,7 +2315,35 @@ function rf01037AutoPrompt(c){
  return result;
 }
 
-function rf01030VerifiedPrompt(c){return rf01037AutoPrompt(c);}
+function rf01059SafePrompt(c){
+ const data=rf01024CurateNews(c.news,c.headline,'square'),items=data.items||[];
+ if(!items.length)throw Error('ابتدا نکات خبر را وارد کنید');
+ const theme=({urgent:{palette:'DOMINANT emerald green #00834A, dark forest #004C2D, warm ivory #F6F3EF',background:'dark emerald and botanical green',accent:'emerald and subtle gold'},mashhad:{palette:'DOMINANT Mashhad News radiant YELLOW #F4C316, mustard #A57900, warm ivory; use dark charcoal only for readability, NO green theme',background:'golden yellow and warm honey shadows',accent:'yellow and brushed bronze'},jaryan:{palette:'DOMINANT Jaryan matte BLACK #121212 and saturated YELLOW #F0C319, ivory for contrast; strictly NO green theme',background:'near-black graphite with strong golden-yellow controlled highlights',accent:'black and vivid yellow'},farda:{palette:'DOMINANT Khabar Farda vivid RED #D32639 and deep BLACK #101015, warm ivory for contrast; strictly NO green theme',background:'deep crimson red merging into cinematic black',accent:'crimson red and deep black'}})[c.brandKey]||{palette:'emerald green',background:'dark emerald',accent:'emerald'};const palette=theme.palette;
+ const topic=rf01039Topic(data.headline,c.news),used=new Set();
+ const base=[
+  'Generate a single PREMIUM SQUARE 1:1 3D CGI news art BACKGROUND, no written text, no digits, no logo, no labels, no card outlines, no cream text panels. The website itself deterministically draws ALL information cards and Persian typography. Absolutely DO NOT draw infographic cards.',
+  'TOPIC: '+data.headline.slice(0,180)+'. All depicted objects must match the actual topic. Palette: '+palette+'. Rich photo-real studio CGI, PBR sculpture, real shadows, premium editorial art direction.',
+  'KEEP LEFT HALF (X 0–55%, Y 27–95%) visually quiet, with a continuous seamless '+theme.background+' backdrop. The website will overlay exactly '+items.length+' readable '+theme.accent+' framed ivory statistic cards IN THAT LEFT HALF. Do not place busy objects, props, charts, letterforms or card outlines in this half.',
+  'RIGHT HALF (X 57–97%, Y 28–96%) MUST have a large, beautiful, detailed hero sculpture or still-life showing the real subject of this news, NOT an unrelated generic laptop/book/cash illustration.',
+  'TOP (X 13–85%, Y 0–26%) keep softly lit '+theme.background+' with NO object that obscures the website headline; upper right clean behind authentic logo. Main headline belongs ABOVE all data cards and will be drawn by RushFinder.',
+  'STORY-SPECIFIC ART DIRECTIONS, for semantic accuracy (never write these words on the image):'
+ ];
+ items.forEach((v,i)=>base.push((i+1)+'. '+rf01040SpecificObject(v,topic,i,used,data.headline)+'. Fact: '+String(v).slice(0,100)));
+ base.push('The subjects MUST be logically related to the topic, and the overall hero art not generic; no extraneous products or props. A cohesive gallery-scale three-dimensional composition, no imitation Persian letters. BRAND COLORS ARE HARD REQUIREMENTS; never substitute another brand palette.');
+ if(c.customPrompt)base.push('USER ART DIRECTION: '+c.customPrompt.slice(0,220));
+ let out=base.join('\n');
+ // Compress semantic directions, NEVER silently drop items or their identity.
+ if(out.length>3500){
+  const shorter=base.slice(0,6);
+  items.forEach((v,i)=>shorter.push((i+1)+'. '+rf01040SpecificObject(v,topic,i,new Set(),data.headline).slice(0,105)+'; '+String(v).slice(0,80)));
+  shorter.push('NO text, NO labels, NO generated cards. All left side card typography is drawn by the website.');
+  out=shorter.join('\n');
+ }
+ if(out.length>3500)throw Error('پرامپت بیش از حد بلند شد؛ باید صفحات کمتر شوند؛ هیچ درخواست پولی فرستاده نشد.');
+ return out;
+}
+function rf01030VerifiedPrompt(c){return rf01059SafePrompt(c);}
+
 
 function rf01003UrgentPrompt(c){
  const shape=c.size==='story'?'استوری عمودی ۹:۱۶':'مربع ۱:۱';
@@ -2330,7 +2393,7 @@ function rf01043FlarePrompt(c){
  if(!items.length)throw Error('هیچ نکته‌ای برای اینفوگرافیک یافت نشد.');
  const plan=window.rf01047Plan(items,{headline:selected.headline});
  const pct=v=>Math.round(v*100);
- const palette={urgent:'MANDATORY emerald #00834A, dark green #006D3C, warm ivory #F6F3EF, white. Green MUST dominate; keep natural object colors.',mashhad:'Use original Mashhad News yellow/red identity with cream ceramic.',jaryan:'Use original Jaryan black/yellow identity with cream ceramic.',farda:'Use original Khabar Farda red/white identity with cream ceramic.'}[c.brandKey];
+ const palette={urgent:'MANDATORY emerald #00834A, dark green #006D3C, warm ivory #F6F3EF, white. Green MUST dominate; keep natural object colors.',mashhad:'MANDATORY dominant golden YELLOW #F4C316 and darker honey yellow #A57900, cream ceramic. No green/red dominant theme.',jaryan:'MANDATORY dominant BLACK #121212 and vibrant YELLOW #F0C319, cream ceramic. No green/red dominant theme.',farda:'MANDATORY dominant CRIMSON RED #D32639 and DEEP BLACK #101015, cream ceramic. No green/yellow dominant theme.'}[c.brandKey];
  const mode=c.style==='2d'?'Premium polished FLAT 2D editorial design; NO fake 3D shadows':c.style==='minimal'?'Minimal premium gallery-like editorial composition':c.style==='table'?'Premium ceramic editorial table with generous spacious rows':c.style==='timeline'?'Sculptural sequential timeline with relevant unique objects':c.style==='chart'?'Precise proportional visual comparison; no false chart values':'ULTRA LUXURY 3D editorial CGI with real PBR ceramic, glass, tactile beveled cards, fine metal trim, cinema-grade studio softboxes, true contact shadows and photoreal materials';
  const art={
   hero:'RAINFALL/FINANCE REFERENCE FAMILY: elegant equal-height HORIZONTAL raised statistic cards in a LEFT column, and a large premium SUBJECT-RELEVANT sculpted 3D hero artwork on the RIGHT (X 55–98%, Y 28–96%). Use the subject of THIS news, not generic umbrellas or money unless actually relevant. Rich coherent 3D museum display on podium, premium lighting.',
@@ -2359,23 +2422,29 @@ function rf01043FlarePrompt(c){
  });
  lines.push('FINAL NEGATIVE: NO writing whatsoever, NO blank rectangle under logo, NO extra cards, NO repeated icons, NO flat web rectangles, NO detached or superimposed white/cream text box, NO secondary text panel, NO miniaturized writing zones, NO subject overlap. Material and palette continuous across the scene. Photoreal, elegant, glossy, museum-quality.');
  if(c.customPrompt)lines.push('Additional user art direction (must not conflict with logo and no-text safety): '+c.customPrompt.slice(0,160));
- // Keep within the documented prompt review and API bound, retaining ALL card facts.
+ // 01058: A deterministic compact fallback preserves EVERY actual item,
+ // card count, semantic object and coordinates. The old slice(0,125) discarded
+ // the subject distinction on busy news prompts, causing unrelated illustrations.
  let result=lines.join('\n');
  if(result.length>3500){
-  const compact=lines.slice(0,9).map((v,i)=>i===2?v.slice(0,330):v).join('\n')+'\n'+lines.slice(9,-1).map(v=>v.slice(0,145)).join('\n')+'\nNO text, letters or logos; luxury integrated PBR cards, aligned geometry.';
-  result=compact;
+  const compact=[
+   'ONE SQUARE 1:1 luxury 3D PBR Persian news infographic ART ONLY. '+palette,
+   'Headline subject (do not render words): '+String(selected.headline||'').slice(0,135),
+   'EXACTLY '+items.length+' three-dimensional cards; each ONE coherent ceramic frame, top distinct topic-related 3D object and ONLY ONE integrated blank ivory LOWER text area. No second text box. Headline plate blank, centered X=50%, original logo overlaid at top right without blank patch.',
+   'NO writing, typography, figures, labels, numbers or logo generated by the model. Site writes all exact Persian copy into the blank integrated panels. Premium studio lighting, real contact shadows, deep emerald, ivory, fine gold trim.',
+   'CARD LAYOUT AND DISTINCT SUBJECTS (one card per fact):'
+  ];
+  items.forEach((fact,i)=>{
+   const r=plan.cards[i];
+   compact.push((i+1)+'. x'+pct(r.x)+'-'+pct(r.x+r.w)+'%;y'+pct(r.y)+'-'+pct(r.y+r.h)+'%. VISUAL '+rf01040SpecificObject(fact,topic,i,new Set(),selected.headline)+'. SOURCE FACT '+String(fact)+'. MODEL MUST NOT WRITE SOURCE FACT.');
+  });
+  compact.push('No extra, missing or duplicated cards. Every card has one physically integrated cream face large enough for exact Persian typography. If unsure choose accurate subject matter rather than generic books, cash or laptops.');
+  result=compact.join('\n');
  }
- if(result.length>3500){
-  // Preserve each card position and each item in priority order, not blind .slice() that drops rows.
-  const shortened=lines.slice(0,8).map(x=>x.slice(0,215)).join('\n')+'\n'+lines.slice(9,9+items.length).map(x=>x.slice(0,125)).join('\n')+'\nNo letters. One coherent 3D scene. Original logo added after image.';
-  result=shortened;
- }
- // 01052: preserve this decisive singular-face constraint even when prompts are compacted.
- const faceLock=' FINAL FACE RULE: Exactly ONE integrated cream lower face per physical card. NO extra white or cream rectangle, detached text capsule, second panel, floating label, masking sheet or overlaid plaque. ONLY ONE card frame; the illustration and blank text surface are joined.';
- if(!result.includes('FINAL FACE RULE'))result=result.slice(0,3500-faceLock.length)+faceLock;
+ if(result.length>3500)throw Error('پرامپت '+items.length+' کارت از حد قابل ارسال بیشتر شد. قبل از درخواست پولی چیدمان کوتاه‌تر یا تقسیم صفحات لازم است؛ هیچ داده‌ای حذف نشد.');
  return result;
 }
-function promptFor(c){return rf01043FlarePrompt(c);}
+function promptFor(c){return c.designMode==='verified'?rf01059SafePrompt(c):rf01043FlarePrompt(c);}
 
 // RF0716: explicit paid-generation approval. Never submit a draft before user confirms.
 // 01038: show a one-click paid confirmation, not the technical prompt editor.
@@ -2389,7 +2458,8 @@ function reviewPrompt(draft,c,summary){
   const heading=document.createElement('h2');heading.textContent='بازبینی و ویرایش پرامپت اینفوگرافیک';section.appendChild(heading);
   const expl=document.createElement('p');expl.textContent='پرامپت به‌طور خودکار نوشته شده است. در صورت تمایل اصلاحش کن؛ دقیقاً همین متنِ نهایی برای ساخت استفاده خواهد شد.';section.appendChild(expl);
   const info=document.createElement('p');info.style.lineHeight='2.1';
-  info.textContent='رسانه: '+c.brand+' | پست مربع '+(rf01056State.selected+1)+' از '+rf01056State.pages.length+' | '+(summary.items?.length||0)+' کارت از کل '+rf01056State.pages.reduce((a,p)=>a+p.items.length,0)+' مورد | مدل: '+c.model+' | کیفیت: '+({'low':'پایین','medium':'متوسط','high':'بالا'}[c.quality]||c.quality);section.appendChild(info);
+  info.textContent='رسانه: '+c.brand+' | تم: '+({urgent:'سبز',mashhad:'زرد',jaryan:'مشکی و زرد',farda:'قرمز و مشکی'}[c.brandKey]||'اختصاصی')+' | پست مربع '+(rf01056State.selected+1)+' از '+rf01056State.pages.length+' | '+(summary.items?.length||0)+' کارت از کل '+rf01056State.pages.reduce((a,p)=>a+p.items.length,0)+' مورد | مدل: '+c.model+' | کیفیت: '+({'low':'پایین','medium':'متوسط','high':'بالا'}[c.quality]||c.quality);section.appendChild(info);
+  if(c.designMode==='verified'){const note=document.createElement('p');note.style.cssText='background:#f0f8f3;border:1px solid #c8dacc;border-radius:9px;padding:9px;color:#14512e';note.textContent='حالت دقیق فعال: تعداد کارت‌ها و متن کامل فارسی را خود سایت رسم می‌کند؛ Flare فقط صحنه هنری مرتبط را تولید می‌کند. با تغییر ترتیب کارت‌ها یا طول متن می‌توانید پیش از تأیید انصراف دهید.';section.appendChild(note);}
   let omissionApproval=null;
   if(summary.omitted>0){
    const omitted=document.createElement('p');omitted.style.cssText='color:#9c2929;background:#fff5f1;border:1px solid #efc8bb;padding:9px;border-radius:10px;font-weight:700';
@@ -2469,8 +2539,8 @@ function rf01056PageSize(items){
  if(longest>160||sum>610)return 3;
  if(longest>100||sum>450)return 4;
  if(longest>75||sum>340)return 5;
- if(sum>250)return 6;
- return 8;
+ if(sum>300)return 5;
+ return 6;
 }
 function rf01056Prepare(c){
  const signature=JSON.stringify({news:c.news,headline:c.headline,brandKey:c.brandKey,style:c.style,size:c.size});
@@ -2481,7 +2551,7 @@ function rf01056Prepare(c){
  const facts=all.items||[],cards=all.cards||null,pages=[];
  // Split based on content length for readable square pages. No fixed TOTAL limit.
  for(let start=0;start<facts.length;){
-  const remaining=facts.slice(start,start+8),size=rf01056PageSize(remaining);
+  const remaining=facts.slice(start,start+6),size=rf01056PageSize(remaining);
   const items=facts.slice(start,start+size),end=start+items.length;
   pages.push({original:c.news,headline:all.headline,items,cards:cards?cards.slice(start,end):null,allTotal:facts.length,start,end,index:pages.length});
   start=end;
@@ -2623,7 +2693,9 @@ btn.addEventListener('click',async evt=>{
    if(typeof window.rf702DrawFinal!=='function')throw new Error('تابع نمایش خروجی در این صفحه در دسترس نیست.');
    window.rf702DrawFinal();
    try{await rf01056SaveRenderedPage(rf01056State.selected);}catch(exportError){console.warn('RF01056 page-gallery export unavailable; primary PNG download remains available',exportError);}
-   say((c.designMode==='verified'?'✓ تصویرسازی دریافت شد؛ تیتر و کارت‌ها با فونت انتخابی و اعداد فارسی در سایت رندر شدند. اگر جمله بسیار بلند بود، کارت را از نظر خوانایی بررسی کن.':c.brandKey==='urgent'&&c.designMode==='editorial'?'✓ تصویر حرفه‌ای دریافت شد؛ تیتر وسط‌چین و لوگوی اصلی با وب اضافه شدند. کارت‌ها و اعداد تولیدی مدل را قبل از انتشار بررسی کن.':'✓ تصویر دریافت شد؛ تیتر وسط‌چین با فونت انتخابی و لوگوی اصلی به خروجی اضافه شد. اعداد داخل تصویر را بررسی کن.')+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
+   if(window.rf01051TextOverflow || window.rf01059SafeOverflow) {
+     say('⚠ تصویر از Flare دریافت شد، اما کادرهای واقعی یا متن‌گذاری با اطلاعات خبر تطبیق نداشت؛ تصویر برای انتشار آماده نیست و هزینه ساخت دوباره خودکار انجام نمی‌شود.');
+   } else say((c.designMode==='verified'?'✓ تصویرسازی پس‌زمینه دریافت شد؛ تعداد کارت‌ها و متن فارسی در سایت رندر شدند. خروجی را از نظر ارتباط صحنه و خوانایی بررسی کن.':c.brandKey==='urgent'&&c.designMode==='editorial'?'✓ تصویر حرفه‌ای دریافت شد؛ تیتر وسط‌چین و لوگوی اصلی با وب اضافه شدند. کارت‌ها و اعداد تولیدی مدل را قبل از انتشار بررسی کن.':'✓ تصویر دریافت شد؛ تیتر وسط‌چین با فونت انتخابی و لوگوی اصلی به خروجی اضافه شد. اعداد داخل تصویر را بررسی کن.')+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
   }catch(renderError){
    console.error('RF0728 image received but local composition failed',renderError);
    say('✓ تصویر از GPT Image از طریق AvalAI دریافت شده، ولی نمایش یا بارگذاری قالب در سایت خطا دارد: '+(renderError?.message||'خطای نامشخص')+' — از ساخت مجدد تصویر پولی خودداری کن؛ ابتدا فایل قالب را بررسی کن.');
