@@ -31,3 +31,6 @@ Desktop.ini
 .rushfinder-secret
 # Private Vecteezy Media Worker token: never publish to GitHub
 vecteezy-worker-secret.local.txt
+
+.rf-central-secret
+.env.local

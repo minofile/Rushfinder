@@ -25,3 +25,9 @@ README-0802-FA.txt
 
 # RF0838: video-compress.html and assets/ffmpeg/ are PUBLIC STATIC assets.
 # Keep these included in the deployment. Video files selected by users never reach Vercel.
+
+.rf-central-secret
+rf-central-gateway.js
+Setup-Central-Engine.ps1
+Start-Central-Gateway.cmd
+Start-Cloudflare-Tunnel.cmd
