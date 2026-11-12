@@ -304,7 +304,7 @@ html,body,html body *:not(svg):not(path):not([class*="material-icons"]):not([cla
 <div class="shell">
   <div class="top">
     <div class="ttl"><div class="ttl-head"><span class="ttl-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-8"></path></svg></span><h1>اینفوگرافیک</h1></div></div>
-    <div class="badges"><span class="badge">نسخه وب 01054</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
+    <div class="badges"><span class="badge">نسخه وب 01057</span><span class="badge">چیدمان حرفه‌ای</span><span class="badge">ویرایش زنده</span><span class="badge">خروجی PNG</span></div>
   </div>
   <div class="main">
     <section class="panel controls">
@@ -1398,7 +1398,7 @@ function rf581Render(){
       const cx=c.x+c.w/2,cy=c.y+c.h/2;
       if(usedCreamFaces.has(c.id))return false;
       if(c.w<w*(plan.horizontal?.25:.35)||c.w>w*1.2)return false;
-      if(c.h<h*.11||c.h>h*.77)return false;
+      if(c.h<h*.11||c.h>h*.94)return false;
       if(cx<x-w*.12||cx>x+w*1.12)return false;
       if(cy<y+h*.20||cy>y+h*1.12)return false;
       return true;
@@ -1899,10 +1899,87 @@ function rf01048CompactFact(value,maxChars=92){
  }
  return selected.replace(/[،؛\s]+$/u,'')+'…';
 }
+// 01055: A numbered Persian heading and the paragraph(s) under it are ONE fact.
+// Detect semantic sections before generic line/bullet extraction. This handles
+// Markdown headings, ordinary numbered lists and line breaks inside descriptions.
+function rf01055NumberedSections(raw,manualTitle='',sizeKey='square'){
+ const full=rf726NormalizeText(raw);
+ const lines=full.split(/\n/u).map(v=>v.trim());
+ const nonempty=lines.filter(Boolean);
+ if(!nonempty.length)return null;
+ const clean=v=>rf724PersianDigits(String(v||'').replace(/&(?:#x20|nbsp);/giu,' ').replace(/^\s*#{1,6}\s*/u,'').replace(/\*\*/gu,'').replace(/^[-–•🔹🔸]\s*/u,'').replace(/\\/gu,'').replace(/\s+/gu,' ').trim());
+ const headingRx=/^(?:\*\*)?\s*([۰-۹٠-٩0-9]{1,4})\s*[.)．、ـ:\-–—]\s*(.+)$/u;
+ const entries=[];let active=null,firstHeadingAt=-1;
+ const flush=()=>{if(!active)return;active.title=clean(active.title);active.desc=clean(active.parts.join(' '));if(active.title)entries.push(active);active=null;};
+ for(let i=0;i<lines.length;i++){
+   const line=clean(lines[i]);if(!line)continue;
+   const match=line.match(headingRx);
+   if(match){if(firstHeadingAt<0)firstHeadingAt=i;flush();active={number:Number(match[1].replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d))),title:match[2],parts:[]};continue;}
+   if(active){active.parts.push(line);}
+ }
+ flush();
+ // Only use this parser for a genuine ordered article; preserve original source
+ // rather than treating dates and unrelated numbered facts as sections.
+ if(entries.length<2||entries.some(v=>!Number.isFinite(v.number)||!v.title))return null;
+ const monotonic=entries.every((e,i)=>i===0||e.number===entries[i-1].number+1);
+ if(!monotonic)return null;
+ const title=clean(manualTitle)||clean(lines.slice(0,firstHeadingAt).filter(Boolean).join(' '))||'اینفوگرافیک';
+ const facts=entries.map(e=>({title:e.title,detail:e.desc,text:e.title+(e.desc?' — '+e.desc:'')}));
+ const limit=sizeKey==='all'?Infinity:(sizeKey==='story'?7:8),chosen=facts.slice(0,limit);
+ return {headline:title,items:chosen.map(e=>e.text),cards:chosen,total:facts.length,omitted:Math.max(0,facts.length-chosen.length),limit,curated:facts.length>limit,structured:true,numbered:true};
+}
+// 01057: Parse titled narrative sections before generic newline scoring.
+// A section heading and its following explanatory paragraphs form ONE item.
+// Explicit bullets can be independent items; bare date/value lines stay attached.
+function rf01057SemanticSections(raw,manualTitle='',sizeKey='square'){
+ const src=String(raw||'').replace(/\r/g,'').replace(/&(?:#x20|nbsp);/giu,' ');
+ const lines=src.split(/\n/u).map(s=>s.trim());
+ const clean=s=>rf724PersianDigits(String(s||'').replace(/\*\*/gu,'').replace(/^#{1,6}\s*/u,'').replace(/\\/gu,'').replace(/\s+/gu,' ').trim());
+ const notData=/^(?:منبع|توضیحات|یادداشت|تذکر|نکته مهم|قیمت‌ها به ازای|قیمت ها به ازای)\s*[:：]/u;
+ const sections=[];let active=null,first=-1,headlines=0,explicit=0;
+ const flush=()=>{if(active){const title=clean(active.title),detail=clean(active.body.join(' '));if(title)sections.push({title,detail,text:title+(detail?' — '+detail:'')});}active=null};
+ for(let i=0;i<lines.length;i++){
+  const rawLine=lines[i],line=clean(rawLine);if(!line)continue;
+  if(notData.test(line))continue;
+  const numbered=line.match(/^([۰-۹0-9]+)\s*[.)،:\-–]\s*(.+)$/u);
+  const mdHead=/^(?:#{2,6}\s*|\*\*).+(?:\*\*)?$/u.test(rawLine);
+  const bullet=rawLine.match(/^[🔹🔸•●▪◆♦\-]\s*(.+)$/u);
+  const headerCandidate=(numbered||mdHead||bullet)&&i>0;
+  if(headerCandidate){
+    if(first<0)first=i;
+    flush();headlines++;
+    const title=clean(numbered?numbered[2]:bullet?bullet[1]:rawLine);
+    // prevent bullet tokens representing a price note from being counted
+    if(!notData.test(title)){active={title,body:[]};explicit++;}
+    continue;
+  }
+  if(active)active.body.push(line);
+ }
+ flush();
+ // Avoid treating arbitrary paragraphs with a single Markdown heading as a numbered catalog.
+ if(sections.length<2||headlines<2||first<0)return null;
+ const title=clean(manualTitle)||clean(lines.slice(0,first).filter(Boolean).join(' '))||'اینفوگرافیک';
+ const limit=sizeKey==='all'?Infinity:(sizeKey==='story'?7:8);
+ const chosen=sections.slice(0,limit);
+ return {headline:title,items:chosen.map(v=>v.text),cards:chosen,total:sections.length,
+ omitted:Math.max(0,sections.length-chosen.length),limit,curated:sections.length>limit,structured:true,semantic:true};
+}
 function rf01024CurateNews(raw,manualTitle='',sizeKey='square'){
+ // 01056: A selected page is a VIEW over the complete user text, never a destructive truncation.
+ // This applies to prompt construction AND final Canvas text placement.
+ const view=window.rf01056ActivePage;
+ if(sizeKey!=='all'&&view&&String(raw||'').trim()===view.original.trim()){
+  return {headline:view.headline,items:view.items.slice(),cards:view.cards?view.cards.slice():null,
+   total:view.allTotal,omitted:0,limit:view.items.length,curated:false,
+   structured:!!view.cards,pageIndex:view.index,pageCount:view.pageCount};
+ }
+ const numbered=rf01055NumberedSections(raw,manualTitle,sizeKey);
+ if(numbered)return numbered;
+ const semantic=rf01057SemanticSections(raw,manualTitle,sizeKey);
+ if(semantic)return semantic;
  const article=rf01035ItemGroups(raw,manualTitle);
  if(article){
-  const limit=sizeKey==='story'?7:8;
+  const limit=sizeKey==='all'?Infinity:(sizeKey==='story'?7:8);
   const chosen=article.cards.slice(0,limit);
   return {headline:article.headline,
    items:chosen.map(g=>[g.title,g.weight,g.price].filter(Boolean).join(' — ')),
@@ -1949,7 +2026,7 @@ function rf01024CurateNews(raw,manualTitle='',sizeKey='square'){
   const score=(numberCount?5+Math.min(numberCount,3):0)+(hasUnits?3:0)+(isComparison?3:0)+(date?1:0)+(line.length>170?-3:0)+(line.length>280?-4:0);
   candidates.push({text:line,score,index:candidates.length});
  }
- const limit=sizeKey==='story'?7:8;
+ const limit=sizeKey==='all'?Infinity:(sizeKey==='story'?7:8);
  const chosen=candidates.slice().sort((a,b)=>b.score-a.score||a.index-b.index).slice(0,limit).sort((a,b)=>a.index-b.index);
  return {headline,items:chosen.map(x=>x.text),cards:null,total:candidates.length,omitted:Math.max(0,candidates.length-chosen.length),limit,curated:candidates.length>limit,structured:false};
 }
@@ -2312,7 +2389,7 @@ function reviewPrompt(draft,c,summary){
   const heading=document.createElement('h2');heading.textContent='بازبینی و ویرایش پرامپت اینفوگرافیک';section.appendChild(heading);
   const expl=document.createElement('p');expl.textContent='پرامپت به‌طور خودکار نوشته شده است. در صورت تمایل اصلاحش کن؛ دقیقاً همین متنِ نهایی برای ساخت استفاده خواهد شد.';section.appendChild(expl);
   const info=document.createElement('p');info.style.lineHeight='2.1';
-  info.textContent='رسانه: '+c.brand+' | پست مربع | '+(summary.items?.length||0)+' کارت | مدل: '+c.model+' | کیفیت: '+({'low':'پایین','medium':'متوسط','high':'بالا'}[c.quality]||c.quality);section.appendChild(info);
+  info.textContent='رسانه: '+c.brand+' | پست مربع '+(rf01056State.selected+1)+' از '+rf01056State.pages.length+' | '+(summary.items?.length||0)+' کارت از کل '+rf01056State.pages.reduce((a,p)=>a+p.items.length,0)+' مورد | مدل: '+c.model+' | کیفیت: '+({'low':'پایین','medium':'متوسط','high':'بالا'}[c.quality]||c.quality);section.appendChild(info);
   let omissionApproval=null;
   if(summary.omitted>0){
    const omitted=document.createElement('p');omitted.style.cssText='color:#9c2929;background:#fff5f1;border:1px solid #efc8bb;padding:9px;border-radius:10px;font-weight:700';
@@ -2332,6 +2409,13 @@ function reviewPrompt(draft,c,summary){
   });examples.appendChild(gallery);
   const note=document.createElement('p');note.textContent='این نمونه‌ها برای مشاهده سبک هستند؛ در مسیر فعلی Flare، توصیف سبک داخل پرامپت فرستاده می‌شود و فایل عکس مرجع ارسال نمی‌شود.';examples.appendChild(note);section.appendChild(examples);
   const facts=document.createElement('details');facts.open=true;const factsHead=document.createElement('summary');factsHead.textContent='فهرست داده‌های انتخاب‌شده برای خروجی (بازبینی رایگان)';facts.appendChild(factsHead);const factList=document.createElement('ol');factList.style.cssText='padding-right:25px;line-height:2;max-height:130px;overflow:auto';for(const it of summary.items||[]){const li=document.createElement('li');li.textContent=it;factList.appendChild(li);}facts.appendChild(factList);section.appendChild(facts);
+  // 01057: free, per-card semantic-art preflight. Never claim the model generated these yet.
+  const visualDetails=document.createElement('details');visualDetails.open=true;
+  const visualHead=document.createElement('summary');visualHead.textContent='نقشه ساخت: تعداد کارت‌ها و المان پیشنهادی هر کارت (بدون هزینه)';visualDetails.appendChild(visualHead);
+  const visualList=document.createElement('ol');visualList.style.cssText='padding-right:24px;line-height:1.9;max-height:240px;overflow:auto';
+  const semanticTopic=rf01039Topic(summary.headline,c.news),usedVisuals=new Set();
+  (summary.items||[]).forEach((fact,i)=>{const li=document.createElement('li');const a=document.createElement('strong');a.textContent=String(fact);const b=document.createElement('div');b.style.cssText='font-size:12px;color:#245a42';b.textContent='المان پیشنهادی: '+rf01040SpecificObject(fact,semanticTopic,i,usedVisuals,summary.headline);li.append(a,b);visualList.appendChild(li);});
+  visualDetails.appendChild(visualList);section.appendChild(visualDetails);
   const label=document.createElement('label');label.textContent='متن کامل پرامپت (قابل ویرایش)';label.setAttribute('for','rf716-prompt');section.appendChild(label);
   const editor=document.createElement('textarea');editor.id='rf716-prompt';editor.dir='rtl';editor.spellcheck=false;editor.value=draft;editor.setAttribute('aria-label','پرامپت قابل ویرایش');section.appendChild(editor);
   const count=document.createElement('p');count.id='rf716-count';section.appendChild(count);
@@ -2352,6 +2436,76 @@ function reviewPrompt(draft,c,summary){
  });
 }
 
+
+// 01056: GENERAL unlimited input -> finite square pages. One paid approval PER page.
+// The raw input is never edited, deleted or silently condensed for billing.
+const rf01056State={signature:'',pages:[],selected:0,outputs:new Map()};
+const rf01056Panel=document.createElement('div');rf01056Panel.id='rf01056-pages';
+rf01056Panel.style.cssText='direction:rtl;padding:13px;margin:12px 0;border:1px solid #c8dfd2;background:#f1f9f4;border-radius:12px;font-size:13px;line-height:2;color:#154c32';
+rf01056Panel.hidden=true;
+const rf01056Info=document.createElement('div');rf01056Info.id='rf01056-info';
+const rf01056Select=document.createElement('select');rf01056Select.id='rf01056-page-select';rf01056Select.setAttribute('aria-label','انتخاب صفحه اینفوگرافیک');rf01056Select.style.cssText='margin:8px 0;padding:9px;max-width:100%;width:100%;border:1px solid #b6d1c3;border-radius:9px';
+const rf01056Results=document.createElement('div');rf01056Results.id='rf01056-results';rf01056Results.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin-top:8px';
+const rf01056Next=document.createElement('button');rf01056Next.type='button';rf01056Next.id='rf01056-next';rf01056Next.textContent='صفحه بعدی';rf01056Next.style.cssText='padding:8px 12px;border-radius:9px;background:#0b7649;color:white;margin:7px 0';
+rf01056Panel.append(rf01056Info,rf01056Select,rf01056Next,rf01056Results);
+btn.parentElement.insertAdjacentElement('afterend',rf01056Panel);
+function rf01056ResetOutputs(){for(const o of rf01056State.outputs.values())URL.revokeObjectURL(o.url);rf01056State.outputs.clear();rf01056Results.replaceChildren();}
+function rf01056Refresh(){
+ const pages=rf01056State.pages,n=pages.length;
+ rf01056Panel.hidden=!n;
+ rf01056Info.textContent=n?'کل نکات: '+pages.reduce((a,b)=>a+b.items.length,0)+' | تعداد پست مربع: '+n+' | هر صفحه یک درخواست هزینه‌دار مستقل به Flare دارد. هیچ داده‌ای در صفحه‌بندی حذف نمی‌شود.':'';
+ rf01056Select.replaceChildren();
+ pages.forEach((p,i)=>{const opt=document.createElement('option');opt.value=String(i);opt.textContent='پست '+(i+1)+' از '+n+' — '+p.items.length+' کارت'+(rf01056State.outputs.has(i)?' ✓ ساخته‌شده':'');rf01056Select.appendChild(opt);});
+ rf01056Select.value=String(rf01056State.selected);
+ rf01056Next.hidden=rf01056State.selected>=n-1;
+ rf01056Results.replaceChildren();
+ for(const [i,out] of rf01056State.outputs){const a=document.createElement('a');a.href=out.url;a.download='RushFinder-page-'+(i+1)+'-of-'+n+'.png';a.textContent='دانلود پست '+(i+1)+' ✓';a.style.cssText='border:1px solid #93c9ac;border-radius:9px;padding:5px 9px;color:#105a3b;background:white';rf01056Results.appendChild(a);}
+}
+function rf01056PageSize(items){
+ // 01057: full item lengths matter. Do not drop words just to reach 8 cards.
+ const len=items.map(x=>String(x||'').length);
+ const longest=Math.max(0,...len),sum=len.reduce((a,b)=>a+b,0);
+ if(longest>270||sum>830)return 2;
+ if(longest>160||sum>610)return 3;
+ if(longest>100||sum>450)return 4;
+ if(longest>75||sum>340)return 5;
+ if(sum>250)return 6;
+ return 8;
+}
+function rf01056Prepare(c){
+ const signature=JSON.stringify({news:c.news,headline:c.headline,brandKey:c.brandKey,style:c.style,size:c.size});
+ if(signature===rf01056State.signature&&rf01056State.pages.length)return;
+ window.rf01056ActivePage=null;
+ rf01056ResetOutputs();rf01056State.selected=0;
+ const all=rf01024CurateNews(c.news,c.headline,'all');
+ const facts=all.items||[],cards=all.cards||null,pages=[];
+ // Split based on content length for readable square pages. No fixed TOTAL limit.
+ for(let start=0;start<facts.length;){
+  const remaining=facts.slice(start,start+8),size=rf01056PageSize(remaining);
+  const items=facts.slice(start,start+size),end=start+items.length;
+  pages.push({original:c.news,headline:all.headline,items,cards:cards?cards.slice(start,end):null,allTotal:facts.length,start,end,index:pages.length});
+  start=end;
+ }
+ pages.forEach(p=>p.pageCount=pages.length);
+ rf01056State.signature=signature;rf01056State.pages=pages;
+ rf01056Refresh();
+}
+function rf01056SelectPage(i){
+ rf01056State.selected=Math.max(0,Math.min(rf01056State.pages.length-1,i));
+ window.rf01056ActivePage=rf01056State.pages[rf01056State.selected]||null;
+ rf01056Refresh();
+}
+rf01056Select.addEventListener('change',()=>{rf01056SelectPage(Number(rf01056Select.value));say('صفحه '+(rf01056State.selected+1)+' انتخاب شد. برای مشاهده پرامپت و تأیید هزینه، دکمه ساخت را بزن.');});
+rf01056Next.addEventListener('click',()=>{rf01056SelectPage(rf01056State.selected+1);say('صفحه '+(rf01056State.selected+1)+' آماده بررسی است؛ ساخت بعدی فقط پس از تأیید جداگانه انجام می‌شود.');});
+function rf01056SaveRenderedPage(i){
+ // Save the exact final composited PNG (not raw model art) for each completed page.
+ return new Promise(resolve=>document.getElementById('cv').toBlob(blob=>{
+  if(blob){const previous=rf01056State.outputs.get(i);if(previous)URL.revokeObjectURL(previous.url);
+    rf01056State.outputs.set(i,{url:URL.createObjectURL(blob)});rf01056Refresh();}
+  resolve(!!blob);
+ },'image/png'));
+}
+
 // 01026: «بازیابی تصویر قبلی (رایگان)» button deliberately removed from UI.
 // Server-side /api/avalai-image recovery endpoint remains unchanged.
 btn.addEventListener('click',async evt=>{
@@ -2360,6 +2514,8 @@ btn.addEventListener('click',async evt=>{
  if(running)return;
  const c=current();if(!c.news){say('ابتدا متن خبر را وارد کن.');return}
  const sig=JSON.stringify(c);
+ rf01056Prepare(c);
+ rf01056SelectPage(rf01056State.selected);
  const summary=rf01024CurateNews(c.news,c.headline,c.size);
  if(!summary.items?.length){say('از خبر، داده قابل نمایش تشخیص داده نشد. هیچ هزینه‌ای انجام نشده است.');return;}
  // 01047: do not reject legitimate reporting using an arbitrary character count.
@@ -2409,7 +2565,7 @@ btn.addEventListener('click',async evt=>{
  }catch(e){say('ساخت پولی شروع نشد؛ قالب اصلی را اصلاح کن: '+(e?.message||e));return;}
  // Check again after user finished reviewing; no stale result or simultaneous request.
  if(running)return;
- const approvedSignature=JSON.stringify({selection:c,prompt:reviewedPrompt});
+ const approvedSignature=JSON.stringify({selection:c,page:rf01056State.selected,prompt:reviewedPrompt});
  const approvedPending=getPending();
  if(approvedPending?.signature===approvedSignature){say('این پرامپت قبلاً ارسال شده و نتیجه نامشخص است. برای جلوگیری از هزینه دوباره، ابتدا گزارش مصرف AvalAI را بررسی کن.');return;}
  // 01038: paid approval occurs exactly once in reviewPrompt; do not demand a second confirmation.
@@ -2466,6 +2622,7 @@ btn.addEventListener('click',async evt=>{
    await window.rf705LoadTemplate();
    if(typeof window.rf702DrawFinal!=='function')throw new Error('تابع نمایش خروجی در این صفحه در دسترس نیست.');
    window.rf702DrawFinal();
+   try{await rf01056SaveRenderedPage(rf01056State.selected);}catch(exportError){console.warn('RF01056 page-gallery export unavailable; primary PNG download remains available',exportError);}
    say((c.designMode==='verified'?'✓ تصویرسازی دریافت شد؛ تیتر و کارت‌ها با فونت انتخابی و اعداد فارسی در سایت رندر شدند. اگر جمله بسیار بلند بود، کارت را از نظر خوانایی بررسی کن.':c.brandKey==='urgent'&&c.designMode==='editorial'?'✓ تصویر حرفه‌ای دریافت شد؛ تیتر وسط‌چین و لوگوی اصلی با وب اضافه شدند. کارت‌ها و اعداد تولیدی مدل را قبل از انتشار بررسی کن.':'✓ تصویر دریافت شد؛ تیتر وسط‌چین با فونت انتخابی و لوگوی اصلی به خروجی اضافه شد. اعداد داخل تصویر را بررسی کن.')+(typeof data.elapsedMs==='number'?' زمان پردازش: '+Math.round(data.elapsedMs/1000)+' ثانیه.':''));
   }catch(renderError){
    console.error('RF0728 image received but local composition failed',renderError);
